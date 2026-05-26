@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "physical-consistency"
+version = "0.1.0"
+description = "Isolated Stage-1-follow-up project for LingBot CSGO physical consistency."
+readme = "README_physical_consistency_workflow_v1.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+authors = [
+  { name = "Codex" }
+]
+dependencies = [
+  "accelerate>=0.34.0",
+  "deepspeed>=0.15.0",
+  "einops>=0.8.0",
+  "numpy>=1.24.0",
+  "opencv-python>=4.9.0",
+  "pillow>=10.0.0",
+  "PyYAML>=6.0.1",
+  "timm>=1.0.8",
+  "torch>=2.1.0",
+  "torchvision>=0.16.0",
+  "tqdm>=4.66.0",
+  "typing_extensions>=4.10.0",
+  "wandb>=0.17.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pygments>=2.18.0",
+  "pytest>=8.0.0",
+]
+viz = [
+  "matplotlib>=3.8.0",
+]
+metrics = [
+  "clean-fid>=0.1.35",
+  "scipy>=1.11.0",
+]
+teacher = [
+  "transformers>=4.45.0",
+]
+
+[project.scripts]
+pc-build-manifests = "physical_consistency.cli.build_manifests:main"
+pc-build-test-subset = "physical_consistency.cli.build_test_subset:main"
+pc-verify-stage1 = "physical_consistency.cli.verify_stage1_lineage:main"
+pc-run-csgo-metrics = "physical_consistency.cli.run_csgo_metrics:main"
+pc-run-lingbot-generation = "physical_consistency.cli.run_lingbot_generation:main"
+pc-run-lingbot-fullval = "physical_consistency.cli.run_lingbot_fullval:main"
+pc-run-videophy2 = "physical_consistency.cli.run_videophy2:main"
+pc-compare-reports = "physical_consistency.cli.compare_reports:main"
+pc-train-trd-v1 = "physical_consistency.cli.train_trd_v1:main"
+pc-preprocess-physinone = "physical_consistency.cli.preprocess_physinone:main"
+pc-preprocess-physinone-moving-act = "physical_consistency.cli.preprocess_physinone_moving_act:main"
+pc-train-stage1-physinone-cam = "physical_consistency.cli.train_stage1_physinone_cam:main"
+pc-train-stage2-phycsgo-act = "physical_consistency.cli.train_stage2_phycsgo_act:main"
+pc-train-stage3-phycsgo-trd = "physical_consistency.cli.train_stage3_phycsgo_trd:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

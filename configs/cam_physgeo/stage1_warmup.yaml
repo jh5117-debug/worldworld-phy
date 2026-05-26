@@ -1,0 +1,19 @@
+stage: support_warmup
+model: LingBot-Fast-or-Base-camera
+training_scope: lora_adapter_only
+legacy_runner: physical_consistency.stages.stage1_physinone_cam.runner
+control_type: cam
+use_action: false
+dummy_action_only: true
+max_clips_first_run: 2000
+learning_rate: 1.0e-5
+eval_every_steps: 100
+early_stop_on_reward_regression: true
+mix:
+  camera_only_static: 0.30
+  static_camera_physics: 0.30
+  moving_camera_physics: 0.40
+loss:
+  diffusion_or_flow_matching: 1.0
+  trd: 0.1
+  general_replay: 0.05

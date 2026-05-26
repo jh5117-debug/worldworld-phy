@@ -1,0 +1,8 @@
+source: movingcam_synthetic
+root_env: MOVING_CAM_ROOT
+root: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/synthetic_data_assets
+label: moving-camera synthetic extension data
+preferred_fields: [hdf5, mp4, depth, id_mask, camera_pose, intrinsics, metadata]
+use_action: false
+make_dummy_action: true
+priority: camera_conditioned_benchmark

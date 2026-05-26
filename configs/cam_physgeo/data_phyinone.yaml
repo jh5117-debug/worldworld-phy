@@ -1,0 +1,6 @@
+source: phyinone
+root: /home/nvme04/workspace/world_model_phys/PHYS/Dataset/Phy_Dataset/PhysInOne_cam
+preferred_fields: [video.mp4, poses.npy, intrinsics.npy, prompt.txt]
+use_action: false
+make_dummy_action: true
+priority: physical_diversity_and_generalization

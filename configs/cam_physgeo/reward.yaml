@@ -1,0 +1,13 @@
+weights:
+  bg: 1.0
+  cam: 1.0
+  fg: 1.0
+  phys: 1.0
+  reobs: 1.0
+  quality: 0.5
+  freeze: 1.0
+fallbacks:
+  generated_depth: todo_depth_predictor
+  generated_masks: todo_sam_or_flow_propagation
+  flow: todo_optical_flow
+  feature_encoder: local_vjepa_or_videomae_only

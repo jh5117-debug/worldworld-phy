@@ -1,0 +1,8 @@
+benchmarks:
+  - camera_only_static
+  - static_camera_physics
+  - moving_camera_physics
+  - reobserve_split
+  - phyinone_ood
+metrics: [BRC, CAF, FG_ID, ODS, PES, RCS, Freeze_Rate, Quality, Flicker, Blur]
+main_benchmark: Cam-PhysGeo-DPO camera-conditioned I2V/V2V

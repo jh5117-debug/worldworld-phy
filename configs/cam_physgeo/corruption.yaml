@@ -1,0 +1,12 @@
+corruptions:
+  - background_drift
+  - nonrigid_background_warp
+  - object_deformation
+  - object_identity_change
+  - wrong_camera_trajectory
+  - camera_shuffle
+  - reobserve_mismatch
+  - freeze_foreground
+  - freeze_camera
+  - remove_or_create_object
+write_actual_videos: false

@@ -1,0 +1,3 @@
+manifest: manifests/cam_physgeo_all.jsonl
+outputs: reports/cam_physgeo_stage0
+run_training: false

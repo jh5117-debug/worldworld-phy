@@ -1,0 +1,20 @@
+stage: anchored_dpo
+pair_manifest: manifests/cam_physgeo_dpo_pairs.jsonl
+beta: 0.1
+min_margin: 0.05
+min_winner_reward: 0.45
+max_winner_freeze_penalty: 0.4
+reference_model: LingBot-Base
+policy_model: LingBot-Fast-or-stage1-warmup
+train_scope: lora_adapter_only
+use_action: false
+loss:
+  dpo: 1.0
+  trd: 0.1
+  light_sft: 0.05
+  general_replay: 0.05
+pair_mix:
+  gt_vs_corrupt: 0.45
+  gt_vs_fast: 0.30
+  teacher_vs_fast: 0.20
+  self_rollout: 0.05

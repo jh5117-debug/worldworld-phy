@@ -1,0 +1,16 @@
+diff --git a/configs/train_stage2_phycsgo_act.yaml b/configs/train_stage2_phycsgo_act.yaml
+index b316828..92f8157 100644
+--- a/configs/train_stage2_phycsgo_act.yaml
++++ b/configs/train_stage2_phycsgo_act.yaml
+@@ -69,3 +69,5 @@ validation_sample_steps: 35
+ guide_scale: 5.0
+ num_gpus: 8
+ ulysses_size: 8
++manifest_mini_val: eval_assets/phycsgo_stage2_train_val30_act4/metadata_val.csv
++manifest_full_val: eval_assets/phycsgo_stage2_train_val30_act4/metadata_val.csv
+diff --git a/logs/.gitkeep b/logs/.gitkeep
+index 8b13789..e69de29 100644
+--- a/logs/.gitkeep
++++ b/logs/.gitkeep
+@@ -1 +0,0 @@
+-
