@@ -2,26 +2,26 @@
 
 - target repo: `jh5117-debug/worldworld-phy`
 - target branch: `cam-physgeo-dpo-refactor`
-- commit hash: see `git rev-parse HEAD` for the local commit prepared for push
-- remote URL used first: `https://github.com/jh5117-debug/worldworld-phy.git`
-- push status: failed, credentials unavailable
+- commit hash: `e657018a693650aa7e7469d338428f8e1cd7c747`
+- remote URL: `ssh://git@ssh.github.com:443/jh5117-debug/worldworld-phy.git`
+- push status: succeeded
 
 ## Pushed Files Summary
 
-No push completed from this environment. The local commit contains only code, configs, docs and lightweight tests. Pre-push checks found no `*.safetensors`, `*.ckpt`, `*.pt`, `*.pth`, `*.bin`, `*.hdf5`, `*.h5`, `*.mp4`, `*.npy`, `*.npz`, archive, dataset, weight or checkpoint files in the commit.
+The pushed branch contains only code, configs, docs and lightweight tests. Pre-push checks found no `*.safetensors`, `*.ckpt`, `*.pt`, `*.pth`, `*.bin`, `*.hdf5`, `*.h5`, `*.mp4`, `*.npy`, `*.npz`, archive, dataset, weight or checkpoint files in the commit.
 
-## Failure
+## Push
 
-HTTPS push failed with:
+HTTPS push initially failed because no GitHub token was available:
 
 ```text
 fatal: could not read Username for 'https://github.com': terminal prompts disabled
 ```
 
-The H20 server also has no usable `gh` CLI in the checked environment, and local SSH push to GitHub did not complete. Configure a GitHub token or authenticated `gh` session, then run:
+SSH-over-443 authenticated as `jh5117-debug`, so the remote was switched and the branch was pushed:
 
 ```bash
 cd /tmp/cam_physgeo_work
-git remote set-url origin https://github.com/jh5117-debug/worldworld-phy.git
+git remote set-url origin ssh://git@ssh.github.com:443/jh5117-debug/worldworld-phy.git
 git push -u origin cam-physgeo-dpo-refactor
 ```
