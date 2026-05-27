@@ -1,7 +1,8 @@
 PROJECT_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys
-PHYSINONE_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/Dataset/Phy_Dataset/PhysInOne_cam
-MOVING_CAM_ROOT: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/synthetic_data_assets
-MOVING_CAM_OUTPUT_ROOT: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/outputs
+PHYSION_OFFICIAL_REPO_ROOT: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/repos/physics-benchmarking-neurips2021
+PHYSION_OFFICIAL_DATA_ROOT: /home/nvme03/workspace/physion_official/data
+PHYSION_MOVINGCAM_ROOT: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/synthetic_data_assets
+PHYSION_MOVINGCAM_OUTPUT_ROOT: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/outputs
 LINGBOT_BASE_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/weight/Lingbot-base-cam
 LINGBOT_BASE_TEXT_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/weight/Lingbot-base
 LINGBOT_FAST_ROOT: /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast
@@ -12,4 +13,4 @@ TRD_TEACHER_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/weight/vjepa2_1
 DEPTH_MODEL_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/weight/cam_physgeo_models/depth_anything_v2_small
 FLOW_MODEL_ROOT: /home/nvme03/workspace/world_model_phys/external/RAFT
 MANIFEST_ROOT: manifests
-CAM_INPUT_ROOT: data/cam_physgeo_lingbot_inputs
+CAM_INPUT_ROOT: data/physion_cam_lingbot_inputs

@@ -1,8 +1,10 @@
 benchmarks:
-  - camera_only_static
-  - static_camera_physics
-  - moving_camera_physics
-  - reobserve_split
-  - phyinone_ood
+  - physion_camera_only_static
+  - physion_static_camera_physics
+  - physion_moving_camera_physics
+  - physion_reobserve_split
+  - physion_ood_templates
 metrics: [BRC, CAF, FG_ID, ODS, PES, RCS, Freeze_Rate, Quality, Flicker, Blur]
-main_benchmark: Cam-PhysGeo-DPO camera-conditioned I2V/V2V
+main_benchmark: Physion-Cam-PhysGeo-DPO camera-conditioned I2V/V2V
+source: physion_movingcam
+use_action: false

@@ -5,6 +5,10 @@ from cam_physgeo.utils.video import frame_motion_magnitude
 
 def score_camera_following(sample: dict, generated_bg_flow: float|None=None) -> dict:
     stats=camera_motion_stats(sample.get('poses_path'))
+    if (not stats.get('available') or float(stats.get('translation_total') or 0.0) <= 1e-8) and sample.get('camera_position_path'):
+        pos_stats=camera_motion_stats(sample.get('camera_position_path'))
+        if pos_stats.get('available'):
+            stats=pos_stats
     expected=stats.get('translation_total')
     if generated_bg_flow is None:
         proxy=frame_motion_magnitude(sample.get('candidate_video_path') or sample.get('video_path'), max_frames=12)

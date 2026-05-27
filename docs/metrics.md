@@ -1,12 +1,21 @@
-# Metrics
+# Physion Metrics
 
-- BRC: Background Rigid Consistency.
-- CAF: Camera Adherence / Following.
-- FG-ID: Foreground identity consistency.
-- ODS: Object deformation score.
-- PES: Physics event score.
-- RCS: Reobserve consistency score.
-- Freeze Rate: camera/foreground/global freeze detection.
-- Quality: blur, brightness, saturation, flicker.
+Primary:
 
-Primary benchmark splits: camera-only static, static-camera physics, moving-camera physics, reobserve split, and PhyInOne OOD.
+- BRC: Background Rigid Consistency
+- CAF: Camera Adherence / Following
+- FG-ID: Foreground Identity
+- ODS: Object Deformation Score
+- PES: Physics Event Score
+- RCS: Reobserve Consistency
+- Freeze Rate
+- Quality / Flicker / Blur
+
+Auxiliary:
+
+- PSNR
+- SSIM
+- LPIPS
+- PMF if legacy tooling is available
+
+Auxiliary pixel metrics are not the main conclusion because they do not directly measure camera-conditioned physical world consistency.

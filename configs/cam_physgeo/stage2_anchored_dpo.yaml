@@ -1,5 +1,5 @@
 stage: anchored_dpo
-pair_manifest: manifests/cam_physgeo_dpo_pairs.jsonl
+pair_manifest: manifests/dpo_pairs_physion_gt_vs_corrupt_smoke.jsonl
 beta: 0.1
 min_margin: 0.05
 min_winner_reward: 0.45
@@ -8,6 +8,7 @@ reference_model: LingBot-Base
 policy_model: LingBot-Fast-or-stage1-warmup
 train_scope: lora_adapter_only
 use_action: false
+source: physion_movingcam
 loss:
   dpo: 1.0
   trd: 0.1

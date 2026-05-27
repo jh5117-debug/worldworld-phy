@@ -4,7 +4,12 @@ from cam_physgeo.utils.geometry import clamp01
 from cam_physgeo.utils.video import frame_motion_magnitude
 
 def score_freeze_penalty(sample: dict, generated_bg_flow: float|None=None, generated_fg_flow: float|None=None, expected_fg_motion: float|None=None) -> dict:
-    cam=camera_motion_stats(sample.get('poses_path')); expected_cam=cam.get('translation_total') or 0.0; penalty=0.0; reasons=[]
+    cam=camera_motion_stats(sample.get('poses_path'))
+    if (not cam.get('available') or float(cam.get('translation_total') or 0.0) <= 1e-8) and sample.get('camera_position_path'):
+        pos_cam=camera_motion_stats(sample.get('camera_position_path'))
+        if pos_cam.get('available'):
+            cam=pos_cam
+    expected_cam=cam.get('translation_total') or 0.0; penalty=0.0; reasons=[]
     if generated_bg_flow is None:
         proxy=frame_motion_magnitude(sample.get('candidate_video_path') or sample.get('video_path'), max_frames=12)
         if proxy.get('available'):

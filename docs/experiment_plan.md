@@ -1,11 +1,29 @@
-# Experiment Plan
+# Physion Experiment Plan
 
-Stage 0: reward calibration and camera audit, no training.
+Stage 0: HDF5/camera audit and reward calibration. No training.
 
-Stage 1: light support warm-up with LoRA/adapters only, low LR, short schedule, replay, TRD auxiliary, and reward early stopping.
+Stage 1: Physion support warm-up. Short LoRA/adapter-only SFT-style warm-up with TRD auxiliary and replay. This is not the final method.
 
-Stage 2: anchored DPO as the main method. Pair types: clean GT over corrupted GT, clean GT over bad Fast rollout, teacher over Fast, and a small amount of filtered self-rollout.
+Stage 2: anchored DPO. Main method. Start with clean Physion GT over corrupted GT pairs, then add LingBot-Base teacher over Fast rollout and high-score over low-score Fast rollout when rollouts exist.
 
-Stage 3: self-rollout DPO only after pass@K, quality, background/camera, and margin gates pass.
+Stage 3: self-rollout DPO. Only after pass@K, quality, background/camera reward, and freeze filters pass.
 
-Stage 4: optional online GeoFlow-style RL/GRPO only after the reward is calibrated and the base rollout quality is adequate.
+Benchmarks:
+
+- Physion Camera-only Static
+- Physion Static-camera Physics
+- Physion Moving-camera Physics
+- Physion Reobserve Split
+- Physion OOD Templates
+
+Baselines:
+
+- LingBot-Fast zero-shot
+- LingBot-Base zero-shot
+- old SFT checkpoint if available
+- Stage1 Physion warm-up
+- TRD-only
+- GeoFlow-style reward only
+- Anchored DPO
+- Anchored DPO + TRD
+- Self-rollout DPO after bootstrap

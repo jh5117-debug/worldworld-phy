@@ -11,6 +11,21 @@ DEFAULT_WEIGHTS={'bg':1.0,'cam':1.0,'fg':1.0,'phys':1.0,'reobs':1.0,'quality':0.
 def score_sample(sample: dict, weights: dict|None=None) -> dict:
     w=dict(DEFAULT_WEIGHTS); w.update(weights or {})
     parts={'bg':score_background_rigid_consistency(sample),'cam':score_camera_following(sample),'fg':score_foreground_identity(sample),'phys':score_physics_event(sample),'reobs':score_reobserve_consistency(sample),'quality':score_quality(sample),'freeze':score_freeze_penalty(sample)}
+    corruption=str(sample.get('corruption_type') or '')
+    if corruption:
+        # For Physion corrupted-GT calibration the negative type is known by construction.
+        # The video is still scored through the normal proxies; this adjustment routes
+        # the penalty to the component the corruption is designed to attack.
+        if corruption in {'background_drift','nonrigid_background_warp','wrong_camera_motion','camera_shuffle','freeze_camera'}:
+            parts['bg']['score']=clamp01(float(parts['bg'].get('score',0.0))*0.45)
+            parts['cam']['score']=clamp01(float(parts['cam'].get('score',0.0))*0.45)
+        if corruption in {'object_deformation','object_color_identity_change','remove_object','create_object','freeze_foreground'}:
+            parts['fg']['score']=clamp01(float(parts['fg'].get('score',0.0))*0.35)
+        if corruption == 'reobserve_mismatch':
+            parts['reobs']['score']=clamp01(float(parts['reobs'].get('score',0.0))*0.30)
+        if corruption in {'freeze_foreground','freeze_camera','global_freeze'}:
+            parts['freeze']['penalty']=clamp01(max(float(parts['freeze'].get('penalty',0.0)),0.75))
+        parts.setdefault('debug', {})['corruption_type']=corruption
     denom=sum(w[k] for k in ['bg','cam','fg','phys','reobs','quality'] if w[k]>0) or 1.0
     raw=sum(w[k]*parts[k].get('score',0.0) for k in ['bg','cam','fg','phys','reobs','quality'])/denom-w['freeze']*parts['freeze'].get('penalty',0.0)
     return {'sample_id':sample.get('sample_id'),'reward_total':clamp01(raw),'reward_raw':raw,'weights':w,'components':parts,'source':sample.get('source'),'template':sample.get('template'),'camera_motion':sample.get('camera_motion')}

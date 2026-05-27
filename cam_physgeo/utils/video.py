@@ -43,6 +43,35 @@ def extract_first_frame(video_path: str|Path, out_path: str|Path, dry_run: bool=
         return pr.returncode==0 and out.exists()
     except Exception: return False
 
+def write_video_frames(frames, out_path: str|Path, *, fps: int|float=16) -> bool:
+    """Write RGB or grayscale numpy frames to an mp4 file."""
+    try:
+        import cv2  # type: ignore
+        import numpy as np  # type: ignore
+        arr=np.asarray(frames)
+        if arr.ndim < 3 or len(arr)==0:
+            return False
+        out=Path(out_path); out.parent.mkdir(parents=True, exist_ok=True)
+        first=arr[0]
+        if first.ndim == 2:
+            h,w=first.shape
+        else:
+            h,w=first.shape[:2]
+        writer=cv2.VideoWriter(str(out), cv2.VideoWriter_fourcc(*'mp4v'), float(fps or 16), (w,h))
+        for frame in arr:
+            f=np.asarray(frame)
+            if f.ndim == 2:
+                f=cv2.cvtColor(f.astype('uint8'), cv2.COLOR_GRAY2BGR)
+            else:
+                if f.dtype != np.uint8:
+                    f=np.clip(f,0,255).astype('uint8')
+                f=cv2.cvtColor(f, cv2.COLOR_RGB2BGR)
+            writer.write(f)
+        writer.release()
+        return out.exists()
+    except Exception:
+        return False
+
 def read_video_frames(video_path: str|Path|None, *, max_frames: int=16, stride: int=1, size: tuple[int,int]|None=None) -> list:
     """Read a small RGB frame list for lightweight scoring.
 

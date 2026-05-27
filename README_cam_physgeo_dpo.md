@@ -1,23 +1,42 @@
-# Cam-PhysGeo-DPO
+# Physion-Cam-PhysGeo-DPO
 
-Camera-Conditioned Physical-Geometric Preference Alignment for LingBot-Fast / LingBot-Base.
+Camera-conditioned physical-geometric preference alignment for LingBot-Base / LingBot-Fast.
 
-Build a dry-run manifest:
+Inputs:
+
+- initial image or prefix video
+- generated Physion prompt
+- camera poses
+- intrinsics/projection-derived calibration
+
+Output:
+
+- future video with persistent background geometry, foreground identity, physical event plausibility, and reobserve consistency
+
+Active data sources:
+
+- `physion_official`
+- `physion_movingcam`
+
+Inactive/deprecated:
+
+- CSGO/game action data
+- PhyInOne
+- real `action.npy` conditioning
+
+Smoke path:
 
 ```bash
-python -m cam_physgeo.data.build_manifest   --phyinone_root /home/nvme04/workspace/world_model_phys/PHYS/Dataset/Phy_Dataset/PhysInOne_cam   --movingcam_root /home/nvme03/workspace/physion_moving_camera_mainline_20260505/synthetic_data_assets   --out manifests/cam_physgeo_all.jsonl   --dry-run --limit 50
+python -m cam_physgeo.data.physion_hdf5_audit \
+  --roots /home/nvme03/workspace/physion_moving_camera_mainline_20260505 \
+  --out docs/physion_hdf5_key_audit.md \
+  --limit 5
+
+python -m cam_physgeo.data.build_manifest \
+  --physion_movingcam_root /home/nvme03/workspace/physion_moving_camera_mainline_20260505/synthetic_data_assets \
+  --physion_movingcam_outputs /home/nvme03/workspace/physion_moving_camera_mainline_20260505/outputs \
+  --out manifests/physion_cam_physgeo_smoke.jsonl \
+  --limit 20
 ```
 
-Convert cam-only inputs:
-
-```bash
-python -m cam_physgeo.data.convert_to_lingbot_cam_inputs   --manifest manifests/cam_physgeo_train.jsonl   --out data/cam_physgeo_lingbot_inputs/train   --num_frames 81 --fps 16 --size 480x832   --use_action false --make_dummy_action true --dry-run
-```
-
-Run reward calibration skeleton:
-
-```bash
-bash scripts/04_reward_calibration.sh --dry-run --limit 20
-```
-
-No deletion, long training, model download, or checkpoint mutation is part of this first stage.
+All large data, weights, generated videos, manifests, reports, and checkpoints are gitignored.

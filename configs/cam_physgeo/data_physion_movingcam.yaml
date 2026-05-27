@@ -1,0 +1,7 @@
+source: physion_movingcam
+root: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/synthetic_data_assets
+outputs: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/outputs
+manifest_source_name: physion_movingcam
+requires_camera_pose: true
+requires_intrinsics_or_projection: true
+use_action: false

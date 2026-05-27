@@ -1,20 +1,29 @@
-# Project Refocus
+# Physion-Cam-PhysGeo-DPO Refocus
 
-We no longer define this project as fine-tuning LingBot with CSGO/action data. The current negative results indicate that game/navigation data can provide camera control, but it does not provide clean object-level physical supervision. PhyInOne provides physical events, but ordinary SFT does not explicitly optimize persistent world consistency, which leads to background drift, object deformation, and reobserve failure. Therefore the task is redefined as camera-conditioned physical world consistency alignment.
+We no longer define this project as CSGO/action-data fine-tuning for LingBot, and we no longer use PhyInOne as the active data line. The current negative results show that ordinary SFT, even on physical videos, does not explicitly optimize persistent world consistency. It can still produce background drift, object deformation, camera mismatch, and reobserve failure.
 
-Given an initial image or prefix video, prompt, camera poses, and intrinsics, LingBot should generate a persistent physical world. The static background should follow rigid geometry induced by the input camera trajectory. Dynamic foreground objects should preserve identity and shape. Physical events should follow the regularities of drop, collision, roll, containment, and support. When the camera turns away and returns, the scene and objects should remain consistent.
+The project is now Physion-Cam-PhysGeo-DPO: camera-conditioned physical-geometric preference alignment for LingBot-Base and LingBot-Fast.
 
-Methodologically, we borrow GeoFlow's geometry reward idea but do not copy the setting. GeoFlow estimates camera, depth, and flow from generated T2V videos. In the LingBot plus PhyInOne plus moving-camera synthetic extension data setting, we have condition camera poses, intrinsics, simulator depth, ID masks, and event metadata. This lets us extend the reward from internal video geometric self-consistency to known-camera, simulator-grounded physical-geometric consistency.
+Given an initial image or prefix video, prompt, camera poses, and intrinsics, LingBot should generate a persistent physical world. The static background should follow the rigid geometry induced by the provided camera trajectory. Dynamic foreground objects should preserve identity and shape. Physical events should remain plausible for drop, collision, roll, containment, support, dominoes, drape, and link scenarios. When the camera turns away and comes back, the scene and objects should remain consistent. The model should not win by freezing, blurring, or suppressing motion.
 
-We also borrow VideoREPA's TRD as an auxiliary physical spatiotemporal representation loss. TRD can help temporal relation learning, but it cannot by itself constrain camera following, background rigid geometry, or reobserve consistency.
+Data is Physion-only:
 
-We do not start from pure self-rollout DPO. LingBot-Fast may initially produce poor samples in the target domain, so the top rollout can still be a bad sample. We use bootstrapped anchored DPO: clean GT, teacher rollouts, corrupted negatives, and bad Fast rollouts first pull the model into a usable distribution; self-rollout DPO is added later after reward and human-quality thresholds are met.
+- Official Physion is used for static-camera physical dynamics, object states, depth, segmentation, flow when available, and event labels.
+- Existing Physion/TDW moving-camera data is used for camera-conditioned reward, reobserve evaluation, corrupted negatives, and anchored DPO.
+- If official Physion HDF5 lacks camera intrinsics/extrinsics, the TDW/Physion generation code should be rerun for a subset with exported `camera_position`, `camera_aim`, `camera_pose`, `projection_matrix`, depth, ID mask, and object states.
+
+Methodologically, we borrow GeoFlow's geometry reward idea but do not copy its setting. GeoFlow estimates camera/depth/flow inside a T2V setup. Here, the Physion/TDW setting provides simulator camera pose, projection/intrinsics, depth, ID masks, and object metadata, so the reward is known-camera and simulator-grounded.
+
+We also borrow VideoREPA-style TRD as an auxiliary temporal-physical representation loss. TRD is not the main camera-following or reobserve objective.
+
+Training uses bootstrapped anchored DPO. We do not start with pure self-rollout DPO because LingBot-Fast can initially produce low-quality Physion-domain rollouts. The first preference pairs are anchored by clean Physion GT, corrupted negatives, and later teacher/base rollouts; self-rollout DPO is gated until pass@K and quality are acceptable.
 
 Innovation points:
 
-1. Shift from action/game world modeling to camera-conditioned physical world consistency.
-2. Use PhyInOne plus moving-camera synthetic extension data for camera/depth/ID/event supervision.
-3. Convert GeoFlow-style reward into a known-camera, simulator-grounded reward.
-4. Add physical event reward and reobserve consistency reward.
-5. Use bootstrapped anchored DPO instead of ordinary SFT or immediate self-rollout DPO.
-6. Build a LingBot-specific I2V/V2V camera-conditioned benchmark.
+- Shift from action/game world modeling to Physion-based camera-conditioned physical world consistency.
+- Use Physion/TDW HDF5 camera/depth/ID/object-state signals for training and evaluation.
+- Convert GeoFlow-style reward into a known-camera simulator-grounded reward.
+- Add physical event and reobserve consistency rewards.
+- Use ID-mask and video-space corrupted negatives.
+- Use bootstrapped anchored DPO before self-rollout DPO.
+- Build an I2V/V2V Physion camera-conditioned benchmark for LingBot.

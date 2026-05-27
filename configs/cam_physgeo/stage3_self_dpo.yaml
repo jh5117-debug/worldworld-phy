@@ -1,7 +1,9 @@
-stage: self_rollout_dpo
+stage: physion_self_rollout_dpo
 start_only_after:
   pass_at_k_improved: true
   winner_quality_min: 0.60
   bg_cam_min: 0.50
   margin_min: 0.10
 rollouts_per_condition: 4
+use_action: false
+source: physion_movingcam

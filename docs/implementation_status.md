@@ -1,18 +1,31 @@
 # Implementation Status
 
-Completed in first-stage skeleton:
+Completed:
 
-- New branch `cam-physgeo-dpo-refactor`.
-- `cam_physgeo` package with data, reward, DPO, TRD, training, eval, and utility modules.
-- Configs under `configs/cam_physgeo` with `MOVING_CAM_ROOT`.
-- Read-only audit and dry-run scripts.
-- Safe delete script written but not executed.
-- Storage audit and cleanup manifests written.
-- Research and project refocus docs written.
+- Physion-only source schema.
+- HDF5 key audit and reader.
+- Physion official and moving-camera scanners.
+- Cam-only LingBot converter.
+- Prompt generation.
+- Reward/corruption framework.
+- Anchored DPO pair builder.
+- Stage1/2/3 dry-run entries.
+- Physion benchmark docs.
 
-Not yet implemented:
+Smoke passed:
 
-- Real optical-flow/depth/DINO/V-JEPA reward extraction for generated rollouts.
-- Real LingBot model loading and training loops.
-- Actual corrupted video rendering.
-- HDF5 key-level decoder for simulator depth/ID/camera fields.
+- compileall
+- HDF5 audit
+- manifest build/validate/split
+- converter
+- corruption
+- reward calibration
+- DPO pair builder
+- Stage1/2/3/camera audit dry-runs
+
+Remaining TODO:
+
+- Full official Physion dataset download/audit.
+- Strong R_bg/R_cam with optical flow and depth rigid residual.
+- DINO/V-JEPA feature scoring for FG-ID/RCS.
+- Real LingBot Stage2 energy adapter.
