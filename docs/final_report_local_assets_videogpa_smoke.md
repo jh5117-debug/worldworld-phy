@@ -101,7 +101,7 @@
 
 - Remote: `ssh://git@ssh.github.com:443/jh5117-debug/worldworld-phy.git`.
 - Branch: `physion-only-local-assets-videogpa-smoke`.
-- Commit hash: pending before final push.
+- Implementation commit hash: `bc159a0`.
 - The branch must exclude `local_assets/`, real data, weights, generated videos, reports, manifests, HDF5/MP4/NPY/NPZ, and checkpoint/model binaries.
 
 ## 15. Next Steps
