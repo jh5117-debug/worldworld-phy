@@ -1,42 +1,47 @@
 # Physion-Cam-PhysGeo-DPO
 
-Camera-conditioned physical-geometric preference alignment for LingBot-Base / LingBot-Fast.
+Camera-conditioned physical-geometric preference alignment for **LingBot-Fast**.
 
-Inputs:
-
-- initial image or prefix video
-- generated Physion prompt
-- camera poses
-- intrinsics/projection-derived calibration
-
-Output:
-
-- future video with persistent background geometry, foreground identity, physical event plausibility, and reobserve consistency
-
-Active data sources:
-
-- `physion_official`
-- `physion_movingcam`
-
-Inactive/deprecated:
-
-- CSGO/game action data
-- PhyInOne
-- real `action.npy` conditioning
-
-Smoke path:
+The active project root is:
 
 ```bash
-python -m cam_physgeo.data.physion_hdf5_audit \
-  --roots /home/nvme03/workspace/physion_moving_camera_mainline_20260505 \
-  --out docs/physion_hdf5_key_audit.md \
-  --limit 5
-
-python -m cam_physgeo.data.build_manifest \
-  --physion_movingcam_root /home/nvme03/workspace/physion_moving_camera_mainline_20260505/synthetic_data_assets \
-  --physion_movingcam_outputs /home/nvme03/workspace/physion_moving_camera_mainline_20260505/outputs \
-  --out manifests/physion_cam_physgeo_smoke.jsonl \
-  --limit 20
+/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys
 ```
 
-All large data, weights, generated videos, manifests, reports, and checkpoints are gitignored.
+All active local data, weights, third-party repos, manifests, processed samples, reports, outputs, and caches live under:
+
+```bash
+local_assets/
+```
+
+## Scope
+
+- Main model: LingBot-Fast.
+- Baseline only: LingBot-Base.
+- Data: Physion/TDW moving-camera synthetic data, plus optional official Physion copied under `local_assets`.
+- Conditions: initial image or prefix video, prompt, camera poses, intrinsics.
+- No action core condition: dummy zero `action.npy` is emitted only for legacy compatibility and always paired with `use_action=false`.
+- DPO route: VideoGPA-compatible clean/corrupt preference pairs first; no long DPO training in smoke.
+
+## First Smoke
+
+```bash
+python -m cam_physgeo.data.build_manifest \
+  --physion_movingcam_root local_assets/data/physion/movingcam_raw \
+  --physion_movingcam_outputs local_assets/data/physion/movingcam_outputs \
+  --out local_assets/data/physion/manifests/physion_cam_physgeo_smoke.jsonl \
+  --limit 50
+
+python -m cam_physgeo.data.convert_to_lingbot_cam_inputs \
+  --manifest local_assets/data/physion/manifests/physion_cam_physgeo_smoke.jsonl \
+  --out local_assets/data/physion/processed/lingbot_cam_inputs/smoke \
+  --source physion_movingcam \
+  --num_frames 81 \
+  --fps 16 \
+  --size 480x832 \
+  --use_action false \
+  --make_dummy_action true \
+  --limit 5
+```
+
+`local_assets/` is gitignored. Push only code, configs, scripts, docs, and small tests.

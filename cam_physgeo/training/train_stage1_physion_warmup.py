@@ -21,15 +21,10 @@ def main(argv=None):
     command = [
         sys.executable,
         "-m",
-        "physical_consistency.stages.stage1_physinone_cam.runner",
+        "cam_physgeo.training.train_stage1_physion_warmup",
         "--config",
-        str(cfg.get("legacy_config", "configs/train_stage1_physinone_cam.yaml")),
-        "--control_type",
-        "cam",
-        "--base_model_dir",
-        paths["lingbot_fast"] or paths["lingbot_base"],
-        "--lingbot_code_dir",
-        paths["lingbot_code"],
+        str(args.config),
+        "--run",
     ]
     print_dry_run_plan(
         "stage1_physion_support_warmup",
@@ -39,6 +34,7 @@ def main(argv=None):
         max_steps=args.max_steps,
         legacy_import=import_check,
         dataset="Physion cam-only converted samples",
+        legacy_components="LingBot/Wan loader + TRD components are reused via local_assets/third_party/lingbot_world and src/physical_consistency trainers; no PhyInOne dataset path is active.",
         action_conditioning="disabled; action.npy is dummy zero compatibility only",
         note="Real launch remains guarded behind --run and should use LoRA/adapter, low LR, short schedule.",
     )

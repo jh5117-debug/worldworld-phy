@@ -1,5 +1,5 @@
-manifest: manifests/physion_cam_physgeo_smoke.jsonl
-outputs: reports/physion_cam_physgeo_stage0
+manifest: local_assets/data/physion/manifests/physion_cam_physgeo_smoke.jsonl
+outputs: local_assets/reports/audits/physion_cam_physgeo_stage0
 run_training: false
 source: physion_movingcam
 use_action: false

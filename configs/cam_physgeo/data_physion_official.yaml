@@ -1,5 +1,5 @@
 source: physion_official
-root: /home/nvme03/workspace/physion_official/data
-repo_root: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/repos/physics-benchmarking-neurips2021
+root: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/official
+repo_root: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/third_party/physion_official_repo
 required_for_smoke: false
 notes: Official Physion data is optional for the first smoke path; moving-camera TDW HDF5 is sufficient for camera-conditioned reward/DPO scaffolding.

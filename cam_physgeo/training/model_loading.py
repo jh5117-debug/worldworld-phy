@@ -19,22 +19,17 @@ from typing import Any
 from cam_physgeo.utils.io import load_yaml, write_json
 
 
-WEIGHT_ROOT = Path("/home/nvme04/workspace/world_model_phys/PHYS/weight")
+PROJECT_ROOT = Path("/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys")
+LOCAL_ASSETS_ROOT = PROJECT_ROOT / "local_assets"
+WEIGHT_ROOT = LOCAL_ASSETS_ROOT / "weights"
 DEFAULT_FAST_CANDIDATES = (
-    WEIGHT_ROOT / "Lingbot-fast",
-    WEIGHT_ROOT / "Lingbot-Fast",
-    WEIGHT_ROOT / "lingbot_world_fast",
-    Path("/home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast"),
+    WEIGHT_ROOT / "lingbot_fast",
 )
 DEFAULT_BASE_CANDIDATES = (
-    WEIGHT_ROOT / "Lingbot-base-cam",
-    WEIGHT_ROOT / "Lingbot-base",
-    Path("/home/nvme03/workspace/lingbot-world/lingbot-world-base-cam"),
+    WEIGHT_ROOT / "lingbot_base",
 )
 DEFAULT_LINGBOT_CODE_CANDIDATES = (
-    Path("/home/nvme03/workspace/lingbot-world"),
-    Path("/home/nvme03/workspace/world_model_phys/code/lingbot-world"),
-    Path("third_party/lingbot_restore/code/lingbot-world"),
+    LOCAL_ASSETS_ROOT / "third_party" / "lingbot_world",
 )
 
 

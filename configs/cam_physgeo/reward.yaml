@@ -4,10 +4,10 @@ weights:
   fg: 1.0
   phys: 1.0
   reobs: 1.0
-  quality: 0.5
+  quality: 0.1
   freeze: 1.0
 fallbacks:
-  generated_depth: todo_depth_predictor
-  generated_masks: todo_sam_or_flow_propagation
-  flow: todo_optical_flow
-  feature_encoder: local_vjepa_or_videomae_only
+  generated_depth: local_assets/weights/depth_or_physion_hdf5
+  generated_masks: physion_id_mask_or_fallback_center_crop
+  flow: local_assets/weights/optical_flow_or_frame_diff
+  feature_encoder: local_assets/weights/dinov2_vjepa2_videomae2_or_fallback

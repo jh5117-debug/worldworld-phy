@@ -1,14 +1,15 @@
 stage: anchored_dpo
-pair_manifest: manifests/dpo_pairs_physion_gt_vs_corrupt_smoke.jsonl
+pair_manifest: local_assets/data/physion/processed/dpo_pairs/smoke/dpo_pairs_physion_gt_vs_corrupt.jsonl
 beta: 0.1
 min_margin: 0.05
 min_winner_reward: 0.45
 max_winner_freeze_penalty: 0.4
-reference_model: LingBot-Base
-policy_model: LingBot-Fast-or-stage1-warmup
+reference_model: LingBot-Fast-reference
+policy_model: LingBot-Fast
 train_scope: lora_adapter_only
 use_action: false
 source: physion_movingcam
+status: experimental_deprecated_direct_trainer_use_videogpa_adapter
 loss:
   dpo: 1.0
   trd: 0.1

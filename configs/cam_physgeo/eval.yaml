@@ -8,3 +8,6 @@ metrics: [BRC, CAF, FG_ID, ODS, PES, RCS, Freeze_Rate, Quality, Flicker, Blur]
 main_benchmark: Physion-Cam-PhysGeo-DPO camera-conditioned I2V/V2V
 source: physion_movingcam
 use_action: false
+model_type: fast
+samples: local_assets/data/physion/processed/lingbot_cam_inputs/smoke
+out: local_assets/outputs/smoke/lingbot_fast_inference

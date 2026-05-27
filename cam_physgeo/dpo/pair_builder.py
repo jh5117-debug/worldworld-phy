@@ -28,6 +28,7 @@ def make_gt_vs_corrupt_pairs(
     weights: dict | None = None,
     min_margin: float = 0.0,
     dry_run: bool = False,
+    strength: str = "medium",
 ) -> tuple[list[dict], list[dict]]:
     pairs: list[dict] = []
     rejected: list[dict] = []
@@ -35,7 +36,7 @@ def make_gt_vs_corrupt_pairs(
         return [], [{"sample_id": sample.get("sample_id"), "reason": "missing_camera_condition"}]
     if not sample.get("video_path") and not sample.get("hdf5_path"):
         return [], [{"sample_id": sample.get("sample_id"), "reason": "missing_video_or_hdf5_rgb"}]
-    records = make_corruption_records(sample, out_dir=save_videos, dry_run=dry_run, types=corruptions)
+    records = make_corruption_records(sample, out_dir=save_videos, dry_run=dry_run, types=corruptions, strength=strength)
     clean_sample = dict(sample)
     if not clean_sample.get("video_path"):
         for record in records:
@@ -75,10 +76,11 @@ def make_gt_vs_corrupt_pairs(
                     "prompt": sample.get("prompt_path"),
                     "poses": sample.get("poses_path"),
                     "intrinsics": sample.get("intrinsics_path"),
+                    "metadata": sample.get("metadata_path"),
                     "use_action": False,
                 },
                 "winner": {"video": clean_sample.get("video_path"), "source": "clean_physion_gt", "reward": clean_reward},
-                "loser": {"video": loser_video, "source": "corrupted_gt", "reward": loser_reward},
+                "loser": {"video": loser_video, "source": "corrupted_gt", "corruption_type": corruption, "reward": loser_reward},
                 "pair_type": "gt_vs_corrupt",
                 "corruption": corruption,
                 "margin": margin,
@@ -112,6 +114,15 @@ def write_report(path: str | Path, pairs: list[dict], rejected: list[dict]) -> N
     lines.extend(["", "## Sample Pairs"])
     for row in pairs[:5]:
         lines.append(f"- {row['pair_id']}: {row['winner']['video']} > {row['loser']['video']} margin={row['margin']:.4f}")
+    lines.extend(["", "## Reward Breakdown Notes"])
+    for row in pairs[:3]:
+        winner = row["winner"]["reward"].get("components", {})
+        loser = row["loser"]["reward"].get("components", {})
+        lines.append(f"- {row['pair_id']} corruption={row.get('corruption')}")
+        for key in ["bg", "cam", "fg", "phys", "reobs", "quality", "freeze"]:
+            wv = winner.get(key, {}).get("score", winner.get(key, {}).get("penalty"))
+            lv = loser.get(key, {}).get("score", loser.get(key, {}).get("penalty"))
+            lines.append(f"  - {key}: winner={wv} loser={lv}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -127,6 +138,7 @@ def main(argv=None):
     ap.add_argument("--min_margin", type=float, default=0.05)
     ap.add_argument("--save_videos", default="outputs/dpo_pair_physion")
     ap.add_argument("--save_report", default="")
+    ap.add_argument("--strength", default="medium", choices=["low", "medium", "high"])
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
     if "gt_vs_corrupt" not in args.pair_types:
@@ -149,6 +161,7 @@ def main(argv=None):
             weights=weights,
             min_margin=args.min_margin,
             dry_run=args.dry_run,
+            strength=args.strength,
         )
         pairs.extend(new_pairs)
         rejected.extend(new_rejected)

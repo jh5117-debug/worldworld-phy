@@ -1,0 +1,11 @@
+videogpa_root: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/third_party/VideoGPA
+input_pairs: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/processed/dpo_pairs/smoke/dpo_pairs_physion_gt_vs_corrupt.jsonl
+export_json: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/processed/dpo_pairs/smoke/videogpa_pairs.json
+format: videogpa
+camera_condition:
+  keep_extra_condition: true
+  fields: [image, prefix, poses, intrinsics, metadata]
+training:
+  run_train: false
+  run_encode_smoke: false
+  max_encode_pairs: 2

@@ -1,29 +1,34 @@
 # Physion-Cam-PhysGeo-DPO Refocus
 
-We no longer define this project as CSGO/action-data fine-tuning for LingBot, and we no longer use PhyInOne as the active data line. The current negative results show that ordinary SFT, even on physical videos, does not explicitly optimize persistent world consistency. It can still produce background drift, object deformation, camera mismatch, and reobserve failure.
+This project is no longer a CSGO/action-data fine-tuning line, and PhyInOne is not an active data source. The active research target is **Physion-Cam-PhysGeo-DPO: Camera-Conditioned Physical-Geometric Preference Alignment for LingBot-Fast**.
 
-The project is now Physion-Cam-PhysGeo-DPO: camera-conditioned physical-geometric preference alignment for LingBot-Base and LingBot-Fast.
+The model receives an initial image or prefix video, an automatically generated Physion prompt, camera poses, and intrinsics. It should generate future video in which the static background follows the rigid geometry implied by the provided camera trajectory, dynamic foreground objects preserve identity and shape, physical events stay plausible, and look-away/reobserve sequences return to the same world. The model should not win by freezing, blurring, or suppressing motion.
 
-Given an initial image or prefix video, prompt, camera poses, and intrinsics, LingBot should generate a persistent physical world. The static background should follow the rigid geometry induced by the provided camera trajectory. Dynamic foreground objects should preserve identity and shape. Physical events should remain plausible for drop, collision, roll, containment, support, dominoes, drape, and link scenarios. When the camera turns away and comes back, the scene and objects should remain consistent. The model should not win by freezing, blurring, or suppressing motion.
+## Active Scope
 
-Data is Physion-only:
+- Data: Physion/TDW moving-camera synthetic data under `local_assets/data/physion`, with optional official Physion assets later copied into the same tree.
+- Model: LingBot-Fast is the main policy. LingBot-Base is retained only as a baseline, not as the default teacher, because Base can also fail in this domain.
+- Conditions: image or prefix video, prompt, camera poses, and intrinsics.
+- Compatibility: `action.npy` is dummy zero only if a legacy LingBot interface requires it; `metadata.json` must contain `use_action=false`.
+- Outputs: all manifests, processed samples, corruptions, rollouts, reports, cache, and third-party code live under `local_assets`.
 
-- Official Physion is used for static-camera physical dynamics, object states, depth, segmentation, flow when available, and event labels.
-- Existing Physion/TDW moving-camera data is used for camera-conditioned reward, reobserve evaluation, corrupted negatives, and anchored DPO.
-- If official Physion HDF5 lacks camera intrinsics/extrinsics, the TDW/Physion generation code should be rerun for a subset with exported `camera_position`, `camera_aim`, `camera_pose`, `projection_matrix`, depth, ID mask, and object states.
+## Data Narrative
 
-Methodologically, we borrow GeoFlow's geometry reward idea but do not copy its setting. GeoFlow estimates camera/depth/flow inside a T2V setup. Here, the Physion/TDW setting provides simulator camera pose, projection/intrinsics, depth, ID masks, and object metadata, so the reward is known-camera and simulator-grounded.
+The moving-camera data is not an official Physion moving-camera split. It is a Physion/TDW rerendered synthetic dataset with camera trajectories and simulator metadata. Official Physion remains useful for static-camera physical dynamics and metadata audit, but active smoke tests use the project-local moving-camera copy.
 
-We also borrow VideoREPA-style TRD as an auxiliary temporal-physical representation loss. TRD is not the main camera-following or reobserve objective.
+If official Physion HDF5 lacks explicit intrinsics or extrinsics, the generation path should export `camera_position`, `camera_aim`, `camera_pose`, `projection_matrix`, depth, ID masks, object states, and event metadata for the subset we use.
 
-Training uses bootstrapped anchored DPO. We do not start with pure self-rollout DPO because LingBot-Fast can initially produce low-quality Physion-domain rollouts. The first preference pairs are anchored by clean Physion GT, corrupted negatives, and later teacher/base rollouts; self-rollout DPO is gated until pass@K and quality are acceptable.
+## Method
 
-Innovation points:
+We borrow GeoFlow's geometric consistency idea, but the reward is known-camera and simulator-grounded: Physion/TDW can provide camera pose, projection/intrinsics, depth, ID mask, and object metadata. We also keep VideoREPA-style TRD as an auxiliary physical-temporal representation signal, not as a replacement for camera-following, background rigid consistency, or reobserve consistency.
 
-- Shift from action/game world modeling to Physion-based camera-conditioned physical world consistency.
-- Use Physion/TDW HDF5 camera/depth/ID/object-state signals for training and evaluation.
-- Convert GeoFlow-style reward into a known-camera simulator-grounded reward.
-- Add physical event and reobserve consistency rewards.
-- Use ID-mask and video-space corrupted negatives.
-- Use bootstrapped anchored DPO before self-rollout DPO.
-- Build an I2V/V2V Physion camera-conditioned benchmark for LingBot.
+DPO is VideoGPA-based. The first pairs are anchored `clean Physion GT > corrupted Physion GT`; later stages may add LingBot-Fast best-of-N rollouts only after reward calibration is reliable. Direct self-rollout DPO is not used at the start.
+
+## Innovations
+
+- Shift from action/game modeling to Physion-based camera-conditioned physical world consistency.
+- Keep all active assets under project-local `local_assets` for reproducibility.
+- Use known-camera, simulator-grounded GeoFlow-style rewards.
+- Use ID-mask/video-level corrupted negatives before any rollout-based DPO.
+- Preserve DINOv2/V-JEPA2/VideoMAE2 hooks for foreground, reobserve, and temporal features.
+- Export preference data through a VideoGPA adapter instead of treating a toy DPO trainer as the main path.

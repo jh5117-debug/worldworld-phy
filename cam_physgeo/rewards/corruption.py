@@ -32,6 +32,7 @@ def make_corruption_records(
     types: Iterable[str] | None = None,
     preserve_prefix_frames: int = 1,
     seed: int = 0,
+    strength: str = "medium",
 ) -> list[dict]:
     choices = [c for c in (types or CORRUPTIONS) if c in CORRUPTIONS]
     rows = []
@@ -55,6 +56,7 @@ def make_corruption_records(
                     corruption,
                     preserve_prefix_frames=preserve_prefix_frames,
                     seed=seed,
+                    strength=strength,
                 )
                 if not ok:
                     flags.append(f"corruption_failed:{corruption}")
@@ -109,6 +111,7 @@ def write_corrupted_video(
     *,
     preserve_prefix_frames: int = 1,
     seed: int = 0,
+    strength: str = "medium",
 ) -> tuple[bool, dict]:
     if not video_path or not Path(str(video_path)).exists():
         return False, {"error": "missing_source_video"}
@@ -132,6 +135,7 @@ def write_corrupted_video(
         first_mutable = max(0, int(preserve_prefix_frames))
         affected = list(range(first_mutable, len(frames)))
         frames_out = [f.copy() for f in frames]
+        s = {"low": 0.55, "medium": 1.0, "high": 1.55}.get(str(strength).lower(), 1.0)
 
         if corruption in {"freeze_camera", "global_freeze"}:
             base = frames[first_mutable if first_mutable < len(frames) else 0].copy()
@@ -142,13 +146,13 @@ def write_corrupted_video(
             frames_out = frames_out[:first_mutable] + tail
         elif corruption == "background_drift":
             for i in affected:
-                dx = int(round((i - first_mutable + 1) * w / max(len(affected), 1) * 0.08))
+                dx = int(round((i - first_mutable + 1) * w / max(len(affected), 1) * 0.10 * s))
                 mat = np.float32([[1, 0, dx], [0, 1, 0]])
                 frames_out[i] = cv2.warpAffine(frames_out[i], mat, (w, h), borderMode=cv2.BORDER_REFLECT)
         elif corruption == "nonrigid_background_warp":
             for i in affected:
                 xmap, ymap = np.meshgrid(np.arange(w, dtype=np.float32), np.arange(h, dtype=np.float32))
-                xmap = xmap + 6.0 * np.sin((ymap / 24.0) + i * 0.2)
+                xmap = xmap + (8.0 * s) * np.sin((ymap / max(8.0, 24.0 / s)) + i * 0.25)
                 frames_out[i] = cv2.remap(frames_out[i], xmap, ymap, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
         elif corruption in {"object_deformation", "object_color_identity_change", "freeze_foreground", "remove_object", "create_object"}:
             x0, y0, x1, y1 = int(w * 0.35), int(h * 0.28), int(w * 0.65), int(h * 0.70)
@@ -156,23 +160,24 @@ def write_corrupted_video(
             for i in affected:
                 patch = frames_out[i][y0:y1, x0:x1].copy()
                 if corruption == "object_deformation":
-                    patch = cv2.resize(patch, (max(1, x1 - x0 + 20), max(1, y1 - y0 - 18)))
+                    patch = cv2.resize(patch, (max(1, x1 - x0 + int(28 * s)), max(1, y1 - y0 - int(24 * s))))
                     patch = cv2.resize(patch, (x1 - x0, y1 - y0))
                 elif corruption == "object_color_identity_change":
-                    patch[..., 1] = np.clip(patch[..., 1].astype(np.float32) * 0.45 + 80, 0, 255).astype(np.uint8)
+                    patch[..., 1] = np.clip(patch[..., 1].astype(np.float32) * max(0.1, 0.5 / s) + 95 * s, 0, 255).astype(np.uint8)
                 elif corruption == "freeze_foreground" and frozen is not None:
                     patch = frozen.copy()
                 elif corruption == "remove_object":
                     patch[:] = np.mean(frames_out[i], axis=(0, 1), keepdims=True).astype(np.uint8)
                 elif corruption == "create_object":
                     color = rng.integers(30, 230, size=(3,), dtype=np.uint8).tolist()
-                    cv2.circle(patch, (patch.shape[1] // 2, patch.shape[0] // 2), max(8, min(w, h) // 18), color, -1)
+                    cv2.circle(patch, (patch.shape[1] // 2, patch.shape[0] // 2), max(8, int(min(w, h) // 18 * s)), color, -1)
                 frames_out[i][y0:y1, x0:x1] = patch
         elif corruption == "reobserve_mismatch":
             if len(frames_out) > first_mutable + 4:
                 ref = frames_out[first_mutable].copy()
                 for i in affected[len(affected) // 2 :]:
-                    frames_out[i] = cv2.addWeighted(frames_out[i], 0.35, ref, 0.65, 0)
+                    alpha = max(0.15, 0.40 / s)
+                    frames_out[i] = cv2.addWeighted(frames_out[i], alpha, ref, 1.0 - alpha, 0)
 
         out_path.parent.mkdir(parents=True, exist_ok=True)
         writer = cv2.VideoWriter(str(out_path), cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))
@@ -182,8 +187,10 @@ def write_corrupted_video(
         meta = {
             "affected_frames": affected,
             "affected_object_id": None,
-            "mask_ratio": None,
-            "parameters": {"preserve_prefix_frames": preserve_prefix_frames, "seed": seed, "fallback_region": "center_crop"},
+            "mask_ratio": round(((x1 - x0) * (y1 - y0)) / float(w * h), 6) if "x0" in locals() else None,
+            "params": {"preserve_prefix_frames": preserve_prefix_frames, "seed": seed, "strength": strength, "strength_scale": s, "fallback_region": "center_crop"},
+            "preserves_first_frame": first_mutable >= 1,
+            "mask_source": "physion_id_mask_when_available_else_center_crop",
         }
         return out_path.exists(), meta
     except Exception as exc:
@@ -219,6 +226,9 @@ def main(argv=None):
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--types", nargs="+", default=["background_drift", "global_freeze"])
     ap.add_argument("--make_contact_sheet", action="store_true")
+    ap.add_argument("--strength", default="medium", choices=["low", "medium", "high"])
+    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--preserve_prefix_frames", type=int, default=1)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
     rows = []
@@ -229,7 +239,15 @@ def main(argv=None):
             continue
         if args.limit and count >= args.limit:
             break
-        recs = make_corruption_records(sample, out_dir=args.out, dry_run=args.dry_run, types=args.types)
+        recs = make_corruption_records(
+            sample,
+            out_dir=args.out,
+            dry_run=args.dry_run,
+            types=args.types,
+            preserve_prefix_frames=args.preserve_prefix_frames,
+            seed=args.seed + count,
+            strength=args.strength,
+        )
         rows.extend(recs)
         videos.extend([r["loser_video"] for r in recs if r.get("loser_video") and not str(r["loser_video"]).startswith("corruption://")])
         count += 1

@@ -1,16 +1,26 @@
 PROJECT_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys
-PHYSION_OFFICIAL_REPO_ROOT: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/repos/physics-benchmarking-neurips2021
-PHYSION_OFFICIAL_DATA_ROOT: /home/nvme03/workspace/physion_official/data
-PHYSION_MOVINGCAM_ROOT: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/synthetic_data_assets
-PHYSION_MOVINGCAM_OUTPUT_ROOT: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/outputs
-LINGBOT_BASE_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/weight/Lingbot-base-cam
-LINGBOT_BASE_TEXT_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/weight/Lingbot-base
-LINGBOT_FAST_ROOT: /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast
-LINGBOT_CODE_ROOT: /home/nvme03/workspace/lingbot-world
-CAM_PHYGEO_MODEL_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/weight/cam_physgeo_models
-DINO_MODEL_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/weight/cam_physgeo_models/dinov2
-TRD_TEACHER_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/weight/vjepa2_1
-DEPTH_MODEL_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/weight/cam_physgeo_models/depth_anything_v2_small
-FLOW_MODEL_ROOT: /home/nvme03/workspace/world_model_phys/external/RAFT
-MANIFEST_ROOT: manifests
-CAM_INPUT_ROOT: data/physion_cam_lingbot_inputs
+LOCAL_ASSETS_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets
+
+PHYSION_MOVINGCAM_RAW: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/movingcam_raw
+PHYSION_MOVINGCAM_OUTPUTS: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/movingcam_outputs
+PHYSION_OFFICIAL_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/official
+
+PROCESSED_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/processed
+MANIFEST_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/manifests
+SPLIT_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/splits
+REPORT_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/reports
+OUTPUT_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/outputs
+CACHE_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/cache
+
+LINGBOT_FAST_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/lingbot_fast
+LINGBOT_BASE_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/lingbot_base
+LINGBOT_CODE_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/third_party/lingbot_world
+
+DINOV2_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/dinov2
+VJEPA2_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/vjepa2
+VIDEOMAE2_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/videomae2
+FLOW_MODEL_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/optical_flow
+DEPTH_MODEL_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/depth
+VIDEOGPA_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/third_party/VideoGPA
+
+CAM_INPUT_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/processed/lingbot_cam_inputs

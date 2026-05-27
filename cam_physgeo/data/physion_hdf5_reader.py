@@ -13,8 +13,10 @@ DEPTH_HINTS = ("images/_depth", "_depth", "depth")
 ID_HINTS = ("images/_id", "_id", "id_mask", "segmentation")
 FLOW_HINTS = ("flow", "optical_flow")
 NORMAL_HINTS = ("normal", "normals")
-POSE_HINTS = ("labels/camera_pose", "camera_pose", "camera_matrix", "camera_matrices/camera_matrix")
-PROJECTION_HINTS = ("projection_matrix", "camera_matrices/projection_matrix")
+POSE_HINTS = ("labels/camera_pose", "camera_pose")
+CAMERA_MATRIX_HINTS = ("camera_matrix", "camera_matrices/camera_matrix", "view_matrix", "extrinsic", "extrinsics")
+PROJECTION_HINTS = ("projection_matrix", "camera_matrices/projection_matrix", "camera_projection_matrix")
+INTRINSICS_HINTS = ("intrinsics", "camera_intrinsics", "intrinsic", "camera_matrix_k")
 POSITION_HINTS = ("labels/camera_position", "camera_position", "avatar_position")
 AIM_HINTS = ("labels/camera_aim", "camera_aim", "look_at", "look_at_position")
 FOV_HINTS = ("field_of_view", "fov")
@@ -52,7 +54,12 @@ def find_key(keys: dict[str, Any] | list[str], hints: tuple[str, ...]) -> str | 
     for hint in hints:
         h = hint.lower()
         for low, original in lowered.items():
-            if low.endswith("/" + h) or h in low:
+            basename = low.rsplit("/", 1)[-1]
+            if low.endswith("/" + h) or basename == h:
+                return original
+            if len(h) <= 2:
+                continue
+            if h in low:
                 return original
     return None
 
@@ -80,12 +87,15 @@ def infer_key_mapping(path: str | Path) -> dict[str, Any]:
             "id_key": find_key(frame_names, ID_HINTS),
             "flow_key": find_key(frame_names, FLOW_HINTS),
             "normal_key": find_key(frame_names, NORMAL_HINTS),
-            "poses_key": find_key(frame_names, POSE_HINTS),
-            "intrinsics_key": find_key(frame_names, PROJECTION_HINTS + ("intrinsics", "camera_intrinsics", "K")),
+            "poses_key": find_key(frame_names, POSE_HINTS + CAMERA_MATRIX_HINTS),
+            "camera_matrix_key": find_key(frame_names, CAMERA_MATRIX_HINTS),
+            "projection_matrix_key": find_key(frame_names, PROJECTION_HINTS),
+            "intrinsics_key": find_key(frame_names, INTRINSICS_HINTS + PROJECTION_HINTS),
             "camera_position_key": find_key(frame_names, POSITION_HINTS),
             "camera_aim_key": find_key(frame_names, AIM_HINTS),
             "fov_key": find_key(frame_names + all_names, FOV_HINTS),
             "object_state_key": find_key(frame_names, OBJECT_HINTS),
+            "object_state_keys": [name for name in frame_names if any(h in name.lower() for h in OBJECT_HINTS)][:16],
             "static_moving_camera_key": find_key(all_names, ("static/moving_camera/motion", "moving_camera/motion")),
             "static_target_key": find_key(all_names, ("static/target_id", "target_id")),
         }
@@ -142,7 +152,7 @@ def read_physion_sample(
             id_arr = _read_dataset(handle, _relative_frame_key(mapping.get("id_key"), base))
             if id_arr is not None:
                 ids.append(decode_image_array(id_arr))
-            pose = _read_dataset(handle, _relative_frame_key(mapping.get("poses_key"), base))
+            pose = _read_dataset(handle, _relative_frame_key(mapping.get("poses_key") or mapping.get("camera_matrix_key"), base))
             if pose is not None:
                 poses.append(_reshape_matrix(pose))
             pos = _read_dataset(handle, _relative_frame_key(mapping.get("camera_position_key"), base))
@@ -151,7 +161,7 @@ def read_physion_sample(
                 positions.append(np.asarray(pos, dtype=np.float32).reshape(-1)[:3])
             if aim is not None:
                 aims.append(np.asarray(aim, dtype=np.float32).reshape(-1)[:3])
-            proj = _read_dataset(handle, _relative_frame_key(mapping.get("intrinsics_key"), base))
+            proj = _read_dataset(handle, _relative_frame_key(mapping.get("intrinsics_key") or mapping.get("projection_matrix_key"), base))
             if proj is not None:
                 projections.append(_reshape_matrix(proj))
             obj = _read_dataset(handle, f"{base}/objects/positions")
@@ -174,7 +184,7 @@ def read_physion_sample(
             result["camera_aim"] = np.stack(aims)
         if projections:
             result["intrinsics"] = np.stack([intrinsics_from_projection(p, width=None, height=None) for p in projections])
-            result["metadata"]["intrinsics_source"] = "projection_matrix"
+            result["metadata"]["intrinsics_source"] = "hdf5" if mapping.get("intrinsics_key") else "projection_matrix"
         if object_positions:
             result["object_states"] = {"positions": np.stack(object_positions)}
     if result["camera_pose"] is None:

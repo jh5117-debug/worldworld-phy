@@ -1,6 +1,6 @@
 source: physion_movingcam
-root: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/synthetic_data_assets
-outputs: /home/nvme03/workspace/physion_moving_camera_mainline_20260505/outputs
+root: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/movingcam_raw
+outputs: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/movingcam_outputs
 manifest_source_name: physion_movingcam
 requires_camera_pose: true
 requires_intrinsics_or_projection: true

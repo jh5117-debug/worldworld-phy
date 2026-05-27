@@ -1,8 +1,8 @@
 stage: physion_support_warmup
-manifest: manifests/physion_cam_physgeo_splits_smoke/physion_cam_physgeo_train.jsonl
-converted_inputs: data/physion_cam_lingbot_inputs/train
+manifest: local_assets/data/physion/splits/smoke/physion_cam_physgeo_train.jsonl
+converted_inputs: local_assets/data/physion/processed/lingbot_cam_inputs/smoke
 model_type: fast
-fallback_model_type: base
+baseline_model_type: base
 train_scope: lora_adapter_only
 use_action: false
 dummy_action_only: true
@@ -17,4 +17,4 @@ general_replay:
 early_stop:
   metric: reward_total
   stop_on_quality_drop: true
-legacy_config: configs/train_stage1_physinone_cam.yaml
+legacy_config: configs/cam_physgeo/stage1_physion_warmup.yaml

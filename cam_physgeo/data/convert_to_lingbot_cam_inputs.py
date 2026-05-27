@@ -174,8 +174,14 @@ def camera_metadata_source(sample: dict, hdf5_payload: dict | None) -> str:
 
 
 def intrinsics_source(sample: dict, hdf5_payload: dict | None) -> str:
-    if sample.get("intrinsics_key") or (hdf5_payload and hdf5_payload.get("intrinsics") is not None):
-        return "hdf5_projection_or_intrinsics"
+    if sample.get("intrinsics_key"):
+        return "hdf5"
+    if sample.get("projection_matrix_key"):
+        return "projection_matrix"
+    if sample.get("camera_matrix_key"):
+        return "camera_matrix"
+    if hdf5_payload and hdf5_payload.get("intrinsics") is not None:
+        return hdf5_payload.get("metadata", {}).get("intrinsics_source", "hdf5")
     return "missing"
 
 
