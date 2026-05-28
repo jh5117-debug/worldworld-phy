@@ -24,3 +24,6 @@ DEPTH_MODEL_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/
 VIDEOGPA_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/third_party/VideoGPA
 
 CAM_INPUT_ROOT: /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/processed/lingbot_cam_inputs
+
+# Runtime Python environment for LingBot smoke inference. This is an environment path, not data or weight storage.
+LINGBOT_ENV: /home/nvme03/workspace/lingbot-world/.conda_envs/lingbot-world-v2

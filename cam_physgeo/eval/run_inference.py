@@ -2,10 +2,20 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import shutil
+import subprocess
+import sys
+import textwrap
+import time
 from pathlib import Path
+from typing import Any
 
 from cam_physgeo.training.model_loading import check_legacy_lingbot_import, inspect_checkpoint, resolve_model_paths
-from cam_physgeo.utils.io import load_yaml
+from cam_physgeo.utils.io import load_yaml, write_json
+from cam_physgeo.eval.make_contact_sheet import make_sheet, read_selected_video_frames
+
+DEFAULT_LINGBOT_ENV = ""
 
 
 def iter_sample_dirs(root: str | Path, limit: int = 0) -> list[Path]:
@@ -14,6 +24,267 @@ def iter_sample_dirs(root: str | Path, limit: int = 0) -> list[Path]:
         return []
     dirs = [p for p in sorted(root.iterdir()) if p.is_dir()]
     return dirs[:limit] if limit else dirs
+
+
+def parse_resolution(value: str) -> tuple[int, int]:
+    raw = str(value).lower().replace("*", "x")
+    if "x" not in raw:
+        raise ValueError(f"resolution must be HxW or H*W, got {value!r}")
+    a, b = raw.split("x", 1)
+    return int(a), int(b)
+
+
+def normalize_frame_count(frame_num: int) -> int:
+    """Wan I2V expects 4n+1 frames; round requested counts upward."""
+    if frame_num <= 1:
+        return 1
+    return ((frame_num - 1 + 3) // 4) * 4 + 1
+
+
+def timestep_indices(num_steps: int) -> list[int]:
+    base = [0, 179, 358, 679]
+    return base[: max(1, min(int(num_steps), len(base)))]
+
+
+def _symlink_or_keep(src: Path, dst: Path) -> dict[str, Any]:
+    result = {"dst": str(dst), "src": str(src), "exists": dst.exists() or dst.is_symlink(), "created": False, "ok": False, "error": ""}
+    try:
+        if dst.exists() or dst.is_symlink():
+            if dst.is_symlink() and Path(os.readlink(dst)) == src:
+                result["ok"] = True
+                return result
+            result["ok"] = True
+            result["note"] = "destination already exists; left unchanged"
+            return result
+        if not src.exists():
+            result["error"] = "source missing"
+            return result
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        os.symlink(src, dst)
+        result["created"] = True
+        result["ok"] = True
+    except Exception as exc:  # pragma: no cover - host dependent
+        result["error"] = repr(exc)
+    return result
+
+
+def prepare_fast_runtime_bundle(paths: dict[str, str], paths_cfg: dict[str, Any]) -> dict[str, Any]:
+    """Create a symlink-only runtime root expected by WanI2VFast."""
+    cache_root = Path(paths_cfg.get("CACHE_ROOT") or Path(paths["lingbot_fast"]).parents[2] / "cache")
+    runtime = cache_root / "lingbot_fast_cam_runtime"
+    base = Path(paths["lingbot_base"])
+    fast = Path(paths["lingbot_fast"])
+    links = []
+    runtime.mkdir(parents=True, exist_ok=True)
+    links.append(_symlink_or_keep(base / "Wan2.1_VAE.pth", runtime / "Wan2.1_VAE.pth"))
+    links.append(_symlink_or_keep(base / "models_t5_umt5-xxl-enc-bf16.pth", runtime / "models_t5_umt5-xxl-enc-bf16.pth"))
+    links.append(_symlink_or_keep(base / "google", runtime / "google"))
+    links.append(_symlink_or_keep(fast, runtime / "lingbot_world_fast"))
+    ok = runtime.exists() and all(item.get("ok") for item in links)
+    return {"runtime_root": str(runtime), "ok": ok, "links": links}
+
+
+def sample_payload(sample_dir: Path) -> dict[str, Any]:
+    meta_path = sample_dir / "metadata.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+    prompt_path = sample_dir / "prompt.txt"
+    prompt = prompt_path.read_text(encoding="utf-8", errors="replace").strip() if prompt_path.exists() else "A synthetic physical scene."
+    return {
+        "sample_id": sample_dir.name,
+        "sample_dir": str(sample_dir),
+        "image": str(sample_dir / "image.jpg"),
+        "target": str(sample_dir / "target.mp4"),
+        "poses": str(sample_dir / "poses.npy"),
+        "intrinsics": str(sample_dir / "intrinsics.npy"),
+        "action": str(sample_dir / "action.npy"),
+        "prompt": prompt,
+        "metadata": meta,
+        "use_action": bool(meta.get("use_action", False)),
+        "has_dummy_action": (sample_dir / "action.npy").exists(),
+    }
+
+
+def validate_sample(sample: dict[str, Any]) -> list[str]:
+    missing = []
+    for key in ["image", "poses", "intrinsics"]:
+        if not Path(sample[key]).exists():
+            missing.append(key)
+    if sample.get("use_action"):
+        missing.append("metadata_use_action_true")
+    return missing
+
+
+def write_runtime_script(path: Path) -> None:
+    code = r'''
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+
+from PIL import Image
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--lingbot_code", required=True)
+    ap.add_argument("--ckpt_dir", required=True)
+    ap.add_argument("--image", required=True)
+    ap.add_argument("--condition_dir", required=True)
+    ap.add_argument("--prompt", required=True)
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--frame_num", type=int, required=True)
+    ap.add_argument("--max_area", type=int, required=True)
+    ap.add_argument("--timesteps", default="0")
+    ap.add_argument("--seed", type=int, default=123)
+    ap.add_argument("--offload_model", action="store_true")
+    ap.add_argument("--max_attention_size", type=int, default=0)
+    args = ap.parse_args()
+    sys.path.insert(0, args.lingbot_code)
+    import torch
+    import wan
+    from wan.configs import WAN_CONFIGS
+    from wan.utils.utils import save_video
+
+    cfg = WAN_CONFIGS["i2v-A14B"]
+    img = Image.open(args.image).convert("RGB")
+    timesteps = [int(x) for x in args.timesteps.split(",") if x.strip()]
+    pipe = wan.WanI2VFast(
+        config=cfg,
+        checkpoint_dir=args.ckpt_dir,
+        device_id=0,
+        rank=0,
+        t5_fsdp=False,
+        dit_fsdp=False,
+        use_sp=False,
+        t5_cpu=False,
+        convert_model_dtype=False,
+    )
+    video = pipe.generate(
+        args.prompt,
+        img,
+        action_path=args.condition_dir,
+        chunk_size=3,
+        max_area=args.max_area,
+        frame_num=args.frame_num,
+        timesteps_index=timesteps,
+        shift=cfg.sample_shift,
+        seed=args.seed,
+        offload_model=args.offload_model,
+        max_attention_size=(None if args.max_attention_size <= 0 else args.max_attention_size),
+    )
+    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+    save_video(tensor=video[None], save_file=args.out, fps=cfg.sample_fps, nrow=1, normalize=True, value_range=(-1, 1))
+    peak = torch.cuda.max_memory_allocated() if torch.cuda.is_available() else 0
+    print(json.dumps({"ok": True, "out": args.out, "peak_cuda_bytes": int(peak), "frame_num": args.frame_num, "timesteps": timesteps}))
+
+
+if __name__ == "__main__":
+    main()
+'''
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(code, encoding="utf-8")
+
+
+def run_one_sample(
+    *,
+    sample_dir: Path,
+    out_root: Path,
+    paths: dict[str, str],
+    runtime_bundle: dict[str, Any],
+    num_frames: int,
+    num_steps: int,
+    resolution: str,
+    save_contact_sheet: bool,
+    env_path: str,
+    timeout_sec: int = 300,
+) -> dict[str, Any]:
+    run_one_sample.timeout_sec = timeout_sec
+    sample = sample_payload(sample_dir)
+    missing = validate_sample(sample)
+    sample_out = out_root / sample_dir.name
+    sample_out.mkdir(parents=True, exist_ok=True)
+    result: dict[str, Any] = {"sample_id": sample_dir.name, "sample": sample, "missing": missing, "ok": False, "out_dir": str(sample_out)}
+    if missing:
+        result["error"] = f"sample missing required fields: {missing}"
+        write_json(result, sample_out / "inference_metadata.json")
+        return result
+
+    h, w = parse_resolution(resolution)
+    frame_num = normalize_frame_count(num_frames)
+    steps = timestep_indices(num_steps)
+    generated = sample_out / "generated.mp4"
+    script_path = Path(runtime_bundle["runtime_root"]) / "run_lingbot_fast_once.py"
+    write_runtime_script(script_path)
+    for name, src in {
+        "input_image.jpg": sample["image"],
+        "prompt.txt": sample_dir / "prompt.txt",
+        "poses.npy": sample["poses"],
+        "intrinsics.npy": sample["intrinsics"],
+        "metadata.json": sample_dir / "metadata.json",
+    }.items():
+        dst = sample_out / name
+        if not dst.exists() and Path(src).exists():
+            try:
+                os.symlink(Path(src).resolve(), dst)
+            except FileExistsError:
+                pass
+            except OSError:
+                shutil.copy2(src, dst)
+    cmd = [
+        "conda", "run", "-p", env_path, "python", str(script_path),
+        "--lingbot_code", paths["lingbot_code"],
+        "--ckpt_dir", runtime_bundle["runtime_root"],
+        "--image", sample["image"],
+        "--condition_dir", str(sample_dir),
+        "--prompt", sample["prompt"],
+        "--out", str(generated),
+        "--frame_num", str(frame_num),
+        "--max_area", str(h * w),
+        "--timesteps", ",".join(str(x) for x in steps),
+        "--seed", "123",
+        "--offload_model",
+    ]
+    log_path = sample_out / "inference_log.txt"
+    start = time.time()
+    with log_path.open("w", encoding="utf-8", errors="replace") as log_f:
+        proc = subprocess.Popen(cmd, text=True, stdout=log_f, stderr=subprocess.STDOUT)
+        try:
+            proc.wait(timeout=run_one_sample.timeout_sec)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+            log_f.write(f"\n[TIMEOUT] killed after {run_one_sample.timeout_sec} seconds\n")
+    elapsed = time.time() - start
+    log_text = log_path.read_text(encoding="utf-8", errors="replace")
+    result.update({
+        "cmd": cmd,
+        "returncode": proc.returncode,
+        "elapsed_sec": elapsed,
+        "generated": str(generated),
+        "normalized_frame_num": frame_num,
+        "requested_num_frames": num_frames,
+        "num_steps": num_steps,
+        "timesteps_index": steps,
+        "resolution": resolution,
+        "max_area": h * w,
+        "uses_action_as_core_condition": False,
+        "action_policy": "sample_dir passed only because WanI2VFast expects poses/intrinsics under action_path; cam mode ignores action.npy",
+    })
+    if proc.returncode == 0 and generated.exists():
+        result["ok"] = True
+        if save_contact_sheet:
+            contact = sample_out / "contact_sheet.jpg"
+            try:
+                frames = read_selected_video_frames(generated, [0, 1, 2, 3, 4, 5, 6, 7, 8])
+                make_sheet({"sample_id": sample_dir.name, "template": sample.get("metadata", {}).get("template"), "camera_motion": sample.get("metadata", {}).get("camera_motion")}, frames, contact)
+                result["contact_sheet"] = str(contact)
+            except Exception as exc:  # pragma: no cover
+                result["contact_sheet_error"] = repr(exc)
+    else:
+        result["error"] = log_text[-4000:]
+    write_json(result, sample_out / "inference_metadata.json")
+    return result
 
 
 def main(argv=None) -> int:
@@ -28,15 +299,33 @@ def main(argv=None) -> int:
     ap.add_argument("--limit", type=int, default=1)
     ap.add_argument("--num_frames", type=int, default=16)
     ap.add_argument("--num_steps", type=int, default=2)
+    ap.add_argument("--resolution", default="480x832")
+    ap.add_argument("--save_contact_sheet", action="store_true")
+    ap.add_argument("--lingbot_env", default=os.environ.get("LINGBOT_FAST_ENV", DEFAULT_LINGBOT_ENV))
+    ap.add_argument("--timeout_sec", type=int, default=300)
     args = ap.parse_args(argv)
     cfg = load_yaml(args.config) if args.config else {}
     paths_cfg = load_yaml("configs/cam_physgeo/paths.yaml")
     paths = resolve_model_paths(paths_cfg)
+    if not args.lingbot_env:
+        args.lingbot_env = str(paths_cfg.get("LINGBOT_ENV") or "")
     model_path = paths["lingbot_fast" if args.model_type == "fast" else "lingbot_base"]
     checkpoint = inspect_checkpoint(model_path, label=f"lingbot_{args.model_type}")
     import_check = check_legacy_lingbot_import(paths["lingbot_code"])
+    runtime_bundle = prepare_fast_runtime_bundle(paths, paths_cfg) if args.model_type == "fast" else {"runtime_root": model_path, "ok": checkpoint.recognized_by_legacy_loader, "links": []}
     samples_root = args.samples or cfg.get("samples") or cfg.get("input_root") or ""
     sample_dirs = iter_sample_dirs(samples_root, args.limit) if samples_root else []
+    sample_checks = []
+    for sample_dir in sample_dirs:
+        s = sample_payload(sample_dir)
+        sample_checks.append({
+            "sample_id": s["sample_id"],
+            "missing": validate_sample(s),
+            "prompt": s["prompt"],
+            "camera_motion": s.get("metadata", {}).get("camera_motion"),
+            "use_action": s["use_action"],
+            "has_dummy_action": s["has_dummy_action"],
+        })
     payload = {
         "out": args.out,
         "model_type": args.model_type,
@@ -44,24 +333,51 @@ def main(argv=None) -> int:
         "checkpoint": checkpoint.to_dict(),
         "lingbot_code": paths["lingbot_code"],
         "legacy_import": import_check,
+        "runtime_bundle": runtime_bundle,
         "samples_root": samples_root,
         "sample_count": len(sample_dirs),
         "sample_dirs": [str(p) for p in sample_dirs],
+        "sample_checks": sample_checks,
         "control_type": "camera_conditioned",
+        "image_condition": "image.jpg",
+        "prompt_condition": "prompt.txt",
+        "camera_condition": {"poses": "poses.npy", "intrinsics": "intrinsics.npy", "passed_via_legacy_action_path": True},
         "use_action": False,
-        "dummy_action_policy": "only_if_legacy_loader_requires_action.npy",
-        "num_frames": args.num_frames,
+        "dummy_action_policy": "action.npy is ignored in cam mode and kept only for legacy compatibility",
+        "num_frames_requested": args.num_frames,
+        "num_frames_normalized": normalize_frame_count(args.num_frames),
         "num_steps": args.num_steps,
+        "timesteps_index": timestep_indices(args.num_steps),
+        "resolution": args.resolution,
+        "lingbot_env": args.lingbot_env,
         "dry_run": args.dry_run,
         "smoke_run": args.smoke_run,
     }
+    if args.dry_run or not args.smoke_run:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0
+    out_root = Path(args.out)
+    results = []
+    for sample_dir in sample_dirs:
+        results.append(run_one_sample(
+            sample_dir=sample_dir,
+            out_root=out_root,
+            paths=paths,
+            runtime_bundle=runtime_bundle,
+            num_frames=args.num_frames,
+            num_steps=args.num_steps,
+            resolution=args.resolution,
+            save_contact_sheet=args.save_contact_sheet,
+            env_path=args.lingbot_env,
+            timeout_sec=args.timeout_sec,
+        ))
+    payload["results"] = results
+    payload["ok_count"] = sum(1 for r in results if r.get("ok"))
+    payload["fail_count"] = sum(1 for r in results if not r.get("ok"))
+    Path(args.out).mkdir(parents=True, exist_ok=True)
+    write_json(payload, Path(args.out) / "run_summary.json")
     print(json.dumps(payload, indent=2, sort_keys=True))
-    if args.smoke_run:
-        raise RuntimeError(
-            "LingBot-Fast short inference is not launched by this adapter yet. "
-            "Dry-run path/import checks passed as reported; wire the legacy eval_batch runtime before GPU inference."
-        )
-    return 0
+    return 0 if payload["fail_count"] == 0 else 2
 
 
 if __name__ == "__main__":
