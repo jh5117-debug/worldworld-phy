@@ -1,0 +1,70 @@
+--- local_assets/third_party/lingbot_world/wan/modules/t5.py
++++ local_assets/third_party/lingbot_world/wan/modules/t5.py
+@@ -1,5 +1,6 @@
+ import logging
+ import math
++import time
+ 
+ import torch
+ import torch.nn as nn
+@@ -15,6 +16,14 @@
+ ]
+ 
+ 
++_T5_MARK_T0 = time.time()
++
++
++def _t5_probe_mark(name, **kwargs):
++    payload = ' '.join([f'{k}={v}' for k, v in sorted(kwargs.items())])
++    print(f'[T5_MARK] {name} elapsed={time.time() - _T5_MARK_T0:.3f} {payload}', flush=True)
++
++
+ def fp16_clamp(x):
+     if x.dtype == torch.float16 and torch.isinf(x).any():
+         clamp = torch.finfo(x.dtype).max - 1000
+@@ -478,6 +487,7 @@
+         tokenizer_path=None,
+         shard_fn=None,
+     ):
++        _t5_probe_mark('__init__entered', text_len=text_len, dtype=dtype, device=device)
+         self.text_len = text_len
+         self.dtype = dtype
+         self.device = device
+@@ -485,21 +495,36 @@
+         self.tokenizer_path = tokenizer_path
+ 
+         # init model
++        _t5_probe_mark('model_arch_construction_start')
+         model = umt5_xxl(
+             encoder_only=True,
+             return_tokenizer=False,
+             dtype=dtype,
+             device=device).eval().requires_grad_(False)
++        _t5_probe_mark('model_arch_construction_done')
+         logging.info(f'loading {checkpoint_path}')
+-        model.load_state_dict(torch.load(checkpoint_path, map_location='cpu'))
++        _t5_probe_mark('torch_load_start', checkpoint_path=checkpoint_path)
++        state_dict = torch.load(checkpoint_path, map_location='cpu')
++        _t5_probe_mark('torch_load_done', state_dict_type=type(state_dict).__name__, key_count=len(state_dict) if hasattr(state_dict, '__len__') else 'na')
++        _t5_probe_mark('load_state_dict_start')
++        model.load_state_dict(state_dict)
++        _t5_probe_mark('load_state_dict_done')
++        del state_dict
+         self.model = model
+         if shard_fn is not None:
++            _t5_probe_mark('shard_fn_start')
+             self.model = shard_fn(self.model, sync_module_states=False)
++            _t5_probe_mark('shard_fn_done')
+         else:
++            _t5_probe_mark('device_transfer_start', device=self.device)
+             self.model.to(self.device)
++            _t5_probe_mark('device_transfer_done', device=self.device)
+         # init tokenizer
++        _t5_probe_mark('tokenizer_init_start', tokenizer_path=tokenizer_path)
+         self.tokenizer = HuggingfaceTokenizer(
+             name=tokenizer_path, seq_len=text_len, clean='whitespace')
++        _t5_probe_mark('tokenizer_init_done')
++        _t5_probe_mark('__init__done')
+ 
+     def __call__(self, texts, device):
+         ids, mask = self.tokenizer(

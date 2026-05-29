@@ -545,6 +545,8 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     log_f = None
+    orig_stdout = sys.stdout
+    orig_stderr = sys.stderr
     if args.log_file:
         Path(args.log_file).parent.mkdir(parents=True, exist_ok=True)
         log_f = open(args.log_file, "w", encoding="utf-8", errors="replace")
@@ -599,6 +601,10 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(json.dumps(status, ensure_ascii=False, indent=2, sort_keys=True), flush=True)
     if log_f:
+        sys.stdout.flush()
+        sys.stderr.flush()
+        sys.stdout = orig_stdout
+        sys.stderr = orig_stderr
         log_f.close()
     return rc
 
