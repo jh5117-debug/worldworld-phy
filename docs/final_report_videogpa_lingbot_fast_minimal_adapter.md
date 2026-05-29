@@ -106,7 +106,8 @@ Conclusion: small-scale DPO is not allowed yet.
 ## 12. GitHub
 
 - Branch: `physion-videogpa-lingbotfast-minimal-adapter`.
-- Latest commit hash: `badb9e60d94318ee033a892f0ec3ca62ed489a4e`.
+- Latest diagnostic-code commit hash: `badb9e60d94318ee033a892f0ec3ca62ed489a4e`.
+- Exact branch head after report metadata updates: use `git rev-parse HEAD`.
 - Push status: successful.
 - Large files: not staged; `local_assets` is ignored.
 
