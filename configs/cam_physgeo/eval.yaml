@@ -11,3 +11,9 @@ use_action: false
 model_type: fast
 samples: local_assets/data/physion/processed/lingbot_cam_inputs/smoke
 out: local_assets/outputs/smoke/lingbot_fast_inference
+lingbot_fast_debug:
+  local_files_only: true
+  probe_only: false
+  skip_t5_if_cached: false
+  text_embedding_cache: ""
+  timeout_sec: 120

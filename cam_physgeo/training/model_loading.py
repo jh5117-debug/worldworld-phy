@@ -115,6 +115,36 @@ def resolve_model_paths(cfg: dict[str, Any] | None = None) -> dict[str, str]:
     return {"lingbot_base": base, "lingbot_fast": fast, "lingbot_code": code}
 
 
+def resolve_t5_runtime_paths(cfg: dict[str, Any] | None = None) -> dict[str, str]:
+    """Resolve LingBot's companion T5 checkpoint and tokenizer paths.
+
+    LingBot-Fast stores the distilled DiT shards under ``lingbot_fast`` but, in
+    the local runtime bundle, still relies on the Base Wan assets for the VAE,
+    UMT5 checkpoint, and tokenizer. This helper keeps that contract explicit.
+    """
+
+    paths = resolve_model_paths(cfg)
+    base = Path(paths["lingbot_base"])
+    fast = Path(paths["lingbot_fast"])
+    cache_root = Path((cfg or {}).get("CACHE_ROOT") or LOCAL_ASSETS_ROOT / "cache")
+    runtime = cache_root / "lingbot_fast_cam_runtime"
+    candidates = {
+        "fast_root": str(fast),
+        "base_root": str(base),
+        "runtime_root": str(runtime),
+        "t5_checkpoint": str(runtime / "models_t5_umt5-xxl-enc-bf16.pth")
+        if (runtime / "models_t5_umt5-xxl-enc-bf16.pth").exists()
+        else str(base / "models_t5_umt5-xxl-enc-bf16.pth"),
+        "tokenizer_root": str(runtime / "google" / "umt5-xxl")
+        if (runtime / "google" / "umt5-xxl").exists()
+        else str(base / "google" / "umt5-xxl"),
+        "vae_checkpoint": str(runtime / "Wan2.1_VAE.pth")
+        if (runtime / "Wan2.1_VAE.pth").exists()
+        else str(base / "Wan2.1_VAE.pth"),
+    }
+    return candidates
+
+
 def directory_size_bytes(path: str | Path) -> int:
     path = Path(path)
     if not path.exists():

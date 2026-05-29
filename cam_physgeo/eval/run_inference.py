@@ -160,7 +160,14 @@ def main():
     ap.add_argument("--seed", type=int, default=123)
     ap.add_argument("--offload_model", action="store_true")
     ap.add_argument("--max_attention_size", type=int, default=0)
+    ap.add_argument("--probe_only", action="store_true")
+    ap.add_argument("--local_files_only", action="store_true")
     args = ap.parse_args()
+    if args.local_files_only:
+        os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+        os.environ.setdefault("HF_HUB_OFFLINE", "1")
+        os.environ.setdefault("HF_DATASETS_OFFLINE", "1")
+    os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
     sys.path.insert(0, args.lingbot_code)
     mark("import_torch_start")
     import torch
@@ -175,6 +182,9 @@ def main():
     img = Image.open(args.image).convert("RGB")
     mark("load_image_done", image=args.image, size=list(img.size))
     timesteps = [int(x) for x in args.timesteps.split(",") if x.strip()]
+    if args.probe_only:
+        mark("probe_only_done", note="stopped before WanI2VFast initialization")
+        return
     mark("pipeline_init_start", ckpt_dir=args.ckpt_dir)
     pipe = wan.WanI2VFast(
         config=cfg,
@@ -229,6 +239,8 @@ def run_one_sample(
     save_contact_sheet: bool,
     env_path: str,
     timeout_sec: int = 300,
+    probe_only: bool = False,
+    local_files_only: bool = False,
 ) -> dict[str, Any]:
     run_one_sample.timeout_sec = timeout_sec
     sample = sample_payload(sample_dir)
@@ -277,10 +289,19 @@ def run_one_sample(
         "--seed", "123",
         "--offload_model",
     ]
+    if probe_only:
+        cmd.append("--probe_only")
+    if local_files_only:
+        cmd.append("--local_files_only")
     log_path = sample_out / "inference_log.txt"
     start = time.time()
     proc_env = os.environ.copy()
     proc_env["PYTHONUNBUFFERED"] = "1"
+    if local_files_only:
+        proc_env.setdefault("TRANSFORMERS_OFFLINE", "1")
+        proc_env.setdefault("HF_HUB_OFFLINE", "1")
+        proc_env.setdefault("HF_DATASETS_OFFLINE", "1")
+    proc_env.setdefault("TOKENIZERS_PARALLELISM", "false")
     with log_path.open("w", encoding="utf-8", errors="replace") as log_f:
         proc = subprocess.Popen(cmd, text=True, stdout=log_f, stderr=subprocess.STDOUT, env=proc_env)
         try:
@@ -307,6 +328,8 @@ def run_one_sample(
         "max_area": h * w,
         "uses_action_as_core_condition": False,
         "action_policy": "sample_dir passed only because WanI2VFast expects poses/intrinsics under action_path; cam mode ignores action.npy",
+        "probe_only": probe_only,
+        "local_files_only": local_files_only,
     })
     if proc.returncode == 0 and generated.exists():
         result["ok"] = True
@@ -339,7 +362,11 @@ def main(argv=None) -> int:
     ap.add_argument("--resolution", default="480x832")
     ap.add_argument("--save_contact_sheet", action="store_true")
     ap.add_argument("--lingbot_env", default=os.environ.get("LINGBOT_FAST_ENV", DEFAULT_LINGBOT_ENV))
-    ap.add_argument("--timeout_sec", type=int, default=300)
+    ap.add_argument("--timeout", "--timeout_sec", dest="timeout_sec", type=int, default=300)
+    ap.add_argument("--probe-only", action="store_true")
+    ap.add_argument("--skip-t5-if-cached", action="store_true")
+    ap.add_argument("--text-embedding-cache", default="")
+    ap.add_argument("--local-files-only", action="store_true")
     args = ap.parse_args(argv)
     cfg = load_yaml(args.config) if args.config else {}
     paths_cfg = load_yaml("configs/cam_physgeo/paths.yaml")
@@ -387,12 +414,25 @@ def main(argv=None) -> int:
         "timesteps_index": timestep_indices(args.num_steps),
         "resolution": args.resolution,
         "lingbot_env": args.lingbot_env,
+        "python_launcher": python_cmd_for_env(args.lingbot_env),
+        "probe_only": args.probe_only,
+        "local_files_only": args.local_files_only,
+        "text_embedding_cache": args.text_embedding_cache,
+        "skip_t5_if_cached": args.skip_t5_if_cached,
+        "cached_text_embedding_supported": False,
+        "cached_text_embedding_note": "WanI2VFast constructs its T5 encoder in __init__; skipping T5 requires a LingBot runtime patch and is intentionally not faked.",
         "dry_run": args.dry_run,
         "smoke_run": args.smoke_run,
     }
     if args.dry_run or not args.smoke_run:
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
+    if args.skip_t5_if_cached or args.text_embedding_cache:
+        payload["error"] = "cached text embedding is not wired into WanI2VFast; refusing to fake T5 bypass"
+        Path(args.out).mkdir(parents=True, exist_ok=True)
+        write_json(payload, Path(args.out) / "run_summary.json")
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 2
     out_root = Path(args.out)
     results = []
     for sample_dir in sample_dirs:
@@ -407,6 +447,8 @@ def main(argv=None) -> int:
             save_contact_sheet=args.save_contact_sheet,
             env_path=args.lingbot_env,
             timeout_sec=args.timeout_sec,
+            probe_only=args.probe_only,
+            local_files_only=args.local_files_only,
         ))
     payload["results"] = results
     payload["ok_count"] = sum(1 for r in results if r.get("ok"))
