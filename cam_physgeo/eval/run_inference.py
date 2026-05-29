@@ -11,6 +11,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 from cam_physgeo.training.model_loading import check_legacy_lingbot_import, inspect_checkpoint, resolve_model_paths
 from cam_physgeo.utils.io import load_yaml, write_json
 from cam_physgeo.eval.make_contact_sheet import make_sheet, read_selected_video_frames
@@ -124,6 +125,92 @@ def validate_sample(sample: dict[str, Any]) -> list[str]:
     return missing
 
 
+def _image_size(path: str | Path, fallback_meta: dict[str, Any]) -> tuple[int, int]:
+    try:
+        from PIL import Image
+
+        with Image.open(path) as image:
+            return int(image.width), int(image.height)
+    except Exception:
+        width = int(fallback_meta.get("width") or 832)
+        height = int(fallback_meta.get("height") or 480)
+        return width, height
+
+
+def intrinsics_to_lingbot_vector(intrinsics: np.ndarray, *, width: int, height: int) -> tuple[np.ndarray, str]:
+    """Return LingBot Fast intrinsics as per-frame [fx, fy, cx, cy] pixels.
+
+    Physion samples may store OpenGL-style 4x4 projection matrices. LingBot's
+    `get_Ks_transformed` expects a compact pixel-space vector, not a matrix.
+    This adapter is written only into the per-attempt runtime condition folder;
+    the source sample is left unchanged.
+    """
+    arr = np.asarray(intrinsics, dtype=np.float32)
+    if arr.ndim == 1 and arr.shape[0] == 4:
+        return arr[None, :].astype(np.float32), "vector_single"
+    if arr.ndim == 2 and arr.shape[-1] == 4 and arr.shape[-2] != 4:
+        return arr.astype(np.float32), "vector_per_frame"
+    if arr.ndim == 2 and arr.shape == (3, 3):
+        vec = np.array([[arr[0, 0], arr[1, 1], arr[0, 2], arr[1, 2]]], dtype=np.float32)
+        return vec, "matrix3x3_single"
+    if arr.ndim == 3 and arr.shape[-2:] == (3, 3):
+        vec = np.stack([arr[:, 0, 0], arr[:, 1, 1], arr[:, 0, 2], arr[:, 1, 2]], axis=-1)
+        return vec.astype(np.float32), "matrix3x3_per_frame"
+    if arr.ndim == 2 and arr.shape == (4, 4):
+        arr = arr[None, :, :]
+    if arr.ndim == 3 and arr.shape[-2:] == (4, 4):
+        # OpenGL projection convention: fx_ndc = 2*fx_px/width,
+        # fy_ndc = 2*fy_px/height. Principal point is centered for current
+        # Physion exports where P[0,2] and P[1,2] are zero.
+        fx = arr[:, 0, 0] * float(width) / 2.0
+        fy = arr[:, 1, 1] * float(height) / 2.0
+        cx = (1.0 - arr[:, 0, 2]) * float(width) / 2.0
+        cy = (1.0 - arr[:, 1, 2]) * float(height) / 2.0
+        vec = np.stack([fx, fy, cx, cy], axis=-1)
+        return vec.astype(np.float32), "projection4x4_to_pixel_vector"
+    raise ValueError(f"unsupported intrinsics shape {arr.shape}; expected [F,4], [F,3,3], or [F,4,4]")
+
+
+def prepare_condition_dir(sample: dict[str, Any], sample_dir: Path, sample_out: Path) -> dict[str, Any]:
+    condition_dir = sample_out / "lingbot_condition"
+    condition_dir.mkdir(parents=True, exist_ok=True)
+    width, height = _image_size(sample["image"], sample.get("metadata", {}))
+
+    poses_src = Path(sample["poses"])
+    poses_dst = condition_dir / "poses.npy"
+    if not poses_dst.exists():
+        try:
+            os.symlink(poses_src.resolve(), poses_dst)
+        except OSError:
+            shutil.copy2(poses_src, poses_dst)
+
+    intrinsics_src = Path(sample["intrinsics"])
+    raw_intrinsics = np.load(intrinsics_src)
+    intrinsics_vec, source_format = intrinsics_to_lingbot_vector(raw_intrinsics, width=width, height=height)
+    np.save(condition_dir / "intrinsics.npy", intrinsics_vec.astype(np.float32))
+
+    action_src = Path(sample["action"])
+    action_dst = condition_dir / "action.npy"
+    if action_src.exists() and not action_dst.exists():
+        try:
+            os.symlink(action_src.resolve(), action_dst)
+        except OSError:
+            shutil.copy2(action_src, action_dst)
+    elif not action_dst.exists():
+        poses = np.load(poses_src)
+        np.save(action_dst, np.zeros((len(poses), 4), dtype=np.float32))
+
+    return {
+        "condition_dir": str(condition_dir),
+        "intrinsics_source": str(intrinsics_src),
+        "intrinsics_source_shape": list(raw_intrinsics.shape),
+        "intrinsics_runtime_shape": list(intrinsics_vec.shape),
+        "intrinsics_adapter": source_format,
+        "condition_image_size": [width, height],
+        "uses_action_as_core_condition": False,
+    }
+
+
 def write_runtime_script(path: Path) -> None:
     code = r'''
 import argparse
@@ -198,6 +285,7 @@ def main():
         convert_model_dtype=False,
     )
     mark("pipeline_init_done")
+    mark("ready_to_generate")
     mark("generate_start", frame_num=args.frame_num, timesteps=timesteps, max_area=args.max_area)
     video = pipe.generate(
         args.prompt,
@@ -259,6 +347,7 @@ def run_one_sample(
     generated = sample_out / "generated.mp4"
     script_path = Path(runtime_bundle["runtime_root"]) / "run_lingbot_fast_once.py"
     write_runtime_script(script_path)
+    condition_info = prepare_condition_dir(sample, sample_dir, sample_out)
     for name, src in {
         "input_image.jpg": sample["image"],
         "prompt.txt": sample_dir / "prompt.txt",
@@ -280,7 +369,7 @@ def run_one_sample(
         "--lingbot_code", paths["lingbot_code"],
         "--ckpt_dir", runtime_bundle["runtime_root"],
         "--image", sample["image"],
-        "--condition_dir", str(sample_dir),
+        "--condition_dir", condition_info["condition_dir"],
         "--prompt", sample["prompt"],
         "--out", str(generated),
         "--frame_num", str(frame_num),
@@ -320,6 +409,7 @@ def run_one_sample(
         "timeout_sec": run_one_sample.timeout_sec,
         "log_tail": log_text[-4000:],
         "generated": str(generated),
+        "condition_info": condition_info,
         "normalized_frame_num": frame_num,
         "requested_num_frames": num_frames,
         "num_steps": num_steps,
