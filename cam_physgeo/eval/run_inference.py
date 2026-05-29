@@ -13,6 +13,7 @@ from typing import Any
 
 import numpy as np
 from cam_physgeo.training.model_loading import check_legacy_lingbot_import, inspect_checkpoint, resolve_model_paths
+from cam_physgeo.utils.camera import convert_projection_to_lingbot_intrinsics
 from cam_physgeo.utils.io import load_yaml, write_json
 from cam_physgeo.eval.make_contact_sheet import make_sheet, read_selected_video_frames
 
@@ -137,40 +138,6 @@ def _image_size(path: str | Path, fallback_meta: dict[str, Any]) -> tuple[int, i
         return width, height
 
 
-def intrinsics_to_lingbot_vector(intrinsics: np.ndarray, *, width: int, height: int) -> tuple[np.ndarray, str]:
-    """Return LingBot Fast intrinsics as per-frame [fx, fy, cx, cy] pixels.
-
-    Physion samples may store OpenGL-style 4x4 projection matrices. LingBot's
-    `get_Ks_transformed` expects a compact pixel-space vector, not a matrix.
-    This adapter is written only into the per-attempt runtime condition folder;
-    the source sample is left unchanged.
-    """
-    arr = np.asarray(intrinsics, dtype=np.float32)
-    if arr.ndim == 1 and arr.shape[0] == 4:
-        return arr[None, :].astype(np.float32), "vector_single"
-    if arr.ndim == 2 and arr.shape[-1] == 4 and arr.shape[-2] != 4:
-        return arr.astype(np.float32), "vector_per_frame"
-    if arr.ndim == 2 and arr.shape == (3, 3):
-        vec = np.array([[arr[0, 0], arr[1, 1], arr[0, 2], arr[1, 2]]], dtype=np.float32)
-        return vec, "matrix3x3_single"
-    if arr.ndim == 3 and arr.shape[-2:] == (3, 3):
-        vec = np.stack([arr[:, 0, 0], arr[:, 1, 1], arr[:, 0, 2], arr[:, 1, 2]], axis=-1)
-        return vec.astype(np.float32), "matrix3x3_per_frame"
-    if arr.ndim == 2 and arr.shape == (4, 4):
-        arr = arr[None, :, :]
-    if arr.ndim == 3 and arr.shape[-2:] == (4, 4):
-        # OpenGL projection convention: fx_ndc = 2*fx_px/width,
-        # fy_ndc = 2*fy_px/height. Principal point is centered for current
-        # Physion exports where P[0,2] and P[1,2] are zero.
-        fx = arr[:, 0, 0] * float(width) / 2.0
-        fy = arr[:, 1, 1] * float(height) / 2.0
-        cx = (1.0 - arr[:, 0, 2]) * float(width) / 2.0
-        cy = (1.0 - arr[:, 1, 2]) * float(height) / 2.0
-        vec = np.stack([fx, fy, cx, cy], axis=-1)
-        return vec.astype(np.float32), "projection4x4_to_pixel_vector"
-    raise ValueError(f"unsupported intrinsics shape {arr.shape}; expected [F,4], [F,3,3], or [F,4,4]")
-
-
 def prepare_condition_dir(sample: dict[str, Any], sample_dir: Path, sample_out: Path) -> dict[str, Any]:
     condition_dir = sample_out / "lingbot_condition"
     condition_dir.mkdir(parents=True, exist_ok=True)
@@ -186,7 +153,7 @@ def prepare_condition_dir(sample: dict[str, Any], sample_dir: Path, sample_out: 
 
     intrinsics_src = Path(sample["intrinsics"])
     raw_intrinsics = np.load(intrinsics_src)
-    intrinsics_vec, source_format = intrinsics_to_lingbot_vector(raw_intrinsics, width=width, height=height)
+    intrinsics_vec, intrinsics_meta = convert_projection_to_lingbot_intrinsics(raw_intrinsics, width=width, height=height)
     np.save(condition_dir / "intrinsics.npy", intrinsics_vec.astype(np.float32))
 
     action_src = Path(sample["action"])
@@ -205,7 +172,8 @@ def prepare_condition_dir(sample: dict[str, Any], sample_dir: Path, sample_out: 
         "intrinsics_source": str(intrinsics_src),
         "intrinsics_source_shape": list(raw_intrinsics.shape),
         "intrinsics_runtime_shape": list(intrinsics_vec.shape),
-        "intrinsics_adapter": source_format,
+        "intrinsics_adapter": intrinsics_meta.get("source_format"),
+        "intrinsics_conversion": intrinsics_meta,
         "condition_image_size": [width, height],
         "uses_action_as_core_condition": False,
     }

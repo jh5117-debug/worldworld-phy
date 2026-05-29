@@ -7,6 +7,7 @@ from pathlib import Path
 
 from cam_physgeo.data.physion_hdf5_reader import read_physion_sample
 from cam_physgeo.data.prompt_templates import build_prompt
+from cam_physgeo.utils.camera import convert_projection_to_lingbot_intrinsics
 from cam_physgeo.utils.io import read_jsonl, write_json
 from cam_physgeo.utils.video import extract_first_frame, probe_video, write_video_frames
 
@@ -72,6 +73,7 @@ def convert_sample(sample: dict, out_root: Path, args) -> dict:
                 "video_probe": probe_video(sample.get("video_path") or target_video),
                 "camera_metadata_source": camera_metadata_source(sample, hdf5_payload),
                 "intrinsics_source": intrinsics_source(sample, hdf5_payload),
+                "lingbot_intrinsics_runtime": lingbot_intrinsics_runtime_metadata(out_dir, args),
                 "original_video_path": sample.get("video_path"),
                 "original_hdf5_path": sample.get("hdf5_path"),
             }
@@ -183,6 +185,34 @@ def intrinsics_source(sample: dict, hdf5_payload: dict | None) -> str:
     if hdf5_payload and hdf5_payload.get("intrinsics") is not None:
         return hdf5_payload.get("metadata", {}).get("intrinsics_source", "hdf5")
     return "missing"
+
+
+def lingbot_intrinsics_runtime_metadata(out_dir: Path, args) -> dict:
+    """Describe how runtime inference will adapt intrinsics for LingBot.
+
+    The converted cam-only sample keeps the original Physion camera metadata in
+    ``intrinsics.npy``. LingBot-Fast receives a runtime copy converted to
+    ``(F,4)`` by ``cam_physgeo.utils.camera`` so that original assets are not
+    overwritten.
+    """
+    if not (out_dir / "intrinsics.npy").exists():
+        return {"available": False, "reason": "intrinsics.npy missing"}
+    try:
+        import numpy as np
+
+        h, w = [int(x) for x in str(args.size).lower().replace("*", "x").split("x", 1)]
+        raw = np.load(out_dir / "intrinsics.npy")
+        converted, meta = convert_projection_to_lingbot_intrinsics(raw, width=w, height=h)
+        return {
+            "available": True,
+            "source_path": str(out_dir / "intrinsics.npy"),
+            "source_shape": list(raw.shape),
+            "runtime_shape": list(converted.shape),
+            "runtime_adapter": meta,
+            "note": "runtime conversion only; original intrinsics.npy is not modified",
+        }
+    except Exception as exc:
+        return {"available": False, "reason": repr(exc)}
 
 
 def main(argv=None):

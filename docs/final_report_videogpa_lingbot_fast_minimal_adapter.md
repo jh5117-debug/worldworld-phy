@@ -87,15 +87,17 @@
 
 ## 10. DPO Gate
 
-- Gate A, Fast 1-sample inference: failed.
-- Gate B, 10-20 Fast rollouts: not attempted.
-- Gate C, reward on real Fast failures: blocked.
-- Gate D, 50/100 clean-vs-corrupt >= 0.85: failed at 0.6033.
-- Gate E, VideoGPA export + encode smoke: export passed; real encode blocked.
-- Gate F, adapter batch shape dry-run: partially passed for metadata only.
+Superseding update after the LingBot-Fast 1-sample inference autoloop:
+
+- Gate A, Fast 1-sample actual inference: passed.
+- Gate B, 3-10 Fast rollouts: being validated in the Fast rollout/reward smoke phase.
+- Gate C, camera condition ablation: being validated with correct/frozen/reversed poses.
+- Gate D, reward on real Fast failures: being validated after the small rollout set exists.
+- Gate E, VideoGPA export + encode smoke: export passed earlier, but real encode is not allowed in the current phase.
+- Gate F, adapter batch shape dry-run: partially passed for metadata only; no model/latent adapter yet.
 - Gate G, real DPO energy/logprob: not implemented.
 
-Conclusion: small-scale DPO is not allowed yet.
+Conclusion: DPO remains disallowed. The next gate is small Fast rollout plus camera/reward audit, not VideoGPA encode or training.
 
 ## 11. Stage1 Warm-Up
 
@@ -113,9 +115,9 @@ Conclusion: small-scale DPO is not allowed yet.
 
 ## 13. Next Steps
 
-1. Fix Fast inference first: profile and shorten LingBot T5 initialization in the Fast runtime bundle, or add a cached/precomputed text embedding path for smoke.
-2. Wire real RAFT/GMFlow and DINO/V-JEPA forward before trusting geometry/reobserve reward.
-3. Re-run reward calibration on 50 samples until clean > corrupt is at least 0.85, especially for background drift and reobserve mismatch.
-4. Once Fast inference succeeds, generate 3-10 Fast rollouts and run `eval_fast_rollouts.py`.
-5. Implement LingBot VAE encode and condition encode for VideoGPA metadata, then rerun encode smoke.
+1. Finish the bounded Fast rollout/reward smoke: 3-10 rollouts, camera ablation, and reward-on-rollout.
+2. If camera ablation shows no visible difference, repair the camera adapter before any VideoGPA work.
+3. If reward-on-rollout is insensitive to visible failures, repair reward backends before pair expansion.
+4. Wire real RAFT/GMFlow and DINO/V-JEPA forward before trusting geometry/reobserve reward at scale.
+5. Only after rollout, camera, and reward gates are reasonable, attempt VideoGPA encode smoke.
 6. Only after all gates pass, consider a tiny DPO training dry-run. Do not long-train.

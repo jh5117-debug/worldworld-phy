@@ -1,26 +1,24 @@
 # Stage2 VideoGPA DPO Plan
 
-Do not train yet.
+Do not train yet. This project remains Physion-only, Fast-first, camera-conditioned, and no-action except for dummy compatibility files.
 
-## Why Training Is Blocked
+## Current Gate State
 
-1. LingBot-Fast cam-only actual inference has not completed; the 1-sample smoke timed out after 180 seconds.
-2. Fast zero-shot rollouts do not exist, so reward has not been validated on real Fast failures.
-3. Expanded clean-vs-corrupt reward calibration dropped to 0.6033 on 50 samples, below the 0.85 gate.
-4. VideoGPA encode smoke can read pair JSON and videos, but it cannot produce LingBot-compatible latents yet.
-5. LingBot-Fast and VideoGPA trainer model/latent/scheduler compatibility is not confirmed.
-6. `LingBotFastVideoGPAAdapter.compute_dpo_energy_or_logprob` is intentionally `NotImplementedError`.
-7. Camera poses/intrinsics are preserved in metadata, but not yet part of a real VideoGPA training batch.
+- Gate A: LingBot-Fast 1-sample actual inference passed.
+- Gate B: 3-10 Fast rollout smoke is being validated by the rollout/reward autoloop.
+- Gate C: camera condition ablation is being validated with correct/frozen/reversed poses.
+- Gate D: reward-on-real-Fast-rollout is being validated after the small rollout set exists.
+- Gate E: VideoGPA encode smoke is not allowed in the current phase.
+- Gate F: LingBotFastVideoGPAAdapter winner/loser batch shape dry-run is not allowed in the current phase.
+- Gate G: real DPO energy/logprob adapter is not wired and remains blocked.
 
-## Gates Before Any DPO Training
+## Why DPO Training Is Still Blocked
 
-- Gate A: LingBot-Fast cam-only 1-sample short inference succeeds.
-- Gate B: 10-20 Fast zero-shot rollouts are generated.
-- Gate C: reward separates clean GT from real Fast rollout failures and catches visible failure modes.
-- Gate D: clean-vs-corrupt calibration on 50/100 samples reaches at least 0.85.
-- Gate E: VideoGPA pair export plus LingBot-compatible encode smoke succeeds.
-- Gate F: `LingBotFastVideoGPAAdapter` prepares winner/loser batch shape with real latent and condition paths.
-- Gate G: real DPO energy/logprob is wired; no fake loss.
+1. Small Fast rollout quality and failure modes must be inspected before pair generation grows.
+2. Camera ablation must show whether poses/intrinsics materially affect generation. If correct/frozen/reversed look the same, the camera adapter must be fixed first.
+3. Reward must separate clean GT from real Fast rollout failures, not only artificial corrupted negatives.
+4. Feature backends must be reported honestly: DINO/V-JEPA/VideoMAE/flow may still be proxy or fallback in parts of the current reward path.
+5. VideoGPA encode has not been run in this phase and should wait until Gates B-D are understood.
+6. `LingBotFastVideoGPAAdapter.compute_dpo_energy_or_logprob` must not be faked.
 
-Only after all gates pass should a small DPO training dry-run be considered. Do not run `03_train.py` now.
-
+Only after Gates B, C, and D are reasonably passed should a future round attempt VideoGPA encode smoke. DPO training remains disallowed until all gates A-G pass.
