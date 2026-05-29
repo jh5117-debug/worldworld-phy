@@ -18,6 +18,16 @@ from cam_physgeo.eval.make_contact_sheet import make_sheet, read_selected_video_
 DEFAULT_LINGBOT_ENV = ""
 
 
+def python_cmd_for_env(env_path: str) -> list[str]:
+    """Prefer the env's Python directly so smoke logs stream before timeout."""
+    if env_path:
+        direct = Path(env_path) / "bin" / "python"
+        if direct.exists():
+            return [str(direct), "-u"]
+        return ["conda", "run", "-p", env_path, "python", "-u"]
+    return [sys.executable, "-u"]
+
+
 def iter_sample_dirs(root: str | Path, limit: int = 0) -> list[Path]:
     root = Path(root)
     if not root.exists():
@@ -120,12 +130,23 @@ import argparse
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 from PIL import Image
 
 
+T0 = time.time()
+
+
+def mark(name, **kwargs):
+    payload = {"event": name, "elapsed_sec": round(time.time() - T0, 3)}
+    payload.update(kwargs)
+    print(json.dumps(payload, sort_keys=True), flush=True)
+
+
 def main():
+    mark("runtime_start")
     ap = argparse.ArgumentParser()
     ap.add_argument("--lingbot_code", required=True)
     ap.add_argument("--ckpt_dir", required=True)
@@ -141,14 +162,20 @@ def main():
     ap.add_argument("--max_attention_size", type=int, default=0)
     args = ap.parse_args()
     sys.path.insert(0, args.lingbot_code)
+    mark("import_torch_start")
     import torch
+    mark("import_torch_done", cuda_available=bool(torch.cuda.is_available()))
+    mark("import_wan_start")
     import wan
     from wan.configs import WAN_CONFIGS
     from wan.utils.utils import save_video
+    mark("import_wan_done")
 
     cfg = WAN_CONFIGS["i2v-A14B"]
     img = Image.open(args.image).convert("RGB")
+    mark("load_image_done", image=args.image, size=list(img.size))
     timesteps = [int(x) for x in args.timesteps.split(",") if x.strip()]
+    mark("pipeline_init_start", ckpt_dir=args.ckpt_dir)
     pipe = wan.WanI2VFast(
         config=cfg,
         checkpoint_dir=args.ckpt_dir,
@@ -160,6 +187,8 @@ def main():
         t5_cpu=False,
         convert_model_dtype=False,
     )
+    mark("pipeline_init_done")
+    mark("generate_start", frame_num=args.frame_num, timesteps=timesteps, max_area=args.max_area)
     video = pipe.generate(
         args.prompt,
         img,
@@ -173,8 +202,10 @@ def main():
         offload_model=args.offload_model,
         max_attention_size=(None if args.max_attention_size <= 0 else args.max_attention_size),
     )
+    mark("generate_done")
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     save_video(tensor=video[None], save_file=args.out, fps=cfg.sample_fps, nrow=1, normalize=True, value_range=(-1, 1))
+    mark("save_done", out=args.out)
     peak = torch.cuda.max_memory_allocated() if torch.cuda.is_available() else 0
     print(json.dumps({"ok": True, "out": args.out, "peak_cuda_bytes": int(peak), "frame_num": args.frame_num, "timesteps": timesteps}))
 
@@ -231,8 +262,9 @@ def run_one_sample(
                 pass
             except OSError:
                 shutil.copy2(src, dst)
+    launcher = python_cmd_for_env(env_path)
     cmd = [
-        "conda", "run", "-p", env_path, "python", str(script_path),
+        *launcher, str(script_path),
         "--lingbot_code", paths["lingbot_code"],
         "--ckpt_dir", runtime_bundle["runtime_root"],
         "--image", sample["image"],
@@ -247,8 +279,10 @@ def run_one_sample(
     ]
     log_path = sample_out / "inference_log.txt"
     start = time.time()
+    proc_env = os.environ.copy()
+    proc_env["PYTHONUNBUFFERED"] = "1"
     with log_path.open("w", encoding="utf-8", errors="replace") as log_f:
-        proc = subprocess.Popen(cmd, text=True, stdout=log_f, stderr=subprocess.STDOUT)
+        proc = subprocess.Popen(cmd, text=True, stdout=log_f, stderr=subprocess.STDOUT, env=proc_env)
         try:
             proc.wait(timeout=run_one_sample.timeout_sec)
         except subprocess.TimeoutExpired:
@@ -259,8 +293,11 @@ def run_one_sample(
     log_text = log_path.read_text(encoding="utf-8", errors="replace")
     result.update({
         "cmd": cmd,
+        "python_launcher": launcher,
         "returncode": proc.returncode,
         "elapsed_sec": elapsed,
+        "timeout_sec": run_one_sample.timeout_sec,
+        "log_tail": log_text[-4000:],
         "generated": str(generated),
         "normalized_frame_num": frame_num,
         "requested_num_frames": num_frames,

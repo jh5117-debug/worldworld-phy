@@ -27,8 +27,10 @@
 - Output video: not created.
 - Contact sheet: not created.
 - Log: `local_assets/outputs/smoke/lingbot_fast_inference/physion_movingcam_07abddf5748b/inference_log.txt`.
-- Failure: child process killed after 180 seconds without model stdout.
-- Next file to improve: `cam_physgeo/eval/run_inference.py`; optionally add finer profiling/logging around LingBot `WanI2VFast` init in the runtime script.
+- Failure: child process killed after 180 seconds before generation completed.
+- Follow-up diagnosis: direct `LINGBOT_ENV/bin/python -u` probes show `torch` import works, `wan` import works, and the process stalls inside `WanI2VFast.__init__`. A narrower T5-only probe stalls at `T5EncoderModel(...)`, making Base T5/tokenizer/checkpoint initialization the first confirmed blocker.
+- Code update: `cam_physgeo/eval/run_inference.py` now prefers direct unbuffered env Python over `conda run` and writes flushed runtime markers for torch import, Wan import, image loading, pipeline init, generate, and save. Future smoke logs should identify whether the stall remains at `pipeline_init_start`.
+- Next file to investigate: LingBot T5 initialization/offload/cache path under `wan/modules/t5.py` and the Fast `WanI2VFast` constructor. This is not an action-conditioning failure.
 
 ## 4. Fast Zero-Shot Rollout
 
@@ -110,10 +112,9 @@ Conclusion: small-scale DPO is not allowed yet.
 
 ## 13. Next Steps
 
-1. Fix Fast inference first: add profiling around LingBot `WanI2VFast` init and determine whether timeout is T5 load, VAE load, Fast shard load, or first forward.
+1. Fix Fast inference first: profile and shorten LingBot T5 initialization in the Fast runtime bundle, or add a cached/precomputed text embedding path for smoke.
 2. Wire real RAFT/GMFlow and DINO/V-JEPA forward before trusting geometry/reobserve reward.
 3. Re-run reward calibration on 50 samples until clean > corrupt is at least 0.85, especially for background drift and reobserve mismatch.
 4. Once Fast inference succeeds, generate 3-10 Fast rollouts and run `eval_fast_rollouts.py`.
 5. Implement LingBot VAE encode and condition encode for VideoGPA metadata, then rerun encode smoke.
 6. Only after all gates pass, consider a tiny DPO training dry-run. Do not long-train.
-

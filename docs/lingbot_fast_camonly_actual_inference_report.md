@@ -53,5 +53,16 @@ Result: failed by timeout.
 
 The adapter now reaches the real LingBot-Fast runtime command and passes image, prompt, poses, and intrinsics. It does not use action as a core condition; the sample directory is passed as `action_path` only because `WanI2VFast.generate` expects to find `poses.npy` and `intrinsics.npy` under that argument name. In camera mode it ignores `action.npy`.
 
-The remaining blocker is runtime initialization or first forward taking longer than the allowed short-smoke budget without streaming progress. Next file to improve: `cam_physgeo/eval/run_inference.py`, plus possibly LingBot's `wan/image2video_fast.py` logging/profiling path. Do not generate Fast rollouts until this 1-sample actual inference completes reliably.
+The remaining blocker is runtime initialization, not the cam-only sample format.
 
+Follow-up probes with the LingBot environment showed:
+
+- Direct env Python is required for useful logs; `conda run` buffers too much output for this smoke.
+- `torch` import succeeds and CUDA is visible.
+- `wan` import succeeds.
+- `WanI2VFast.__init__` times out before generation begins.
+- A T5-only probe reaches `T5EncoderModel(...)` and then times out, so the first confirmed bottleneck is Base T5/tokenizer/checkpoint initialization inside the Fast runtime bundle.
+
+This means the next fix should focus on LingBot text encoder initialization/caching/offload, not on action handling. `cam_physgeo/eval/run_inference.py` now uses direct `python -u` from `LINGBOT_ENV` when available and writes flushed runtime markers around torch import, Wan import, image loading, pipeline initialization, generation, and save. The next smoke should show whether it remains stuck at `pipeline_init_start`.
+
+Do not generate Fast rollouts until this 1-sample actual inference completes reliably.
