@@ -236,6 +236,20 @@ def load_wan_t5(
     )
 
 
+def construct_wan_t5_arch(*, lingbot_code: str, device: str, dtype_name: str):
+    if lingbot_code and lingbot_code not in sys.path:
+        sys.path.insert(0, lingbot_code)
+    from wan.modules.t5 import umt5_xxl
+
+    dtype = dtype_from_name(dtype_name)
+    return umt5_xxl(
+        encoder_only=True,
+        return_tokenizer=False,
+        dtype=dtype,
+        device=device,
+    ).eval().requires_grad_(False)
+
+
 def encode_prompt(model, prompt: str, device: str):
     attempts = [
         lambda: model([prompt], device),
@@ -398,6 +412,63 @@ def stage_torch_load_only(status: dict[str, Any], args: argparse.Namespace, path
     return 0
 
 
+def stage_model_construct_only(status: dict[str, Any], args: argparse.Namespace, _paths: dict[str, str]) -> int:
+    mark("model_construct_start", device=args.device, dtype=args.dtype, rss_mb=rss_mb())
+    start = time.time()
+    with step_timeout("model_construct", args.timeout):
+        model = construct_wan_t5_arch(lingbot_code=args.lingbot_code, device=args.device, dtype_name=args.dtype)
+    elapsed = time.time() - start
+    status["model_construct"] = {
+        "elapsed_sec": round(elapsed, 3),
+        "class": model.__class__.__name__,
+        "rss_peak_mb": rss_mb(),
+    }
+    mark("model_construct_done", **status["model_construct"])
+    del model
+    gc.collect()
+    status["ok"] = True
+    return 0
+
+
+def stage_load_state_dict_only(status: dict[str, Any], args: argparse.Namespace, paths: dict[str, str]) -> int:
+    mark("model_construct_start", device=args.device, dtype=args.dtype, rss_mb=rss_mb())
+    start = time.time()
+    with step_timeout("model_construct", args.timeout):
+        model = construct_wan_t5_arch(lingbot_code=args.lingbot_code, device=args.device, dtype_name=args.dtype)
+    status["model_construct"] = {
+        "elapsed_sec": round(time.time() - start, 3),
+        "class": model.__class__.__name__,
+        "rss_peak_mb": rss_mb(),
+    }
+    mark("model_construct_done", **status["model_construct"])
+
+    mark("torch_load_start", path=paths["t5_checkpoint"], map_location=args.map_location, weights_only=args.weights_only, mmap=args.mmap, rss_mb=rss_mb())
+    start = time.time()
+    with step_timeout("torch_load", args.timeout):
+        state = torch_load(paths["t5_checkpoint"], map_location=args.map_location, weights_only=args.weights_only, mmap=args.mmap)
+    status["torch_load"] = {
+        "elapsed_sec": round(time.time() - start, 3),
+        "rss_peak_mb": rss_mb(),
+        "summary": tensor_summary(state, limit=args.print_keys_limit),
+    }
+    mark("torch_load_done", elapsed_sec=status["torch_load"]["elapsed_sec"], rss_mb=rss_mb())
+
+    mark("load_state_dict_start", rss_mb=rss_mb())
+    start = time.time()
+    with step_timeout("load_state_dict", args.timeout):
+        load_result = model.load_state_dict(state)
+    status["load_state_dict"] = {
+        "elapsed_sec": round(time.time() - start, 3),
+        "rss_peak_mb": rss_mb(),
+        "result": repr(load_result),
+    }
+    mark("load_state_dict_done", **status["load_state_dict"])
+    del state, model
+    gc.collect()
+    status["ok"] = True
+    return 0
+
+
 def stage_full_t5(status: dict[str, Any], args: argparse.Namespace, paths: dict[str, str]) -> int:
     stage_tokenizer_only(status, args, paths)
     mark("t5_model_load_start", checkpoint=paths["t5_checkpoint"], tokenizer=paths["tokenizer_root"], rss_mb=rss_mb())
@@ -443,8 +514,8 @@ STAGE_RUNNERS = {
     "ckpt_stat": stage_ckpt_stat,
     "ckpt_read_benchmark": stage_read_benchmark,
     "torch_load_only": stage_torch_load_only,
-    "model_construct_only": stage_unimplemented,
-    "load_state_dict_only": stage_unimplemented,
+    "model_construct_only": stage_model_construct_only,
+    "load_state_dict_only": stage_load_state_dict_only,
     "full_t5": stage_full_t5,
 }
 
