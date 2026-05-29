@@ -4,30 +4,34 @@
 
 The highest-priority blocker is still LingBot-Fast T5/text encoder initialization.
 
-Known from the previous successful probes:
+Confirmed by the latest CPU T5 probe:
 
-- `torch` import succeeds.
+- `transformers` imports successfully: version `4.51.3`.
+- tokenizer loads successfully offline as `T5TokenizerFast` in `3.583s`.
+- `torch` imports successfully: version `2.11.0+cu128`.
 - CUDA is visible in the LingBot env.
-- `wan` import succeeds.
-- `WanI2VFast.__init__` times out.
-- A narrower T5-only probe reaches `T5EncoderModel(...)` and times out.
+- T5 model construction/checkpoint load starts from `local_assets/cache/lingbot_fast_cam_runtime/models_t5_umt5-xxl-enc-bf16.pth`.
+- The T5 checkpoint is present and about `10.582GB`.
+- `t5_model_load` times out after `120s`.
 
-This points to Base T5/tokenizer/checkpoint initialization, not to Physion camera paths, dummy `action.npy`, or VideoGPA.
+This points to Base T5 checkpoint/model initialization, not tokenizer, Physion camera paths, dummy `action.npy`, or VideoGPA.
 
 ## 2. Tokenizer Probe
 
-Added `cam_physgeo/eval/probe_lingbot_t5.py`.
+`cam_physgeo/eval/probe_lingbot_t5.py` ran far enough to prove tokenizer success:
 
-The new probe can load tokenizer and T5 separately from `WanI2VFast`, prints flushed JSON markers, supports offline/local-only mode, and records embedding shape if prompt encoding succeeds.
-
-The new probe could not be completed on H20 in this pass because SSH repeatedly reset or timed out during command execution. No tokenizer success is claimed.
+- tokenizer root: `local_assets/cache/lingbot_fast_cam_runtime/google/umt5-xxl`
+- files present: `spiece.model`, `tokenizer.json`, `tokenizer_config.json`
+- missing in tokenizer root: `config.json`
+- result: `T5TokenizerFast` loaded successfully offline
 
 ## 3. T5 Model Probe
 
-The code path is ready:
+CPU command used:
 
 ```bash
-TRANSFORMERS_OFFLINE=1 HF_HUB_OFFLINE=1 python -m cam_physgeo.eval.probe_lingbot_t5 \
+PY=/home/nvme03/workspace/lingbot-world/.conda_envs/lingbot-world-v2/bin/python
+TRANSFORMERS_OFFLINE=1 HF_HUB_OFFLINE=1 $PY -m cam_physgeo.eval.probe_lingbot_t5 \
   --fast_root local_assets/weights/lingbot_fast \
   --device cpu \
   --dtype fp32 \
@@ -35,9 +39,14 @@ TRANSFORMERS_OFFLINE=1 HF_HUB_OFFLINE=1 python -m cam_physgeo.eval.probe_lingbot
   --timeout 120
 ```
 
-For H20, use `python3` or `/home/nvme03/workspace/lingbot-world/.conda_envs/lingbot-world-v2/bin/python` because `python` was not found in one shell attempt.
+Result:
 
-No new embedding shape is available yet.
+- T5 config/model construction: did not complete.
+- T5 weights: did not complete loading.
+- Failure: `StepTimeout('t5_model_load exceeded 120s')`.
+- Embedding shape: unavailable because prompt encoding was never reached.
+
+The GPU T5 probe was not run because CPU did not succeed.
 
 ## 4. Official LingBot-Fast Demo
 
@@ -47,7 +56,7 @@ Candidate official scripts were identified under `local_assets/third_party/lingb
 - `run_fast.sh`
 - `wan/image2video_fast.py`
 
-The official minimal inference was not run because SSH became unstable before script inspection and command construction completed. No official output video exists from this pass.
+The official minimal inference was not run after CPU T5 failed. It would hit the same T5 initialization path before generation, and GPU 6 was also partially occupied during the initial check. No official output video exists from this pass.
 
 ## 5. Cam-PhysGeo Dry-Run
 
@@ -60,19 +69,19 @@ The official minimal inference was not run because SSH became unstable before sc
 - explicit `--text-embedding-cache` and `--skip-t5-if-cached` flags;
 - flushed runtime markers around import, image load, pipeline init, generate, and save.
 
-The H20 dry-run v2 did not complete because SSH reset before the command returned. The patch itself compiled and passed local tests.
+The cam_physgeo dry-run was not re-run after the T5 failure because it does not initialize T5 and would not resolve the current blocker. The code path remains ready with unbuffered logging and local-only flags.
 
 ## 6. Actual Short Inference
 
 Not run in this pass. No video was generated.
 
-Reason: this pass only added the T5 probe/logging path and could not complete H20 commands due SSH resets. The prior actual short inference still stands: it timed out before producing video.
+Reason: CPU T5 probe failed before model embedding could be produced. The prior actual short inference still stands: it timed out before producing video.
 
 ## 7. Failure Classification
 
 Current likely failure class:
 
-- T5/tokenizer/checkpoint initialization latency or hang.
+- T5 checkpoint/model initialization latency or hang.
 
 Not currently supported by evidence:
 
@@ -83,9 +92,7 @@ Not currently supported by evidence:
 
 Still to confirm:
 
-- exact `transformers` version in the LingBot env;
-- whether tokenizer alone loads successfully offline;
-- whether the T5 checkpoint load is CPU-bound, disk-bound, version-bound, or waiting on HuggingFace;
+- whether the T5 checkpoint load is CPU-bound, disk-bound, version-bound, or blocked inside custom Wan model construction;
 - whether official `generate_fast.py` fails in the same place.
 
 ## 8. Cached Text Embedding
@@ -106,7 +113,16 @@ Only after actual Fast inference generates a video should the next round move to
 
 ## 10. Next Minimal Action
 
-When SSH is stable, run:
+Next run should instrument `local_assets/third_party/lingbot_world/wan/modules/t5.py` inside `T5EncoderModel.__init__` to separate:
+
+- config construction;
+- tokenizer reuse;
+- checkpoint `torch.load`;
+- state dict mapping;
+- device transfer;
+- dtype conversion.
+
+Minimal rerun:
 
 ```bash
 cd /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_min_adapter_work
@@ -122,4 +138,4 @@ TRANSFORMERS_OFFLINE=1 HF_HUB_OFFLINE=1 $PY -m cam_physgeo.eval.probe_lingbot_t5
   --out local_assets/reports/smoke/lingbot_t5_probe_cpu.json
 ```
 
-If tokenizer succeeds and T5 stalls again, inspect `local_assets/third_party/lingbot_world/wan/modules/t5.py` around checkpoint loading and tokenizer construction.
+Since tokenizer already succeeded and T5 stalled, inspect `local_assets/third_party/lingbot_world/wan/modules/t5.py` around checkpoint loading and model construction before attempting rollout/reward/VideoGPA/DPO.

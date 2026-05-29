@@ -22,7 +22,11 @@ The official probe should use:
 
 ## Current Run Status
 
-The official probe was not run in this pass because the H20 SSH connection repeatedly reset or timed out before the required script inspection and command construction could complete. No success is claimed.
+The official probe was not run after the CPU T5 probe failed at `t5_model_load`.
+
+Reason: official Fast inference also needs the LingBot/Wan T5 text encoder before generation. Running it immediately after a confirmed CPU T5 initialization timeout would not isolate a new component; it would likely spend GPU time on the same blocker. GPU 6 also had nonzero occupancy during the initial check, while GPU 7 was free.
+
+No official output video exists from this pass.
 
 ## Interpretation
 

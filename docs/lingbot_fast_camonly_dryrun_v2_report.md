@@ -28,7 +28,21 @@ python -m cam_physgeo.eval.run_inference \
 
 ## Current Run Status
 
-The patched code compiled locally and tests passed. On H20, the default `python` binary was missing during one attempt, so `python3` or the LingBot env Python should be used. Subsequent SSH sessions reset before the dry-run completed, so this report does not claim a completed H20 dry-run.
+The patched code compiled locally and tests passed. The cam_physgeo dry-run was not re-run after the CPU T5 probe failed, because dry-run does not initialize T5 and would not resolve the current blocker.
+
+Use the LingBot env Python when running it next:
+
+```bash
+PY=/home/nvme03/workspace/lingbot-world/.conda_envs/lingbot-world-v2/bin/python
+$PY -m cam_physgeo.eval.run_inference \
+  --config configs/cam_physgeo/eval.yaml \
+  --model_type fast \
+  --samples local_assets/data/physion/processed/lingbot_cam_inputs/smoke \
+  --out local_assets/outputs/smoke/lingbot_fast_inference \
+  --dry-run \
+  --limit 1 \
+  --timeout 120
+```
 
 ## Condition Handling
 
