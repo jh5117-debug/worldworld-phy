@@ -22,3 +22,15 @@ Do not train yet. This project remains Physion-only, Fast-first, camera-conditio
 6. `LingBotFastVideoGPAAdapter.compute_dpo_energy_or_logprob` must not be faked.
 
 Only after Gates B, C, and D are reasonably passed should a future round attempt VideoGPA encode smoke. DPO training remains disallowed until all gates A-G pass.
+
+## Camera / Reward Debug Update
+
+- Gate A: passed.
+- Gate B: passed at small-smoke level with 3 Fast rollouts.
+- Gate C: not proven. Camera tensors reach `WanI2VFast.generate` through `action_path`, and LingBot-Fast source builds `c2ws_plucker_emb`, but strong ablation did not produce enough successful variants to show output differences above stochastic baseline.
+- Gate D: failed / not reliable. Raw reward still ranks Fast above clean GT. Confidence-aware aggregation lowers absolute scores and marks rows provisional, but it still wins only 1/3 pairs.
+- Gate E: VideoGPA encode remains not allowed.
+- Gate F: adapter batch shape work remains deferred.
+- Gate G: real DPO energy/logprob remains unimplemented.
+
+Next gate is not VideoGPA. The next minimal work is camera embedding instrumentation plus reward backend repair.

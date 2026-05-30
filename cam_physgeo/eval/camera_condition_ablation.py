@@ -16,6 +16,10 @@ from cam_physgeo.eval.make_contact_sheet import read_selected_video_frames
 from cam_physgeo.utils.io import write_json
 
 
+def _truthy(value: Any) -> bool:
+    return str(value).lower() in {"1", "true", "yes", "y", "on"}
+
+
 def iter_samples(root: Path, limit: int) -> list[Path]:
     dirs = [p for p in sorted(root.iterdir()) if p.is_dir()] if root.exists() else []
     return dirs[:limit] if limit else dirs
@@ -31,21 +35,44 @@ def link_or_copy(src: Path, dst: Path) -> None:
         shutil.copy2(src, dst)
 
 
+def _repeat_first(arr: np.ndarray) -> np.ndarray:
+    if arr.ndim < 1:
+        raise ValueError(f"cannot repeat first camera pose for shape {arr.shape}")
+    return np.repeat(arr[:1], len(arr), axis=0)
+
+
+def _yaw_matrix(angle_rad: float) -> np.ndarray:
+    c = float(np.cos(angle_rad))
+    s = float(np.sin(angle_rad))
+    return np.array([[c, 0.0, s, 0.0], [0.0, 1.0, 0.0, 0.0], [-s, 0.0, c, 0.0], [0.0, 0.0, 0.0, 1.0]], dtype=np.float32)
+
+
 def variant_poses(poses: np.ndarray, variant: str) -> np.ndarray:
     arr = np.asarray(poses)
-    if variant == "correct":
+    name = variant.replace("_camera", "")
+    if name in {"correct", "repeat_correct_A", "repeat_correct_B"}:
         return arr.copy()
-    if variant == "frozen":
-        if arr.ndim < 1:
-            raise ValueError(f"cannot freeze pose array with shape {arr.shape}")
-        return np.repeat(arr[:1], len(arr), axis=0)
-    if variant == "reversed":
+    if name in {"frozen", "zero_motion"}:
+        return _repeat_first(arr)
+    if name == "reversed":
         return arr[::-1].copy()
-    if variant == "shuffled":
+    if name == "shuffled":
         rng = np.random.default_rng(123)
         idx = np.arange(len(arr))
         rng.shuffle(idx)
         return arr[idx].copy()
+    if name in {"exaggerated_yaw", "large_translation"}:
+        out = arr.copy()
+        if out.ndim == 3 and out.shape[-2:] == (4, 4):
+            # Apply a deliberately strong 60 degree yaw sweep over the short video.
+            denom = max(len(out) - 1, 1)
+            for i in range(len(out)):
+                out[i] = _yaw_matrix(np.deg2rad(60.0 * i / denom)) @ out[i]
+            return out
+        if out.ndim == 2 and out.shape[-1] >= 3:
+            out[:, 0] += np.linspace(0.0, 1.0, len(out), dtype=np.float32)
+            return out
+        raise ValueError(f"cannot exaggerate yaw for pose shape {out.shape}")
     raise ValueError(f"unknown camera variant {variant!r}")
 
 
@@ -63,7 +90,7 @@ def prepare_variant_input(sample_dir: Path, temp_root: Path, variant: str) -> Pa
         link_or_copy(action_src, variant_sample / "action.npy")
     else:
         np.save(variant_sample / "action.npy", np.zeros((len(poses), 4), dtype=np.float32))
-    meta = {}
+    meta: dict[str, Any] = {}
     if (sample_dir / "metadata.json").exists():
         meta = json.loads((sample_dir / "metadata.json").read_text(encoding="utf-8"))
     meta.update(
@@ -82,6 +109,22 @@ def run_variant(args, sample_dir: Path, out_root: Path, variant: str) -> dict[st
     temp_root = out_root / sample_dir.name / "_inputs" / variant
     variant_out = out_root / sample_dir.name / variant
     prepare_variant_input(sample_dir, temp_root, variant)
+    generated = variant_out / sample_dir.name / "generated.mp4"
+    if generated.exists():
+        meta = {
+            "sample_id": sample_dir.name,
+            "variant": variant,
+            "command": [],
+            "returncode": 0,
+            "elapsed_sec": 0.0,
+            "generated": str(generated),
+            "generated_exists": True,
+            "skipped_existing": True,
+            "log_path": str(variant_out / "stdout_stderr.log"),
+        }
+        write_json(meta, variant_out / "metadata.json")
+        return meta
+    seed = args.seed if _truthy(args.same_seed) else args.seed + abs(hash(variant)) % 1000
     cmd = [
         sys.executable,
         "-m",
@@ -105,16 +148,24 @@ def run_variant(args, sample_dir: Path, out_root: Path, variant: str) -> dict[st
         args.resolution,
         "--timeout",
         str(args.timeout),
+        "--save-condition-summary",
     ]
+    # run_inference currently fixes the seed inside the LingBot runtime. The
+    # command record keeps the intended seed explicit for future runtime wiring.
     if args.local_files_only:
         cmd.append("--local-files-only")
     if args.save_contact_sheet:
         cmd.append("--save_contact_sheet")
+    if args.debug_camera_condition:
+        cmd.append("--debug-camera-condition")
+    if args.save_condition_summary:
+        cmd.append("--save-condition-summary")
     env = os.environ.copy()
     env.setdefault("PYTHONUNBUFFERED", "1")
     env.setdefault("TERM", "dumb")
     env.setdefault("TQDM_DISABLE", "1")
     env.setdefault("DISABLE_PROGRESS_BAR", "1")
+    env["CAM_PHYS_GEO_ABLATION_SEED"] = str(seed)
     if args.local_files_only:
         env.setdefault("TRANSFORMERS_OFFLINE", "1")
         env.setdefault("HF_HUB_OFFLINE", "1")
@@ -131,25 +182,97 @@ def run_variant(args, sample_dir: Path, out_root: Path, variant: str) -> dict[st
             proc.wait()
             log_f.write(f"\n[TIMEOUT] camera ablation variant killed after {args.timeout + 60}s\n")
     elapsed = time.time() - start
-    generated = variant_out / sample_dir.name / "generated.mp4"
+    condition_debug = variant_out / sample_dir.name / "condition_debug.json"
     meta = {
         "sample_id": sample_dir.name,
         "variant": variant,
         "command": cmd,
+        "intended_seed": seed,
+        "same_seed": _truthy(args.same_seed),
         "returncode": proc.returncode,
         "elapsed_sec": elapsed,
         "generated": str(generated),
         "generated_exists": generated.exists(),
+        "condition_debug": str(condition_debug) if condition_debug.exists() else None,
         "log_path": str(log_path),
     }
     write_json(meta, variant_out / "metadata.json")
     return meta
 
 
+def _read_metric_frames(path: str | Path, max_frames: int = 8, size: tuple[int, int] = (160, 96)) -> list[np.ndarray]:
+    try:
+        import cv2  # type: ignore
+
+        cap = cv2.VideoCapture(str(path))
+        frames: list[np.ndarray] = []
+        while len(frames) < max_frames:
+            ok, frame = cap.read()
+            if not ok:
+                break
+            frame = cv2.resize(frame, size)
+            frames.append(frame.astype("float32") / 255.0)
+        cap.release()
+        return frames
+    except Exception:
+        return []
+
+
+def video_diff_metrics(path_a: str | Path, path_b: str | Path) -> dict[str, Any]:
+    frames_a = _read_metric_frames(path_a)
+    frames_b = _read_metric_frames(path_b)
+    n = min(len(frames_a), len(frames_b))
+    if n == 0:
+        return {"available": False, "reason": "missing_or_unreadable_video"}
+    a = np.stack(frames_a[:n])
+    b = np.stack(frames_b[:n])
+    pixel_l1 = float(np.mean(np.abs(a - b)))
+    motion_a = float(np.mean(np.abs(np.diff(a, axis=0)))) if n > 1 else 0.0
+    motion_b = float(np.mean(np.abs(np.diff(b, axis=0)))) if n > 1 else 0.0
+    return {
+        "available": True,
+        "frames_compared": int(n),
+        "pixel_l1": pixel_l1,
+        "video_feature_distance_proxy": pixel_l1,
+        "motion_magnitude_a": motion_a,
+        "motion_magnitude_b": motion_b,
+        "motion_magnitude_delta": abs(motion_a - motion_b),
+        "optical_flow_backend": "frame_diff_proxy",
+        "background_flow_magnitude_proxy": float((motion_a + motion_b) / 2.0),
+    }
+
+
+def compute_ablation_metrics(sample_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    by_variant = {row["variant"]: row for row in sample_rows if row.get("generated_exists")}
+    comparisons: dict[str, Any] = {}
+
+    def add(name: str, a: str, b: str) -> None:
+        if a in by_variant and b in by_variant:
+            comparisons[name] = video_diff_metrics(by_variant[a]["generated"], by_variant[b]["generated"])
+
+    add("repeat_correct_A_vs_repeat_correct_B", "repeat_correct_A", "repeat_correct_B")
+    baseline = comparisons.get("repeat_correct_A_vs_repeat_correct_B", {}).get("pixel_l1")
+    for variant in ["frozen", "reversed", "exaggerated_yaw", "zero_motion", "shuffled"]:
+        add(f"correct_vs_{variant}", "correct", variant)
+    threshold = None
+    conclusion = "not_proven"
+    if baseline is not None:
+        threshold = float(baseline) * 1.2 + 1e-6
+        variant_scores = [
+            comp.get("pixel_l1")
+            for key, comp in comparisons.items()
+            if key.startswith("correct_vs_") and comp.get("available")
+        ]
+        if variant_scores and max(float(v) for v in variant_scores if v is not None) > threshold:
+            conclusion = "camera_likely_affects_generation"
+        else:
+            conclusion = "camera_variant_difference_not_above_noise"
+    return {"comparisons": comparisons, "repeat_baseline_pixel_l1": baseline, "variant_threshold_pixel_l1": threshold, "metric_conclusion": conclusion}
+
+
 def make_comparison_sheet(sample_id: str, variant_rows: list[dict[str, Any]], out_path: Path) -> bool:
     try:
         import cv2  # type: ignore
-        import numpy as np  # type: ignore
 
         frames_by_variant = []
         for row in variant_rows:
@@ -185,7 +308,11 @@ def main(argv=None) -> int:
     ap.add_argument("--num_steps", type=int, default=1)
     ap.add_argument("--resolution", default="480x832")
     ap.add_argument("--variants", nargs="+", default=["correct", "frozen", "reversed"])
+    ap.add_argument("--same_seed", nargs="?", const="true", default="false")
+    ap.add_argument("--seed", type=int, default=123)
     ap.add_argument("--save_contact_sheet", action="store_true")
+    ap.add_argument("--debug-camera-condition", action="store_true")
+    ap.add_argument("--save-condition-summary", action="store_true")
     ap.add_argument("--timeout", type=int, default=900)
     ap.add_argument("--local-files-only", action="store_true")
     args = ap.parse_args(argv)
@@ -200,7 +327,17 @@ def main(argv=None) -> int:
             sample_rows.append(row)
         sheet = out / sample_dir.name / "comparison_contact_sheet.jpg"
         ok = make_comparison_sheet(sample_dir.name, sample_rows, sheet)
-        write_json({"sample_id": sample_dir.name, "comparison_contact_sheet": str(sheet), "comparison_created": ok, "variants": sample_rows}, out / sample_dir.name / "ablation_summary.json")
+        metrics = compute_ablation_metrics(sample_rows)
+        write_json(
+            {
+                "sample_id": sample_dir.name,
+                "comparison_contact_sheet": str(sheet),
+                "comparison_created": ok,
+                "variants": sample_rows,
+                "metrics": metrics,
+            },
+            out / sample_dir.name / "ablation_summary.json",
+        )
     ok_count = sum(1 for row in rows if row.get("generated_exists"))
     payload = {"variants": len(rows), "ok_count": ok_count, "out": str(out), "rows": rows}
     write_json(payload, out / "camera_ablation_summary.json")

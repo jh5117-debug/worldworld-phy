@@ -121,3 +121,14 @@ Conclusion: DPO remains disallowed. The next gate is small Fast rollout plus cam
 4. Wire real RAFT/GMFlow and DINO/V-JEPA forward before trusting geometry/reobserve reward at scale.
 5. Only after rollout, camera, and reward gates are reasonable, attempt VideoGPA encode smoke.
 6. Only after all gates pass, consider a tiny DPO training dry-run. Do not long-train.
+
+## Camera / Reward Debug Addendum
+
+- Gate A remains passed.
+- Gate B is passed with 3 Fast rollout videos.
+- Gate C is still not proven: camera tensors are passed through `action_path` and LingBot-Fast source has a `c2ws_plucker_emb` injection path, but strong ablation did not generate enough comparable variants.
+- Gate D remains failed/provisional: raw reward ranks Fast above clean, and confidence-weighted reward still only gives clean a 1/3 win rate.
+- Gate E, VideoGPA encode, is still blocked.
+- DPO remains disallowed.
+
+The next minimal action is not VideoGPA. First hook `get_plucker_embeddings` to confirm camera embedding differences, then repair `R_phys` and `P_freeze` backends.
