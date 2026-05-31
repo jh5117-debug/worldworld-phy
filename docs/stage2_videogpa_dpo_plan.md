@@ -58,3 +58,15 @@ Next minimal work before VideoGPA is either: finish a small video-level camera a
 - Gate G: real DPO energy/logprob remains unimplemented.
 
 Next minimal work remains outside VideoGPA: run a valid 8-frame video-level camera ablation, wire real optical-flow forward from local RAFT assets, and add DINOv2-small only after user approval.
+
+## Video Camera / Flow / DINO Smoke Update
+
+- Gate A: passed.
+- Gate B: passed with 3 Fast rollout smoke videos.
+- Gate C: partial/pass. Embedding-level and DiT camera path remain confirmed. The valid 8-frame ablation completed at 256x448: same-seed repeat difference was `0.0`, frozen matched correct, and exaggerated-yaw produced nonzero output difference (`pixel_l1=0.02547`). This proves a strong camera perturbation can affect video output, but ordinary camera sensitivity still needs stronger/longer validation.
+- Gate D: partial. Clean GT real backend remains active. RAFT-small real optical-flow forward now works and contributes to Fast rollout `bg`/`cam` real components. DINOv2-small is still missing, so `fg`/`reobs` feature terms remain proxy/fallback and reward is not DPO-ready.
+- Gate E: VideoGPA encode remains not allowed until camera video effect and reward backends are both reliable.
+- Gate F: LingBotFastVideoGPAAdapter batch-shape work remains deferred.
+- Gate G: real DPO energy/logprob remains unimplemented.
+
+Next minimal work is still not VideoGPA: add DINOv2-small after approval and re-run reward-on-rollout with both real flow and real feature backends.

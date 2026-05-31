@@ -21,6 +21,15 @@ def score_camera_following(sample: dict, generated_bg_flow: float|None=None) -> 
             stats=pos_stats
     expected=stats.get('translation_total')
     if generated_bg_flow is None:
+        flow=sample.get("flow_backend_result") or {}
+        if flow.get("available") and flow.get("backend") == "real":
+            generated_bg_flow=float(flow.get("mean_magnitude") or 0.0)
+            flow_backend=flow
+        else:
+            flow_backend=None
+    else:
+        flow_backend=None
+    if generated_bg_flow is None:
         proxy=frame_motion_magnitude(sample.get('candidate_video_path') or sample.get('video_path'), max_frames=12)
         if proxy.get('available'):
             generated_bg_flow=float(proxy.get('mean_absdiff') or 0.0)
@@ -33,4 +42,6 @@ def score_camera_following(sample: dict, generated_bg_flow: float|None=None) -> 
         expected_proxy=clamp01(float(expected)*4.0)
         ratio=generated_bg_flow/(expected_proxy+1e-6)
         score=clamp01(1.0-abs(1.0-ratio))
+    if flow_backend:
+        return {'score':score,'status':'ok','backend':'real_flow_camera_proxy','name':'R_cam','expected_motion':expected,'generated_bg_flow':generated_bg_flow,'camera_stats':stats,'flow_backend':flow_backend,'todo':'compare flow direction against projected camera motion when depth is available'}
     return {'score':score,'status':'proxy_frame_diff','name':'R_cam','expected_motion':expected,'generated_bg_flow':generated_bg_flow,'camera_stats':stats}

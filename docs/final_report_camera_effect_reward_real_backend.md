@@ -92,3 +92,12 @@ The reversal is fixed for the 3-sample smoke by clean-side real metadata and con
 2. Wire real RAFT/GMFlow/WAFT forward using the existing optical-flow assets.
 3. Add DINOv2-small checkpoint and forward path after user approval.
 4. Re-run reward-on-rollout only after flow and DINO backends are real.
+
+## Follow-Up Update: 8F Camera / Flow / DINO Smoke
+
+- The valid 8-frame camera ablation completed at 256x448 after 480x832 hit GPU-memory pressure.
+- Same-seed repeat difference was `0.0`; frozen matched correct; exaggerated-yaw produced nonzero output difference (`pixel_l1=0.02547`).
+- RAFT-small real optical-flow forward now succeeds from `local_assets/weights/optical_flow/RAFT/models/raft-small.pth`.
+- Flow smoke shape: `[1, 256, 448, 2]`; mean/std/max magnitude: `7.4475 / 4.0387 / 27.3030`.
+- Reward v4 ranks clean above Fast on 3/3 with Fast-side bg/cam real flow components active.
+- DINOv2 remains missing, so R_fg/R_reobs are not DPO-ready.

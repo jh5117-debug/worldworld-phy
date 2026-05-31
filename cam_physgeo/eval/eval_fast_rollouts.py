@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from cam_physgeo.eval.make_contact_sheet import make_sheet, read_selected_video_frames
+from cam_physgeo.rewards.flow_backend import estimate_flow
 from cam_physgeo.rewards.metadata_backend import hdf5_key_summary
 from cam_physgeo.rewards.total_reward import score_sample
 from cam_physgeo.utils.io import write_jsonl
@@ -23,7 +24,7 @@ def read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def make_sample(sample_dir: Path, video: Path, label: str) -> dict[str, Any]:
+def make_sample(sample_dir: Path, video: Path, label: str, *, prefer_real_flow_backend: bool = False) -> dict[str, Any]:
     meta = read_json(sample_dir / "metadata.json")
     hdf5 = hdf5_key_summary(meta.get("hdf5_path")) if label == "clean_gt" else {}
     clean_coverage = {
@@ -54,6 +55,15 @@ def make_sample(sample_dir: Path, video: Path, label: str) -> dict[str, Any]:
         "has_reobserve": "reobserve" in str(meta.get("camera_motion", "")),
         "eval_label": label,
     }
+    if prefer_real_flow_backend and label != "clean_gt":
+        sample["flow_backend_result"] = estimate_flow(
+            video,
+            resolution=(256, 448),
+            max_frames=4,
+            backend="auto",
+            weights_root="local_assets/weights/optical_flow",
+            device="cuda",
+        )
     return sample
 
 
@@ -98,6 +108,7 @@ def main(argv=None) -> int:
     ap.add_argument("--confidence_weighted", action="store_true")
     ap.add_argument("--report_all_variants", action="store_true")
     ap.add_argument("--require_clean_real_backend", action="store_true")
+    ap.add_argument("--prefer_real_flow_backend", action="store_true")
     args = ap.parse_args(argv)
 
     sample_root = Path(args.samples)
@@ -115,8 +126,8 @@ def main(argv=None) -> int:
         if not target.exists() or not rollout.exists():
             pairs.append({"sample_id": sample_dir.name, "status": "missing_rollout_or_target", "target_exists": target.exists(), "rollout_exists": rollout.exists()})
             continue
-        clean = score_sample(make_sample(sample_dir, target, "clean_gt"))
-        fast = score_sample(make_sample(sample_dir, rollout, "fast_zero_shot"))
+        clean = score_sample(make_sample(sample_dir, target, "clean_gt", prefer_real_flow_backend=args.prefer_real_flow_backend))
+        fast = score_sample(make_sample(sample_dir, rollout, "fast_zero_shot", prefer_real_flow_backend=args.prefer_real_flow_backend))
         rows.extend([{**clean, "eval_label": "clean_gt"}, {**fast, "eval_label": "fast_zero_shot"}])
         clean_metric = clean["reward_total_confidence_weighted"] if args.confidence_weighted else clean["reward_total"]
         fast_metric = fast["reward_total_confidence_weighted"] if args.confidence_weighted else fast["reward_total"]
@@ -187,6 +198,18 @@ def main(argv=None) -> int:
     fast_real_avg = sum(float(p["fast_reward_real_backend_only"] or 0.0) for p in ok_pairs) / count if count else None
     clean_proxy_avg = sum(float(p["clean_reward_proxy_only"] or 0.0) for p in ok_pairs) / count if count else None
     fast_proxy_avg = sum(float(p["fast_reward_proxy_only"] or 0.0) for p in ok_pairs) / count if count else None
+    fast_real_components = sorted(
+        {
+            comp
+            for p in ok_pairs
+            for comp in (p.get("fast_backend_coverage") or {}).get("real_components", [])
+        }
+    )
+    fast_feature_real = any(
+        (p.get("fast_backend_coverage") or {}).get("feature_available_only", 0.0) > 0.0
+        for p in ok_pairs
+    )
+    fast_flow_real = bool({"bg", "cam"} & set(fast_real_components))
     if args.require_clean_real_backend:
         missing_real = [
             p["sample_id"]
@@ -295,8 +318,13 @@ def main(argv=None) -> int:
         f"- Clean GT avg proxy-only reward: {clean_proxy_avg}",
         f"- Fast rollout avg proxy-only reward: {fast_proxy_avg}",
         "- Reward confidence is now reported per component. Fallback/missing backends do not contribute high confidence.",
-        "- DINO/V-JEPA actual forward: not used in this reward path unless backend report says otherwise; proxy visual signatures are active.",
-        "- Optical flow actual forward: not used yet; frame-diff proxy is active.",
+        f"- Fast rollout real backend components: {fast_real_components or 'none'}",
+        "- DINO/V-JEPA actual forward: used for Fast rollout features."
+        if fast_feature_real
+        else "- DINO/V-JEPA actual forward: not used for Fast rollout features; proxy visual signatures are active.",
+        "- Optical flow actual forward: used for Fast rollout bg/cam components."
+        if fast_flow_real
+        else "- Optical flow actual forward: not used for Fast rollout bg/cam components; frame-diff proxy is active.",
         "- This report is not a DPO-ready preference source unless camera condition and reward backends are both reliable.",
         "",
         "## Pair Status",

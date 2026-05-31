@@ -15,6 +15,14 @@ def score_background_rigid_consistency(sample: dict, observed_flow_error: float|
                 "metadata_backend": sample.get("clean_gt_backend_coverage"),
                 "note": "Clean GT has simulator depth/camera metadata; generated rollout still needs real flow/depth residuals.",
             }
+        flow=sample.get("flow_backend_result") or {}
+        if flow.get("available") and flow.get("backend") == "real":
+            # This is real optical-flow forward, but still not a full rigid-flow
+            # residual until generated depth is available.
+            mean_mag=float(flow.get("mean_magnitude") or 0.0)
+            std_mag=float(flow.get("std_magnitude") or 0.0)
+            score=score_from_error(std_mag/(mean_mag+1e-6), scale=8.0)
+            return {'score':score,'status':'ok','backend':'real_flow_no_depth_residual','name':'R_bg','flow_backend':flow,'todo':'add generated depth or monocular depth before treating as full rigid-flow consistency'}
         motion=frame_motion_magnitude(sample.get('candidate_video_path') or sample.get('video_path'), max_frames=12)
         if motion.get('available'):
             # Fallback proxy: real rigid-flow scoring is enabled when flow/depth backends are present.

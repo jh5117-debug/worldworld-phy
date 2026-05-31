@@ -21,6 +21,8 @@ def _status_confidence(key: str, part: dict[str, Any], sample: dict[str, Any]) -
     backend = str(part.get("backend") or "")
     label = str(sample.get("eval_label") or "")
     backend_lower = backend.lower()
+    if "real_flow" in backend_lower:
+        return 0.75, "real", backend
     if "proxy" in backend_lower or "hook_or_proxy" in backend_lower:
         return 0.25, "fallback", backend or "proxy backend"
     if status == "ok":

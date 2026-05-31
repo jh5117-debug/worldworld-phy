@@ -21,6 +21,15 @@ def score_freeze_penalty(sample: dict, generated_bg_flow: float|None=None, gener
             cam=pos_cam
     expected_cam=cam.get('translation_total') or 0.0; penalty=0.0; reasons=[]
     if generated_bg_flow is None:
+        flow=sample.get("flow_backend_result") or {}
+        if flow.get("available") and flow.get("backend") == "real":
+            generated_bg_flow=float(flow.get("mean_magnitude") or 0.0)
+            flow_backend=flow
+        else:
+            flow_backend=None
+    else:
+        flow_backend=None
+    if generated_bg_flow is None:
         proxy=frame_motion_magnitude(sample.get('candidate_video_path') or sample.get('video_path'), max_frames=12)
         if proxy.get('available'):
             generated_bg_flow=float(proxy.get('mean_absdiff') or 0.0)
@@ -28,4 +37,6 @@ def score_freeze_penalty(sample: dict, generated_bg_flow: float|None=None, gener
     elif expected_cam>1e-4 and generated_bg_flow<0.005: penalty+=0.5; reasons.append('camera_expected_but_background_nearly_static')
     elif expected_cam<=1e-4 and generated_bg_flow<0.002 and str(sample.get('template')) in {'drop','collision','roll'}: penalty+=0.25; reasons.append('dynamic_template_but_video_nearly_static')
     if expected_fg_motion is not None and generated_fg_flow is not None and expected_fg_motion>1e-4 and generated_fg_flow<0.05*expected_fg_motion: penalty+=0.5; reasons.append('foreground_expected_but_nearly_static')
+    if flow_backend:
+        return {'penalty':clamp01(penalty),'status':'ok','backend':'real_flow_freeze_proxy','name':'P_freeze','reasons':reasons,'camera_stats':cam,'generated_bg_flow':generated_bg_flow,'flow_backend':flow_backend}
     return {'penalty':clamp01(penalty),'status':'ok','name':'P_freeze','reasons':reasons,'camera_stats':cam,'generated_bg_flow':generated_bg_flow}
