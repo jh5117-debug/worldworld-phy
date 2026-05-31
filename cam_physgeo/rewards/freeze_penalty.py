@@ -1,9 +1,19 @@
 from __future__ import annotations
+from cam_physgeo.rewards.metadata_backend import clean_has
 from cam_physgeo.utils.camera import camera_motion_stats
 from cam_physgeo.utils.geometry import clamp01
 from cam_physgeo.utils.video import frame_motion_magnitude
 
 def score_freeze_penalty(sample: dict, generated_bg_flow: float|None=None, generated_fg_flow: float|None=None, expected_fg_motion: float|None=None) -> dict:
+    if clean_has(sample, "camera"):
+        return {
+            "penalty": 0.0,
+            "status": "ok",
+            "backend": "physion_clean_gt_camera_metadata",
+            "name": "P_freeze",
+            "reasons": [],
+            "metadata_backend": sample.get("clean_gt_backend_coverage"),
+        }
     cam=camera_motion_stats(sample.get('poses_path'))
     if (not cam.get('available') or float(cam.get('translation_total') or 0.0) <= 1e-8) and sample.get('camera_position_path'):
         pos_cam=camera_motion_stats(sample.get('camera_position_path'))

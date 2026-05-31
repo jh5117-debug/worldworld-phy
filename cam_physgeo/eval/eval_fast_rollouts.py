@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from cam_physgeo.eval.make_contact_sheet import make_sheet, read_selected_video_frames
+from cam_physgeo.rewards.metadata_backend import hdf5_key_summary
 from cam_physgeo.rewards.total_reward import score_sample
 from cam_physgeo.utils.io import write_jsonl
 
@@ -24,7 +25,15 @@ def read_json(path: Path) -> dict[str, Any]:
 
 def make_sample(sample_dir: Path, video: Path, label: str) -> dict[str, Any]:
     meta = read_json(sample_dir / "metadata.json")
-    return {
+    hdf5 = hdf5_key_summary(meta.get("hdf5_path")) if label == "clean_gt" else {}
+    clean_coverage = {
+        "depth": bool((sample_dir / "depth.npy").exists() or hdf5.get("has_depth_key")),
+        "id_mask": bool((sample_dir / "id_mask.npy").exists() or hdf5.get("has_id_key")),
+        "camera": bool((sample_dir / "poses.npy").exists() or hdf5.get("has_camera_key")),
+        "intrinsics": bool((sample_dir / "intrinsics.npy").exists() or hdf5.get("has_camera_key")),
+        "object_state": bool(hdf5.get("has_object_state_key") or meta.get("has_object_state")),
+    } if label == "clean_gt" else {}
+    sample = {
         "sample_id": sample_dir.name,
         "source": "physion_movingcam",
         "template": meta.get("template", "unknown"),
@@ -39,9 +48,13 @@ def make_sample(sample_dir: Path, video: Path, label: str) -> dict[str, Any]:
         "has_depth": (sample_dir / "depth.npy").exists(),
         "has_camera_pose": (sample_dir / "poses.npy").exists(),
         "has_intrinsics": (sample_dir / "intrinsics.npy").exists(),
+        "hdf5_path": meta.get("hdf5_path"),
+        "has_object_state": bool(clean_coverage.get("object_state")),
+        "clean_gt_backend_coverage": clean_coverage,
         "has_reobserve": "reobserve" in str(meta.get("camera_motion", "")),
         "eval_label": label,
     }
+    return sample
 
 
 def component_score(row: dict[str, Any], name: str) -> float:
@@ -84,6 +97,7 @@ def main(argv=None) -> int:
     ap.add_argument("--debug_reward_breakdown", action="store_true")
     ap.add_argument("--confidence_weighted", action="store_true")
     ap.add_argument("--report_all_variants", action="store_true")
+    ap.add_argument("--require_clean_real_backend", action="store_true")
     args = ap.parse_args(argv)
 
     sample_root = Path(args.samples)
@@ -120,6 +134,8 @@ def main(argv=None) -> int:
             "fast_reward_real_backend_only": fast.get("reward_total_real_backend_only"),
             "clean_reward_proxy_only": clean.get("reward_total_proxy_only"),
             "fast_reward_proxy_only": fast.get("reward_total_proxy_only"),
+            "clean_backend_coverage": clean.get("backend_coverage"),
+            "fast_backend_coverage": fast.get("backend_coverage"),
             "clean_reward_no_quality": clean.get("reward_without_quality"),
             "fast_reward_no_quality": fast.get("reward_without_quality"),
             "clean_geometry_only": clean.get("R_geometry_only"),
@@ -147,6 +163,9 @@ def main(argv=None) -> int:
                 "R_total_confidence_weighted": scalar(clean, "R_total_confidence_weighted") - scalar(fast, "R_total_confidence_weighted"),
                 "R_total_real_backend_only": scalar(clean, "R_total_real_backend_only") - scalar(fast, "R_total_real_backend_only"),
                 "R_total_proxy_only": scalar(clean, "R_total_proxy_only") - scalar(fast, "R_total_proxy_only"),
+                "R_geometry_real_only": scalar(clean, "R_geometry_real_only") - scalar(fast, "R_geometry_real_only"),
+                "R_flow_available_only": scalar(clean, "R_flow_available_only") - scalar(fast, "R_flow_available_only"),
+                "R_feature_available_only": scalar(clean, "R_feature_available_only") - scalar(fast, "R_feature_available_only"),
                 "R_total_no_quality": scalar(clean, "R_total_no_quality") - scalar(fast, "R_total_no_quality"),
                 "R_geometry_only": scalar(clean, "R_geometry_only") - scalar(fast, "R_geometry_only"),
                 "R_identity_only": scalar(clean, "R_identity_only") - scalar(fast, "R_identity_only"),
@@ -168,6 +187,14 @@ def main(argv=None) -> int:
     fast_real_avg = sum(float(p["fast_reward_real_backend_only"] or 0.0) for p in ok_pairs) / count if count else None
     clean_proxy_avg = sum(float(p["clean_reward_proxy_only"] or 0.0) for p in ok_pairs) / count if count else None
     fast_proxy_avg = sum(float(p["fast_reward_proxy_only"] or 0.0) for p in ok_pairs) / count if count else None
+    if args.require_clean_real_backend:
+        missing_real = [
+            p["sample_id"]
+            for p in ok_pairs
+            if not (p.get("clean_backend_coverage") or {}).get("real_components")
+        ]
+        if missing_real:
+            print({"warning": "require_clean_real_backend requested but some clean rows have no real components", "samples": missing_real})
     with (out / "per_metric_table.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow([
@@ -184,6 +211,12 @@ def main(argv=None) -> int:
             "fast_real_backend_only",
             "clean_proxy_only",
             "fast_proxy_only",
+            "clean_geometry_real_only",
+            "fast_geometry_real_only",
+            "clean_flow_available_only",
+            "fast_flow_available_only",
+            "clean_feature_available_only",
+            "fast_feature_available_only",
             "clean_geometry_only",
             "fast_geometry_only",
             "clean_identity_only",
@@ -220,6 +253,12 @@ def main(argv=None) -> int:
                 p["fast_reward_real_backend_only"],
                 p["clean_reward_proxy_only"],
                 p["fast_reward_proxy_only"],
+                p.get("clean_backend_coverage", {}).get("geometry_real_only"),
+                p.get("fast_backend_coverage", {}).get("geometry_real_only"),
+                p.get("clean_backend_coverage", {}).get("flow_available_only"),
+                p.get("fast_backend_coverage", {}).get("flow_available_only"),
+                p.get("clean_backend_coverage", {}).get("feature_available_only"),
+                p.get("fast_backend_coverage", {}).get("feature_available_only"),
                 p["clean_geometry_only"],
                 p["fast_geometry_only"],
                 p["clean_identity_only"],

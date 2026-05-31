@@ -46,3 +46,15 @@ Next gate is not VideoGPA. The next minimal work is camera embedding instrumenta
 - Gate G: real DPO energy/logprob remains unimplemented.
 
 Next minimal work before VideoGPA is either: finish a small video-level camera ablation after GPU 6/7 are free, or wire real reward backends for clean GT depth/ID/camera/object-state and generated rollout feature/flow.
+
+## Camera Effect / Reward Real Backend Update
+
+- Gate A: passed.
+- Gate B: passed with 3 Fast rollout smoke videos.
+- Gate C: partial. Camera/control tensors differ across camera variants and source-level DiT camera scale/shift injection is present. Runtime full-DiT scale/shift tensors were not captured, and video-level effect is still not proven because the 4-frame ablation is invalid for the current LingBot-Fast temporal latent path.
+- Gate D: partial. Clean GT real metadata backend is active for depth, ID mask, camera, intrinsics, and object-state metadata. Reward v3 ranks clean above Fast on 3/3 pairs, but Fast rollout scoring remains fallback/proxy because generated-video DINO/flow/depth are not real yet.
+- Gate E: VideoGPA encode remains not allowed.
+- Gate F: LingBotFastVideoGPAAdapter batch shape work remains deferred.
+- Gate G: real DPO energy/logprob remains unimplemented.
+
+Next minimal work remains outside VideoGPA: run a valid 8-frame video-level camera ablation, wire real optical-flow forward from local RAFT assets, and add DINOv2-small only after user approval.

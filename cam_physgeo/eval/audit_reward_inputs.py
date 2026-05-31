@@ -133,6 +133,7 @@ def main(argv=None) -> int:
     ap.add_argument("--rollouts", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--limit", type=int, default=3)
+    ap.add_argument("--require_clean_gt_hdf5", action="store_true")
     args = ap.parse_args(argv)
 
     sample_root = Path(args.samples)
@@ -193,6 +194,8 @@ def main(argv=None) -> int:
                     or hdf5.get("has_id_key")
                     or hdf5.get("has_camera_key")
                 ),
+                "require_clean_gt_hdf5": args.require_clean_gt_hdf5,
+                "require_clean_gt_hdf5_passed": bool(not args.require_clean_gt_hdf5 or hdf5.get("exists")),
                 "fast_missing_generated_depth_or_id": not (rollout_root / sample_dir.name / "depth.npy").exists()
                 and not (rollout_root / sample_dir.name / "id_mask.npy").exists(),
             }

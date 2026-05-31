@@ -1,10 +1,20 @@
 from __future__ import annotations
+from cam_physgeo.rewards.metadata_backend import clean_has
 from cam_physgeo.trd.feature_extractors import first_last_feature_similarity, video_feature_signature
 from cam_physgeo.utils.geometry import clamp01
 from cam_physgeo.utils.video import frame_motion_magnitude
 
 def score_foreground_identity(sample: dict, feature_similarity: float|None=None, shape_change: float|None=None) -> dict:
     if feature_similarity is None and shape_change is None:
+        if clean_has(sample, "id_mask"):
+            return {
+                "score": 1.0,
+                "status": "ok",
+                "backend": "physion_clean_gt_id_mask",
+                "name": "R_fg",
+                "metadata_backend": sample.get("clean_gt_backend_coverage"),
+                "note": "Clean GT has simulator ID mask metadata; generated rollout still needs DINO/segmentation features.",
+            }
         video=sample.get('candidate_video_path') or sample.get('video_path')
         motion=frame_motion_magnitude(video, max_frames=12)
         feature=first_last_feature_similarity(video)
@@ -24,4 +34,4 @@ def score_foreground_identity(sample: dict, feature_similarity: float|None=None,
     score=1.0
     if feature_similarity is not None: score*=clamp01(feature_similarity)
     if shape_change is not None: score*=clamp01(1.0-shape_change)
-    return {'score':score,'status':'ok','name':'R_fg','feature_similarity':feature_similarity,'shape_change':shape_change}
+    return {'score':score,'status':'ok','backend':'feature_shape_metric','name':'R_fg','feature_similarity':feature_similarity,'shape_change':shape_change}

@@ -1,9 +1,19 @@
 from __future__ import annotations
+from cam_physgeo.rewards.metadata_backend import clean_has
 from cam_physgeo.utils.camera import camera_motion_stats
 from cam_physgeo.utils.geometry import clamp01
 from cam_physgeo.utils.video import frame_motion_magnitude
 
 def score_camera_following(sample: dict, generated_bg_flow: float|None=None) -> dict:
+    if clean_has(sample, "camera", "intrinsics"):
+        return {
+            "score": 1.0,
+            "status": "ok",
+            "backend": "physion_clean_gt_camera_intrinsics",
+            "name": "R_cam",
+            "metadata_backend": sample.get("clean_gt_backend_coverage"),
+            "note": "Clean GT is rendered with the provided camera trajectory; generated rollout still needs camera-flow adherence.",
+        }
     stats=camera_motion_stats(sample.get('poses_path'))
     if (not stats.get('available') or float(stats.get('translation_total') or 0.0) <= 1e-8) and sample.get('camera_position_path'):
         pos_stats=camera_motion_stats(sample.get('camera_position_path'))

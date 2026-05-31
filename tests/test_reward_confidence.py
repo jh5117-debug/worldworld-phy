@@ -58,9 +58,41 @@ def test_fallback_quality_cannot_dominate_confidence_weighted_total(tmp_path):
     assert "R_total_proxy_only" in scored
 
 
+def test_clean_gt_metadata_backend_gets_real_confidence(tmp_path):
+    video = tmp_path / "clean.mp4"
+    video.write_bytes(b"not-a-real-video")
+    sample = {
+        "sample_id": "clean",
+        "source": "physion_movingcam",
+        "template": "drop",
+        "camera_motion": "orbit",
+        "video_path": str(video),
+        "candidate_video_path": str(video),
+        "poses_path": str(tmp_path / "poses.npy"),
+        "intrinsics_path": str(tmp_path / "intrinsics.npy"),
+        "eval_label": "clean_gt",
+        "clean_gt_backend_coverage": {
+            "depth": True,
+            "id_mask": True,
+            "camera": True,
+            "intrinsics": True,
+            "object_state": True,
+        },
+    }
+    scored = score_sample(sample)
+    assert scored["reward_confidence"]["bg"]["backend"] == "real"
+    assert scored["reward_confidence"]["cam"]["backend"] == "real"
+    assert scored["reward_confidence"]["fg"]["backend"] == "real"
+    assert scored["reward_confidence"]["phys"]["backend"] == "real"
+    assert scored["reward_confidence"]["freeze"]["backend"] == "real"
+    assert scored["R_total_real_backend_only"] > 0.0
+
+
 if __name__ == "__main__":
     test_missing_video_reward_is_low_confidence()
     test_not_applicable_reobserve_does_not_create_high_confidence_claim()
     from tempfile import TemporaryDirectory
     with TemporaryDirectory() as d:
         test_fallback_quality_cannot_dominate_confidence_weighted_total(Path(d))
+    with TemporaryDirectory() as d:
+        test_clean_gt_metadata_backend_gets_real_confidence(Path(d))

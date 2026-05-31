@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 import math
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -250,6 +251,57 @@ def _write_pairwise_csv(rows: list[dict[str, Any]], path: Path) -> None:
             writer.writerow({key: row.get(key, "") for key in keys})
 
 
+def _grep_lines(path: Path, pattern: str, context: int = 0) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    rx = re.compile(pattern)
+    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    matches: list[dict[str, Any]] = []
+    for idx, line in enumerate(lines, 1):
+        if rx.search(line):
+            start = max(1, idx - context)
+            end = min(len(lines), idx + context)
+            matches.append(
+                {
+                    "path": str(path),
+                    "line": idx,
+                    "text": line.strip(),
+                    "context": [{"line": n, "text": lines[n - 1].strip()} for n in range(start, end + 1)],
+                }
+            )
+    return matches
+
+
+def _probe_dit_modulation_paths(lingbot_root: Path) -> dict[str, Any]:
+    """Locate where the Plucker tensor enters Fast DiT without loading weights.
+
+    Loading the full Fast DiT just to hook AdaLN/action modulation is expensive
+    and can allocate large checkpoints. This source-level probe is deliberately
+    conservative: it records the exact module/function sites that consume
+    ``c2ws_plucker_emb`` and reports runtime hook status honestly.
+    """
+
+    wan = lingbot_root / "wan"
+    image_fast = wan / "image2video_fast.py"
+    model_fast = wan / "modules" / "model_fast.py"
+    hits = []
+    for path in [image_fast, model_fast]:
+        hits.extend(_grep_lines(path, r"c2ws_plucker_emb|cam_injector|patch_embedding_wancamctrl|c2ws_hidden_states|action_tokens", context=2))
+    return {
+        "hooked_runtime_module": False,
+        "reason": "Full Fast DiT weights were not loaded in this no-generation probe; source-level DiT consumption sites are recorded instead.",
+        "candidate_modules": {
+            "generator": str(image_fast),
+            "fast_dit": str(model_fast),
+        },
+        "modulation_or_injection_sites": hits,
+        "summary": (
+            "image2video_fast.py places the Plucker/control tensor in dit_cond_dict; "
+            "model_fast.py consumes c2ws_plucker_emb via camera injector / patch embedding paths."
+        ),
+    }
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="configs/cam_physgeo/paths.yaml")
@@ -268,6 +320,8 @@ def main(argv=None) -> int:
     ap.add_argument("--device", default="cpu", choices=["cpu", "cuda"])
     ap.add_argument("--save_summary", action="store_true")
     ap.add_argument("--save_npz", default="false")
+    ap.add_argument("--probe_dit_modulation", action="store_true")
+    ap.add_argument("--save_modulation_summary", action="store_true")
     args = ap.parse_args(argv)
 
     out = Path(args.out)
@@ -346,6 +400,10 @@ def main(argv=None) -> int:
         )
     _write_pairwise_csv(all_pairwise, out / "pairwise_distances.csv")
     payload = {"samples": rows, "pairwise_csv": str(out / "pairwise_distances.csv")}
+    if args.probe_dit_modulation or args.save_modulation_summary:
+        payload["dit_modulation_probe"] = _probe_dit_modulation_paths(Path(cam_utils["root"]))
+        if args.save_modulation_summary:
+            write_json(payload["dit_modulation_probe"], out / "dit_modulation_summary.json")
     write_json(payload, out / "summary.json")
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0 if rows else 2

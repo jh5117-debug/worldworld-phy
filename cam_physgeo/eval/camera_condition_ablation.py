@@ -253,6 +253,8 @@ def compute_ablation_metrics(sample_rows: list[dict[str, Any]]) -> dict[str, Any
     add("repeat_correct_A_vs_repeat_correct_B", "repeat_correct_A", "repeat_correct_B")
     baseline = comparisons.get("repeat_correct_A_vs_repeat_correct_B", {}).get("pixel_l1")
     for variant in ["frozen", "reversed", "exaggerated_yaw", "zero_motion", "shuffled"]:
+        add(f"repeat_correct_A_vs_{variant}", "repeat_correct_A", variant)
+    for variant in ["frozen", "reversed", "exaggerated_yaw", "zero_motion", "shuffled"]:
         add(f"correct_vs_{variant}", "correct", variant)
     threshold = None
     conclusion = "not_proven"
@@ -261,7 +263,7 @@ def compute_ablation_metrics(sample_rows: list[dict[str, Any]]) -> dict[str, Any
         variant_scores = [
             comp.get("pixel_l1")
             for key, comp in comparisons.items()
-            if key.startswith("correct_vs_") and comp.get("available")
+            if (key.startswith("correct_vs_") or key.startswith("repeat_correct_A_vs_")) and comp.get("available")
         ]
         if variant_scores and max(float(v) for v in variant_scores if v is not None) > threshold:
             conclusion = "camera_likely_affects_generation"

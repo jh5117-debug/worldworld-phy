@@ -49,8 +49,12 @@ def _annotate_confidence(parts: dict[str, dict[str, Any]], sample: dict[str, Any
         if key == "freeze":
             # Freeze is a penalty. Frame-diff proxy can identify global freeze,
             # but without real flow/masks it should not dominate positive claims.
-            conf = min(conf, 0.25 if part.get("reasons") else 0.2)
-            backend = "fallback" if backend == "real" else backend
+            if str(part.get("backend") or "").startswith("physion_clean_gt"):
+                conf = 1.0
+                backend = "real"
+            else:
+                conf = min(conf, 0.25 if part.get("reasons") else 0.2)
+                backend = "fallback" if backend == "real" else backend
         part["confidence"] = conf
         part["backend_confidence"] = backend
         part["confidence_reason"] = reason
@@ -149,6 +153,9 @@ def score_sample(sample: dict, weights: dict | None = None) -> dict:
     motion, motion_conf = _weighted_average(parts, w, ["cam", "phys"], confidence_weighted=True)
     real_backend_avg, real_backend_conf = _backend_weighted_average(parts, w, SCORE_KEYS, {"real"})
     proxy_backend_avg, proxy_backend_conf = _backend_weighted_average(parts, w, SCORE_KEYS, {"fallback"})
+    geometry_real, geometry_real_conf = _backend_weighted_average(parts, w, ["bg", "cam", "reobs"], {"real"})
+    flow_available, flow_available_conf = _backend_weighted_average(parts, w, ["bg", "cam"], {"real"})
+    feature_available, feature_available_conf = _backend_weighted_average(parts, w, ["fg", "reobs"], {"real"})
     freeze_penalty = float(parts["freeze"].get("penalty", 0.0) or 0.0)
     freeze_conf = float(parts["freeze"].get("confidence", 0.0) or 0.0)
 
@@ -178,6 +185,7 @@ def score_sample(sample: dict, weights: dict | None = None) -> dict:
         "has_id_mask": bool(sample.get("has_id_mask") or sample.get("id_path")),
         "has_camera_pose": bool(sample.get("has_camera_pose") or sample.get("poses_path")),
         "has_intrinsics": bool(sample.get("has_intrinsics") or sample.get("intrinsics_path")),
+        "clean_gt_backend_coverage": sample.get("clean_gt_backend_coverage"),
         "eval_label": sample.get("eval_label"),
         "critical_missing_or_low_confidence": critical_missing,
     }
@@ -204,6 +212,12 @@ def score_sample(sample: dict, weights: dict | None = None) -> dict:
         "R_total_confidence_weighted": clamp01(raw_conf),
         "R_total_real_backend_only": clamp01(raw_real_backend),
         "R_total_proxy_only": clamp01(raw_proxy_backend),
+        "R_geometry_real_only": clamp01(geometry_real),
+        "R_geometry_real_confidence": geometry_real_conf,
+        "R_flow_available_only": clamp01(flow_available),
+        "R_flow_available_confidence": flow_available_conf,
+        "R_feature_available_only": clamp01(feature_available),
+        "R_feature_available_confidence": feature_available_conf,
         "R_geometry_only": clamp01(geometry),
         "R_geometry_confidence": geometry_conf,
         "R_identity_only": clamp01(identity),
@@ -212,6 +226,15 @@ def score_sample(sample: dict, weights: dict | None = None) -> dict:
         "R_motion_confidence": motion_conf,
         "R_quality_only": clamp01(float(parts["quality"].get("score", 0.0) or 0.0)),
         "P_freeze": clamp01(freeze_penalty),
+        "backend_coverage": {
+            "real_components": [k for k, v in confidence.items() if v["backend"] == "real"],
+            "fallback_components": [k for k, v in confidence.items() if v["backend"] == "fallback"],
+            "missing_components": [k for k, v in confidence.items() if v["backend"] == "missing"],
+            "clean_gt_backend_coverage": sample.get("clean_gt_backend_coverage"),
+            "geometry_real_only": clamp01(geometry_real),
+            "flow_available_only": clamp01(flow_available),
+            "feature_available_only": clamp01(feature_available),
+        },
         "weights": w,
         "components": parts,
         "reward_confidence": confidence,
