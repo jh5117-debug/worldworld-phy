@@ -44,8 +44,14 @@ class LingBotFastVideoGPAAdapter:
     def load_model(self):
         raise NotImplementedError("Use WanI2VFast runtime bundle first; full VideoGPA policy-model loading is not implemented.")
 
+    def load_policy_model(self):
+        raise NotImplementedError("Policy loading for VideoGPA is not implemented. Reuse LingBot runtime loader only after the forward contract is known.")
+
     def load_reference_model(self):
         raise NotImplementedError("Frozen reference loading is not implemented. Do not start DPO before this is real.")
+
+    def load_vae(self):
+        raise NotImplementedError("LingBot/Wan VAE loading for VideoGPA latent encode is not implemented.")
 
     def encode_video_to_latent(self, video_path: str | Path):
         raise NotImplementedError("LingBot VAE latent encoding is not implemented for VideoGPA yet.")
@@ -87,6 +93,12 @@ class LingBotFastVideoGPAAdapter:
             },
         }
 
+    def collate_winner_loser_batch(self, pair: dict[str, Any]) -> dict[str, Any]:
+        return self.prepare_winner_loser_batch(pair)
+
+    def sample_same_noise_timestep(self, *args, **kwargs):
+        raise NotImplementedError("Same-noise/same-timestep sampling must be wired to the LingBot scheduler before DPO dry-run.")
+
     def compute_dpo_energy_or_logprob(self, *args, **kwargs):
         raise NotImplementedError("No fake DPO energy/logprob. Wire LingBot denoising/velocity error first.")
 
@@ -100,11 +112,13 @@ class LingBotFastVideoGPAAdapter:
         fast = inspect_checkpoint(self.paths["lingbot_fast"], label="LingBot-Fast")
         base = inspect_checkpoint(self.paths["lingbot_base"], label="LingBot-Base")
         methods = [
-            AdapterStatus("load_model", False, "wan.WanI2VFast + runtime symlink bundle", "paths/config", "policy model", True, True, False, "runtime inference exists separately; VideoGPA policy object not wired"),
+            AdapterStatus("load_policy_model", False, "wan.WanI2VFast + runtime symlink bundle", "paths/config", "policy model", True, True, False, "runtime inference exists separately; VideoGPA policy object not wired"),
             AdapterStatus("load_reference_model", False, "same as load_model", "paths/config", "frozen ref model", True, True, False, "required before DPO"),
+            AdapterStatus("load_vae", False, "LingBot/Wan VAE", "paths/config", "VAE encoder/decoder", False, False, False, "required for real VideoGPA latent encode"),
             AdapterStatus("encode_video_to_latent", False, "LingBot Wan2_1_VAE", "mp4/video tensor", "latent B,C,F,H,W", False, False, False, "required for VideoGPA encode"),
             AdapterStatus("encode_condition", True, "cam-only sample files", "sample_dir", "metadata + shape dict", True, True, True, "shape dry-run only; dummy action is not a core condition"),
-            AdapterStatus("prepare_winner_loser_batch", True, "VideoGPA pair JSON", "pair dict", "batch contract dict", True, True, True, "shape/metadata dry-run only"),
+            AdapterStatus("collate_winner_loser_batch", True, "VideoGPA pair JSON", "pair dict", "batch contract dict", True, True, True, "shape/metadata dry-run only"),
+            AdapterStatus("sample_same_noise_timestep", False, "LingBot scheduler", "batch size + latent shape", "noise tensor + timestep", False, False, False, "required before DPO energy comparison"),
             AdapterStatus("compute_dpo_energy_or_logprob", False, "LingBot forward/noise scheduler", "winner/loser latents + condition", "scalar energy/logprob delta", True, True, False, "must be real before any DPO train"),
         ]
         return {
@@ -160,7 +174,8 @@ def write_plan(status: dict[str, Any], out: str | Path) -> None:
         "2. Export Physion clean/corrupt pairs as VideoGPA `groups` JSON.",
         "3. Use this adapter to preserve image/prompt/poses/intrinsics and prepare winner/loser batch metadata.",
         "4. Implement LingBot VAE latent encoding and camera-condition encoding in wrapper code.",
-        "5. Only after real `compute_dpo_energy_or_logprob` exists, call VideoGPA train logic through a wrapper.",
+        "5. Collate winner/loser with the same sampled timestep and same noise before any DPO loss.",
+        "6. Only after real `compute_dpo_energy_or_logprob` exists, call VideoGPA train logic through a wrapper.",
         "",
         "## Method Status",
     ]
@@ -173,6 +188,12 @@ def write_plan(status: dict[str, Any], out: str | Path) -> None:
         f"- Reason: {status.get('reason')}",
         "",
         "If VideoGPA source changes become unavoidable, prefer a small wrapper or patch file over editing `local_assets/third_party/VideoGPA/official_repo` directly.",
+        "",
+        "## Training Forward Contract",
+        "- Winner and loser must share prompt tokens, image condition, poses/intrinsics-derived Plucker control, timestep, and noise.",
+        "- `use_action=false` remains part of metadata; dummy zero action is compatibility only and must not replace camera condition.",
+        "- Reference model must be frozen and should reuse the same LingBot-Fast architecture without LoRA trainable layers.",
+        "- LoRA should attach only to the policy DiT/control projection modules after a real energy/logprob path is validated.",
     ])
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     Path(out).write_text("\n".join(lines) + "\n", encoding="utf-8")

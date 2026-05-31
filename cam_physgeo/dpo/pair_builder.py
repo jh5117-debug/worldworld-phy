@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -91,6 +92,113 @@ def make_gt_vs_corrupt_pairs(
     return pairs, rejected
 
 
+def _read_json(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _reward_rows(path: str | Path | None) -> dict[str, dict]:
+    if not path:
+        return {}
+    p = Path(path)
+    if not p.exists():
+        return {}
+    rows: dict[str, dict] = {}
+    for row in read_jsonl(p):
+        sid = str(row.get("sample_id") or "")
+        if sid:
+            rows.setdefault(sid, {})
+        if sid and row.get("eval_label") == "clean_gt":
+            rows[sid]["clean"] = row
+        elif sid and row.get("eval_label") in {"fast_zero_shot", "fast_rollout"}:
+            rows[sid]["fast"] = row
+    return rows
+
+
+def _reward_total(row: dict, preferred: str = "reward_total_confidence_weighted") -> float | None:
+    for key in [preferred, "R_total_confidence_weighted", "reward_total", "R_total", "R_total_raw"]:
+        value = row.get(key)
+        if value is not None:
+            return float(value)
+    return None
+
+
+def _condition_from_sample_dir(sample_dir: Path) -> dict:
+    meta = _read_json(sample_dir / "metadata.json")
+    return {
+        "image": str(sample_dir / "image.jpg"),
+        "prefix": str(sample_dir / "image.jpg"),
+        "prompt": str(sample_dir / "prompt.txt"),
+        "poses": str(sample_dir / "poses.npy"),
+        "intrinsics": str(sample_dir / "intrinsics.npy"),
+        "metadata": str(sample_dir / "metadata.json"),
+        "action": str(sample_dir / "action.npy") if (sample_dir / "action.npy").exists() else None,
+        "use_action": False,
+        "camera_motion": meta.get("camera_motion"),
+        "template": meta.get("template"),
+        "sample_id": sample_dir.name,
+    }
+
+
+def make_gt_vs_fast_pairs(
+    samples_root: str | Path,
+    rollouts_root: str | Path,
+    *,
+    reward_report: str | Path | None,
+    min_margin: float,
+    limit: int,
+) -> tuple[list[dict], list[dict]]:
+    samples_root = Path(samples_root)
+    rollouts_root = Path(rollouts_root)
+    rewards = _reward_rows(reward_report)
+    pairs: list[dict] = []
+    rejected: list[dict] = []
+    sample_dirs = [p for p in sorted(samples_root.iterdir()) if p.is_dir()] if samples_root.exists() else []
+    for sample_dir in sample_dirs:
+        if limit and len(pairs) >= limit:
+            break
+        sid = sample_dir.name
+        clean_video = sample_dir / "target.mp4"
+        fast_video = rollouts_root / sid / "generated.mp4"
+        if not clean_video.exists() or not fast_video.exists():
+            rejected.append({"sample_id": sid, "reason": "missing_clean_or_fast_video", "clean_exists": clean_video.exists(), "fast_exists": fast_video.exists()})
+            continue
+        clean_reward = (rewards.get(sid) or {}).get("clean")
+        fast_reward = (rewards.get(sid) or {}).get("fast")
+        if clean_reward is None or fast_reward is None:
+            rejected.append({"sample_id": sid, "reason": "missing_reward_report_rows"})
+            continue
+        clean_score = _reward_total(clean_reward)
+        fast_score = _reward_total(fast_reward)
+        if clean_score is None or fast_score is None:
+            rejected.append({"sample_id": sid, "reason": "missing_reward_score"})
+            continue
+        margin = clean_score - fast_score
+        if margin < min_margin:
+            rejected.append({"sample_id": sid, "reason": "margin_below_threshold", "margin": margin})
+            continue
+        pair_id = "pair_" + hashlib.sha1(f"{sid}:gt_vs_fast:{fast_video}".encode()).hexdigest()[:12]
+        pairs.append(
+            {
+                "pair_id": pair_id,
+                "condition": _condition_from_sample_dir(sample_dir),
+                "winner": {"video": str(clean_video), "source": "clean_physion_gt", "reward": clean_reward},
+                "loser": {"video": str(fast_video), "source": "lingbot_fast_zero_shot", "reward": fast_reward},
+                "pair_type": "gt_vs_fast_rollout",
+                "margin": margin,
+                "weight": 1.0,
+                "quality_flags": ["reward_v5_confidence_weighted_margin"],
+                "reward_v5_breakdown": {
+                    "clean": clean_reward,
+                    "fast": fast_reward,
+                    "margin_confidence_weighted": margin,
+                },
+            }
+        )
+    return pairs, rejected
+
+
 def write_report(path: str | Path, pairs: list[dict], rejected: list[dict]) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -128,7 +236,9 @@ def write_report(path: str | Path, pairs: list[dict], rejected: list[dict]) -> N
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--manifest", required=True)
+    ap.add_argument("--manifest", default="")
+    ap.add_argument("--samples", default="")
+    ap.add_argument("--rollouts", default="")
     ap.add_argument("--source", default="", choices=["", "physion_official", "physion_movingcam"])
     ap.add_argument("--pair_types", nargs="+", default=["gt_vs_corrupt"])
     ap.add_argument("--config", default="")
@@ -138,34 +248,52 @@ def main(argv=None):
     ap.add_argument("--min_margin", type=float, default=0.05)
     ap.add_argument("--save_videos", default="outputs/dpo_pair_physion")
     ap.add_argument("--save_report", default="")
+    ap.add_argument("--reward_report", default="")
     ap.add_argument("--strength", default="medium", choices=["low", "medium", "high"])
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
-    if "gt_vs_corrupt" not in args.pair_types:
-        raise SystemExit("Only gt_vs_corrupt is implemented before LingBot rollout generation.")
     cfg = load_yaml(args.config) if args.config else {}
     weights = (cfg.get("reward_weights") or cfg.get("weights") or {}) if isinstance(cfg, dict) else {}
     corruptions = parse_corruptions(args.corruptions)
     pairs: list[dict] = []
     rejected: list[dict] = []
     seen = 0
-    for sample in read_jsonl(args.manifest):
-        if args.source and sample.get("source") != args.source:
-            continue
-        if args.limit and seen >= args.limit:
-            break
-        new_pairs, new_rejected = make_gt_vs_corrupt_pairs(
-            sample,
-            corruptions=corruptions,
-            save_videos=args.save_videos,
-            weights=weights,
+    if "gt_vs_corrupt" in args.pair_types:
+        if not args.manifest:
+            raise SystemExit("--manifest is required for gt_vs_corrupt")
+        for sample in read_jsonl(args.manifest):
+            if args.source and sample.get("source") != args.source:
+                continue
+            if args.limit and seen >= args.limit:
+                break
+            new_pairs, new_rejected = make_gt_vs_corrupt_pairs(
+                sample,
+                corruptions=corruptions,
+                save_videos=args.save_videos,
+                weights=weights,
+                min_margin=args.min_margin,
+                dry_run=args.dry_run,
+                strength=args.strength,
+            )
+            pairs.extend(new_pairs)
+            rejected.extend(new_rejected)
+            seen += 1
+    if "gt_vs_fast_rollout" in args.pair_types:
+        if not args.samples or not args.rollouts:
+            raise SystemExit("--samples and --rollouts are required for gt_vs_fast_rollout")
+        fast_pairs, fast_rejected = make_gt_vs_fast_pairs(
+            args.samples,
+            args.rollouts,
+            reward_report=args.reward_report,
             min_margin=args.min_margin,
-            dry_run=args.dry_run,
-            strength=args.strength,
+            limit=args.limit,
         )
-        pairs.extend(new_pairs)
-        rejected.extend(new_rejected)
-        seen += 1
+        pairs.extend(fast_pairs)
+        rejected.extend(fast_rejected)
+        seen += len(fast_pairs) + len(fast_rejected)
+    unknown = set(args.pair_types) - {"gt_vs_corrupt", "gt_vs_fast_rollout"}
+    if unknown:
+        raise SystemExit(f"Unsupported pair_types: {sorted(unknown)}")
     print({"samples": seen, "pairs": len(pairs), "rejected": len(rejected), "out": args.out, "dry_run": args.dry_run})
     if not args.dry_run:
         write_jsonl(pairs, args.out)

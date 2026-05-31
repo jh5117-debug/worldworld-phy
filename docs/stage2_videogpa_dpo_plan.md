@@ -82,3 +82,15 @@ Next minimal work is still not VideoGPA: add DINOv2-small after approval and re-
 - Gate G: real DPO energy/logprob remains unimplemented.
 
 Next permitted step is VideoGPA encode smoke only. DPO training is still blocked.
+
+## VideoGPA Encode Smoke Update
+
+- Gate A: passed.
+- Gate B: passed.
+- Gate C: partial/pass. Stress camera perturbations have video-level effect, but ordinary frozen/correct remains weak.
+- Gate D: partial/pass for smoke. Reward v5 provides a usable smoke-level clean > Fast signal with RAFT and DINO active, but generated depth/mask/physics are still not complete.
+- Gate E: partial. VideoGPA pair export and encode-readiness smoke passed for `gt_vs_fast` metadata/video readability, and camera sidecars were preserved. Native latent encode did not run because LingBot-Fast VAE/condition encoding is not wired into VideoGPA.
+- Gate F: still no. DPO remains blocked.
+- Gate G: still no. `compute_dpo_energy_or_logprob` is intentionally `NotImplementedError`.
+
+Next minimal step is not training. It is a LingBot-Fast VideoGPA adapter dry-run that implements real LingBot VAE latent encode, same-noise/same-timestep batch collation, and a non-fake energy/logprob path.
