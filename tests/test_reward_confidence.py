@@ -38,9 +38,29 @@ def test_not_applicable_reobserve_does_not_create_high_confidence_claim():
     }
     scored = score_sample(sample)
     assert scored["components"]["reobs"]["status"] == "not_applicable"
-    assert scored["reward_confidence"]["reobs"]["confidence"] <= 0.2
+    assert scored["reward_confidence"]["reobs"]["confidence"] == 0.0
+
+
+def test_fallback_quality_cannot_dominate_confidence_weighted_total(tmp_path):
+    video = tmp_path / "missing.mp4"
+    sample = {
+        "sample_id": "proxy",
+        "source": "physion_movingcam",
+        "template": "unknown",
+        "camera_motion": "orbit",
+        "video_path": str(video),
+        "candidate_video_path": str(video),
+        "eval_label": "fast_zero_shot",
+    }
+    scored = score_sample(sample)
+    assert scored["reward_confidence"]["quality"]["confidence"] <= 0.25
+    assert "R_total_real_backend_only" in scored
+    assert "R_total_proxy_only" in scored
 
 
 if __name__ == "__main__":
     test_missing_video_reward_is_low_confidence()
     test_not_applicable_reobserve_does_not_create_high_confidence_claim()
+    from tempfile import TemporaryDirectory
+    with TemporaryDirectory() as d:
+        test_fallback_quality_cannot_dominate_confidence_weighted_total(Path(d))

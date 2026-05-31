@@ -132,3 +132,16 @@ Conclusion: DPO remains disallowed. The next gate is small Fast rollout plus cam
 - DPO remains disallowed.
 
 The next minimal action is not VideoGPA. First hook `get_plucker_embeddings` to confirm camera embedding differences, then repair `R_phys` and `P_freeze` backends.
+
+## Plucker / Reward Backend Addendum
+
+- Direct Plucker probe succeeded without video generation.
+- Sample `physion_movingcam_07abddf5748b` produced final control tensors shaped `(1, 448, 2, 8, 14)`.
+- Dummy action tensor was zero; camera Plucker channels were nonzero.
+- Camera variants changed the control tensor: correct vs frozen L2 `12.8458`, correct vs reversed L2 `25.6122`, correct vs exaggerated_yaw L2 `83.0763`.
+- Gate C is upgraded from "path not confirmed" to "embedding path confirmed, video-level effect not proven".
+- Reward v2 now reports raw, no-quality, confidence-weighted, real-backend-only, and proxy-only totals.
+- Real-backend-only score is `0.0` for both clean and Fast because the rollout scorer still does not use real depth/ID/camera/object-state or feature/flow backends.
+- Gate D remains failed/provisional; reward is still not usable for DPO pair selection.
+
+VideoGPA encode remains blocked until camera effect is proven at video level and reward backends stop relying on proxies.

@@ -116,6 +116,10 @@ def main(argv=None) -> int:
             "clean_reward_confidence_weighted": clean.get("reward_total_confidence_weighted"),
             "fast_reward_confidence_weighted": fast.get("reward_total_confidence_weighted"),
             "clean_gt_wins_confidence_weighted": clean_metric > fast_metric,
+            "clean_reward_real_backend_only": clean.get("reward_total_real_backend_only"),
+            "fast_reward_real_backend_only": fast.get("reward_total_real_backend_only"),
+            "clean_reward_proxy_only": clean.get("reward_total_proxy_only"),
+            "fast_reward_proxy_only": fast.get("reward_total_proxy_only"),
             "clean_reward_no_quality": clean.get("reward_without_quality"),
             "fast_reward_no_quality": fast.get("reward_without_quality"),
             "clean_geometry_only": clean.get("R_geometry_only"),
@@ -139,7 +143,10 @@ def main(argv=None) -> int:
             },
             "variant_delta_clean_minus_fast": {
                 "R_total": scalar(clean, "R_total") - scalar(fast, "R_total"),
+                "R_total_raw": scalar(clean, "R_total_raw") - scalar(fast, "R_total_raw"),
                 "R_total_confidence_weighted": scalar(clean, "R_total_confidence_weighted") - scalar(fast, "R_total_confidence_weighted"),
+                "R_total_real_backend_only": scalar(clean, "R_total_real_backend_only") - scalar(fast, "R_total_real_backend_only"),
+                "R_total_proxy_only": scalar(clean, "R_total_proxy_only") - scalar(fast, "R_total_proxy_only"),
                 "R_total_no_quality": scalar(clean, "R_total_no_quality") - scalar(fast, "R_total_no_quality"),
                 "R_geometry_only": scalar(clean, "R_geometry_only") - scalar(fast, "R_geometry_only"),
                 "R_identity_only": scalar(clean, "R_identity_only") - scalar(fast, "R_identity_only"),
@@ -157,6 +164,10 @@ def main(argv=None) -> int:
     clean_conf_avg = sum(float(p["clean_reward_confidence_weighted"] or 0.0) for p in ok_pairs) / count if count else None
     fast_conf_avg = sum(float(p["fast_reward_confidence_weighted"] or 0.0) for p in ok_pairs) / count if count else None
     win_rate_conf = sum(1 for p in ok_pairs if p["clean_gt_wins_confidence_weighted"]) / count if count else None
+    clean_real_avg = sum(float(p["clean_reward_real_backend_only"] or 0.0) for p in ok_pairs) / count if count else None
+    fast_real_avg = sum(float(p["fast_reward_real_backend_only"] or 0.0) for p in ok_pairs) / count if count else None
+    clean_proxy_avg = sum(float(p["clean_reward_proxy_only"] or 0.0) for p in ok_pairs) / count if count else None
+    fast_proxy_avg = sum(float(p["fast_reward_proxy_only"] or 0.0) for p in ok_pairs) / count if count else None
     with (out / "per_metric_table.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow([
@@ -169,6 +180,10 @@ def main(argv=None) -> int:
             "clean_gt_wins_confidence_weighted",
             "clean_no_quality",
             "fast_no_quality",
+            "clean_real_backend_only",
+            "fast_real_backend_only",
+            "clean_proxy_only",
+            "fast_proxy_only",
             "clean_geometry_only",
             "fast_geometry_only",
             "clean_identity_only",
@@ -201,6 +216,10 @@ def main(argv=None) -> int:
                 p["clean_gt_wins_confidence_weighted"],
                 p["clean_reward_no_quality"],
                 p["fast_reward_no_quality"],
+                p["clean_reward_real_backend_only"],
+                p["fast_reward_real_backend_only"],
+                p["clean_reward_proxy_only"],
+                p["fast_reward_proxy_only"],
                 p["clean_geometry_only"],
                 p["fast_geometry_only"],
                 p["clean_identity_only"],
@@ -232,6 +251,10 @@ def main(argv=None) -> int:
         f"- Clean GT avg confidence-weighted reward: {clean_conf_avg}",
         f"- Fast rollout avg confidence-weighted reward: {fast_conf_avg}",
         f"- Clean > Fast confidence-weighted win rate: {win_rate_conf}",
+        f"- Clean GT avg real-backend-only reward: {clean_real_avg}",
+        f"- Fast rollout avg real-backend-only reward: {fast_real_avg}",
+        f"- Clean GT avg proxy-only reward: {clean_proxy_avg}",
+        f"- Fast rollout avg proxy-only reward: {fast_proxy_avg}",
         "- Reward confidence is now reported per component. Fallback/missing backends do not contribute high confidence.",
         "- DINO/V-JEPA actual forward: not used in this reward path unless backend report says otherwise; proxy visual signatures are active.",
         "- Optical flow actual forward: not used yet; frame-diff proxy is active.",

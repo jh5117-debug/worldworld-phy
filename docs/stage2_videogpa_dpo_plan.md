@@ -34,3 +34,15 @@ Only after Gates B, C, and D are reasonably passed should a future round attempt
 - Gate G: real DPO energy/logprob remains unimplemented.
 
 Next gate is not VideoGPA. The next minimal work is camera embedding instrumentation plus reward backend repair.
+
+## Plucker / Reward Backend Debug Update
+
+- Gate A: passed.
+- Gate B: passed at 3-rollout smoke level.
+- Gate C: partial. Direct probe of LingBot's actual `get_plucker_embeddings` path shows correct/frozen/reversed/exaggerated camera variants produce different `c2ws_plucker_emb` control tensors. This proves camera condition reaches the model-side embedding. Video-level effect is still not proven because the same-seed ablation set did not complete.
+- Gate D: failed / not reliable. V2 reward aggregation now marks all proxy/missing components as low confidence and adds real-backend-only totals, but no real backend is active for clean or Fast in the rollout scorer. Raw and proxy totals still rank Fast above clean.
+- Gate E: VideoGPA encode remains not allowed.
+- Gate F: adapter batch-shape work remains deferred.
+- Gate G: real DPO energy/logprob remains unimplemented.
+
+Next minimal work before VideoGPA is either: finish a small video-level camera ablation after GPU 6/7 are free, or wire real reward backends for clean GT depth/ID/camera/object-state and generated rollout feature/flow.

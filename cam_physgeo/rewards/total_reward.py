@@ -20,23 +20,19 @@ def _status_confidence(key: str, part: dict[str, Any], sample: dict[str, Any]) -
     status = str(part.get("status") or "")
     backend = str(part.get("backend") or "")
     label = str(sample.get("eval_label") or "")
+    backend_lower = backend.lower()
+    if "proxy" in backend_lower or "hook_or_proxy" in backend_lower:
+        return 0.25, "fallback", backend or "proxy backend"
     if status == "ok":
         return 1.0, "real", "component reports real/explicit scoring"
     if status in {"missing_video", "missing_camera_or_video"}:
         return 0.0, "missing", status
     if status == "not_applicable":
-        return 0.15, "missing", "not applicable to this sample; excluded from high-confidence conclusions"
+        return 0.0, "missing", "not applicable to this sample; excluded from high-confidence conclusions"
     if "feature_missing" in status:
-        return 0.1, "missing", status
+        return 0.0, "missing", status
     if status in {"proxy_frame_diff", "motion_proxy", "cv2_proxy", "first_last_plus_feature_proxy", "id_mask_plus_proxy_feature", "proxy_visual_feature_no_mask"}:
-        base = {
-            "bg": 0.25,
-            "cam": 0.25,
-            "fg": 0.35,
-            "phys": 0.30,
-            "reobs": 0.25,
-            "quality": 0.55,
-        }.get(key, 0.25)
+        base = 0.25
         if label == "fast_zero_shot" and key in {"bg", "cam", "fg", "phys", "reobs"}:
             base = min(base, 0.25)
         return base, "fallback", backend or status
@@ -53,7 +49,7 @@ def _annotate_confidence(parts: dict[str, dict[str, Any]], sample: dict[str, Any
         if key == "freeze":
             # Freeze is a penalty. Frame-diff proxy can identify global freeze,
             # but without real flow/masks it should not dominate positive claims.
-            conf = min(conf, 0.35 if part.get("reasons") else 0.2)
+            conf = min(conf, 0.25 if part.get("reasons") else 0.2)
             backend = "fallback" if backend == "real" else backend
         part["confidence"] = conf
         part["backend_confidence"] = backend
@@ -68,12 +64,44 @@ def _weighted_average(parts: dict[str, dict[str, Any]], weights: dict[str, float
     confidence_mass = 0.0
     for key in keys:
         weight = float(weights.get(key, 0.0) or 0.0)
+        if confidence_weighted and key == "quality":
+            # Quality is useful as a guardrail but must not dominate rollout
+            # preference decisions while feature/flow/depth backends are absent.
+            weight = min(weight, 0.05)
         if weight <= 0:
             continue
         conf = float(parts[key].get("confidence", 1.0) or 0.0) if confidence_weighted else 1.0
         denom += weight * conf
         numer += weight * conf * float(parts[key].get("score", 0.0) or 0.0)
         confidence_mass += weight * float(parts[key].get("confidence", 0.0) or 0.0)
+    if denom <= 1e-8:
+        return 0.0, 0.0
+    nominal = sum(float(weights.get(k, 0.0) or 0.0) for k in keys) or 1.0
+    return numer / denom, confidence_mass / nominal
+
+
+def _backend_weighted_average(
+    parts: dict[str, dict[str, Any]],
+    weights: dict[str, float],
+    keys: list[str],
+    allowed_backends: set[str],
+) -> tuple[float, float]:
+    denom = 0.0
+    numer = 0.0
+    confidence_mass = 0.0
+    for key in keys:
+        backend = str(parts[key].get("backend_confidence") or "")
+        if backend not in allowed_backends:
+            continue
+        weight = float(weights.get(key, 0.0) or 0.0)
+        if key == "quality":
+            weight = min(weight, 0.05)
+        conf = float(parts[key].get("confidence", 0.0) or 0.0)
+        if weight <= 0 or conf <= 0:
+            continue
+        denom += weight * conf
+        numer += weight * conf * float(parts[key].get("score", 0.0) or 0.0)
+        confidence_mass += weight * conf
     if denom <= 1e-8:
         return 0.0, 0.0
     nominal = sum(float(weights.get(k, 0.0) or 0.0) for k in keys) or 1.0
@@ -119,10 +147,13 @@ def score_sample(sample: dict, weights: dict | None = None) -> dict:
     geometry, geometry_conf = _weighted_average(parts, w, ["bg", "cam", "reobs"], confidence_weighted=True)
     identity, identity_conf = _weighted_average(parts, w, ["fg"], confidence_weighted=True)
     motion, motion_conf = _weighted_average(parts, w, ["cam", "phys"], confidence_weighted=True)
+    real_backend_avg, real_backend_conf = _backend_weighted_average(parts, w, SCORE_KEYS, {"real"})
+    proxy_backend_avg, proxy_backend_conf = _backend_weighted_average(parts, w, SCORE_KEYS, {"fallback"})
     freeze_penalty = float(parts["freeze"].get("penalty", 0.0) or 0.0)
     freeze_conf = float(parts["freeze"].get("confidence", 0.0) or 0.0)
 
     raw = avg - float(w.get("freeze", 0.0) or 0.0) * freeze_penalty
+    raw_unclamped = raw
     raw_conf_normalized = avg_conf - float(w.get("freeze", 0.0) or 0.0) * freeze_penalty * freeze_conf
     # The normalized confidence-weighted average can still look high when all
     # surviving terms are weak proxies. Scale by the confidence mass so missing
@@ -132,6 +163,12 @@ def score_sample(sample: dict, weights: dict | None = None) -> dict:
     raw_no_quality_conf = avg_no_quality_conf - float(w.get("freeze", 0.0) or 0.0) * freeze_penalty * freeze_conf
     raw_no_phys = avg_no_phys - float(w.get("freeze", 0.0) or 0.0) * freeze_penalty
     raw_motion = motion - freeze_penalty * freeze_conf
+    raw_real_backend = real_backend_avg
+    if parts["freeze"].get("backend_confidence") == "real":
+        raw_real_backend -= float(w.get("freeze", 0.0) or 0.0) * freeze_penalty * freeze_conf
+    raw_proxy_backend = proxy_backend_avg
+    if parts["freeze"].get("backend_confidence") == "fallback":
+        raw_proxy_backend -= float(w.get("freeze", 0.0) or 0.0) * freeze_penalty * freeze_conf
 
     critical = ["bg", "cam", "fg", "phys"]
     critical_missing = [k for k in critical if confidence[k]["backend"] == "missing" or confidence[k]["confidence"] <= 0.1]
@@ -148,17 +185,25 @@ def score_sample(sample: dict, weights: dict | None = None) -> dict:
         "sample_id": sample.get("sample_id"),
         "reward_total": clamp01(raw),
         "reward_raw": raw,
+        "reward_raw_unclamped": raw_unclamped,
         "reward_without_quality": clamp01(raw_no_quality),
         "reward_without_quality_confidence_weighted": clamp01(raw_no_quality_conf),
         "reward_without_phys": clamp01(raw_no_phys),
         "reward_total_confidence_weighted": clamp01(raw_conf),
         "reward_total_confidence_weighted_normalized": clamp01(raw_conf_normalized),
+        "reward_total_real_backend_only": clamp01(raw_real_backend),
+        "reward_total_real_backend_confidence": real_backend_conf,
+        "reward_total_proxy_only": clamp01(raw_proxy_backend),
+        "reward_total_proxy_confidence": proxy_backend_conf,
         "reward_confidence_overall": overall_conf_weighted,
         "reward_confidence_unweighted_mass": overall_conf,
         "reward_provisional": provisional,
         "R_total": clamp01(raw),
+        "R_total_raw": clamp01(raw_unclamped),
         "R_total_no_quality": clamp01(raw_no_quality),
         "R_total_confidence_weighted": clamp01(raw_conf),
+        "R_total_real_backend_only": clamp01(raw_real_backend),
+        "R_total_proxy_only": clamp01(raw_proxy_backend),
         "R_geometry_only": clamp01(geometry),
         "R_geometry_confidence": geometry_conf,
         "R_identity_only": clamp01(identity),
