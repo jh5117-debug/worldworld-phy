@@ -9,3 +9,16 @@ training:
   run_train: false
   run_encode_smoke: false
   max_encode_pairs: 2
+
+lingbot_fast_adapter:
+  run_train: false
+  run_dpo: false
+  max_pairs: 1
+  default_device: cuda
+  default_dtype: bf16
+  default_num_frames: 8
+  default_resolution: 480x832
+  same_noise: true
+  same_timestep: true
+  compute_energy_logprob: dryrun_only
+  preserve_camera_metadata: true

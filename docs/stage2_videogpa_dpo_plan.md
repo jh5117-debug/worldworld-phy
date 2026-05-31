@@ -94,3 +94,15 @@ Next permitted step is VideoGPA encode smoke only. DPO training is still blocked
 - Gate G: still no. `compute_dpo_energy_or_logprob` is intentionally `NotImplementedError`.
 
 Next minimal step is not training. It is a LingBot-Fast VideoGPA adapter dry-run that implements real LingBot VAE latent encode, same-noise/same-timestep batch collation, and a non-fake energy/logprob path.
+
+## LingBot VAE / Energy Dry-Run Update
+
+- Gate A: passed.
+- Gate B: passed.
+- Gate C: partial/pass. Camera stress perturbations have video-level effect, but ordinary frozen/correct remains weak.
+- Gate D: partial/pass for smoke. Reward v5 has clean > Fast on the 3-sample smoke with RAFT and DINO active, but generated depth/mask/physics are still incomplete.
+- Gate E: partial/pass for latent/condition/batch plumbing. LingBot `Wan2_1_VAE` loads, winner/loser videos encode to LingBot-compatible latents, camera condition packs into a nonzero Plucker/control tensor, and a same-noise/same-timestep 1-pair batch shape dry-run passes.
+- Gate F: still no. Energy/logprob remains `NotImplementedError`; no DPO loss, backward, optimizer, LoRA save, or model update was run.
+- Gate G: still no. Real DPO training remains blocked.
+
+Next minimal step is to wire the real LingBot-Fast denoising/velocity forward target for `compute_dpo_energy_or_logprob`. Only after that may a future round consider a 1-pair DPO scalar-loss dry-run, still without real training unless explicitly approved.
