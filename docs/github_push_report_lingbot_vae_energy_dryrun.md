@@ -4,8 +4,9 @@
 
 - Branch: `physion-lingbot-vae-energy-dryrun`
 - Base branch: `physion-videogpa-encode-smoke`
-- Commit: `130eb88`
-- Commit message: `Add LingBot VAE latent and energy dry-run adapters`
+- Implementation commit: `130eb88`
+- Final pushed branch head after adding this report: `ece717b`
+- Main implementation commit message: `Add LingBot VAE latent and energy dry-run adapters`
 
 ## Push
 
@@ -39,4 +40,3 @@ Submitted code/config/docs only:
 - DINO/LingBot/VideoGPA weights were not submitted.
 - HDF5/MP4/NPY/NPZ/PT/PTH/safetensors were not submitted.
 - No training, DPO optimization, VideoGPA `03_train.py`, Stage1 warm-up, rollout generation, or reward calibration was run.
-
