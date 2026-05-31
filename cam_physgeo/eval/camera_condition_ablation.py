@@ -61,8 +61,16 @@ def variant_poses(poses: np.ndarray, variant: str) -> np.ndarray:
         idx = np.arange(len(arr))
         rng.shuffle(idx)
         return arr[idx].copy()
-    if name in {"exaggerated_yaw", "large_translation"}:
+    if name in {"exaggerated_yaw", "large_translation", "exaggerated_translation"}:
         out = arr.copy()
+        if name == "exaggerated_translation" and out.ndim == 3 and out.shape[-2:] == (4, 4):
+            denom = max(len(out) - 1, 1)
+            direction = out[0, :3, 0].copy()
+            norm = float(np.linalg.norm(direction)) + 1e-8
+            direction = direction / norm
+            for i in range(len(out)):
+                out[i, :3, 3] = out[i, :3, 3] + direction * float(2.0 * i / denom)
+            return out
         if out.ndim == 3 and out.shape[-2:] == (4, 4):
             # Apply a deliberately strong 60 degree yaw sweep over the short video.
             denom = max(len(out) - 1, 1)
@@ -252,9 +260,9 @@ def compute_ablation_metrics(sample_rows: list[dict[str, Any]]) -> dict[str, Any
 
     add("repeat_correct_A_vs_repeat_correct_B", "repeat_correct_A", "repeat_correct_B")
     baseline = comparisons.get("repeat_correct_A_vs_repeat_correct_B", {}).get("pixel_l1")
-    for variant in ["frozen", "reversed", "exaggerated_yaw", "zero_motion", "shuffled"]:
+    for variant in ["frozen", "reversed", "exaggerated_yaw", "exaggerated_translation", "zero_motion", "shuffled"]:
         add(f"repeat_correct_A_vs_{variant}", "repeat_correct_A", variant)
-    for variant in ["frozen", "reversed", "exaggerated_yaw", "zero_motion", "shuffled"]:
+    for variant in ["frozen", "reversed", "exaggerated_yaw", "exaggerated_translation", "zero_motion", "shuffled"]:
         add(f"correct_vs_{variant}", "correct", variant)
     threshold = None
     conclusion = "not_proven"
@@ -303,6 +311,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="configs/cam_physgeo/eval.yaml")
     ap.add_argument("--samples", required=True)
+    ap.add_argument("--sample_id_from", default="")
     ap.add_argument("--out", required=True)
     ap.add_argument("--model_type", default="fast", choices=["fast", "base"])
     ap.add_argument("--limit", type=int, default=1)
@@ -321,7 +330,11 @@ def main(argv=None) -> int:
 
     out = Path(args.out)
     rows: list[dict[str, Any]] = []
-    for sample_dir in iter_samples(Path(args.samples), args.limit):
+    all_samples = iter_samples(Path(args.samples), 0)
+    if args.sample_id_from:
+        selected = Path(args.sample_id_from).read_text(encoding="utf-8").strip()
+        all_samples = [p for p in all_samples if p.name == selected]
+    for sample_dir in all_samples[: args.limit]:
         sample_rows = []
         for variant in args.variants:
             row = run_variant(args, sample_dir, out, variant)

@@ -76,3 +76,13 @@ Reward ordering is now sane for the 3-sample smoke, and real RAFT flow participa
 1. If camera proof needs to be stronger, run a longer fixed-noise camera ablation with correct/frozen/exaggerated after GPU memory is clean.
 2. Add DINOv2-small checkpoint only after user approval, then wire forward for R_fg and R_reobs.
 3. Re-run reward-on-rollout with real flow plus DINO before considering VideoGPA encode smoke.
+
+## Follow-Up: DINO Reward V5 / Camera Stress
+
+- Stress sample selected: `physion_movingcam_13db379640ce`, `relative_yaw_180_reobserve`, yaw proxy `2.1465`.
+- 8-frame 480x832 stress ablation generated all six variants.
+- Repeat baseline stayed `0.0`; reversed pixel L1 `0.02218`, exaggerated-yaw `0.03502`, exaggerated-translation `0.03765`.
+- DINOv2-small `dinov2_vits14` downloaded to `local_assets/weights/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth`, size `88283115` bytes.
+- DINO forward succeeded; reward component feature shape reached `[4, 384]`.
+- Reward v5 clean > Fast remained `3/3`; Fast real components now include `bg`, `cam`, `fg`, and `reobs`.
+- Next round may consider VideoGPA encode smoke only. DPO remains blocked.

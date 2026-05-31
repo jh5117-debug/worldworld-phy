@@ -18,6 +18,20 @@ def score_reobserve_consistency(sample: dict, landmark_similarity: float|None=No
                 "metadata_backend": sample.get("clean_gt_backend_coverage"),
                 "note": "Clean GT has camera and ID metadata for a reobserve split; generated rollout still needs landmark/feature matching.",
             }
+        dino = sample.get("dino_feature_result") or {}
+        if dino.get("available") and dino.get("backend") == "real":
+            sim = dino.get("first_last_similarity")
+            score = clamp01(float(sim if sim is not None else 0.5))
+            return {
+                "score": score,
+                "status": "ok",
+                "backend": "real_dino_reobserve_proxy_segments",
+                "name": "R_reobs",
+                "object_similarity": sim,
+                "feature_shape": dino.get("feature_shape"),
+                "feature_backend": dino,
+                "segment_backend": "first_last proxy; visible/reobserve segments not localized yet",
+            }
         video=sample.get('candidate_video_path') or sample.get('video_path')
         feature=first_last_feature_similarity(video)
         frames=read_video_frames(video, max_frames=12, size=(96,64))

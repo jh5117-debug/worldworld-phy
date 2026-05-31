@@ -15,6 +15,22 @@ def score_foreground_identity(sample: dict, feature_similarity: float|None=None,
                 "metadata_backend": sample.get("clean_gt_backend_coverage"),
                 "note": "Clean GT has simulator ID mask metadata; generated rollout still needs DINO/segmentation features.",
             }
+        dino = sample.get("dino_feature_result") or {}
+        if dino.get("available") and dino.get("backend") == "real":
+            sim = dino.get("first_last_similarity")
+            score = clamp01(0.5 + 0.5 * float(sim if sim is not None else 0.5))
+            backend = "real_dino_id_mask" if sample.get("has_id_mask") or sample.get("id_path") else "real_dino_proxy_mask"
+            return {
+                "score": score,
+                "status": "ok",
+                "backend": backend,
+                "name": "R_fg",
+                "feature_similarity": sim,
+                "feature_shape": dino.get("feature_shape"),
+                "mask_backend": "id_mask" if backend == "real_dino_id_mask" else "central/global proxy mask",
+                "feature_backend": dino,
+                "note": "DINOv2-small forward is real; generated mask remains proxy when no ID mask exists.",
+            }
         video=sample.get('candidate_video_path') or sample.get('video_path')
         motion=frame_motion_magnitude(video, max_frames=12)
         feature=first_last_feature_similarity(video)

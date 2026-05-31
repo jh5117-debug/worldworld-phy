@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from cam_physgeo.eval.make_contact_sheet import make_sheet, read_selected_video_frames
+from cam_physgeo.rewards.feature_backend import estimate_dino_video_features
 from cam_physgeo.rewards.flow_backend import estimate_flow
 from cam_physgeo.rewards.metadata_backend import hdf5_key_summary
 from cam_physgeo.rewards.total_reward import score_sample
@@ -24,7 +25,14 @@ def read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def make_sample(sample_dir: Path, video: Path, label: str, *, prefer_real_flow_backend: bool = False) -> dict[str, Any]:
+def make_sample(
+    sample_dir: Path,
+    video: Path,
+    label: str,
+    *,
+    prefer_real_flow_backend: bool = False,
+    feature_backend: str = "",
+) -> dict[str, Any]:
     meta = read_json(sample_dir / "metadata.json")
     hdf5 = hdf5_key_summary(meta.get("hdf5_path")) if label == "clean_gt" else {}
     clean_coverage = {
@@ -63,6 +71,14 @@ def make_sample(sample_dir: Path, video: Path, label: str, *, prefer_real_flow_b
             backend="auto",
             weights_root="local_assets/weights/optical_flow",
             device="cuda",
+        )
+    if feature_backend == "dinov2" and label != "clean_gt":
+        sample["dino_feature_result"] = estimate_dino_video_features(
+            video,
+            weights_root="local_assets/weights",
+            device="cuda",
+            allow_download_small=False,
+            max_frames=4,
         )
     return sample
 
@@ -109,6 +125,7 @@ def main(argv=None) -> int:
     ap.add_argument("--report_all_variants", action="store_true")
     ap.add_argument("--require_clean_real_backend", action="store_true")
     ap.add_argument("--prefer_real_flow_backend", action="store_true")
+    ap.add_argument("--feature_backend", default="", choices=["", "dinov2"])
     args = ap.parse_args(argv)
 
     sample_root = Path(args.samples)
@@ -126,8 +143,8 @@ def main(argv=None) -> int:
         if not target.exists() or not rollout.exists():
             pairs.append({"sample_id": sample_dir.name, "status": "missing_rollout_or_target", "target_exists": target.exists(), "rollout_exists": rollout.exists()})
             continue
-        clean = score_sample(make_sample(sample_dir, target, "clean_gt", prefer_real_flow_backend=args.prefer_real_flow_backend))
-        fast = score_sample(make_sample(sample_dir, rollout, "fast_zero_shot", prefer_real_flow_backend=args.prefer_real_flow_backend))
+        clean = score_sample(make_sample(sample_dir, target, "clean_gt", prefer_real_flow_backend=args.prefer_real_flow_backend, feature_backend=args.feature_backend))
+        fast = score_sample(make_sample(sample_dir, rollout, "fast_zero_shot", prefer_real_flow_backend=args.prefer_real_flow_backend, feature_backend=args.feature_backend))
         rows.extend([{**clean, "eval_label": "clean_gt"}, {**fast, "eval_label": "fast_zero_shot"}])
         clean_metric = clean["reward_total_confidence_weighted"] if args.confidence_weighted else clean["reward_total"]
         fast_metric = fast["reward_total_confidence_weighted"] if args.confidence_weighted else fast["reward_total"]
@@ -177,6 +194,7 @@ def main(argv=None) -> int:
                 "R_geometry_real_only": scalar(clean, "R_geometry_real_only") - scalar(fast, "R_geometry_real_only"),
                 "R_flow_available_only": scalar(clean, "R_flow_available_only") - scalar(fast, "R_flow_available_only"),
                 "R_feature_available_only": scalar(clean, "R_feature_available_only") - scalar(fast, "R_feature_available_only"),
+                "R_flow_dino_only": scalar(clean, "R_flow_dino_only") - scalar(fast, "R_flow_dino_only"),
                 "R_total_no_quality": scalar(clean, "R_total_no_quality") - scalar(fast, "R_total_no_quality"),
                 "R_geometry_only": scalar(clean, "R_geometry_only") - scalar(fast, "R_geometry_only"),
                 "R_identity_only": scalar(clean, "R_identity_only") - scalar(fast, "R_identity_only"),
@@ -198,6 +216,8 @@ def main(argv=None) -> int:
     fast_real_avg = sum(float(p["fast_reward_real_backend_only"] or 0.0) for p in ok_pairs) / count if count else None
     clean_proxy_avg = sum(float(p["clean_reward_proxy_only"] or 0.0) for p in ok_pairs) / count if count else None
     fast_proxy_avg = sum(float(p["fast_reward_proxy_only"] or 0.0) for p in ok_pairs) / count if count else None
+    clean_flow_dino_avg = sum(float((p.get("clean_backend_coverage") or {}).get("flow_dino_only") or 0.0) for p in ok_pairs) / count if count else None
+    fast_flow_dino_avg = sum(float((p.get("fast_backend_coverage") or {}).get("flow_dino_only") or 0.0) for p in ok_pairs) / count if count else None
     fast_real_components = sorted(
         {
             comp
@@ -240,6 +260,8 @@ def main(argv=None) -> int:
             "fast_flow_available_only",
             "clean_feature_available_only",
             "fast_feature_available_only",
+            "clean_flow_dino_only",
+            "fast_flow_dino_only",
             "clean_geometry_only",
             "fast_geometry_only",
             "clean_identity_only",
@@ -282,6 +304,8 @@ def main(argv=None) -> int:
                 p.get("fast_backend_coverage", {}).get("flow_available_only"),
                 p.get("clean_backend_coverage", {}).get("feature_available_only"),
                 p.get("fast_backend_coverage", {}).get("feature_available_only"),
+                p.get("clean_backend_coverage", {}).get("flow_dino_only"),
+                p.get("fast_backend_coverage", {}).get("flow_dino_only"),
                 p["clean_geometry_only"],
                 p["fast_geometry_only"],
                 p["clean_identity_only"],
@@ -317,6 +341,8 @@ def main(argv=None) -> int:
         f"- Fast rollout avg real-backend-only reward: {fast_real_avg}",
         f"- Clean GT avg proxy-only reward: {clean_proxy_avg}",
         f"- Fast rollout avg proxy-only reward: {fast_proxy_avg}",
+        f"- Clean GT avg flow+DINO-only reward: {clean_flow_dino_avg}",
+        f"- Fast rollout avg flow+DINO-only reward: {fast_flow_dino_avg}",
         "- Reward confidence is now reported per component. Fallback/missing backends do not contribute high confidence.",
         f"- Fast rollout real backend components: {fast_real_components or 'none'}",
         "- DINO/V-JEPA actual forward: used for Fast rollout features."

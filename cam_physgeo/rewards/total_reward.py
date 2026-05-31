@@ -21,6 +21,10 @@ def _status_confidence(key: str, part: dict[str, Any], sample: dict[str, Any]) -
     backend = str(part.get("backend") or "")
     label = str(sample.get("eval_label") or "")
     backend_lower = backend.lower()
+    if "real_dino" in backend_lower:
+        if "proxy" in backend_lower:
+            return 0.6, "real", backend
+        return 0.85, "real", backend
     if "real_flow" in backend_lower:
         return 0.75, "real", backend
     if "proxy" in backend_lower or "hook_or_proxy" in backend_lower:
@@ -158,6 +162,7 @@ def score_sample(sample: dict, weights: dict | None = None) -> dict:
     geometry_real, geometry_real_conf = _backend_weighted_average(parts, w, ["bg", "cam", "reobs"], {"real"})
     flow_available, flow_available_conf = _backend_weighted_average(parts, w, ["bg", "cam"], {"real"})
     feature_available, feature_available_conf = _backend_weighted_average(parts, w, ["fg", "reobs"], {"real"})
+    flow_dino, flow_dino_conf = _backend_weighted_average(parts, w, ["bg", "cam", "fg", "reobs"], {"real"})
     freeze_penalty = float(parts["freeze"].get("penalty", 0.0) or 0.0)
     freeze_conf = float(parts["freeze"].get("confidence", 0.0) or 0.0)
 
@@ -220,6 +225,8 @@ def score_sample(sample: dict, weights: dict | None = None) -> dict:
         "R_flow_available_confidence": flow_available_conf,
         "R_feature_available_only": clamp01(feature_available),
         "R_feature_available_confidence": feature_available_conf,
+        "R_flow_dino_only": clamp01(flow_dino),
+        "R_flow_dino_confidence": flow_dino_conf,
         "R_geometry_only": clamp01(geometry),
         "R_geometry_confidence": geometry_conf,
         "R_identity_only": clamp01(identity),
@@ -236,6 +243,7 @@ def score_sample(sample: dict, weights: dict | None = None) -> dict:
             "geometry_real_only": clamp01(geometry_real),
             "flow_available_only": clamp01(flow_available),
             "feature_available_only": clamp01(feature_available),
+            "flow_dino_only": clamp01(flow_dino),
         },
         "weights": w,
         "components": parts,

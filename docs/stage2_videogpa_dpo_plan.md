@@ -70,3 +70,15 @@ Next minimal work remains outside VideoGPA: run a valid 8-frame video-level came
 - Gate G: real DPO energy/logprob remains unimplemented.
 
 Next minimal work is still not VideoGPA: add DINOv2-small after approval and re-run reward-on-rollout with both real flow and real feature backends.
+
+## DINO Reward V5 / Camera Stress Update
+
+- Gate A: passed.
+- Gate B: passed.
+- Gate C: pass/partial. A high-yaw stress sample was selected (`physion_movingcam_13db379640ce`). The 8-frame 480x832 stress ablation generated all six variants. Same-seed repeat stayed `0.0`; reversed, exaggerated-yaw, and exaggerated-translation diverged from repeat baseline. Frozen still matched correct.
+- Gate D: partial/pass for smoke. DINOv2-small was downloaded to `local_assets/weights/dinov2/dinov2_vits14/` and forwards successfully. Reward v5 uses clean GT metadata, RAFT real flow, and DINO real features; clean > Fast remains `3/3`.
+- Gate E: VideoGPA encode smoke may be considered next, but only encode smoke. Do not train.
+- Gate F: DPO remains not allowed.
+- Gate G: real DPO energy/logprob remains unimplemented.
+
+Next permitted step is VideoGPA encode smoke only. DPO training is still blocked.
