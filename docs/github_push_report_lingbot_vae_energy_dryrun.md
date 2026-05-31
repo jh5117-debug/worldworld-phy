@@ -5,7 +5,7 @@
 - Branch: `physion-lingbot-vae-energy-dryrun`
 - Base branch: `physion-videogpa-encode-smoke`
 - Implementation commit: `130eb88`
-- Final pushed branch head after adding this report: `ece717b`
+- Additional push-report commits were added after the implementation commit; use `git rev-parse HEAD` for the exact branch head.
 - Main implementation commit message: `Add LingBot VAE latent and energy dry-run adapters`
 
 ## Push
