@@ -1,0 +1,89 @@
+# Physion / TDW Large-Scale Generation Plan
+
+This is a plan only. No TDW or Physion generation was run in this round.
+
+## Can Large Generation Happen?
+
+Yes, but only after the DPO and reward/camera gates remain stable and after a
+small generation dry-run validates the TDW stack. The project should not jump
+directly to a large batch because storage, HDF5 schema, camera convention, and
+reward quality can fail silently at scale.
+
+## Staged Rollout
+
+1. 1 sample dry-run
+   - Use a new output root.
+   - Validate TDW launches, the template runs, and HDF5/RGB/depth/ID/camera
+     outputs are written.
+
+2. 10 sample smoke
+   - Cover at least two templates and two camera motions.
+   - Produce contact sheets and metadata summaries.
+
+3. 50 sample validation
+   - Check HDF5 keys, frame counts, depth, ID masks, camera poses, projection
+     matrices, object states, prompt text, and converted intrinsics.
+
+4. 200 sample pilot
+   - Measure generation speed, storage, corruption/failure rate, camera motion
+     distribution, and reward score distribution.
+
+5. 1k+ batch
+   - Only after user approval for storage, runtime, template list, and camera
+     motion distribution.
+
+## Per-Stage Checks
+
+For every generated clip:
+
+- RGB frames / MP4 readable.
+- HDF5 keys readable.
+- depth exists and is finite.
+- ID mask exists and has object/background structure.
+- camera pose exists for all frames.
+- projection/intrinsics exist and convert to `[fx, fy, cx, cy]`.
+- object state / contact metadata exists where template supports it.
+- prompt exists.
+- contact sheet saved.
+- reward score can run on a small subset.
+- storage cost and generation time recorded.
+
+## Code Sources
+
+- Official Physion / benchmark organization:
+  `/home/nvme03/workspace/physion_moving_camera_mainline_20260505/repos/physics-benchmarking-neurips2021`
+- TDW physics generation:
+  `/home/nvme03/workspace/physion_moving_camera_mainline_20260505/repos/tdw_physics`
+- Local moving-camera extensions:
+  `/home/nvme03/workspace/physion_moving_camera_mainline_20260505`
+- Existing active runtime assets:
+  `local_assets/data/physion/`
+
+## Output Root
+
+Use only:
+
+`local_assets/data/physion/generated_v2/`
+
+Do not overwrite or mutate existing migrated Physion data.
+
+## Required User Confirmations
+
+- total clip count;
+- templates/scenarios;
+- camera motions;
+- estimated storage budget;
+- TDW CPU/GPU allocation;
+- whether TDW license/runtime constraints are acceptable;
+- whether generated data should include stress camera motions or balanced
+  natural moving-camera motions.
+
+## Gate Before Generation
+
+Large generation is not allowed until:
+
+- scalar DPO dry-run is understood;
+- reward remains stable on real backends;
+- camera condition is at least partially effective;
+- TDW one-sample generation dry-run passes;
+- user explicitly approves scale and storage.

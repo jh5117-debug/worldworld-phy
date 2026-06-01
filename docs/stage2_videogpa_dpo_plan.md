@@ -129,3 +129,32 @@ Energy dry-run details:
 Next permitted step is only a user-confirmed 1-pair scalar DPO loss dry-run
 with a real frozen reference, no optimizer, and preferably no backward. Real
 DPO training remains blocked.
+
+## Reference Energy / Scalar Loss Update
+
+- Gate A: passed.
+- Gate B: passed.
+- Gate C: partial/pass.
+- Gate D: partial/pass for smoke.
+- Gate E: passed for 1-pair no-backward DPO plumbing. VideoGPA pair/metadata,
+  LingBot latent encode, condition encode, batch shape, policy energy,
+  reference energy, and scalar DPO loss dry-run all pass.
+- Gate F: no. DPO training remains disallowed.
+
+Reference/scalar details:
+
+- Reference model: same frozen LingBot-Fast checkpoint as policy base.
+- Reference load: passed sequentially under `torch.no_grad()`.
+- Reference energy: `E_ref_winner=0.8652140498161316`,
+  `E_ref_loser=0.8322668075561523`.
+- Policy energy: `E_policy_winner=0.8652140498161316`,
+  `E_policy_loser=0.8322668075561523`.
+- Beta: `0.1`.
+- Scalar loss: `L_DPO=0.6931471824645996`.
+- Backward / optimizer / LoRA / checkpoint save: none.
+
+Because policy and reference are identical frozen weights in this smoke,
+`Delta_policy == Delta_ref` and the scalar loss is `log(2)`. This validates the
+formula and tensor plumbing, not preference learning. The next permitted step is
+only a user-confirmed 1-pair backward-only dry-run with no optimizer and no
+saved weights. Real DPO training remains blocked.

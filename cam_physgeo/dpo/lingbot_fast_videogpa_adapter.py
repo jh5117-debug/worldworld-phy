@@ -49,6 +49,16 @@ def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _read_energy_summary(path: str | Path, default_name: str) -> dict[str, Any]:
+    p = Path(path)
+    if p.is_dir():
+        p = p / default_name
+    payload = _read_json(p)
+    if not payload:
+        raise FileNotFoundError(str(p))
+    return payload
+
+
 def _torch_dtype(name: str):
     import torch  # type: ignore
 
@@ -420,15 +430,16 @@ class LingBotFastVideoGPAAdapter:
     def load_reference_model(self, *, device: str = "cuda", dtype: str = "bf16", defer: bool = True) -> dict[str, Any]:
         """Return a frozen reference status.
 
-        A second full LingBot-Fast model doubles memory. For this 1-pair energy
-        dry-run the reference path is explicit and deferred rather than faked.
+        The reference is the same frozen LingBot-Fast checkpoint, not LingBot-Base
+        and not a reward surrogate. Callers can defer it for policy-only probes
+        or load it sequentially for a real reference-energy dry-run.
         """
 
         if defer:
             return {
                 "success": True,
                 "deferred": True,
-                "reason": "reference model is a frozen same-weight LingBot-Fast copy; not loaded for no-optimization 1-pair policy-energy dry-run",
+                "reason": "reference model is a frozen same-weight LingBot-Fast copy; deferred for policy-only probe",
                 "training_allowed": False,
             }
         result = self.load_policy_model(device=device, dtype=dtype, dry_run=False)
@@ -439,6 +450,8 @@ class LingBotFastVideoGPAAdapter:
             for param in model.parameters():
                 param.requires_grad_(False)
         result["reference"] = True
+        result["reference_checkpoint"] = "same_frozen_lingbot_fast_checkpoint"
+        result["no_grad_required"] = True
         return result
 
     def load_vae(self, *, device: str = "cuda", dtype: str = "bf16", dry_run: bool = False) -> dict[str, Any]:
@@ -997,6 +1010,65 @@ class LingBotFastVideoGPAAdapter:
             pred = pipe.model(x=[z_t], t=timestep, **forward_condition["kwargs"])[0]
         return pred, target, target_info
 
+    def _compute_energy_with_pipe(
+        self,
+        *,
+        pipe: Any,
+        pair: dict[str, Any],
+        batch_dir: str | Path,
+        out_dir: str | Path,
+        device: str,
+        dtype: str,
+        num_frames: int,
+        resolution: str,
+    ) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        batch = self._load_batch_tensors(batch_dir, device=device, dtype=dtype)
+        tensors = batch["tensors"]
+        condition = self._build_forward_condition(
+            pair=pair,
+            pipe=pipe,
+            latent_shape=list(tensors["winner_latent"].shape),
+            out_dir=out_dir,
+            num_frames=num_frames,
+            resolution=resolution,
+            device=device,
+            dtype=dtype,
+        )
+        winner_pred, winner_target, target_info = self._model_forward_once(
+            pipe=pipe,
+            x0=tensors["winner_latent"],
+            noise=tensors["winner_noise"],
+            timestep=tensors["winner_timestep"],
+            forward_condition=condition,
+        )
+        loser_pred, loser_target, _ = self._model_forward_once(
+            pipe=pipe,
+            x0=tensors["loser_latent"],
+            noise=tensors["loser_noise"],
+            timestep=tensors["loser_timestep"],
+            forward_condition=condition,
+        )
+        e_winner = torch.mean((winner_pred.float() - winner_target.float()) ** 2)
+        e_loser = torch.mean((loser_pred.float() - loser_target.float()) ** 2)
+        return {
+            "batch_summary": batch["summary"],
+            "condition_summary": condition["summary"],
+            "target_info": target_info,
+            "E_winner": float(e_winner.detach().cpu().item()),
+            "E_loser": float(e_loser.detach().cpu().item()),
+            "Delta_loser_minus_winner": float((e_loser - e_winner).detach().cpu().item()),
+            "winner_pred": _tensor_summary(winner_pred),
+            "loser_pred": _tensor_summary(loser_pred),
+            "winner_target": _tensor_summary(winner_target),
+            "loser_target": _tensor_summary(loser_target),
+            "finite_check": {
+                "winner": bool(torch.isfinite(e_winner).item()),
+                "loser": bool(torch.isfinite(e_loser).item()),
+            },
+        }
+
     def model_forward_probe(
         self,
         *,
@@ -1088,24 +1160,10 @@ class LingBotFastVideoGPAAdapter:
         load_result = self.load_policy_model(device=device, dtype=dtype, dry_run=False)
         pipe = load_result.pop("object", None)
         reference = self.load_reference_model(device=device, dtype=dtype, defer=True)
-        batch = self._load_batch_tensors(batch_dir, device=device, dtype=dtype)
-        tensors = batch["tensors"]
-        condition = self._build_forward_condition(
-            pair=pair,
-            pipe=pipe,
-            latent_shape=list(tensors["winner_latent"].shape),
-            out_dir=out,
-            num_frames=num_frames,
-            resolution=resolution,
-            device=device,
-            dtype=dtype,
-        )
         result: dict[str, Any] = {
             "success": False,
             "policy_load": load_result,
             "reference_status": reference,
-            "batch_summary": batch["summary"],
-            "condition_summary": condition["summary"],
             "target_type": "flow_velocity_noise_minus_x0",
             "target_evidence": [
                 "local_assets/third_party/lingbot_world/scripts/train_lingbot_physics_predictor.py::sample_flow_batch",
@@ -1117,46 +1175,157 @@ class LingBotFastVideoGPAAdapter:
             "dpo_loss_computed": False,
         }
         try:
-            winner_pred, winner_target, target_info = self._model_forward_once(
+            energy = self._compute_energy_with_pipe(
                 pipe=pipe,
-                x0=tensors["winner_latent"],
-                noise=tensors["winner_noise"],
-                timestep=tensors["winner_timestep"],
-                forward_condition=condition,
+                pair=pair,
+                batch_dir=batch_dir,
+                out_dir=out,
+                device=device,
+                dtype=dtype,
+                num_frames=num_frames,
+                resolution=resolution,
             )
-            loser_pred, loser_target, _ = self._model_forward_once(
-                pipe=pipe,
-                x0=tensors["loser_latent"],
-                noise=tensors["loser_noise"],
-                timestep=tensors["loser_timestep"],
-                forward_condition=condition,
-            )
-            e_winner = torch.mean((winner_pred.float() - winner_target.float()) ** 2)
-            e_loser = torch.mean((loser_pred.float() - loser_target.float()) ** 2)
             result.update(
                 {
-                    "success": bool(torch.isfinite(e_winner).item() and torch.isfinite(e_loser).item()),
-                    "target_info": target_info,
-                    "E_policy_winner": float(e_winner.detach().cpu().item()),
-                    "E_policy_loser": float(e_loser.detach().cpu().item()),
-                    "Delta_policy_loser_minus_winner": float((e_loser - e_winner).detach().cpu().item()),
+                    "success": bool(energy["finite_check"]["winner"] and energy["finite_check"]["loser"]),
+                    "batch_summary": energy["batch_summary"],
+                    "condition_summary": energy["condition_summary"],
+                    "target_info": energy["target_info"],
+                    "E_policy_winner": energy["E_winner"],
+                    "E_policy_loser": energy["E_loser"],
+                    "Delta_policy_loser_minus_winner": energy["Delta_loser_minus_winner"],
                     "E_ref_winner": None,
                     "E_ref_loser": None,
                     "reference_delta": None,
-                    "winner_pred": _tensor_summary(winner_pred),
-                    "loser_pred": _tensor_summary(loser_pred),
-                    "winner_target": _tensor_summary(winner_target),
-                    "loser_target": _tensor_summary(loser_target),
-                    "finite_check": {
-                        "winner": bool(torch.isfinite(e_winner).item()),
-                        "loser": bool(torch.isfinite(e_loser).item()),
-                    },
+                    "winner_pred": energy["winner_pred"],
+                    "loser_pred": energy["loser_pred"],
+                    "winner_target": energy["winner_target"],
+                    "loser_target": energy["loser_target"],
+                    "finite_check": energy["finite_check"],
                     "memory": _gpu_memory(),
                 }
             )
         except Exception as exc:
             result.update({"success": False, "error": repr(exc), "error_type": "energy_forward_failed", "memory": _gpu_memory()})
         write_json(_jsonable(result), out / "energy_logprob_summary.json")
+        return result
+
+    def compute_reference_energy(
+        self,
+        *,
+        pair: dict[str, Any],
+        batch_dir: str | Path,
+        out_dir: str | Path,
+        device: str = "cuda",
+        dtype: str = "bf16",
+        num_frames: int = 8,
+        resolution: str = "480x832",
+        sequential_reference_if_needed: bool = True,
+    ) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        out = Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        result: dict[str, Any] = {
+            "success": False,
+            "reference_role": "frozen_same_lingbot_fast_checkpoint",
+            "sequential_reference_if_needed": sequential_reference_if_needed,
+            "no_backward": True,
+            "no_optimizer": True,
+            "training_allowed": False,
+            "target_type": "flow_velocity_noise_minus_x0",
+        }
+        try:
+            with torch.no_grad():
+                ref_load = self.load_reference_model(device=device, dtype=dtype, defer=False)
+                pipe = ref_load.pop("object", None)
+                energy = self._compute_energy_with_pipe(
+                    pipe=pipe,
+                    pair=pair,
+                    batch_dir=batch_dir,
+                    out_dir=out,
+                    device=device,
+                    dtype=dtype,
+                    num_frames=num_frames,
+                    resolution=resolution,
+                )
+            result.update(
+                {
+                    "success": bool(energy["finite_check"]["winner"] and energy["finite_check"]["loser"]),
+                    "reference_load": ref_load,
+                    "reference_frozen_confirmed": (ref_load.get("model_param_summary_after_freeze") or {}).get("requires_grad_count") == 0,
+                    "reference_no_grad_confirmed": True,
+                    "policy_reference_same_weights": True,
+                    "batch_summary": energy["batch_summary"],
+                    "condition_summary": energy["condition_summary"],
+                    "target_info": energy["target_info"],
+                    "E_ref_winner": energy["E_winner"],
+                    "E_ref_loser": energy["E_loser"],
+                    "Delta_ref_loser_minus_winner": energy["Delta_loser_minus_winner"],
+                    "winner_pred": energy["winner_pred"],
+                    "loser_pred": energy["loser_pred"],
+                    "winner_target": energy["winner_target"],
+                    "loser_target": energy["loser_target"],
+                    "finite_check": energy["finite_check"],
+                    "memory": _gpu_memory(),
+                }
+            )
+        except Exception as exc:
+            result.update({"success": False, "error": repr(exc), "error_type": "reference_energy_failed", "memory": _gpu_memory()})
+        write_json(_jsonable(result), out / "reference_energy_summary.json")
+        return result
+
+    def compute_dpo_scalar_loss_dryrun(
+        self,
+        *,
+        policy_energy_dir: str | Path,
+        reference_energy_dir: str | Path,
+        out_dir: str | Path,
+        beta: float = 0.1,
+    ) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        policy = _read_energy_summary(policy_energy_dir, "energy_logprob_summary.json")
+        reference = _read_energy_summary(reference_energy_dir, "reference_energy_summary.json")
+        out = Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        if not policy.get("success"):
+            raise RuntimeError(f"policy energy did not pass: {policy.get('error')}")
+        if not reference.get("success"):
+            raise RuntimeError(f"reference energy did not pass: {reference.get('error')}")
+        e_policy_w = float(policy["E_policy_winner"])
+        e_policy_l = float(policy["E_policy_loser"])
+        e_ref_w = float(reference["E_ref_winner"])
+        e_ref_l = float(reference["E_ref_loser"])
+        delta_policy = e_policy_l - e_policy_w
+        delta_ref = e_ref_l - e_ref_w
+        argument = float(beta) * (delta_policy - delta_ref)
+        loss_tensor = -torch.nn.functional.logsigmoid(torch.tensor(argument, dtype=torch.float32))
+        loss = float(loss_tensor.item())
+        result = {
+            "success": bool(math.isfinite(loss)),
+            "beta": float(beta),
+            "E_policy_winner": e_policy_w,
+            "E_policy_loser": e_policy_l,
+            "E_ref_winner": e_ref_w,
+            "E_ref_loser": e_ref_l,
+            "Delta_policy": delta_policy,
+            "Delta_ref": delta_ref,
+            "dpo_argument": argument,
+            "L_DPO": loss,
+            "loss_finite": bool(math.isfinite(loss)),
+            "sign_convention": {
+                "energy": "lower energy means higher model likelihood / preference under the denoising-error proxy",
+                "delta": "Delta = E_loser - E_winner; positive means the model assigns lower energy to winner than loser",
+                "formula": "L_DPO = -log sigmoid(beta * (Delta_policy - Delta_ref))",
+            },
+            "policy_reference_same_weights": bool(reference.get("policy_reference_same_weights")),
+            "meaningful_if_policy_equals_reference": "Only plumbing-sign smoke. If policy and reference are identical, Delta_policy should match Delta_ref and loss should be close to log(2).",
+            "no_backward": True,
+            "no_optimizer": True,
+            "training_allowed": False,
+        }
+        write_json(_jsonable(result), out / "dpo_scalar_loss_summary.json")
         return result
 
     def sample_same_noise_timestep(self, *args, **kwargs):
@@ -1181,6 +1350,8 @@ class LingBotFastVideoGPAAdapter:
             AdapterStatus("sample_same_noise_timestep", True, "LingBot flow target contract", "batch size + latent shape", "same tensor noise + timestep", False, False, False, "implemented inside collate_winner_loser_batch"),
             AdapterStatus("model_forward_probe", True, "LingBot Fast WanModelFast.forward", "winner/loser latent + condition", "velocity prediction tensor", True, True, False, "no target/loss in this mode"),
             AdapterStatus("compute_dpo_energy_or_logprob", True, "LingBot flow target noise-x0", "winner/loser latents + condition", "finite policy energies if forward passes", True, True, False, "no DPO loss/backward/optimizer; reference deferred"),
+            AdapterStatus("compute_reference_energy", True, "same frozen LingBot-Fast checkpoint", "winner/loser latents + condition", "finite reference energies if forward passes", True, True, False, "sequential no_grad reference dry-run; not LingBot-Base"),
+            AdapterStatus("compute_dpo_scalar_loss_dryrun", True, "policy/reference energy summaries", "finite energies", "scalar loss", False, False, False, "no backward/optimizer; formula smoke only"),
         ]
         return {
             "paths": self.paths,
@@ -1379,6 +1550,35 @@ def _mode_energy(args) -> dict[str, Any]:
     )
 
 
+def _mode_reference_energy(args) -> dict[str, Any]:
+    if not _bool_arg(args.no_backward) or not _bool_arg(args.no_optimizer):
+        raise RuntimeError("reference_energy_dryrun requires --no_backward true and --no_optimizer true")
+    adapter = LingBotFastVideoGPAAdapter(args.config)
+    pair = _load_pair_from_args_or_batch(args)
+    return adapter.compute_reference_energy(
+        pair=pair,
+        batch_dir=args.batch,
+        out_dir=args.out,
+        device=args.device,
+        dtype=args.dtype,
+        num_frames=args.num_frames,
+        resolution=args.resolution,
+        sequential_reference_if_needed=_bool_arg(args.sequential_reference_if_needed),
+    )
+
+
+def _mode_dpo_scalar_loss(args) -> dict[str, Any]:
+    if not _bool_arg(args.no_backward) or not _bool_arg(args.no_optimizer):
+        raise RuntimeError("dpo_scalar_loss_dryrun requires --no_backward true and --no_optimizer true")
+    adapter = LingBotFastVideoGPAAdapter(args.config)
+    return adapter.compute_dpo_scalar_loss_dryrun(
+        policy_energy_dir=args.policy_energy,
+        reference_energy_dir=args.reference_energy,
+        out_dir=args.out,
+        beta=float(args.beta),
+    )
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="configs/cam_physgeo/videogpa_adapter.yaml")
@@ -1394,6 +1594,8 @@ def main(argv=None) -> int:
             "load_policy_reference_dryrun",
             "model_forward_probe",
             "energy_logprob_dryrun",
+            "reference_energy_dryrun",
+            "dpo_scalar_loss_dryrun",
         ],
     )
     ap.add_argument("--sample", default="")
@@ -1401,6 +1603,8 @@ def main(argv=None) -> int:
     ap.add_argument("--pairs", default="")
     ap.add_argument("--latents", default="")
     ap.add_argument("--batch", default="")
+    ap.add_argument("--policy_energy", default="")
+    ap.add_argument("--reference_energy", default="")
     ap.add_argument("--out", default="docs/lingbot_fast_videogpa_minimal_adapter_plan.md")
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--dtype", default="bf16")
@@ -1413,6 +1617,8 @@ def main(argv=None) -> int:
     ap.add_argument("--no_backward", default="true")
     ap.add_argument("--no_optimizer", default="true")
     ap.add_argument("--require_real_target", default="true")
+    ap.add_argument("--sequential_reference_if_needed", default="true")
+    ap.add_argument("--beta", type=float, default=0.1)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
 
@@ -1430,6 +1636,10 @@ def main(argv=None) -> int:
         result = _mode_model_forward_probe(args)
     elif args.mode == "energy_logprob_dryrun":
         result = _mode_energy(args)
+    elif args.mode == "reference_energy_dryrun":
+        result = _mode_reference_energy(args)
+    elif args.mode == "dpo_scalar_loss_dryrun":
+        result = _mode_dpo_scalar_loss(args)
     else:
         adapter = LingBotFastVideoGPAAdapter(args.config)
         result = adapter.status()
