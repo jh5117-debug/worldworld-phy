@@ -37,7 +37,9 @@ class LoRALinear(nn.Module):
             param.requires_grad_(False)
 
         device = self.base.weight.device
-        dtype = self.base.weight.dtype
+        # Keep trainable LoRA factors in fp32 so a tiny AdamW step at lr=1e-5
+        # is observable even when the frozen LingBot base runs in bf16.
+        dtype = torch.float32
         self.lora_A = nn.Parameter(torch.empty(self.rank, self.base.in_features, device=device, dtype=dtype))
         self.lora_B = nn.Parameter(torch.empty(self.base.out_features, self.rank, device=device, dtype=dtype))
         self.reset_lora_parameters()
@@ -50,9 +52,10 @@ class LoRALinear(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         base_out = self.base(x)
-        lora_hidden = torch.nn.functional.linear(self.dropout(x), self.lora_A)
+        lora_input = self.dropout(x).to(dtype=self.lora_A.dtype)
+        lora_hidden = torch.nn.functional.linear(lora_input, self.lora_A)
         lora_out = torch.nn.functional.linear(lora_hidden, self.lora_B)
-        return base_out + lora_out * self.scaling
+        return base_out + (lora_out * self.scaling).to(dtype=base_out.dtype)
 
     @property
     def lora_param_count(self) -> int:

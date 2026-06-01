@@ -242,3 +242,36 @@ LoRA backward-only details:
 Next permitted step is only a user-confirmed 1-pair optimizer-step dry-run on
 this LoRA scope, with no save and explicit before/after parameter checks. Real
 DPO training and multi-pair training remain blocked.
+
+## LoRA Optimizer-Step Dry-Run Update
+
+- Gate A: passed.
+- Gate B: passed.
+- Gate C: partial/pass.
+- Gate D: partial/pass for smoke.
+- Gate E: pass/partial. VideoGPA pair/metadata, LingBot latent encode,
+  condition encode, batch shape, policy energy, reference energy, scalar loss,
+  backward-only, and tiny camera-control LoRA backward-only all pass. A 1-pair
+  / 1-step optimizer-step dry-run on the same LoRA scope also passed.
+- Gate F: no. Real DPO training remains disallowed.
+
+Optimizer-step dry-run details:
+
+- Scope: `camera_control_lora_tiny`.
+- Runtime target modules:
+  `blocks.39.cam_shift_layer`, `blocks.39.cam_scale_layer`.
+- Rank/alpha: `2` / `4.0`.
+- Optimizer: `AdamW`, lr `1e-5`, one param group, LoRA params only.
+- Trainable params: `40,960`.
+- Step count: `1`.
+- `L_DPO_before`: `0.6931473016738892`.
+- LoRA params changed: yes, max abs diff `9.981580660678446e-06`.
+- Base sample params changed: no, max abs diff `0.0`.
+- Reference sample params changed: no, max abs diff `0.0`.
+- NaN/Inf gradients: no.
+- LoRA save / checkpoint save: none.
+- `restore_after_step`: passed; runtime LoRA params were restored in memory.
+
+Next permitted step is not real training. If the user explicitly confirms, the
+next round may do only a 1-pair overfit mini-loop such as 5 optimizer steps on
+the same pair, no checkpoint, no LoRA save, and no multi-pair training.

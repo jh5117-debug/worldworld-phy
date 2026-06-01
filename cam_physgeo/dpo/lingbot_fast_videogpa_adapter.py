@@ -2142,6 +2142,168 @@ class LingBotFastVideoGPAAdapter:
             },
         }
 
+    def _snapshot_param_samples(self, model: Any, names: list[str], *, max_elements: int = 4096) -> dict[str, Any]:
+        snap: dict[str, Any] = {}
+        param_map = dict(model.named_parameters())
+        for name in names:
+            param = param_map.get(name)
+            if param is None:
+                continue
+            flat = param.detach().float().flatten()
+            sample = flat[: min(int(max_elements), int(flat.numel()))].cpu().clone()
+            snap[name] = {
+                "sample": sample,
+                "numel": int(param.numel()),
+                "shape": list(param.shape),
+                "dtype": str(param.dtype).replace("torch.", ""),
+                "device": str(param.device),
+                "sample_numel": int(sample.numel()),
+                "norm": float(flat.norm().item()) if flat.numel() else 0.0,
+            }
+        return snap
+
+    def _diff_param_samples(self, model: Any, before: dict[str, Any]) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        param_map = dict(model.named_parameters())
+        rows: list[dict[str, Any]] = []
+        max_abs = 0.0
+        abs_sum = 0.0
+        count = 0
+        changed = 0
+        any_nan = False
+        any_inf = False
+        for name, payload in before.items():
+            param = param_map.get(name)
+            if param is None:
+                rows.append({"name": name, "missing_after": True})
+                continue
+            sample_before = payload["sample"]
+            flat_after = param.detach().float().flatten()
+            sample_after = flat_after[: int(sample_before.numel())].cpu()
+            diff = (sample_after - sample_before).abs()
+            local_max = float(diff.max().item()) if diff.numel() else 0.0
+            local_mean = float(diff.mean().item()) if diff.numel() else 0.0
+            max_abs = max(max_abs, local_max)
+            abs_sum += float(diff.sum().item()) if diff.numel() else 0.0
+            count += int(diff.numel())
+            if local_max > 0.0:
+                changed += 1
+            if sample_after.numel():
+                any_nan = any_nan or bool(torch.isnan(sample_after).any().item())
+                any_inf = any_inf or bool(torch.isinf(sample_after).any().item())
+            rows.append({"name": name, "max_abs_diff": local_max, "mean_abs_diff": local_mean, "sample_numel": int(diff.numel())})
+        return {
+            "param_count": len(before),
+            "params_changed_count": changed,
+            "max_abs_diff": max_abs,
+            "mean_abs_diff": abs_sum / count if count else 0.0,
+            "any_nan": any_nan,
+            "any_inf": any_inf,
+            "rows": rows[:50],
+            "sampled_elements_total": count,
+        }
+
+    def _param_norm_summary(self, model: Any, names: list[str]) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        param_map = dict(model.named_parameters())
+        norms: list[float] = []
+        any_nan = False
+        any_inf = False
+        for name in names:
+            param = param_map.get(name)
+            if param is None:
+                continue
+            t = param.detach().float()
+            norms.append(float(t.norm().item()) if t.numel() else 0.0)
+            if t.numel():
+                any_nan = any_nan or bool(torch.isnan(t).any().item())
+                any_inf = any_inf or bool(torch.isinf(t).any().item())
+        return {
+            "param_count": len(norms),
+            "norm_min": float(min(norms)) if norms else None,
+            "norm_max": float(max(norms)) if norms else None,
+            "norm_mean": float(sum(norms) / len(norms)) if norms else None,
+            "any_nan": any_nan,
+            "any_inf": any_inf,
+        }
+
+    def _sample_base_param_names(self, model: Any, *, preferred_targets: list[str] | None = None, limit: int = 8) -> list[str]:
+        names: list[str] = []
+        preferred_targets = preferred_targets or []
+        for target in preferred_targets:
+            for suffix in ("base.weight", "base.bias"):
+                candidate = f"{target}.{suffix}"
+                if candidate in dict(model.named_parameters()):
+                    names.append(candidate)
+        for name, _ in model.named_parameters():
+            if "lora_" in name or name in names:
+                continue
+            names.append(name)
+            if len(names) >= limit:
+                break
+        return names[:limit]
+
+    def _restore_params_from_snapshot(self, model: Any, before: dict[str, Any]) -> None:
+        param_map = dict(model.named_parameters())
+        for name, value in before.items():
+            param = param_map.get(name)
+            if param is None:
+                continue
+            param.data.copy_(value.to(device=param.device, dtype=param.dtype))
+
+    def _diff_full_snapshot(self, model: Any, before: dict[str, Any]) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        param_map = dict(model.named_parameters())
+        rows: list[dict[str, Any]] = []
+        max_abs = 0.0
+        abs_sum = 0.0
+        count = 0
+        changed = 0
+        any_nan = False
+        any_inf = False
+        for name, before_tensor in before.items():
+            param = param_map.get(name)
+            if param is None:
+                rows.append({"name": name, "missing_after": True})
+                continue
+            after = param.detach().float().cpu()
+            diff = (after - before_tensor).abs()
+            local_max = float(diff.max().item()) if diff.numel() else 0.0
+            local_mean = float(diff.mean().item()) if diff.numel() else 0.0
+            max_abs = max(max_abs, local_max)
+            abs_sum += float(diff.sum().item()) if diff.numel() else 0.0
+            count += int(diff.numel())
+            if local_max > 0.0:
+                changed += 1
+            if after.numel():
+                any_nan = any_nan or bool(torch.isnan(after).any().item())
+                any_inf = any_inf or bool(torch.isinf(after).any().item())
+            rows.append({"name": name, "max_abs_diff": local_max, "mean_abs_diff": local_mean, "numel": int(diff.numel())})
+        return {
+            "param_count": len(before),
+            "params_changed_count": changed,
+            "max_abs_diff": max_abs,
+            "mean_abs_diff": abs_sum / count if count else 0.0,
+            "any_nan": any_nan,
+            "any_inf": any_inf,
+            "rows": rows[:50],
+            "elements_total": count,
+        }
+
+    def _total_grad_norm(self, params: list[Any]) -> float:
+        import torch  # type: ignore
+
+        total = torch.zeros((), dtype=torch.float32)
+        for param in params:
+            if param.grad is None:
+                continue
+            grad = param.grad.detach().float()
+            total = total + grad.pow(2).sum().cpu()
+        return float(torch.sqrt(total).item())
+
     def compute_dpo_backward_only_dryrun(
         self,
         *,
@@ -2305,6 +2467,321 @@ class LingBotFastVideoGPAAdapter:
             result.update({"success": False, "error": repr(exc), "error_type": "dpo_backward_only_failed", "memory": _gpu_memory()})
         if save_grad_summary:
             write_json(_jsonable(result), out / "grad_summary.json")
+        return result
+
+    def compute_dpo_optimizer_step_dryrun(
+        self,
+        *,
+        pair: dict[str, Any],
+        batch_dir: str | Path,
+        out_dir: str | Path,
+        beta: float = 0.1,
+        device: str = "cuda",
+        dtype: str = "bf16",
+        num_frames: int = 8,
+        resolution: str = "480x832",
+        trainable_scope: str = "camera_control_lora_tiny",
+        max_trainable_params: int = 1_000_000,
+        lora_rank: int = 2,
+        lora_alpha: float = 4.0,
+        target_modules: str = "auto",
+        learning_rate: float = 1e-5,
+        optimizer_name: str = "adamw",
+        max_grad_norm: float = 1.0,
+        save_param_diff: bool = True,
+        no_save_lora: bool = True,
+        no_checkpoint: bool = True,
+        restore_after_step: bool = True,
+        recompute_after_step: bool = True,
+        command: list[str] | None = None,
+    ) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        if trainable_scope != "camera_control_lora_tiny":
+            raise RuntimeError("optimizer-step dry-run is only allowed for camera_control_lora_tiny")
+        if not no_save_lora or not no_checkpoint:
+            raise RuntimeError("optimizer-step dry-run requires --no_save_lora true and --no_checkpoint true")
+        if str(optimizer_name).lower() != "adamw":
+            raise RuntimeError(f"unsupported optimizer for dry-run: {optimizer_name}")
+
+        out = Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "command.txt").write_text(" ".join(command or sys.argv) + "\n", encoding="utf-8")
+        (out / "stdout_stderr.log").write_text("stdout/stderr is captured by the caller when this module is run from a shell.\n", encoding="utf-8")
+        result: dict[str, Any] = {
+            "success": False,
+            "mode": "dpo_optimizer_step_dryrun",
+            "beta": float(beta),
+            "learning_rate": float(learning_rate),
+            "optimizer": "adamw",
+            "max_grad_norm": float(max_grad_norm),
+            "step_count": 0,
+            "limit_pairs": 1,
+            "no_save_lora": True,
+            "no_checkpoint": True,
+            "training_allowed": False,
+            "trainable_scope_requested": trainable_scope,
+            "restore_after_step_requested": bool(restore_after_step),
+            "save_param_diff": bool(save_param_diff),
+        }
+
+        try:
+            if torch.cuda.is_available():
+                torch.cuda.reset_peak_memory_stats()
+
+            with torch.no_grad():
+                ref_load = self.load_reference_model(device=device, dtype=dtype, defer=False)
+                ref_pipe = ref_load.pop("object", None)
+                ref_model = getattr(ref_pipe, "model", None)
+                ref_names = self._sample_base_param_names(ref_model, limit=8) if ref_model is not None else []
+                ref_before = self._snapshot_param_samples(ref_model, ref_names) if ref_model is not None else {}
+                ref_energy = self._compute_energy_with_pipe(
+                    pipe=ref_pipe,
+                    pair=pair,
+                    batch_dir=batch_dir,
+                    out_dir=out / "reference",
+                    device=device,
+                    dtype=dtype,
+                    num_frames=num_frames,
+                    resolution=resolution,
+                )
+                reference_params_with_grad = 0
+                if ref_model is not None:
+                    reference_params_with_grad = sum(1 for p in ref_model.parameters() if p.grad is not None)
+                    reference_param_diff = self._diff_param_samples(ref_model, ref_before)
+                else:
+                    reference_param_diff = {"param_count": 0, "params_changed_count": 0, "max_abs_diff": 0.0}
+                del ref_model
+            del ref_pipe
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+            policy_load = self.load_policy_model(device=device, dtype=dtype, dry_run=False)
+            pipe = policy_load.pop("object", None)
+            model = getattr(pipe, "model", None)
+            if model is None:
+                raise RuntimeError("policy pipeline has no .model")
+            model.eval()
+            resolved = self._resolve_lora_targets(
+                model,
+                target_modules=target_modules,
+                lora_scope=trainable_scope,
+                rank=int(lora_rank),
+                max_lora_params=int(max_trainable_params),
+            )
+            injections = inject_lora_into_modules(
+                model,
+                resolved["target_modules"],
+                rank=int(lora_rank),
+                alpha=float(lora_alpha),
+            )
+            freeze_non_lora_parameters(model)
+            trainable = self._select_trainable_params(model, scope=trainable_scope, max_trainable_params=max_trainable_params)
+            if trainable["trainable_param_count"] <= 0:
+                raise RuntimeError(f"no trainable LoRA parameters selected for scope={trainable_scope}")
+            if trainable["trainable_param_count"] > int(max_trainable_params):
+                raise RuntimeError(f"trainable params exceed max_trainable_params={max_trainable_params}")
+            param_map = dict(model.named_parameters())
+            optimizer_params = [param_map[name] for name in trainable["selected_names"] if name in param_map]
+            if len(optimizer_params) != len(trainable["selected_names"]):
+                raise RuntimeError("optimizer param name mismatch after LoRA injection")
+            optimizer_only_lora = all("lora_" in name for name in trainable["selected_names"])
+            if not optimizer_only_lora:
+                raise RuntimeError(f"optimizer dry-run selected non-LoRA params: {trainable['selected_names']}")
+
+            lora_before = self._snapshot_selected_params(model, trainable["selected_names"])
+            lora_norm_before = self._param_norm_summary(model, trainable["selected_names"])
+            base_names = self._sample_base_param_names(model, preferred_targets=resolved["target_modules"], limit=12)
+            base_before = self._snapshot_param_samples(model, base_names)
+            base_trainable_before = int(sum(int(p.numel()) for name, p in model.named_parameters() if "lora_" not in name and p.requires_grad))
+
+            optimizer = torch.optim.AdamW(optimizer_params, lr=float(learning_rate))
+            optimizer.zero_grad(set_to_none=True)
+            policy_energy = self._compute_energy_tensors_with_pipe(
+                pipe=pipe,
+                pair=pair,
+                batch_dir=batch_dir,
+                out_dir=out / "policy_before_step",
+                device=device,
+                dtype=dtype,
+                num_frames=num_frames,
+                resolution=resolution,
+                enable_grad=True,
+            )
+            e_policy_w = policy_energy["E_winner_tensor"]
+            e_policy_l = policy_energy["E_loser_tensor"]
+            e_ref_w = float(ref_energy["E_winner"])
+            e_ref_l = float(ref_energy["E_loser"])
+            delta_policy = e_policy_l - e_policy_w
+            delta_ref_value = e_ref_l - e_ref_w
+            delta_ref = torch.tensor(delta_ref_value, device=delta_policy.device, dtype=torch.float32)
+            loss = -torch.nn.functional.logsigmoid(torch.tensor(float(beta), device=delta_policy.device, dtype=torch.float32) * (delta_policy.float() - delta_ref))
+            loss.backward()
+            grad_summary_before_clip = self._grad_summary(model, lora_before)
+            base_params_with_grad = sum(1 for name, param in model.named_parameters() if "lora_" not in name and param.grad is not None)
+            lora_params_with_grad = sum(1 for name, param in model.named_parameters() if "lora_" in name and param.grad is not None)
+            grad_norm_before_clip = self._total_grad_norm(optimizer_params)
+            clip_returned_norm = None
+            if max_grad_norm and float(max_grad_norm) > 0:
+                clip_returned_norm = float(torch.nn.utils.clip_grad_norm_(optimizer_params, float(max_grad_norm)).item())
+            grad_norm_after_clip = self._total_grad_norm(optimizer_params)
+            grad_summary_after_clip = self._grad_summary(model, lora_before)
+            if grad_summary_after_clip["any_nan_grad"] or grad_summary_after_clip["any_inf_grad"]:
+                raise RuntimeError("NaN/Inf gradient detected before optimizer step")
+
+            optimizer.step()
+            result["step_count"] = 1
+
+            lora_diff_after_step = self._diff_full_snapshot(model, lora_before)
+            base_diff_after_step = self._diff_param_samples(model, base_before)
+            lora_norm_after = self._param_norm_summary(model, trainable["selected_names"])
+            recompute_result: dict[str, Any] = {"attempted": False}
+            if recompute_after_step:
+                try:
+                    with torch.no_grad():
+                        after_energy = self._compute_energy_with_pipe(
+                            pipe=pipe,
+                            pair=pair,
+                            batch_dir=batch_dir,
+                            out_dir=out / "policy_after_step",
+                            device=device,
+                            dtype=dtype,
+                            num_frames=num_frames,
+                            resolution=resolution,
+                        )
+                    delta_after = float(after_energy["Delta_loser_minus_winner"])
+                    loss_after = -torch.nn.functional.logsigmoid(
+                        torch.tensor(float(beta) * (delta_after - float(delta_ref_value)), dtype=torch.float32)
+                    )
+                    recompute_result = {
+                        "attempted": True,
+                        "success": True,
+                        "L_DPO_after": float(loss_after.item()),
+                        "E_policy_winner_after": float(after_energy["E_winner"]),
+                        "E_policy_loser_after": float(after_energy["E_loser"]),
+                        "Delta_policy_after": delta_after,
+                        "policy_energy_after": after_energy,
+                    }
+                except Exception as exc:
+                    recompute_result = {"attempted": True, "success": False, "error": repr(exc), "error_type": "post_step_recompute_failed"}
+
+            restore_diff_after_restore: dict[str, Any] | None = None
+            if restore_after_step:
+                self._restore_params_from_snapshot(model, lora_before)
+                restore_diff_after_restore = self._diff_full_snapshot(model, lora_before)
+
+            optimizer.zero_grad(set_to_none=True)
+            for param in model.parameters():
+                if param.grad is not None:
+                    param.grad = None
+
+            lora_changed = lora_diff_after_step["params_changed_count"] > 0 and lora_diff_after_step["max_abs_diff"] > 0.0
+            base_unchanged = base_diff_after_step["max_abs_diff"] == 0.0 and base_diff_after_step["params_changed_count"] == 0
+            ref_unchanged = reference_param_diff.get("max_abs_diff", 0.0) == 0.0 and reference_param_diff.get("params_changed_count", 0) == 0
+            restored_ok = True
+            if restore_after_step and restore_diff_after_restore is not None:
+                restored_ok = restore_diff_after_restore["max_abs_diff"] == 0.0 and restore_diff_after_restore["params_changed_count"] == 0
+            loss_finite = bool(torch.isfinite(loss.detach()).item())
+            result.update(
+                {
+                    "success": bool(
+                        loss_finite
+                        and lora_changed
+                        and base_unchanged
+                        and ref_unchanged
+                        and restored_ok
+                        and base_params_with_grad == 0
+                        and reference_params_with_grad == 0
+                        and lora_params_with_grad > 0
+                        and not grad_summary_after_clip["any_nan_grad"]
+                        and not grad_summary_after_clip["any_inf_grad"]
+                        and not lora_diff_after_step["any_nan"]
+                        and not lora_diff_after_step["any_inf"]
+                    ),
+                    "L_DPO_before": float(loss.detach().cpu().item()),
+                    "loss_finite": loss_finite,
+                    "E_policy_winner_before": float(e_policy_w.detach().cpu().item()),
+                    "E_policy_loser_before": float(e_policy_l.detach().cpu().item()),
+                    "E_ref_winner": e_ref_w,
+                    "E_ref_loser": e_ref_l,
+                    "Delta_policy_before": float(delta_policy.detach().cpu().item()),
+                    "Delta_ref": float(delta_ref_value),
+                    "dpo_argument_before": float((float(beta) * (delta_policy.detach().cpu().float() - torch.tensor(delta_ref_value))).item()),
+                    "policy_energy_before": {k: v for k, v in policy_energy.items() if not k.endswith("_tensor")},
+                    "reference_energy": ref_energy,
+                    "reference_load": ref_load,
+                    "reference_frozen_confirmed": (ref_load.get("model_param_summary_after_freeze") or {}).get("requires_grad_count") == 0,
+                    "reference_no_grad_confirmed": True,
+                    "reference_params_with_grad": reference_params_with_grad,
+                    "reference_param_diff": reference_param_diff,
+                    "policy_load": policy_load,
+                    "lora_injection": {
+                        "scope": trainable_scope,
+                        "target_modules": resolved["target_modules"],
+                        "target_selection": resolved.get("target_selection"),
+                        "rank": int(lora_rank),
+                        "alpha": float(lora_alpha),
+                        "injections": [inj.__dict__ for inj in injections],
+                        "lora_param_count": count_lora_parameters(model),
+                        "note": "runtime-only injection into policy model; LoRA weights are not saved",
+                    },
+                    "trainable_scope": trainable,
+                    "optimizer_param_groups": {
+                        "group_count": len(optimizer.param_groups),
+                        "param_count": len(optimizer_params),
+                        "contains_only_lora": optimizer_only_lora,
+                        "learning_rate": float(optimizer.param_groups[0]["lr"]),
+                        "optimizer_class": type(optimizer).__name__,
+                    },
+                    "base_trainable_param_count_before_step": base_trainable_before,
+                    "base_params_with_grad": base_params_with_grad,
+                    "lora_params_with_grad": lora_params_with_grad,
+                    "grad_norm_before_clip": grad_norm_before_clip,
+                    "clip_returned_norm": clip_returned_norm,
+                    "grad_norm_after_clip": grad_norm_after_clip,
+                    "grad_summary_before_clip": grad_summary_before_clip,
+                    "grad_summary_after_clip": grad_summary_after_clip,
+                    "lora_param_norm_before": lora_norm_before,
+                    "lora_param_norm_after": lora_norm_after,
+                    "lora_param_diff": lora_diff_after_step,
+                    "base_param_diff": base_diff_after_step,
+                    "recompute_after_step": recompute_result,
+                    "restore_after_step": {
+                        "requested": bool(restore_after_step),
+                        "completed": bool(restore_after_step),
+                        "post_restore_diff": restore_diff_after_restore,
+                        "passed": restored_ok,
+                    },
+                    "parameter_safety": {
+                        "lora_params_changed": lora_changed,
+                        "base_params_unchanged": base_unchanged,
+                        "reference_params_unchanged": ref_unchanged,
+                        "no_nan_inf_grad": not grad_summary_after_clip["any_nan_grad"] and not grad_summary_after_clip["any_inf_grad"],
+                        "no_nan_inf_updated_lora": not lora_diff_after_step["any_nan"] and not lora_diff_after_step["any_inf"],
+                        "no_checkpoint_saved": True,
+                        "no_lora_saved": True,
+                        "no_local_assets_weights_write": True,
+                    },
+                    "memory": _gpu_memory(),
+                }
+            )
+        except Exception as exc:
+            result.update({"success": False, "error": repr(exc), "error_type": "dpo_optimizer_step_dryrun_failed", "memory": _gpu_memory()})
+
+        write_json(_jsonable(result), out / "summary.json")
+        write_json(_jsonable(result.get("grad_summary_after_clip") or result.get("grad_summary_before_clip") or {}), out / "grad_summary.json")
+        write_json(
+            _jsonable(
+                {
+                    "lora_param_diff": result.get("lora_param_diff"),
+                    "base_param_diff": result.get("base_param_diff"),
+                    "reference_param_diff": result.get("reference_param_diff"),
+                    "restore_after_step": result.get("restore_after_step"),
+                    "parameter_safety": result.get("parameter_safety"),
+                }
+            ),
+            out / "param_diff_summary.json",
+        )
         return result
 
     def compute_dpo_backward_scope_sweep(
@@ -2563,6 +3040,7 @@ class LingBotFastVideoGPAAdapter:
             AdapterStatus("inspect_lora_targets", True, "frozen LingBot-Fast model modules", "model Linear modules", "LoRA target recommendation", True, False, False, "no backward/optimizer; ranks and params are estimated only"),
             AdapterStatus("inject_lora_dryrun", True, "runtime LoRALinear wrapper", "policy model", "LoRA trainable param summary", True, False, False, "runtime-only injection; no optimizer, no step, no save"),
             AdapterStatus("compute_dpo_backward_scope_sweep", True, "LingBot flow target + frozen reference", "1-pair batch + scope list", "per-scope backward matrix", True, True, False, "calls backward scope-by-scope only; no optimizer, no step, no save"),
+            AdapterStatus("compute_dpo_optimizer_step_dryrun", True, "runtime LoRA + AdamW", "1-pair batch + LoRA params", "single-step safety summary", True, True, False, "exactly one optimizer.step on LoRA params only; no save/checkpoint"),
         ]
         return {
             "paths": self.paths,
@@ -2572,7 +3050,7 @@ class LingBotFastVideoGPAAdapter:
             "vae_candidate": str(self._vae_path()),
             "methods": [m.to_dict() for m in methods],
             "training_allowed": False,
-            "reason": "No optimizer/backward/training path is implemented.",
+            "reason": "Only bounded smoke/dry-run plumbing is implemented; real DPO training remains disabled.",
         }
 
 
@@ -2883,6 +3361,35 @@ def _mode_dpo_backward_scope_sweep(args) -> dict[str, Any]:
     )
 
 
+def _mode_dpo_optimizer_step(args) -> dict[str, Any]:
+    adapter = LingBotFastVideoGPAAdapter(args.config)
+    pair = _load_pair_from_args_or_batch(args)
+    return adapter.compute_dpo_optimizer_step_dryrun(
+        pair=pair,
+        batch_dir=args.batch,
+        out_dir=args.out,
+        beta=float(args.beta),
+        device=args.device,
+        dtype=args.dtype,
+        num_frames=args.num_frames,
+        resolution=args.resolution,
+        trainable_scope=args.trainable_scope,
+        max_trainable_params=int(args.max_trainable_params),
+        lora_rank=int(args.lora_rank),
+        lora_alpha=float(args.lora_alpha),
+        target_modules=args.target_modules,
+        learning_rate=float(args.learning_rate),
+        optimizer_name=args.optimizer,
+        max_grad_norm=float(args.max_grad_norm),
+        save_param_diff=_bool_arg(args.save_param_diff),
+        no_save_lora=_bool_arg(args.no_save_lora),
+        no_checkpoint=_bool_arg(args.no_checkpoint),
+        restore_after_step=_bool_arg(args.restore_after_step),
+        recompute_after_step=_bool_arg(args.recompute_after_step),
+        command=sys.argv,
+    )
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="configs/cam_physgeo/videogpa_adapter.yaml")
@@ -2906,6 +3413,7 @@ def main(argv=None) -> int:
             "inject_lora_dryrun",
             "dpo_backward_only_dryrun",
             "dpo_backward_scope_sweep",
+            "dpo_optimizer_step_dryrun",
         ],
     )
     ap.add_argument("--sample", default="")
@@ -2940,6 +3448,14 @@ def main(argv=None) -> int:
     ap.add_argument("--target_modules", default="auto")
     ap.add_argument("--max_lora_params", type=int, default=1_000_000)
     ap.add_argument("--save_grad_summary", default="true")
+    ap.add_argument("--learning_rate", type=float, default=1e-5)
+    ap.add_argument("--optimizer", default="adamw")
+    ap.add_argument("--max_grad_norm", type=float, default=1.0)
+    ap.add_argument("--save_param_diff", default="true")
+    ap.add_argument("--no_save_lora", default="true")
+    ap.add_argument("--no_checkpoint", default="true")
+    ap.add_argument("--restore_after_step", default="true")
+    ap.add_argument("--recompute_after_step", default="true")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
 
@@ -2973,6 +3489,8 @@ def main(argv=None) -> int:
         result = _mode_dpo_backward_only(args)
     elif args.mode == "dpo_backward_scope_sweep":
         result = _mode_dpo_backward_scope_sweep(args)
+    elif args.mode == "dpo_optimizer_step_dryrun":
+        result = _mode_dpo_optimizer_step(args)
     else:
         adapter = LingBotFastVideoGPAAdapter(args.config)
         result = adapter.status()
