@@ -87,3 +87,40 @@ Large generation is not allowed until:
 - camera condition is at least partially effective;
 - TDW one-sample generation dry-run passes;
 - user explicitly approves scale and storage.
+
+## Generation Is Not Next Immediate Step Unless User Requests
+
+The current DPO plumbing has only reached a 1-pair backward-only dry-run. It has
+not reached a real optimizer-step dry-run, and it has not reached any training
+loop. Therefore large TDW/Physion generation should not start automatically.
+
+If the user wants to prepare data before the DPO training gate is complete, the
+only allowed generation action should be a 1-sample generation dry-run. It must
+write to a new output root and validate:
+
+- HDF5 keys;
+- RGB frames;
+- depth;
+- ID mask;
+- camera pose;
+- projection / intrinsics;
+- object state;
+- prompt;
+- reward smoke score;
+- contact sheet;
+- storage size;
+- generation runtime.
+
+The staged plan remains:
+
+1. 1 sample dry-run.
+2. 10 sample smoke.
+3. 50 sample validation.
+4. 200 sample pilot.
+5. 1k+ only after explicit storage/runtime/template approval.
+
+Generation sources remain:
+
+- official Physion / `physics-benchmarking-neurips2021`;
+- `tdw_physics` / TDW;
+- project moving-camera extension scripts.

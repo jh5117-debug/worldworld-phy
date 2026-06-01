@@ -158,3 +158,30 @@ Because policy and reference are identical frozen weights in this smoke,
 formula and tensor plumbing, not preference learning. The next permitted step is
 only a user-confirmed 1-pair backward-only dry-run with no optimizer and no
 saved weights. Real DPO training remains blocked.
+
+## DPO Backward-Only Update
+
+- Gate A: passed.
+- Gate B: passed.
+- Gate C: partial/pass.
+- Gate D: partial/pass for smoke.
+- Gate E: passed for 1-pair backward-only plumbing with fallback
+  `tiny_subset`.
+- Gate F: no. Real DPO training remains disallowed.
+
+Backward-only details:
+
+- Reference energy: passed with frozen same LingBot-Fast checkpoint.
+- Scalar DPO loss: passed.
+- Primary `camera_adapter` gradient scope: failed with CUDA OOM at the current
+  8-frame 480x832 latent size.
+- Fallback `tiny_subset`: passed.
+- Trainable fallback params: `head.head.bias`, `head.head.weight`.
+- Trainable param count: `327,744`.
+- Params with grad: `2`.
+- Reference params with grad: `0`.
+- Optimizer / optimizer step / checkpoint / LoRA save: none.
+
+Next permitted step is not real training. If the user confirms, the next round
+may do only a 1-pair optimizer-step dry-run, preferably after adding a smaller
+LoRA/camera-adapter trainable scope. Large/multi-pair DPO training remains no.
