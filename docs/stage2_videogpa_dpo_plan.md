@@ -275,3 +275,48 @@ Optimizer-step dry-run details:
 Next permitted step is not real training. If the user explicitly confirms, the
 next round may do only a 1-pair overfit mini-loop such as 5 optimizer steps on
 the same pair, no checkpoint, no LoRA save, and no multi-pair training.
+
+## DPO 1-Pair Overfit Mini-Loop Update
+
+- Gate A: passed.
+- Gate B: passed.
+- Gate C: partial/pass.
+- Gate D: partial/pass for smoke.
+- Gate E: pass/partial. VideoGPA pair/metadata, LingBot latent encode,
+  condition encode, batch shape, policy energy, reference energy, scalar loss,
+  backward-only, tiny camera-control LoRA backward-only, and 1-pair
+  optimizer-step dry-run all pass. A bounded 1-pair / 5-step runtime LoRA
+  mini-loop also passed.
+- Gate F: no. Real DPO training remains disallowed.
+
+Mini-loop details:
+
+- Scope: `camera_control_lora_tiny`.
+- Runtime target modules:
+  `blocks.39.cam_shift_layer`, `blocks.39.cam_scale_layer`.
+- Rank/alpha: `2` / `4.0`.
+- Optimizer: `AdamW`, lr `1e-5`, LoRA params only.
+- Steps: `5` on the same pair.
+- Noise/timestep: resampled each step, but shared between winner and loser
+  within each step.
+- Loss values: `[0.6931473016738892, 0.6931471228599548,
+  0.6931470632553101, 0.6931471228599548, 0.6931472420692444]`.
+- LoRA params changed: yes, max abs diff `4.924208769807592e-05`.
+- Base sample params changed: no, max abs diff `0.0`.
+- Reference sample params changed: no, max abs diff `0.0`.
+- LoRA params with grad: `4` each step.
+- Base params with grad: `0` each step.
+- NaN/Inf gradients: no.
+- OOM: no.
+- LoRA save / checkpoint save: none.
+- `restore_after_loop`: passed; runtime LoRA params were restored in memory.
+
+Because noise and timestep were resampled each step and the policy starts from
+the same checkpoint as the reference, monotonic loss decrease is not expected in
+this smoke. The run confirms finite repeated steps, stable gradients, LoRA-only
+updates, and base/reference immutability.
+
+Next permitted step is not real training. If the user explicitly confirms, a
+future round may do only a tiny 5-pair or 10-pair overfit smoke, or a fixed
+noise/timestep 1-pair diagnostic. Saved LoRA remains disabled by default, and
+multi-pair real DPO training remains blocked.

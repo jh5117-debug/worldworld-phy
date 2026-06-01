@@ -1284,10 +1284,11 @@ class LingBotFastVideoGPAAdapter:
         dtype: str,
         num_frames: int,
         resolution: str,
+        batch_override: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         import torch  # type: ignore
 
-        batch = self._load_batch_tensors(batch_dir, device=device, dtype=dtype)
+        batch = batch_override or self._load_batch_tensors(batch_dir, device=device, dtype=dtype)
         tensors = batch["tensors"]
         condition = self._build_forward_condition(
             pair=pair,
@@ -1344,10 +1345,11 @@ class LingBotFastVideoGPAAdapter:
         num_frames: int,
         resolution: str,
         enable_grad: bool,
+        batch_override: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         import torch  # type: ignore
 
-        batch = self._load_batch_tensors(batch_dir, device=device, dtype=dtype)
+        batch = batch_override or self._load_batch_tensors(batch_dir, device=device, dtype=dtype)
         tensors = batch["tensors"]
         condition = self._build_forward_condition(
             pair=pair,
@@ -1394,6 +1396,62 @@ class LingBotFastVideoGPAAdapter:
                 "winner": bool(torch.isfinite(e_winner.detach()).item()),
                 "loser": bool(torch.isfinite(e_loser.detach()).item()),
             },
+        }
+
+    def _make_step_batch_override(
+        self,
+        batch: dict[str, Any],
+        *,
+        step_index: int,
+        resample_noise: bool,
+        resample_timestep: bool,
+        num_train_timesteps: int,
+        seed: int = 12345,
+    ) -> dict[str, Any]:
+        import copy
+        import torch  # type: ignore
+
+        tensors_in = batch["tensors"]
+        tensors = dict(tensors_in)
+        device = tensors_in["winner_latent"].device
+        dtype = tensors_in["winner_latent"].dtype
+        step_seed = int(seed) + int(step_index)
+        generator = torch.Generator(device=device)
+        generator.manual_seed(step_seed)
+        if resample_noise:
+            noise = torch.randn(
+                tuple(tensors_in["winner_latent"].shape),
+                generator=generator,
+                device=device,
+                dtype=dtype,
+            )
+            tensors["winner_noise"] = noise
+            tensors["loser_noise"] = noise.clone()
+        if resample_timestep:
+            timestep = torch.randint(
+                low=0,
+                high=int(num_train_timesteps),
+                size=(1,),
+                generator=generator,
+                device=device,
+                dtype=tensors_in["winner_timestep"].dtype,
+            )
+            tensors["winner_timestep"] = timestep
+            tensors["loser_timestep"] = timestep.clone()
+        summary = copy.deepcopy(batch.get("summary") or {})
+        summary["miniloop_step"] = int(step_index)
+        summary["resample_noise"] = bool(resample_noise)
+        summary["resample_timestep"] = bool(resample_timestep)
+        summary["step_seed"] = step_seed
+        summary["winner_timestep"] = [int(x) for x in tensors["winner_timestep"].detach().cpu().reshape(-1).tolist()]
+        summary["loser_timestep"] = [int(x) for x in tensors["loser_timestep"].detach().cpu().reshape(-1).tolist()]
+        return {
+            "summary": summary,
+            "tensors": tensors,
+            "tensor_path": batch.get("tensor_path"),
+            "step_seed": step_seed,
+            "noise_resampled": bool(resample_noise),
+            "timestep_resampled": bool(resample_timestep),
         }
 
     def model_forward_probe(
@@ -2784,6 +2842,380 @@ class LingBotFastVideoGPAAdapter:
         )
         return result
 
+    def compute_dpo_1pair_overfit_miniloop(
+        self,
+        *,
+        pair: dict[str, Any],
+        batch_dir: str | Path,
+        out_dir: str | Path,
+        beta: float = 0.1,
+        device: str = "cuda",
+        dtype: str = "bf16",
+        num_frames: int = 8,
+        resolution: str = "480x832",
+        trainable_scope: str = "camera_control_lora_tiny",
+        max_trainable_params: int = 1_000_000,
+        lora_rank: int = 2,
+        lora_alpha: float = 4.0,
+        target_modules: str = "auto",
+        learning_rate: float = 1e-5,
+        optimizer_name: str = "adamw",
+        max_grad_norm: float = 1.0,
+        num_steps: int = 5,
+        resample_noise_each_step: bool = True,
+        resample_timestep_each_step: bool = True,
+        save_param_diff: bool = True,
+        no_save_lora: bool = True,
+        no_checkpoint: bool = True,
+        restore_after_loop: bool = True,
+        log_every_step: bool = True,
+        command: list[str] | None = None,
+    ) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        if trainable_scope != "camera_control_lora_tiny":
+            raise RuntimeError("1-pair mini-loop is only allowed for camera_control_lora_tiny")
+        if int(num_steps) < 1 or int(num_steps) > 5:
+            raise RuntimeError(f"num_steps must be in [1, 5] for this dry-run, got {num_steps}")
+        if not no_save_lora or not no_checkpoint:
+            raise RuntimeError("1-pair mini-loop requires --no_save_lora true and --no_checkpoint true")
+        if str(optimizer_name).lower() != "adamw":
+            raise RuntimeError(f"unsupported optimizer for mini-loop dry-run: {optimizer_name}")
+
+        out = Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        metrics_path = out / "per_step_metrics.jsonl"
+        metrics_path.write_text("", encoding="utf-8")
+        (out / "command.txt").write_text(" ".join(command or sys.argv) + "\n", encoding="utf-8")
+        (out / "stdout_stderr.log").write_text("stdout/stderr is captured by the caller when this module is run from a shell.\n", encoding="utf-8")
+        result: dict[str, Any] = {
+            "success": False,
+            "mode": "dpo_1pair_overfit_miniloop",
+            "beta": float(beta),
+            "learning_rate": float(learning_rate),
+            "optimizer": "adamw",
+            "max_grad_norm": float(max_grad_norm),
+            "num_steps_requested": int(num_steps),
+            "steps_completed": 0,
+            "limit_pairs": 1,
+            "resample_noise_each_step": bool(resample_noise_each_step),
+            "resample_timestep_each_step": bool(resample_timestep_each_step),
+            "no_save_lora": True,
+            "no_checkpoint": True,
+            "training_allowed": False,
+            "trainable_scope_requested": trainable_scope,
+            "restore_after_loop_requested": bool(restore_after_loop),
+            "save_param_diff": bool(save_param_diff),
+            "per_step_metrics_path": str(metrics_path),
+        }
+
+        try:
+            if torch.cuda.is_available():
+                torch.cuda.reset_peak_memory_stats()
+
+            step_batches: list[dict[str, Any]] = []
+            reference_step_metrics: list[dict[str, Any]] = []
+            with torch.no_grad():
+                ref_load = self.load_reference_model(device=device, dtype=dtype, defer=False)
+                ref_pipe = ref_load.pop("object", None)
+                ref_model = getattr(ref_pipe, "model", None)
+                ref_names = self._sample_base_param_names(ref_model, limit=8) if ref_model is not None else []
+                ref_before = self._snapshot_param_samples(ref_model, ref_names) if ref_model is not None else {}
+                base_batch = self._load_batch_tensors(batch_dir, device=device, dtype=dtype)
+                num_train_timesteps = int(getattr(ref_pipe, "num_train_timesteps", 1000) or 1000)
+                for step_idx in range(int(num_steps)):
+                    step_batch = self._make_step_batch_override(
+                        base_batch,
+                        step_index=step_idx,
+                        resample_noise=bool(resample_noise_each_step),
+                        resample_timestep=bool(resample_timestep_each_step),
+                        num_train_timesteps=num_train_timesteps,
+                    )
+                    step_batches.append(step_batch)
+                    ref_energy = self._compute_energy_with_pipe(
+                        pipe=ref_pipe,
+                        pair=pair,
+                        batch_dir=batch_dir,
+                        out_dir=out / f"reference_step_{step_idx:04d}",
+                        device=device,
+                        dtype=dtype,
+                        num_frames=num_frames,
+                        resolution=resolution,
+                        batch_override=step_batch,
+                    )
+                    reference_step_metrics.append(ref_energy)
+                reference_params_with_grad = 0
+                if ref_model is not None:
+                    reference_params_with_grad = sum(1 for p in ref_model.parameters() if p.grad is not None)
+                    reference_param_diff = self._diff_param_samples(ref_model, ref_before)
+                else:
+                    reference_param_diff = {"param_count": 0, "params_changed_count": 0, "max_abs_diff": 0.0}
+                del ref_model
+            del ref_pipe
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+            policy_load = self.load_policy_model(device=device, dtype=dtype, dry_run=False)
+            pipe = policy_load.pop("object", None)
+            model = getattr(pipe, "model", None)
+            if model is None:
+                raise RuntimeError("policy pipeline has no .model")
+            model.eval()
+            resolved = self._resolve_lora_targets(
+                model,
+                target_modules=target_modules,
+                lora_scope=trainable_scope,
+                rank=int(lora_rank),
+                max_lora_params=int(max_trainable_params),
+            )
+            injections = inject_lora_into_modules(
+                model,
+                resolved["target_modules"],
+                rank=int(lora_rank),
+                alpha=float(lora_alpha),
+            )
+            freeze_non_lora_parameters(model)
+            trainable = self._select_trainable_params(model, scope=trainable_scope, max_trainable_params=max_trainable_params)
+            if trainable["trainable_param_count"] <= 0:
+                raise RuntimeError(f"no trainable LoRA parameters selected for scope={trainable_scope}")
+            if trainable["trainable_param_count"] > int(max_trainable_params):
+                raise RuntimeError(f"trainable params exceed max_trainable_params={max_trainable_params}")
+            param_map = dict(model.named_parameters())
+            optimizer_params = [param_map[name] for name in trainable["selected_names"] if name in param_map]
+            if len(optimizer_params) != len(trainable["selected_names"]):
+                raise RuntimeError("optimizer param name mismatch after LoRA injection")
+            optimizer_only_lora = all("lora_" in name for name in trainable["selected_names"])
+            if not optimizer_only_lora:
+                raise RuntimeError(f"mini-loop selected non-LoRA params: {trainable['selected_names']}")
+
+            lora_initial = self._snapshot_selected_params(model, trainable["selected_names"])
+            base_names = self._sample_base_param_names(model, preferred_targets=resolved["target_modules"], limit=12)
+            base_before = self._snapshot_param_samples(model, base_names)
+            base_trainable_before = int(sum(int(p.numel()) for name, p in model.named_parameters() if "lora_" not in name and p.requires_grad))
+            optimizer = torch.optim.AdamW(optimizer_params, lr=float(learning_rate))
+
+            per_step: list[dict[str, Any]] = []
+            stopped_early_reason: str | None = None
+            for step_idx in range(int(num_steps)):
+                if torch.cuda.is_available():
+                    torch.cuda.reset_peak_memory_stats()
+                optimizer.zero_grad(set_to_none=True)
+                policy_energy = self._compute_energy_tensors_with_pipe(
+                    pipe=pipe,
+                    pair=pair,
+                    batch_dir=batch_dir,
+                    out_dir=out / f"policy_step_{step_idx:04d}",
+                    device=device,
+                    dtype=dtype,
+                    num_frames=num_frames,
+                    resolution=resolution,
+                    enable_grad=True,
+                    batch_override=step_batches[step_idx],
+                )
+                e_policy_w = policy_energy["E_winner_tensor"]
+                e_policy_l = policy_energy["E_loser_tensor"]
+                ref_energy = reference_step_metrics[step_idx]
+                e_ref_w = float(ref_energy["E_winner"])
+                e_ref_l = float(ref_energy["E_loser"])
+                delta_policy = e_policy_l - e_policy_w
+                delta_ref_value = e_ref_l - e_ref_w
+                delta_ref = torch.tensor(delta_ref_value, device=delta_policy.device, dtype=torch.float32)
+                loss = -torch.nn.functional.logsigmoid(torch.tensor(float(beta), device=delta_policy.device, dtype=torch.float32) * (delta_policy.float() - delta_ref))
+                loss.backward()
+                grad_summary_before_clip = self._grad_summary(model, lora_initial)
+                base_params_with_grad = sum(1 for name, param in model.named_parameters() if "lora_" not in name and param.grad is not None)
+                lora_params_with_grad = sum(1 for name, param in model.named_parameters() if "lora_" in name and param.grad is not None)
+                grad_norm_before_clip = self._total_grad_norm(optimizer_params)
+                clip_returned_norm = None
+                if max_grad_norm and float(max_grad_norm) > 0:
+                    clip_returned_norm = float(torch.nn.utils.clip_grad_norm_(optimizer_params, float(max_grad_norm)).item())
+                grad_norm_after_clip = self._total_grad_norm(optimizer_params)
+                grad_summary_after_clip = self._grad_summary(model, lora_initial)
+                finite_ok = (
+                    bool(torch.isfinite(loss.detach()).item())
+                    and not grad_summary_after_clip["any_nan_grad"]
+                    and not grad_summary_after_clip["any_inf_grad"]
+                )
+                if not finite_ok:
+                    stopped_early_reason = "nonfinite_loss_or_gradient"
+                    step_record = {
+                        "step_index": step_idx,
+                        "success": False,
+                        "L_DPO": float(loss.detach().cpu().item()) if torch.isfinite(loss.detach()).item() else None,
+                        "error_type": stopped_early_reason,
+                    }
+                    per_step.append(step_record)
+                    if log_every_step:
+                        with metrics_path.open("a", encoding="utf-8") as handle:
+                            handle.write(json.dumps(_jsonable(step_record), sort_keys=True) + "\n")
+                    break
+
+                optimizer.step()
+                lora_diff_from_initial = self._diff_full_snapshot(model, lora_initial)
+                lora_norm = self._param_norm_summary(model, trainable["selected_names"])
+                step_record = {
+                    "step_index": step_idx,
+                    "success": True,
+                    "timestep": step_batches[step_idx]["summary"].get("winner_timestep"),
+                    "noise_resampled": step_batches[step_idx]["noise_resampled"],
+                    "timestep_resampled": step_batches[step_idx]["timestep_resampled"],
+                    "step_seed": step_batches[step_idx]["step_seed"],
+                    "L_DPO": float(loss.detach().cpu().item()),
+                    "E_policy_winner": float(e_policy_w.detach().cpu().item()),
+                    "E_policy_loser": float(e_policy_l.detach().cpu().item()),
+                    "E_ref_winner": e_ref_w,
+                    "E_ref_loser": e_ref_l,
+                    "Delta_policy": float(delta_policy.detach().cpu().item()),
+                    "Delta_ref": float(delta_ref_value),
+                    "grad_norm_before_clip": grad_norm_before_clip,
+                    "clip_returned_norm": clip_returned_norm,
+                    "grad_norm_after_clip": grad_norm_after_clip,
+                    "lora_param_norm": lora_norm,
+                    "lora_param_diff_from_initial": {
+                        k: lora_diff_from_initial.get(k)
+                        for k in ["param_count", "params_changed_count", "max_abs_diff", "mean_abs_diff", "any_nan", "any_inf", "elements_total"]
+                    },
+                    "base_params_with_grad": base_params_with_grad,
+                    "lora_params_with_grad": lora_params_with_grad,
+                    "any_nan_grad": grad_summary_after_clip["any_nan_grad"],
+                    "any_inf_grad": grad_summary_after_clip["any_inf_grad"],
+                    "peak_memory": _gpu_memory(),
+                }
+                per_step.append(step_record)
+                if log_every_step:
+                    with metrics_path.open("a", encoding="utf-8") as handle:
+                        handle.write(json.dumps(_jsonable(step_record), sort_keys=True) + "\n")
+                for param in model.parameters():
+                    if param.grad is not None:
+                        param.grad = None
+                del policy_energy, loss, e_policy_w, e_policy_l, delta_policy, delta_ref
+
+            optimizer.zero_grad(set_to_none=True)
+            lora_diff_after_loop = self._diff_full_snapshot(model, lora_initial)
+            base_diff_after_loop = self._diff_param_samples(model, base_before)
+            restore_diff_after_restore: dict[str, Any] | None = None
+            if restore_after_loop:
+                self._restore_params_from_snapshot(model, lora_initial)
+                restore_diff_after_restore = self._diff_full_snapshot(model, lora_initial)
+
+            for param in model.parameters():
+                if param.grad is not None:
+                    param.grad = None
+
+            losses = [float(row["L_DPO"]) for row in per_step if row.get("success")]
+            delta_policies = [float(row["Delta_policy"]) for row in per_step if row.get("success")]
+            lora_changed = lora_diff_after_loop["params_changed_count"] > 0 and lora_diff_after_loop["max_abs_diff"] > 0.0
+            base_unchanged = base_diff_after_loop["max_abs_diff"] == 0.0 and base_diff_after_loop["params_changed_count"] == 0
+            ref_unchanged = reference_param_diff.get("max_abs_diff", 0.0) == 0.0 and reference_param_diff.get("params_changed_count", 0) == 0
+            restored_ok = True
+            if restore_after_loop and restore_diff_after_restore is not None:
+                restored_ok = restore_diff_after_restore["max_abs_diff"] == 0.0 and restore_diff_after_restore["params_changed_count"] == 0
+            all_steps_ok = len(losses) == int(num_steps) and stopped_early_reason is None and all(math.isfinite(v) for v in losses)
+            any_nan_inf_step = any(row.get("any_nan_grad") or row.get("any_inf_grad") for row in per_step)
+            result.update(
+                {
+                    "success": bool(
+                        all_steps_ok
+                        and lora_changed
+                        and base_unchanged
+                        and ref_unchanged
+                        and restored_ok
+                        and not any_nan_inf_step
+                    ),
+                    "steps_completed": len(losses),
+                    "stopped_early_reason": stopped_early_reason,
+                    "loss_values": losses,
+                    "loss_first": losses[0] if losses else None,
+                    "loss_last": losses[-1] if losses else None,
+                    "loss_delta_last_minus_first": (losses[-1] - losses[0]) if len(losses) >= 2 else None,
+                    "delta_policy_values": delta_policies,
+                    "delta_policy_delta_last_minus_first": (delta_policies[-1] - delta_policies[0]) if len(delta_policies) >= 2 else None,
+                    "loss_trend_interpretation": (
+                        "not expected to be monotonic because noise/timestep are resampled each step"
+                        if (resample_noise_each_step or resample_timestep_each_step)
+                        else "fixed noise/timestep makes loss trend more directly interpretable"
+                    ),
+                    "overfit_signal_observed": bool(len(delta_policies) >= 2 and abs(delta_policies[-1] - delta_policies[0]) > 0.0),
+                    "reference_step_metrics": reference_step_metrics,
+                    "per_step_metrics": per_step,
+                    "policy_load": policy_load,
+                    "reference_load": ref_load,
+                    "reference_frozen_confirmed": (ref_load.get("model_param_summary_after_freeze") or {}).get("requires_grad_count") == 0,
+                    "reference_no_grad_confirmed": True,
+                    "reference_params_with_grad": reference_params_with_grad,
+                    "reference_param_diff": reference_param_diff,
+                    "lora_injection": {
+                        "scope": trainable_scope,
+                        "target_modules": resolved["target_modules"],
+                        "target_selection": resolved.get("target_selection"),
+                        "rank": int(lora_rank),
+                        "alpha": float(lora_alpha),
+                        "injections": [inj.__dict__ for inj in injections],
+                        "lora_param_count": count_lora_parameters(model),
+                        "note": "runtime-only injection into policy model; LoRA weights are not saved",
+                    },
+                    "trainable_scope": trainable,
+                    "optimizer_param_groups": {
+                        "group_count": len(optimizer.param_groups),
+                        "param_count": len(optimizer_params),
+                        "contains_only_lora": optimizer_only_lora,
+                        "learning_rate": float(optimizer.param_groups[0]["lr"]),
+                        "optimizer_class": type(optimizer).__name__,
+                    },
+                    "base_trainable_param_count_before_loop": base_trainable_before,
+                    "lora_param_diff": lora_diff_after_loop,
+                    "base_param_diff": base_diff_after_loop,
+                    "restore_after_loop": {
+                        "requested": bool(restore_after_loop),
+                        "completed": bool(restore_after_loop),
+                        "post_restore_diff": restore_diff_after_restore,
+                        "passed": restored_ok,
+                    },
+                    "parameter_safety": {
+                        "lora_params_changed": lora_changed,
+                        "base_params_unchanged": base_unchanged,
+                        "reference_params_unchanged": ref_unchanged,
+                        "no_nan_inf_grad": not any_nan_inf_step,
+                        "no_nan_inf_updated_lora": not lora_diff_after_loop["any_nan"] and not lora_diff_after_loop["any_inf"],
+                        "no_checkpoint_saved": True,
+                        "no_lora_saved": True,
+                        "no_local_assets_weights_write": True,
+                    },
+                    "memory": _gpu_memory(),
+                }
+            )
+            del model
+            del pipe
+        except Exception as exc:
+            result.update({"success": False, "error": repr(exc), "error_type": "dpo_1pair_overfit_miniloop_failed", "memory": _gpu_memory()})
+
+        write_json(_jsonable(result), out / "summary.json")
+        write_json(
+            _jsonable(
+                {
+                    "per_step_metrics_path": str(metrics_path),
+                    "per_step_metrics": result.get("per_step_metrics", []),
+                    "loss_values": result.get("loss_values"),
+                    "delta_policy_values": result.get("delta_policy_values"),
+                    "success": result.get("success"),
+                }
+            ),
+            out / "grad_summary.json",
+        )
+        write_json(
+            _jsonable(
+                {
+                    "lora_param_diff": result.get("lora_param_diff"),
+                    "base_param_diff": result.get("base_param_diff"),
+                    "reference_param_diff": result.get("reference_param_diff"),
+                    "restore_after_loop": result.get("restore_after_loop"),
+                    "parameter_safety": result.get("parameter_safety"),
+                }
+            ),
+            out / "param_diff_summary.json",
+        )
+        return result
+
     def compute_dpo_backward_scope_sweep(
         self,
         *,
@@ -3041,6 +3473,7 @@ class LingBotFastVideoGPAAdapter:
             AdapterStatus("inject_lora_dryrun", True, "runtime LoRALinear wrapper", "policy model", "LoRA trainable param summary", True, False, False, "runtime-only injection; no optimizer, no step, no save"),
             AdapterStatus("compute_dpo_backward_scope_sweep", True, "LingBot flow target + frozen reference", "1-pair batch + scope list", "per-scope backward matrix", True, True, False, "calls backward scope-by-scope only; no optimizer, no step, no save"),
             AdapterStatus("compute_dpo_optimizer_step_dryrun", True, "runtime LoRA + AdamW", "1-pair batch + LoRA params", "single-step safety summary", True, True, False, "exactly one optimizer.step on LoRA params only; no save/checkpoint"),
+            AdapterStatus("compute_dpo_1pair_overfit_miniloop", True, "runtime LoRA + AdamW", "1-pair batch + LoRA params", "5-step smoke metrics", True, True, False, "bounded overfit mini-loop; no save/checkpoint and max 5 steps"),
         ]
         return {
             "paths": self.paths,
@@ -3390,6 +3823,38 @@ def _mode_dpo_optimizer_step(args) -> dict[str, Any]:
     )
 
 
+def _mode_dpo_1pair_overfit_miniloop(args) -> dict[str, Any]:
+    adapter = LingBotFastVideoGPAAdapter(args.config)
+    pair = _load_pair_from_args_or_batch(args)
+    return adapter.compute_dpo_1pair_overfit_miniloop(
+        pair=pair,
+        batch_dir=args.batch,
+        out_dir=args.out,
+        beta=float(args.beta),
+        device=args.device,
+        dtype=args.dtype,
+        num_frames=args.num_frames,
+        resolution=args.resolution,
+        trainable_scope=args.trainable_scope,
+        max_trainable_params=int(args.max_trainable_params),
+        lora_rank=int(args.lora_rank),
+        lora_alpha=float(args.lora_alpha),
+        target_modules=args.target_modules,
+        learning_rate=float(args.learning_rate),
+        optimizer_name=args.optimizer,
+        max_grad_norm=float(args.max_grad_norm),
+        num_steps=int(args.num_steps),
+        resample_noise_each_step=_bool_arg(args.resample_noise_each_step),
+        resample_timestep_each_step=_bool_arg(args.resample_timestep_each_step),
+        save_param_diff=_bool_arg(args.save_param_diff),
+        no_save_lora=_bool_arg(args.no_save_lora),
+        no_checkpoint=_bool_arg(args.no_checkpoint),
+        restore_after_loop=_bool_arg(args.restore_after_loop),
+        log_every_step=_bool_arg(args.log_every_step),
+        command=sys.argv,
+    )
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="configs/cam_physgeo/videogpa_adapter.yaml")
@@ -3414,6 +3879,7 @@ def main(argv=None) -> int:
             "dpo_backward_only_dryrun",
             "dpo_backward_scope_sweep",
             "dpo_optimizer_step_dryrun",
+            "dpo_1pair_overfit_miniloop",
         ],
     )
     ap.add_argument("--sample", default="")
@@ -3456,6 +3922,11 @@ def main(argv=None) -> int:
     ap.add_argument("--no_checkpoint", default="true")
     ap.add_argument("--restore_after_step", default="true")
     ap.add_argument("--recompute_after_step", default="true")
+    ap.add_argument("--num_steps", type=int, default=5)
+    ap.add_argument("--resample_noise_each_step", default="true")
+    ap.add_argument("--resample_timestep_each_step", default="true")
+    ap.add_argument("--restore_after_loop", default="true")
+    ap.add_argument("--log_every_step", default="true")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
 
@@ -3491,6 +3962,8 @@ def main(argv=None) -> int:
         result = _mode_dpo_backward_scope_sweep(args)
     elif args.mode == "dpo_optimizer_step_dryrun":
         result = _mode_dpo_optimizer_step(args)
+    elif args.mode == "dpo_1pair_overfit_miniloop":
+        result = _mode_dpo_1pair_overfit_miniloop(args)
     else:
         adapter = LingBotFastVideoGPAAdapter(args.config)
         result = adapter.status()
