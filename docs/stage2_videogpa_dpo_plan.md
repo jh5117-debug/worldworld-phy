@@ -212,3 +212,33 @@ autograd graph at the current 8-frame 480x832 latent size. The next permitted
 step is only to implement a tiny real LoRA/camera adapter injection path and
 rerun backward-only. Do not run optimizer step yet. Real DPO training remains
 blocked.
+
+## Tiny LoRA Camera-Control Backward Update
+
+- Gate A: passed.
+- Gate B: passed.
+- Gate C: partial/pass.
+- Gate D: partial/pass for smoke.
+- Gate E: pass/partial. VideoGPA pair/metadata, LingBot latent encode,
+  condition encode, batch shape, policy energy, reference energy, scalar loss,
+  and backward-only all pass. A meaningful runtime camera-control LoRA scope now
+  also passes backward-only.
+- Gate F: no. Real DPO training remains disallowed.
+
+LoRA backward-only details:
+
+- Scope: `camera_control_lora_tiny`.
+- Runtime target modules:
+  `blocks.39.cam_shift_layer`, `blocks.39.cam_scale_layer`.
+- Rank/alpha: `2` / `4.0`.
+- Trainable params: `40,960`.
+- Loss: `0.6931474208831787`.
+- LoRA params with grad: `4`.
+- Base params with grad: `0`.
+- Reference params with grad: `0`.
+- NaN/Inf gradients: no.
+- Optimizer / optimizer step / LoRA save / checkpoint save: none.
+
+Next permitted step is only a user-confirmed 1-pair optimizer-step dry-run on
+this LoRA scope, with no save and explicit before/after parameter checks. Real
+DPO training and multi-pair training remain blocked.

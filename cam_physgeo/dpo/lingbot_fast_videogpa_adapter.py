@@ -16,6 +16,12 @@ from typing import Any
 import numpy as np
 
 from cam_physgeo.eval.probe_camera_embedding import _build_embedding, _load_cam_utils
+from cam_physgeo.dpo.lora_utils import (
+    count_lora_parameters,
+    freeze_non_lora_parameters,
+    inject_lora_into_modules,
+    list_lora_parameters,
+)
 from cam_physgeo.training.model_loading import inspect_checkpoint, resolve_model_paths, resolve_t5_runtime_paths
 from cam_physgeo.utils.camera import convert_projection_to_lingbot_intrinsics
 from cam_physgeo.utils.io import load_yaml, write_json
@@ -265,6 +271,7 @@ _TRAINABLE_SCOPES = (
     "plucker_projection_only",
     "action_scale_shift_tiny",
     "camera_lora_tiny",
+    "camera_control_lora_tiny",
     "qkv_lora_tiny",
     "none",
 )
@@ -313,6 +320,8 @@ def _scope_match(name: str, scope: str) -> bool:
         return any(token in lname for token in _ACTION_SCALE_SHIFT_TOKENS)
     if scope == "camera_lora_tiny":
         return ("lora_" in lname or ".lora" in lname) and any(token in lname for token in _CAMERA_TRAINABLE_TOKENS)
+    if scope == "camera_control_lora_tiny":
+        return ("lora_" in lname or ".lora" in lname) and any(token in lname for token in ("cam_", "camera", "c2ws", "wancamctrl", "control", "plucker"))
     if scope == "qkv_lora_tiny":
         return ("lora_" in lname or ".lora" in lname) and any(token in lname for token in _QKV_TOKENS)
     return False
@@ -375,13 +384,14 @@ def _scope_is_camera_related(scope: str) -> bool:
         "plucker_projection_only",
         "action_scale_shift_tiny",
         "camera_lora_tiny",
+        "camera_control_lora_tiny",
     }
 
 
 def _scope_memory_risk(scope: str, count: int) -> str:
     if scope == "camera_adapter":
         return "high: full camera/control graph previously OOMed at this resolution"
-    if scope in {"plucker_projection_only", "action_scale_shift_tiny", "camera_lora_tiny"}:
+    if scope in {"plucker_projection_only", "action_scale_shift_tiny", "camera_lora_tiny", "camera_control_lora_tiny"}:
         return "low-to-medium: camera-related but intentionally bounded to a small tensor set"
     if scope in {"tiny_subset", "head_only"}:
         return "low: late head-only plumbing scope, not semantically ideal"
@@ -430,6 +440,63 @@ def _candidate_summary(model: Any, max_trainable_params: int = 50_000_000) -> di
         result["recommended_scope"] = "none"
         result["recommendation_reason"] = "No safe trainable candidate was found."
     return result
+
+
+def _module_linear_shape(module: Any) -> dict[str, Any]:
+    try:
+        return {"in_features": int(module.in_features), "out_features": int(module.out_features)}
+    except Exception:
+        return {"in_features": None, "out_features": None}
+
+
+def _lora_name_flags(name: str) -> dict[str, bool]:
+    lname = name.lower()
+    return {
+        "plucker": any(token in lname for token in ("plucker", "c2ws", "wancamctrl")),
+        "camera": any(token in lname for token in ("cam_", "camera", "wancamctrl", "c2ws")),
+        "action": "action" in lname,
+        "control": "control" in lname or "wancamctrl" in lname,
+        "scale_shift": any(token in lname for token in ("scale", "shift", "injector")),
+        "adapter": "adapter" in lname,
+        "projection": "proj" in lname or "embedding" in lname,
+        "mlp": "mlp" in lname,
+        "condition": "condition" in lname or "cond" in lname,
+    }
+
+
+def _block_index(name: str) -> int:
+    import re
+
+    match = re.search(r"blocks\.(\d+)\.", name)
+    return int(match.group(1)) if match else -1
+
+
+def _lora_target_priority(name: str) -> tuple[int, int, str]:
+    lname = name.lower()
+    if "cam_shift_layer" in lname:
+        rank = 0
+    elif "cam_scale_layer" in lname:
+        rank = 1
+    elif "cam_injector_layer2" in lname:
+        rank = 2
+    elif "cam_injector_layer1" in lname:
+        rank = 3
+    elif "c2ws_hidden_states_layer2" in lname:
+        rank = 4
+    elif "c2ws_hidden_states_layer1" in lname:
+        rank = 5
+    elif "patch_embedding_wancamctrl" in lname:
+        rank = 6
+    else:
+        rank = 7
+    return (rank, -_block_index(name), name)
+
+
+def _estimate_lora_params(module: Any, rank: int) -> int:
+    shape = _module_linear_shape(module)
+    if shape["in_features"] is None or shape["out_features"] is None:
+        return 0
+    return int(rank) * int(shape["in_features"] + shape["out_features"])
 
 
 def _shape_list(value: Any) -> list[int] | None:
@@ -1711,6 +1778,231 @@ class LingBotFastVideoGPAAdapter:
         write_json(_jsonable(result), out / "camera_trainable_scope_inventory.json")
         return result
 
+    def inspect_lora_targets(
+        self,
+        *,
+        out_dir: str | Path,
+        device: str = "cuda",
+        dtype: str = "bf16",
+        rank_candidates: list[int] | None = None,
+    ) -> dict[str, Any]:
+        import torch.nn as nn  # type: ignore
+
+        out = Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        ranks = [int(r) for r in (rank_candidates or [2, 4])]
+        result: dict[str, Any] = {"success": False, "no_backward": True, "no_optimizer": True, "training_allowed": False}
+        try:
+            load_result = self.load_policy_model(device=device, dtype=dtype, dry_run=False)
+            pipe = load_result.pop("object", None)
+            model = getattr(pipe, "model", None)
+            if model is None:
+                raise RuntimeError("policy pipeline has no .model")
+            rows: list[dict[str, Any]] = []
+            for module_name, module in model.named_modules():
+                if not isinstance(module, nn.Linear):
+                    continue
+                flags = _lora_name_flags(module_name)
+                if not any(flags.values()):
+                    continue
+                shape = _module_linear_shape(module)
+                param_count = int(sum(int(param.numel()) for param in module.parameters()))
+                estimates = {f"rank_{rank}": _estimate_lora_params(module, rank) for rank in ranks}
+                camera_related = bool(flags["plucker"] or flags["camera"] or flags["control"] or flags["scale_shift"])
+                safe = camera_related and bool(estimates) and min(estimates.values()) <= 1_000_000
+                rows.append(
+                    {
+                        "module_name": module_name,
+                        "module_class": type(module).__name__,
+                        **shape,
+                        "parameter_count": param_count,
+                        "contains": flags,
+                        "camera_related": camera_related,
+                        "used_in_forward_path": camera_related,
+                        "safe_for_lora": safe,
+                        "estimated_lora_params": estimates,
+                        "reason": (
+                            "late camera/control linear target; LoRA trains low-rank delta while base remains frozen"
+                            if safe
+                            else "not first-choice for tiny camera LoRA"
+                        ),
+                    }
+                )
+            rows.sort(key=lambda row: (0 if row["safe_for_lora"] else 1, _lora_target_priority(row["module_name"])))
+            recommended = self._resolve_lora_targets(
+                model,
+                target_modules="auto",
+                lora_scope="camera_control_lora_tiny",
+                rank=min(ranks or [2]),
+                max_lora_params=1_000_000,
+            )
+            result.update(
+                {
+                    "success": True,
+                    "policy_load": load_result,
+                    "rank_candidates": ranks,
+                    "candidate_target_count": len(rows),
+                    "candidate_targets": rows,
+                    "recommended_target_modules": recommended["target_modules"],
+                    "recommended_lora_param_count_rank2": recommended.get("lora_param_count"),
+                    "recommended_scope": "camera_control_lora_tiny",
+                    "recommendation_reason": "Start with rank-2 LoRA on the latest-block camera shift/scale Linear layers. This is camera-conditioned, far smaller than full camera_adapter, and avoids modifying third_party code or weights.",
+                    "memory": _gpu_memory(),
+                }
+            )
+            for param in model.parameters():
+                param.requires_grad_(False)
+        except Exception as exc:
+            result.update({"success": False, "error": repr(exc), "error_type": "inspect_lora_targets_failed", "memory": _gpu_memory()})
+        write_json(_jsonable(result), out / "lora_target_inspection.json")
+        return result
+
+    def _resolve_lora_targets(
+        self,
+        model: Any,
+        *,
+        target_modules: str,
+        lora_scope: str,
+        rank: int,
+        max_lora_params: int,
+    ) -> dict[str, Any]:
+        import torch.nn as nn  # type: ignore
+
+        module_map = dict(model.named_modules())
+        if target_modules and target_modules != "auto":
+            requested = [name.strip() for name in str(target_modules).split(",") if name.strip()]
+            missing = [name for name in requested if name not in module_map]
+            non_linear = [name for name in requested if name in module_map and not isinstance(module_map[name], nn.Linear)]
+            if missing or non_linear:
+                raise ValueError(f"invalid LoRA targets; missing={missing}, non_linear={non_linear}")
+            total = int(sum(_estimate_lora_params(module_map[name], rank) for name in requested))
+            if total > max_lora_params:
+                raise RuntimeError(f"requested LoRA target params {total} exceed max_lora_params={max_lora_params}")
+            return {"target_modules": requested, "lora_param_count": total, "target_selection": "explicit"}
+
+        candidates = []
+        for name, module in module_map.items():
+            if not isinstance(module, nn.Linear):
+                continue
+            flags = _lora_name_flags(name)
+            if lora_scope == "camera_control_lora_tiny":
+                keep = bool(flags["camera"] or flags["plucker"] or flags["control"] or flags["scale_shift"])
+            else:
+                keep = bool(flags["camera"] or flags["plucker"] or flags["control"])
+            if not keep:
+                continue
+            lora_params = _estimate_lora_params(module, rank)
+            if lora_params <= 0:
+                continue
+            candidates.append((name, module, lora_params))
+        candidates.sort(key=lambda item: _lora_target_priority(item[0]))
+        selected: list[str] = []
+        total = 0
+        if lora_scope == "camera_control_lora_tiny":
+            late_blocks = sorted({_block_index(name) for name, _, _ in candidates if _block_index(name) >= 0}, reverse=True)
+            if late_blocks:
+                top_block = late_blocks[0]
+                for wanted in ("cam_shift_layer", "cam_scale_layer"):
+                    for name, _, lora_params in candidates:
+                        lname = name.lower()
+                        if _block_index(name) != top_block or wanted not in lname:
+                            continue
+                        if total + lora_params <= max_lora_params:
+                            selected.append(name)
+                            total += lora_params
+                        break
+                if selected:
+                    return {"target_modules": selected, "lora_param_count": int(total), "target_selection": "auto_latest_block_shift_scale"}
+        for name, _, lora_params in candidates:
+            lname = name.lower()
+            if lora_scope == "camera_control_lora_tiny" and not ("cam_shift_layer" in lname or "cam_scale_layer" in lname):
+                continue
+            if total + lora_params > max_lora_params:
+                continue
+            selected.append(name)
+            total += lora_params
+            if len(selected) >= 2:
+                break
+        if not selected:
+            for name, _, lora_params in candidates:
+                if total + lora_params > max_lora_params:
+                    continue
+                selected.append(name)
+                total += lora_params
+                if len(selected) >= 1:
+                    break
+        if not selected:
+            raise RuntimeError("no safe LoRA target modules resolved")
+        return {"target_modules": selected, "lora_param_count": int(total), "target_selection": "auto"}
+
+    def inject_lora_dryrun(
+        self,
+        *,
+        out_dir: str | Path,
+        device: str = "cuda",
+        dtype: str = "bf16",
+        lora_scope: str = "camera_control_lora_tiny",
+        lora_rank: int = 2,
+        lora_alpha: float = 4.0,
+        target_modules: str = "auto",
+        max_lora_params: int = 1_000_000,
+    ) -> dict[str, Any]:
+        out = Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        result: dict[str, Any] = {"success": False, "no_backward": True, "no_optimizer": True, "no_step": True, "no_lora_save": True, "training_allowed": False}
+        try:
+            load_result = self.load_policy_model(device=device, dtype=dtype, dry_run=False)
+            pipe = load_result.pop("object", None)
+            model = getattr(pipe, "model", None)
+            if model is None:
+                raise RuntimeError("policy pipeline has no .model")
+            resolved = self._resolve_lora_targets(
+                model,
+                target_modules=target_modules,
+                lora_scope=lora_scope,
+                rank=int(lora_rank),
+                max_lora_params=int(max_lora_params),
+            )
+            injections = inject_lora_into_modules(
+                model,
+                resolved["target_modules"],
+                rank=int(lora_rank),
+                alpha=float(lora_alpha),
+            )
+            freeze_non_lora_parameters(model)
+            lora_rows = list_lora_parameters(model)
+            total_trainable = int(sum(int(param.numel()) for param in model.parameters() if param.requires_grad))
+            base_trainable = int(sum(int(param.numel()) for name, param in model.named_parameters() if "lora_" not in name and param.requires_grad))
+            result.update(
+                {
+                    "success": True,
+                    "policy_load": load_result,
+                    "lora_scope": lora_scope,
+                    "target_modules": resolved["target_modules"],
+                    "target_selection": resolved.get("target_selection"),
+                    "rank": int(lora_rank),
+                    "alpha": float(lora_alpha),
+                    "injections": [inj.__dict__ for inj in injections],
+                    "lora_param_count": count_lora_parameters(model),
+                    "total_trainable_param_count": total_trainable,
+                    "base_trainable_param_count": base_trainable,
+                    "base_params_frozen": base_trainable == 0,
+                    "reference_params_frozen": "not loaded in injection dry-run",
+                    "lora_param_rows": lora_rows[:50],
+                    "target_modules_camera_related": all(any(token in name.lower() for token in ("cam_", "camera", "c2ws", "plucker", "wancamctrl", "control")) for name in resolved["target_modules"]),
+                    "safe_to_run_backward_only": total_trainable > 0 and total_trainable <= int(max_lora_params) and base_trainable == 0,
+                    "memory": _gpu_memory(),
+                }
+            )
+            for param in model.parameters():
+                if param.grad is not None:
+                    param.grad = None
+                param.requires_grad_(False)
+        except Exception as exc:
+            result.update({"success": False, "error": repr(exc), "error_type": "inject_lora_dryrun_failed", "memory": _gpu_memory()})
+        write_json(_jsonable(result), out / "lora_injection_summary.json")
+        return result
+
     def _select_trainable_params(self, model: Any, *, scope: str, max_trainable_params: int) -> dict[str, Any]:
         for param in model.parameters():
             param.requires_grad_(False)
@@ -1718,11 +2010,11 @@ class LingBotFastVideoGPAAdapter:
         selected: list[tuple[str, Any]] = []
         count = 0
         skipped_reason: str | None = None
-        if scope in {"camera_adapter", "lora", "head_only", "plucker_projection_only", "action_scale_shift_tiny", "camera_lora_tiny", "qkv_lora_tiny"}:
+        if scope in {"camera_adapter", "lora", "head_only", "plucker_projection_only", "action_scale_shift_tiny", "camera_lora_tiny", "camera_control_lora_tiny", "qkv_lora_tiny"}:
             rows = [(name, param) for name, param in model.named_parameters() if _scope_match(name, scope)]
             if scope in {"camera_adapter", "plucker_projection_only", "action_scale_shift_tiny", "head_only"}:
                 rows = sorted(rows, key=lambda item: _scope_selection_key(item[0], scope))
-            if scope in {"camera_lora_tiny", "qkv_lora_tiny"} and not rows:
+            if scope in {"camera_lora_tiny", "camera_control_lora_tiny", "qkv_lora_tiny"} and not rows:
                 skipped_reason = "no existing LoRA/PEFT parameters were found; this adapter does not inject or save LoRA in a backward-only smoke"
             for name, param in rows:
                 numel = int(param.numel())
@@ -1866,6 +2158,9 @@ class LingBotFastVideoGPAAdapter:
         no_optimizer: bool = True,
         no_step: bool = True,
         save_grad_summary: bool = True,
+        lora_rank: int = 2,
+        lora_alpha: float = 4.0,
+        target_modules: str = "auto",
     ) -> dict[str, Any]:
         import torch  # type: ignore
 
@@ -1917,6 +2212,31 @@ class LingBotFastVideoGPAAdapter:
             if model is None:
                 raise RuntimeError("policy pipeline has no .model")
             model.eval()
+            lora_injection: dict[str, Any] | None = None
+            if trainable_scope == "camera_control_lora_tiny":
+                resolved = self._resolve_lora_targets(
+                    model,
+                    target_modules=target_modules,
+                    lora_scope=trainable_scope,
+                    rank=int(lora_rank),
+                    max_lora_params=int(max_trainable_params),
+                )
+                injections = inject_lora_into_modules(
+                    model,
+                    resolved["target_modules"],
+                    rank=int(lora_rank),
+                    alpha=float(lora_alpha),
+                )
+                lora_injection = {
+                    "scope": trainable_scope,
+                    "target_modules": resolved["target_modules"],
+                    "target_selection": resolved.get("target_selection"),
+                    "rank": int(lora_rank),
+                    "alpha": float(lora_alpha),
+                    "injections": [inj.__dict__ for inj in injections],
+                    "lora_param_count": count_lora_parameters(model),
+                    "note": "runtime-only injection into policy model; no LoRA weights are saved",
+                }
             trainable = self._select_trainable_params(model, scope=trainable_scope, max_trainable_params=max_trainable_params)
             if trainable["trainable_param_count"] <= 0:
                 raise RuntimeError(f"no trainable parameters selected for scope={trainable_scope}")
@@ -1942,12 +2262,18 @@ class LingBotFastVideoGPAAdapter:
             loss = -torch.nn.functional.logsigmoid(torch.tensor(float(beta), device=delta_policy.device, dtype=torch.float32) * (delta_policy.float() - delta_ref))
             loss.backward()
             grad_summary = self._grad_summary(model, before)
+            base_params_with_grad = sum(1 for name, param in model.named_parameters() if "lora_" not in name and param.grad is not None)
+            lora_params_with_grad = sum(1 for name, param in model.named_parameters() if "lora_" in name and param.grad is not None)
             for param in model.parameters():
                 if param.grad is not None:
                     param.grad = None
             result.update(
                 {
-                    "success": bool(torch.isfinite(loss.detach()).item()) and grad_summary["params_with_grad"] > 0 and not grad_summary["any_nan_grad"] and not grad_summary["any_inf_grad"],
+                    "success": bool(torch.isfinite(loss.detach()).item())
+                    and grad_summary["params_with_grad"] > 0
+                    and not grad_summary["any_nan_grad"]
+                    and not grad_summary["any_inf_grad"]
+                    and (trainable_scope != "camera_control_lora_tiny" or base_params_with_grad == 0),
                     "loss": float(loss.detach().cpu().item()),
                     "loss_finite": bool(torch.isfinite(loss.detach()).item()),
                     "E_policy_winner": float(e_policy_w.detach().cpu().item()),
@@ -1964,8 +2290,11 @@ class LingBotFastVideoGPAAdapter:
                     "reference_no_grad_confirmed": True,
                     "reference_params_with_grad": reference_params_with_grad,
                     "policy_load": policy_load,
+                    "lora_injection": lora_injection,
                     "trainable_scope": trainable,
                     "grad_summary": grad_summary,
+                    "lora_params_with_grad": lora_params_with_grad,
+                    "base_params_with_grad": base_params_with_grad,
                     "no_optimizer_confirmed": True,
                     "no_step_confirmed": True,
                     "no_param_update_confirmed": bool(grad_summary["policy_params_changed_check"]["passed"]),
@@ -2231,6 +2560,8 @@ class LingBotFastVideoGPAAdapter:
             AdapterStatus("list_trainable_candidates", True, "frozen LingBot-Fast model parameters", "model", "candidate param report", True, False, False, "reports LoRA/camera/tiny scopes; no backward/optimizer"),
             AdapterStatus("compute_dpo_backward_only_dryrun", True, "LingBot flow target + frozen reference", "1-pair batch", "loss + gradient summary", True, True, False, "calls backward only; no optimizer, no step, no save"),
             AdapterStatus("list_camera_trainable_scopes", True, "frozen LingBot-Fast model parameters", "model modules", "camera/control scope inventory", True, False, False, "reports camera/plucker/action scopes and memory risk; no backward/optimizer"),
+            AdapterStatus("inspect_lora_targets", True, "frozen LingBot-Fast model modules", "model Linear modules", "LoRA target recommendation", True, False, False, "no backward/optimizer; ranks and params are estimated only"),
+            AdapterStatus("inject_lora_dryrun", True, "runtime LoRALinear wrapper", "policy model", "LoRA trainable param summary", True, False, False, "runtime-only injection; no optimizer, no step, no save"),
             AdapterStatus("compute_dpo_backward_scope_sweep", True, "LingBot flow target + frozen reference", "1-pair batch + scope list", "per-scope backward matrix", True, True, False, "calls backward scope-by-scope only; no optimizer, no step, no save"),
         ]
         return {
@@ -2479,6 +2810,32 @@ def _mode_list_camera_trainable_scopes(args) -> dict[str, Any]:
     )
 
 
+def _mode_inspect_lora_targets(args) -> dict[str, Any]:
+    adapter = LingBotFastVideoGPAAdapter(args.config)
+    return adapter.inspect_lora_targets(
+        out_dir=args.out,
+        device=args.device,
+        dtype=args.dtype,
+        rank_candidates=[int(x) for x in (args.rank_candidates or [2, 4])],
+    )
+
+
+def _mode_inject_lora_dryrun(args) -> dict[str, Any]:
+    if not _bool_arg(args.no_optimizer) or not _bool_arg(args.no_step):
+        raise RuntimeError("inject_lora_dryrun requires --no_optimizer true and --no_step true")
+    adapter = LingBotFastVideoGPAAdapter(args.config)
+    return adapter.inject_lora_dryrun(
+        out_dir=args.out,
+        device=args.device,
+        dtype=args.dtype,
+        lora_scope=args.lora_scope,
+        lora_rank=int(args.lora_rank),
+        lora_alpha=float(args.lora_alpha),
+        target_modules=args.target_modules,
+        max_lora_params=int(args.max_lora_params),
+    )
+
+
 def _mode_dpo_backward_only(args) -> dict[str, Any]:
     if not _bool_arg(args.no_optimizer) or not _bool_arg(args.no_step):
         raise RuntimeError("dpo_backward_only_dryrun requires --no_optimizer true and --no_step true")
@@ -2498,6 +2855,9 @@ def _mode_dpo_backward_only(args) -> dict[str, Any]:
         no_optimizer=_bool_arg(args.no_optimizer),
         no_step=_bool_arg(args.no_step),
         save_grad_summary=_bool_arg(args.save_grad_summary),
+        lora_rank=int(args.lora_rank),
+        lora_alpha=float(args.lora_alpha),
+        target_modules=args.target_modules,
     )
 
 
@@ -2542,6 +2902,8 @@ def main(argv=None) -> int:
             "dpo_scalar_loss_dryrun",
             "list_trainable_candidates",
             "list_camera_trainable_scopes",
+            "inspect_lora_targets",
+            "inject_lora_dryrun",
             "dpo_backward_only_dryrun",
             "dpo_backward_scope_sweep",
         ],
@@ -2571,6 +2933,12 @@ def main(argv=None) -> int:
     ap.add_argument("--trainable_scope", default="camera_adapter", choices=list(_TRAINABLE_SCOPES))
     ap.add_argument("--scopes", nargs="+", default=["tiny_subset", "head_only", "plucker_projection_only", "action_scale_shift_tiny", "camera_lora_tiny"])
     ap.add_argument("--max_trainable_params", type=int, default=50_000_000)
+    ap.add_argument("--rank_candidates", nargs="+", type=int, default=[2, 4])
+    ap.add_argument("--lora_scope", default="camera_control_lora_tiny")
+    ap.add_argument("--lora_rank", type=int, default=2)
+    ap.add_argument("--lora_alpha", type=float, default=4.0)
+    ap.add_argument("--target_modules", default="auto")
+    ap.add_argument("--max_lora_params", type=int, default=1_000_000)
     ap.add_argument("--save_grad_summary", default="true")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
@@ -2597,6 +2965,10 @@ def main(argv=None) -> int:
         result = _mode_list_trainable_candidates(args)
     elif args.mode == "list_camera_trainable_scopes":
         result = _mode_list_camera_trainable_scopes(args)
+    elif args.mode == "inspect_lora_targets":
+        result = _mode_inspect_lora_targets(args)
+    elif args.mode == "inject_lora_dryrun":
+        result = _mode_inject_lora_dryrun(args)
     elif args.mode == "dpo_backward_only_dryrun":
         result = _mode_dpo_backward_only(args)
     elif args.mode == "dpo_backward_scope_sweep":

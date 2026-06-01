@@ -70,3 +70,28 @@ Recommended next work:
    whether to attempt a 1-pair optimizer-step dry-run.
 
 Real DPO training remains disallowed.
+
+## Tiny LoRA Follow-Up Comparison
+
+| Scope | Params | Camera-related | Backward | OOM | Meaningful |
+| --- | ---: | --- | --- | --- | --- |
+| `tiny_subset` | 327,744 | no | passed | no | plumbing only |
+| `head_only` | 337,984 | no | passed | no | plumbing only |
+| `plucker_projection_only` | n/a | yes | failed | yes | too much activation memory |
+| `action_scale_shift_tiny` | n/a | yes | failed | yes | too much activation memory |
+| `camera_control_lora_tiny` | 40,960 | yes | passed | no | first meaningful camera-control scope |
+
+The new runtime LoRA wrapper solved the existing-parameter camera scope issue
+for a late-block target:
+
+- target modules: `blocks.39.cam_shift_layer`,
+  `blocks.39.cam_scale_layer`;
+- rank: `2`;
+- alpha: `4.0`;
+- LoRA params with grad: `4` tensors;
+- base params with grad: `0`;
+- reference params with grad: `0`;
+- no optimizer, no step, no save.
+
+This makes `camera_control_lora_tiny` the recommended next candidate for a
+future user-approved 1-pair optimizer-step dry-run. Real training remains no.
