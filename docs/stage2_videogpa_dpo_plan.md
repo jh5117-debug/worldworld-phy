@@ -185,3 +185,30 @@ Backward-only details:
 Next permitted step is not real training. If the user confirms, the next round
 may do only a 1-pair optimizer-step dry-run, preferably after adding a smaller
 LoRA/camera-adapter trainable scope. Large/multi-pair DPO training remains no.
+
+## DPO Trainable Scope Sweep Update
+
+- Gate A: passed.
+- Gate B: passed.
+- Gate C: partial/pass.
+- Gate D: partial/pass for smoke.
+- Gate E: partial/pass. VideoGPA pair/metadata, LingBot latent encode,
+  condition encode, batch shape, policy energy, reference energy, scalar loss,
+  and backward-only have all passed for plumbing scopes. A camera-aware scope
+  sweep has now been attempted.
+- Gate F: no. Real DPO training remains disallowed.
+
+Scope sweep details:
+
+- `tiny_subset`: passed, `327,744` trainable params.
+- `head_only`: passed, `337,984` trainable params.
+- `plucker_projection_only`: OOM, peak about `100.44 GB`.
+- `action_scale_shift_tiny`: OOM, peak about `100.48 GB`.
+- `camera_lora_tiny`: skipped because no existing LoRA params were injected.
+
+Conclusion: the only passing scopes are still output-head plumbing scopes.
+Existing camera bias scopes are semantically better but still retain too much
+autograd graph at the current 8-frame 480x832 latent size. The next permitted
+step is only to implement a tiny real LoRA/camera adapter injection path and
+rerun backward-only. Do not run optimizer step yet. Real DPO training remains
+blocked.

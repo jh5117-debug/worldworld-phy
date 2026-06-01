@@ -257,6 +257,46 @@ _CAMERA_TRAINABLE_TOKENS = (
 )
 
 
+_TRAINABLE_SCOPES = (
+    "lora",
+    "camera_adapter",
+    "tiny_subset",
+    "head_only",
+    "plucker_projection_only",
+    "action_scale_shift_tiny",
+    "camera_lora_tiny",
+    "qkv_lora_tiny",
+    "none",
+)
+
+
+_PLUCKER_PROJECTION_TOKENS = (
+    "patch_embedding_wancamctrl",
+    "c2ws_hidden_states_layer1",
+    "c2ws_hidden_states_layer2",
+)
+
+
+_ACTION_SCALE_SHIFT_TOKENS = (
+    "cam_scale_layer",
+    "cam_shift_layer",
+    "cam_injector_layer",
+)
+
+
+_QKV_TOKENS = (
+    ".q.",
+    ".k.",
+    ".v.",
+    ".q_proj",
+    ".k_proj",
+    ".v_proj",
+    ".to_q",
+    ".to_k",
+    ".to_v",
+)
+
+
 def _scope_match(name: str, scope: str) -> bool:
     lname = name.lower()
     if "physics_" in lname or "physicsadapter" in lname:
@@ -265,6 +305,16 @@ def _scope_match(name: str, scope: str) -> bool:
         return any(token in lname for token in _CAMERA_TRAINABLE_TOKENS)
     if scope == "lora":
         return "lora_" in lname or ".lora" in lname
+    if scope == "head_only":
+        return lname.startswith("head.") or ".head." in lname or lname.startswith("head_")
+    if scope == "plucker_projection_only":
+        return any(token in lname for token in _PLUCKER_PROJECTION_TOKENS)
+    if scope == "action_scale_shift_tiny":
+        return any(token in lname for token in _ACTION_SCALE_SHIFT_TOKENS)
+    if scope == "camera_lora_tiny":
+        return ("lora_" in lname or ".lora" in lname) and any(token in lname for token in _CAMERA_TRAINABLE_TOKENS)
+    if scope == "qkv_lora_tiny":
+        return ("lora_" in lname or ".lora" in lname) and any(token in lname for token in _QKV_TOKENS)
     return False
 
 
@@ -294,13 +344,61 @@ def _camera_selection_key(name: str) -> tuple[int, int, int, str]:
     return (-block, size_rank, module_rank, name)
 
 
+def _scope_selection_key(name: str, scope: str) -> tuple[int, int, int, str]:
+    lname = name.lower()
+    if scope == "head_only":
+        # Keep the old successful plumbing subset as a named baseline.
+        preferred = 0 if lname.startswith("head.head.") else 1
+        size_rank = 0 if lname.endswith(".bias") else 1
+        return (preferred, size_rank, 0, name)
+    if scope == "plucker_projection_only":
+        # Prefer biases first. Full patch/c2ws weights are semantically relevant
+        # but too risky for a first backward-only scope.
+        size_rank = 0 if lname.endswith(".bias") else 1
+        if "c2ws_hidden_states_layer2" in lname:
+            module_rank = 0
+        elif "c2ws_hidden_states_layer1" in lname:
+            module_rank = 1
+        elif "patch_embedding_wancamctrl" in lname:
+            module_rank = 2
+        else:
+            module_rank = 3
+        return (size_rank, module_rank, 0, name)
+    if scope == "action_scale_shift_tiny":
+        return _camera_selection_key(name)
+    return _camera_selection_key(name)
+
+
+def _scope_is_camera_related(scope: str) -> bool:
+    return scope in {
+        "camera_adapter",
+        "plucker_projection_only",
+        "action_scale_shift_tiny",
+        "camera_lora_tiny",
+    }
+
+
+def _scope_memory_risk(scope: str, count: int) -> str:
+    if scope == "camera_adapter":
+        return "high: full camera/control graph previously OOMed at this resolution"
+    if scope in {"plucker_projection_only", "action_scale_shift_tiny", "camera_lora_tiny"}:
+        return "low-to-medium: camera-related but intentionally bounded to a small tensor set"
+    if scope in {"tiny_subset", "head_only"}:
+        return "low: late head-only plumbing scope, not semantically ideal"
+    if scope == "qkv_lora_tiny":
+        return "medium: only safe if existing LoRA params are already injected"
+    if count <= 5_000_000:
+        return "low"
+    return "medium"
+
+
 def _candidate_summary(model: Any, max_trainable_params: int = 50_000_000) -> dict[str, Any]:
-    scopes = {"camera_adapter": [], "lora": [], "tiny_subset": []}
+    scopes = {scope: [] for scope in _TRAINABLE_SCOPES if scope != "none"}
     total_params = 0
     for name, param in model.named_parameters():
         numel = int(param.numel())
         total_params += numel
-        for scope in ["camera_adapter", "lora"]:
+        for scope in scopes:
             if _scope_match(name, scope):
                 scopes[scope].append((name, numel, str(param.dtype).replace("torch.", ""), str(param.device)))
         lname = name.lower()
@@ -313,10 +411,15 @@ def _candidate_summary(model: Any, max_trainable_params: int = 50_000_000) -> di
             "candidate_tensor_count": len(rows),
             "sample_names": [r[0] for r in rows[:25]],
             "sample_rows": [{"name": r[0], "numel": r[1], "dtype": r[2], "device": r[3]} for r in rows[:25]],
+            "camera_related": _scope_is_camera_related(scope),
+            "memory_risk": _scope_memory_risk(scope, int(sum(r[1] for r in rows))),
         }
-    if result["scopes"]["camera_adapter"]["candidate_param_count"] > 0:
-        result["recommended_scope"] = "camera_adapter"
-        result["recommendation_reason"] = "Existing LingBot camera/control modules are the smallest meaningful path for checking camera-conditioned DPO gradients."
+    if result["scopes"]["action_scale_shift_tiny"]["candidate_param_count"] > 0:
+        result["recommended_scope"] = "action_scale_shift_tiny"
+        result["recommendation_reason"] = "Late camera scale/shift parameters are directly camera-related and much smaller than full camera_adapter."
+    elif result["scopes"]["plucker_projection_only"]["candidate_param_count"] > 0:
+        result["recommended_scope"] = "plucker_projection_only"
+        result["recommendation_reason"] = "Plucker projection parameters are camera-specific, but may have higher activation-memory risk than late scale/shift."
     elif result["scopes"]["lora"]["candidate_param_count"] > 0:
         result["recommended_scope"] = "lora"
         result["recommendation_reason"] = "Existing LoRA parameters are present and are safer than full-model gradients."
@@ -1513,24 +1616,126 @@ class LingBotFastVideoGPAAdapter:
         write_json(_jsonable(result), out / "trainable_candidates_summary.json")
         return result
 
+    def list_camera_trainable_scopes(self, *, out_dir: str | Path, device: str = "cuda", dtype: str = "bf16", max_trainable_params: int = 5_000_000) -> dict[str, Any]:
+        out = Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        result: dict[str, Any] = {"success": False, "no_backward": True, "no_optimizer": True, "training_allowed": False}
+        try:
+            load_result = self.load_policy_model(device=device, dtype=dtype, dry_run=False)
+            pipe = load_result.pop("object", None)
+            model = getattr(pipe, "model", None)
+            if model is None:
+                raise RuntimeError("policy pipeline has no .model")
+            module_rows: list[dict[str, Any]] = []
+            for module_name, module in model.named_modules():
+                direct_params = list(module.named_parameters(recurse=False))
+                if not direct_params:
+                    continue
+                lname = module_name.lower()
+                contains = {
+                    "plucker": any(token in lname for token in ("plucker", "c2ws", "wancamctrl")),
+                    "camera": any(token in lname for token in ("cam_", "camera", "wancamctrl", "c2ws")),
+                    "action": "action" in lname,
+                    "control": "control" in lname or "wancamctrl" in lname,
+                    "scale_shift": any(token in lname for token in ("scale", "shift", "injector")),
+                    "lora": "lora" in lname,
+                }
+                if not any(contains.values()):
+                    continue
+                param_count = int(sum(int(param.numel()) for _, param in direct_params))
+                candidate_scopes = [scope for scope in _TRAINABLE_SCOPES if scope != "none" and any(_scope_match(f"{module_name}.{pname}", scope) for pname, _ in direct_params)]
+                safe_candidate = bool(candidate_scopes) and (
+                    param_count <= max_trainable_params
+                    or any(int(param.numel()) <= max_trainable_params and pname.endswith("bias") for pname, param in direct_params)
+                )
+                module_rows.append(
+                    {
+                        "module_name": module_name,
+                        "module_class": type(module).__name__,
+                        "parameter_count": param_count,
+                        "direct_parameter_count": len(direct_params),
+                        "requires_grad_default": any(bool(param.requires_grad) for _, param in direct_params),
+                        "contains": contains,
+                        "candidate_scopes": candidate_scopes,
+                        "used_in_forward_path": bool(contains["camera"] or contains["plucker"] or contains["scale_shift"] or contains["control"]),
+                        "safe_candidate": safe_candidate,
+                        "reason": (
+                            "direct camera/control module with small bias-level fallback"
+                            if safe_candidate
+                            else "camera-related but too large unless a smaller sub-scope or LoRA is used"
+                        ),
+                        "parameters": [
+                            {
+                                "name": f"{module_name}.{pname}" if module_name else pname,
+                                "numel": int(param.numel()),
+                                "shape": list(param.shape),
+                                "dtype": str(param.dtype).replace("torch.", ""),
+                                "device": str(param.device),
+                            }
+                            for pname, param in direct_params
+                        ],
+                    }
+                )
+            module_rows.sort(key=lambda row: (0 if row["safe_candidate"] else 1, row["parameter_count"], row["module_name"]))
+            candidates = _candidate_summary(model, max_trainable_params=max_trainable_params)
+            preview: dict[str, Any] = {}
+            for scope in ["tiny_subset", "head_only", "plucker_projection_only", "action_scale_shift_tiny", "camera_lora_tiny", "qkv_lora_tiny"]:
+                selected = self._select_trainable_params(model, scope=scope, max_trainable_params=max_trainable_params)
+                preview[scope] = {
+                    "selected_tensor_count": selected["selected_tensor_count"],
+                    "trainable_param_count": selected["trainable_param_count"],
+                    "selected_name_sample": selected["selected_name_sample"][:20],
+                    "camera_related": _scope_is_camera_related(scope),
+                    "memory_risk": selected.get("memory_risk"),
+                    "status": "available" if selected["trainable_param_count"] > 0 else "skipped",
+                }
+            for param in model.parameters():
+                param.requires_grad_(False)
+            result.update(
+                {
+                    "success": True,
+                    "policy_load": load_result,
+                    "module_inventory": module_rows,
+                    "module_inventory_count": len(module_rows),
+                    "candidate_summary": candidates,
+                    "scope_preview": preview,
+                    "recommended_first_scope": "action_scale_shift_tiny"
+                    if preview.get("action_scale_shift_tiny", {}).get("trainable_param_count", 0) > 0
+                    else "plucker_projection_only",
+                    "recommendation_reason": "Prefer direct camera scale/shift biases before full camera_adapter because the prior full camera_adapter backward OOMed near 95GB.",
+                    "memory": _gpu_memory(),
+                }
+            )
+        except Exception as exc:
+            result.update({"success": False, "error": repr(exc), "error_type": "list_camera_trainable_scopes_failed", "memory": _gpu_memory()})
+        write_json(_jsonable(result), out / "camera_trainable_scope_inventory.json")
+        return result
+
     def _select_trainable_params(self, model: Any, *, scope: str, max_trainable_params: int) -> dict[str, Any]:
         for param in model.parameters():
             param.requires_grad_(False)
 
         selected: list[tuple[str, Any]] = []
         count = 0
-        if scope in {"camera_adapter", "lora"}:
+        skipped_reason: str | None = None
+        if scope in {"camera_adapter", "lora", "head_only", "plucker_projection_only", "action_scale_shift_tiny", "camera_lora_tiny", "qkv_lora_tiny"}:
             rows = [(name, param) for name, param in model.named_parameters() if _scope_match(name, scope)]
-            if scope == "camera_adapter":
-                rows = sorted(rows, key=lambda item: _camera_selection_key(item[0]))
+            if scope in {"camera_adapter", "plucker_projection_only", "action_scale_shift_tiny", "head_only"}:
+                rows = sorted(rows, key=lambda item: _scope_selection_key(item[0], scope))
+            if scope in {"camera_lora_tiny", "qkv_lora_tiny"} and not rows:
+                skipped_reason = "no existing LoRA/PEFT parameters were found; this adapter does not inject or save LoRA in a backward-only smoke"
             for name, param in rows:
                 numel = int(param.numel())
-                if count + numel > max_trainable_params and selected:
+                if numel > max_trainable_params:
+                    continue
+                if count + numel > max_trainable_params:
                     continue
                 selected.append((name, param))
                 count += numel
                 if count >= max_trainable_params:
                     break
+            if not selected and rows and scope in {"plucker_projection_only", "action_scale_shift_tiny"}:
+                skipped_reason = f"all {scope} tensors exceeded max_trainable_params={max_trainable_params}"
         elif scope == "tiny_subset":
             # Only a fallback to localize gradient plumbing; not a training plan.
             rows = list(model.named_parameters())
@@ -1584,6 +1789,9 @@ class LingBotFastVideoGPAAdapter:
             "frozen_param_count": frozen,
             "total_param_count": total,
             "max_trainable_params": int(max_trainable_params),
+            "camera_related": _scope_is_camera_related(scope),
+            "memory_risk": _scope_memory_risk(scope, trainable),
+            "skipped_reason": skipped_reason,
             "trainable_dtype_device_sample": [
                 {"name": name, "dtype": str(param.dtype).replace("torch.", ""), "device": str(param.device), "numel": int(param.numel())}
                 for name, param in selected[:25]
@@ -1770,6 +1978,232 @@ class LingBotFastVideoGPAAdapter:
             write_json(_jsonable(result), out / "grad_summary.json")
         return result
 
+    def compute_dpo_backward_scope_sweep(
+        self,
+        *,
+        pair: dict[str, Any],
+        batch_dir: str | Path,
+        out_dir: str | Path,
+        scopes: list[str],
+        beta: float = 0.1,
+        device: str = "cuda",
+        dtype: str = "bf16",
+        num_frames: int = 8,
+        resolution: str = "480x832",
+        max_trainable_params: int = 5_000_000,
+        no_optimizer: bool = True,
+        no_step: bool = True,
+        save_grad_summary: bool = True,
+    ) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        if not no_optimizer or not no_step:
+            raise RuntimeError("scope sweep requires --no_optimizer true and --no_step true")
+        out = Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        result: dict[str, Any] = {
+            "success": False,
+            "mode": "dpo_backward_scope_sweep",
+            "beta": float(beta),
+            "scopes_requested": list(scopes),
+            "max_trainable_params": int(max_trainable_params),
+            "no_optimizer": True,
+            "no_step": True,
+            "no_checkpoint": True,
+            "no_lora_save": True,
+            "training_allowed": False,
+            "scope_results": [],
+        }
+
+        ref_load: dict[str, Any] = {}
+        ref_energy: dict[str, Any] | None = None
+        reference_params_with_grad = 0
+        try:
+            with torch.no_grad():
+                ref_load = self.load_reference_model(device=device, dtype=dtype, defer=False)
+                ref_pipe = ref_load.pop("object", None)
+                ref_energy = self._compute_energy_with_pipe(
+                    pipe=ref_pipe,
+                    pair=pair,
+                    batch_dir=batch_dir,
+                    out_dir=out / "reference",
+                    device=device,
+                    dtype=dtype,
+                    num_frames=num_frames,
+                    resolution=resolution,
+                )
+                ref_model = getattr(ref_pipe, "model", None)
+                if ref_model is not None:
+                    reference_params_with_grad = sum(1 for p in ref_model.parameters() if p.grad is not None)
+                del ref_model
+            del ref_pipe
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception as exc:
+            result.update({"success": False, "error": repr(exc), "error_type": "reference_energy_failed_before_scope_sweep", "memory": _gpu_memory()})
+            write_json(_jsonable(result), out / "scope_sweep_summary.json")
+            return result
+
+        policy_load: dict[str, Any] = {}
+        pipe = None
+        model = None
+        try:
+            policy_load = self.load_policy_model(device=device, dtype=dtype, dry_run=False)
+            pipe = policy_load.pop("object", None)
+            model = getattr(pipe, "model", None)
+            if model is None:
+                raise RuntimeError("policy pipeline has no .model")
+            model.eval()
+        except Exception as exc:
+            result.update({"success": False, "error": repr(exc), "error_type": "policy_load_failed_before_scope_sweep", "memory": _gpu_memory()})
+            write_json(_jsonable(result), out / "scope_sweep_summary.json")
+            return result
+
+        for scope in scopes:
+            scope_dir = out / scope
+            scope_dir.mkdir(parents=True, exist_ok=True)
+            scope_result: dict[str, Any] = {
+                "scope": scope,
+                "status": "failed",
+                "success": False,
+                "camera_related": _scope_is_camera_related(scope),
+                "no_optimizer": True,
+                "no_step": True,
+                "no_checkpoint": True,
+                "reference_params_with_grad": reference_params_with_grad,
+            }
+            try:
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                    torch.cuda.reset_peak_memory_stats()
+                trainable = self._select_trainable_params(model, scope=scope, max_trainable_params=max_trainable_params)
+                if trainable["trainable_param_count"] <= 0:
+                    scope_result.update(
+                        {
+                            "status": "skipped",
+                            "success": False,
+                            "skipped_reason": trainable.get("skipped_reason") or "no trainable parameters selected",
+                            "trainable_scope": trainable,
+                            "policy_load": policy_load,
+                            "memory": _gpu_memory(),
+                        }
+                    )
+                    write_json(_jsonable(scope_result), scope_dir / "grad_summary.json")
+                    result["scope_results"].append(scope_result)
+                    continue
+                before = self._snapshot_selected_params(model, trainable["selected_names"])
+                policy_energy = self._compute_energy_tensors_with_pipe(
+                    pipe=pipe,
+                    pair=pair,
+                    batch_dir=batch_dir,
+                    out_dir=scope_dir / "policy",
+                    device=device,
+                    dtype=dtype,
+                    num_frames=num_frames,
+                    resolution=resolution,
+                    enable_grad=True,
+                )
+                e_policy_w = policy_energy["E_winner_tensor"]
+                e_policy_l = policy_energy["E_loser_tensor"]
+                e_ref_w = float(ref_energy["E_winner"]) if ref_energy is not None else math.nan
+                e_ref_l = float(ref_energy["E_loser"]) if ref_energy is not None else math.nan
+                delta_policy = e_policy_l - e_policy_w
+                delta_ref_value = e_ref_l - e_ref_w
+                delta_ref = torch.tensor(delta_ref_value, device=delta_policy.device, dtype=torch.float32)
+                loss = -torch.nn.functional.logsigmoid(torch.tensor(float(beta), device=delta_policy.device, dtype=torch.float32) * (delta_policy.float() - delta_ref))
+                loss.backward()
+                grad_summary = self._grad_summary(model, before)
+                for param in model.parameters():
+                    if param.grad is not None:
+                        param.grad = None
+                passed = bool(torch.isfinite(loss.detach()).item()) and grad_summary["params_with_grad"] > 0 and not grad_summary["any_nan_grad"] and not grad_summary["any_inf_grad"]
+                scope_result.update(
+                    {
+                        "status": "passed" if passed else "failed",
+                        "success": passed,
+                        "loss": float(loss.detach().cpu().item()),
+                        "loss_finite": bool(torch.isfinite(loss.detach()).item()),
+                        "E_policy_winner": float(e_policy_w.detach().cpu().item()),
+                        "E_policy_loser": float(e_policy_l.detach().cpu().item()),
+                        "E_ref_winner": e_ref_w,
+                        "E_ref_loser": e_ref_l,
+                        "Delta_policy": float(delta_policy.detach().cpu().item()),
+                        "Delta_ref": float(delta_ref_value),
+                        "dpo_argument": float((float(beta) * (delta_policy.detach().cpu().float() - torch.tensor(delta_ref_value))).item()),
+                        "policy_energy": {k: v for k, v in policy_energy.items() if not k.endswith("_tensor")},
+                        "reference_energy": ref_energy,
+                        "policy_load": policy_load,
+                        "reference_load": ref_load,
+                        "reference_frozen_confirmed": (ref_load.get("model_param_summary_after_freeze") or {}).get("requires_grad_count") == 0,
+                        "reference_no_grad_confirmed": True,
+                        "trainable_scope": trainable,
+                        "trainable_param_count": trainable["trainable_param_count"],
+                        "params_with_grad": grad_summary["params_with_grad"],
+                        "grad_norm_mean": grad_summary["grad_norm_mean"],
+                        "grad_norm_max": grad_summary["grad_norm_max"],
+                        "any_nan_grad": grad_summary["any_nan_grad"],
+                        "any_inf_grad": grad_summary["any_inf_grad"],
+                        "param_update_check": grad_summary["policy_params_changed_check"],
+                        "grad_summary": grad_summary,
+                        "peak_memory": _gpu_memory(),
+                        "no_optimizer_confirmed": True,
+                        "no_step_confirmed": True,
+                        "no_param_update_confirmed": bool(grad_summary["policy_params_changed_check"]["passed"]),
+                    }
+                )
+            except Exception as exc:
+                error = repr(exc)
+                status = "oom" if "out of memory" in error.lower() or "cuda oom" in error.lower() else "failed"
+                scope_result.update({"status": status, "success": False, "error": error, "error_type": f"scope_{status}", "memory": _gpu_memory()})
+            finally:
+                try:
+                    if model is not None:
+                        for param in model.parameters():
+                            if param.grad is not None:
+                                param.grad = None
+                except Exception:
+                    pass
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+            if save_grad_summary:
+                write_json(_jsonable(scope_result), scope_dir / "grad_summary.json")
+            result["scope_results"].append(scope_result)
+
+        try:
+            for param in model.parameters():
+                param.requires_grad_(False)
+                if param.grad is not None:
+                    param.grad = None
+        except Exception:
+            pass
+        del model
+        del pipe
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        passed_scopes = [row["scope"] for row in result["scope_results"] if row.get("status") == "passed"]
+        meaningful_passed = [
+            row["scope"]
+            for row in result["scope_results"]
+            if row.get("status") == "passed" and row.get("camera_related")
+        ]
+        result.update(
+            {
+                "success": bool(passed_scopes),
+                "passed_scopes": passed_scopes,
+                "meaningful_camera_scopes_passed": meaningful_passed,
+                "recommended_next_scope": meaningful_passed[0] if meaningful_passed else (passed_scopes[0] if passed_scopes else None),
+                "recommendation_reason": (
+                    "Use the first passed camera-related scope for any future user-approved 1-pair optimizer-step dry-run."
+                    if meaningful_passed
+                    else "No camera-related scope passed; do not proceed beyond plumbing scopes."
+                ),
+                "final_memory": _gpu_memory(),
+            }
+        )
+        write_json(_jsonable(result), out / "scope_sweep_summary.json")
+        return result
+
     def sample_same_noise_timestep(self, *args, **kwargs):
         raise NotImplementedError("Use collate_winner_loser_batch for tensor-level dry-run. Scheduler-specific timestep sampling is not wired.")
 
@@ -1796,6 +2230,8 @@ class LingBotFastVideoGPAAdapter:
             AdapterStatus("compute_dpo_scalar_loss_dryrun", True, "policy/reference energy summaries", "finite energies", "scalar loss", False, False, False, "no backward/optimizer; formula smoke only"),
             AdapterStatus("list_trainable_candidates", True, "frozen LingBot-Fast model parameters", "model", "candidate param report", True, False, False, "reports LoRA/camera/tiny scopes; no backward/optimizer"),
             AdapterStatus("compute_dpo_backward_only_dryrun", True, "LingBot flow target + frozen reference", "1-pair batch", "loss + gradient summary", True, True, False, "calls backward only; no optimizer, no step, no save"),
+            AdapterStatus("list_camera_trainable_scopes", True, "frozen LingBot-Fast model parameters", "model modules", "camera/control scope inventory", True, False, False, "reports camera/plucker/action scopes and memory risk; no backward/optimizer"),
+            AdapterStatus("compute_dpo_backward_scope_sweep", True, "LingBot flow target + frozen reference", "1-pair batch + scope list", "per-scope backward matrix", True, True, False, "calls backward scope-by-scope only; no optimizer, no step, no save"),
         ]
         return {
             "paths": self.paths,
@@ -2033,6 +2469,16 @@ def _mode_list_trainable_candidates(args) -> dict[str, Any]:
     )
 
 
+def _mode_list_camera_trainable_scopes(args) -> dict[str, Any]:
+    adapter = LingBotFastVideoGPAAdapter(args.config)
+    return adapter.list_camera_trainable_scopes(
+        out_dir=args.out,
+        device=args.device,
+        dtype=args.dtype,
+        max_trainable_params=int(args.max_trainable_params),
+    )
+
+
 def _mode_dpo_backward_only(args) -> dict[str, Any]:
     if not _bool_arg(args.no_optimizer) or not _bool_arg(args.no_step):
         raise RuntimeError("dpo_backward_only_dryrun requires --no_optimizer true and --no_step true")
@@ -2048,6 +2494,28 @@ def _mode_dpo_backward_only(args) -> dict[str, Any]:
         num_frames=args.num_frames,
         resolution=args.resolution,
         trainable_scope=args.trainable_scope,
+        max_trainable_params=int(args.max_trainable_params),
+        no_optimizer=_bool_arg(args.no_optimizer),
+        no_step=_bool_arg(args.no_step),
+        save_grad_summary=_bool_arg(args.save_grad_summary),
+    )
+
+
+def _mode_dpo_backward_scope_sweep(args) -> dict[str, Any]:
+    if not _bool_arg(args.no_optimizer) or not _bool_arg(args.no_step):
+        raise RuntimeError("dpo_backward_scope_sweep requires --no_optimizer true and --no_step true")
+    adapter = LingBotFastVideoGPAAdapter(args.config)
+    pair = _load_pair_from_args_or_batch(args)
+    return adapter.compute_dpo_backward_scope_sweep(
+        pair=pair,
+        batch_dir=args.batch,
+        out_dir=args.out,
+        scopes=list(args.scopes or []),
+        beta=float(args.beta),
+        device=args.device,
+        dtype=args.dtype,
+        num_frames=args.num_frames,
+        resolution=args.resolution,
         max_trainable_params=int(args.max_trainable_params),
         no_optimizer=_bool_arg(args.no_optimizer),
         no_step=_bool_arg(args.no_step),
@@ -2073,7 +2541,9 @@ def main(argv=None) -> int:
             "reference_energy_dryrun",
             "dpo_scalar_loss_dryrun",
             "list_trainable_candidates",
+            "list_camera_trainable_scopes",
             "dpo_backward_only_dryrun",
+            "dpo_backward_scope_sweep",
         ],
     )
     ap.add_argument("--sample", default="")
@@ -2098,7 +2568,8 @@ def main(argv=None) -> int:
     ap.add_argument("--require_real_target", default="true")
     ap.add_argument("--sequential_reference_if_needed", default="true")
     ap.add_argument("--beta", type=float, default=0.1)
-    ap.add_argument("--trainable_scope", default="camera_adapter", choices=["lora", "camera_adapter", "tiny_subset", "none"])
+    ap.add_argument("--trainable_scope", default="camera_adapter", choices=list(_TRAINABLE_SCOPES))
+    ap.add_argument("--scopes", nargs="+", default=["tiny_subset", "head_only", "plucker_projection_only", "action_scale_shift_tiny", "camera_lora_tiny"])
     ap.add_argument("--max_trainable_params", type=int, default=50_000_000)
     ap.add_argument("--save_grad_summary", default="true")
     ap.add_argument("--dry-run", action="store_true")
@@ -2124,8 +2595,12 @@ def main(argv=None) -> int:
         result = _mode_dpo_scalar_loss(args)
     elif args.mode == "list_trainable_candidates":
         result = _mode_list_trainable_candidates(args)
+    elif args.mode == "list_camera_trainable_scopes":
+        result = _mode_list_camera_trainable_scopes(args)
     elif args.mode == "dpo_backward_only_dryrun":
         result = _mode_dpo_backward_only(args)
+    elif args.mode == "dpo_backward_scope_sweep":
+        result = _mode_dpo_backward_scope_sweep(args)
     else:
         adapter = LingBotFastVideoGPAAdapter(args.config)
         result = adapter.status()
