@@ -106,3 +106,26 @@ Next minimal step is not training. It is a LingBot-Fast VideoGPA adapter dry-run
 - Gate G: still no. Real DPO training remains blocked.
 
 Next minimal step is to wire the real LingBot-Fast denoising/velocity forward target for `compute_dpo_energy_or_logprob`. Only after that may a future round consider a 1-pair DPO scalar-loss dry-run, still without real training unless explicitly approved.
+
+## LingBot Energy Forward Debug Update
+
+- Gate A: passed.
+- Gate B: passed.
+- Gate C: partial/pass. Camera stress perturbations have video-level effect, while ordinary frozen/correct remains weak.
+- Gate D: partial/pass for smoke. Reward v5 has clean > Fast on the 3-sample smoke with RAFT and DINO active, but generated depth/mask/physics are still incomplete.
+- Gate E: passed for 1-pair plumbing smoke. VideoGPA pair/metadata, LingBot latent encode, condition encode, same-noise/same-timestep batch, real LingBot model forward, and policy energy dry-run all pass.
+- Gate F: no. DPO training remains disallowed.
+- Gate G: partial. Real policy energy is wired with a code-backed flow target (`noise - x0`), but frozen reference energy and scalar DPO loss have not been run.
+
+Energy dry-run details:
+
+- Policy model: `WanModelFast` through `WanI2VFast`.
+- Target: flow velocity `noise - x0`.
+- Winner energy: `0.8652140498161316`.
+- Loser energy: `0.8322668075561523`.
+- Reference: deferred, not faked.
+- Backward / optimizer / LoRA / checkpoint save: none.
+
+Next permitted step is only a user-confirmed 1-pair scalar DPO loss dry-run
+with a real frozen reference, no optimizer, and preferably no backward. Real
+DPO training remains blocked.

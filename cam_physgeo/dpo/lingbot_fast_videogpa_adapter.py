@@ -122,6 +122,28 @@ def _load_first_pair(path: str | Path) -> dict[str, Any]:
     return payload
 
 
+def _load_pair_from_args_or_batch(args) -> dict[str, Any]:
+    if getattr(args, "pairs", ""):
+        return _normalize_pair(_load_first_pair(args.pairs))
+    batch_dir = Path(getattr(args, "batch", "") or "")
+    sidecar = _read_json(batch_dir / "condition_sidecar.json")
+    summary = _read_json(batch_dir / "batch_summary.json")
+    if sidecar:
+        return _normalize_pair(
+            {
+                "pair_id": sidecar.get("pair_id") or summary.get("pair_id"),
+                "pair_type": summary.get("pair_type"),
+                "prompt": sidecar.get("prompt"),
+                "condition": sidecar.get("condition") or {},
+                "winner": {},
+                "loser": {},
+                "metadata": sidecar.get("metadata") or {},
+                "margin": summary.get("reward_margin"),
+            }
+        )
+    raise ValueError("pair input missing; pass --pairs or rerun dpo_batch_shape_dryrun to write condition_sidecar.json")
+
+
 def _normalize_pair(pair: dict[str, Any]) -> dict[str, Any]:
     """Return a common pair shape with condition/winner/loser keys."""
 
@@ -190,6 +212,43 @@ def _call_vae_encode(vae: Any, video_tensor: Any):
     raise RuntimeError(f"VAE encode failed for all call patterns: {errors}")
 
 
+def _module_param_summary(module: Any) -> dict[str, Any]:
+    import torch  # type: ignore
+
+    total = 0
+    trainable = 0
+    devices: set[str] = set()
+    dtypes: set[str] = set()
+    try:
+        for param in module.parameters():
+            total += int(param.numel())
+            if param.requires_grad:
+                trainable += int(param.numel())
+            devices.add(str(param.device))
+            dtypes.add(str(param.dtype).replace("torch.", ""))
+    except Exception as exc:
+        return {"error": repr(exc)}
+    return {
+        "param_count": total,
+        "requires_grad_count": trainable,
+        "devices": sorted(devices),
+        "dtypes": sorted(dtypes),
+    }
+
+
+def _shape_list(value: Any) -> list[int] | None:
+    return list(value.shape) if hasattr(value, "shape") else None
+
+
+def _cfg_get(cfg: Any, key: str, default: Any = None) -> Any:
+    if hasattr(cfg, "get"):
+        try:
+            return cfg.get(key, default)
+        except Exception:
+            pass
+    return getattr(cfg, key, default)
+
+
 class LingBotFastVideoGPAAdapter:
     """Minimal non-training adapter contract between LingBot-Fast and VideoGPA."""
 
@@ -201,6 +260,101 @@ class LingBotFastVideoGPAAdapter:
         self.paths_cfg = merged
         self.paths = resolve_model_paths(merged)
         self.runtime_paths = resolve_t5_runtime_paths(merged)
+        self.adapter_cfg = (cfg.get("lingbot_fast_adapter") or {}) if isinstance(cfg, dict) else {}
+
+    def _runtime_checkpoint_dir(self) -> Path:
+        candidates = [
+            Path(str(self.runtime_paths.get("runtime_root") or "")),
+            Path(str(self.paths.get("lingbot_fast") or "")),
+        ]
+        for path in candidates:
+            if path and path.exists():
+                return path
+        return candidates[0]
+
+    def _wan_task_name(self) -> str:
+        return str(self.adapter_cfg.get("wan_task") or self.adapter_cfg.get("task") or "i2v-A14B")
+
+    def _import_fast_pipeline(self):
+        root = _add_lingbot_path(self.paths)
+        try:
+            configs = importlib.import_module("wan.configs")
+            image2video_fast = importlib.import_module("wan.image2video_fast")
+        except Exception as exc:
+            raise RuntimeError(f"failed to import LingBot Fast runtime from {root}: {exc!r}") from exc
+        config_table = getattr(configs, "WAN_CONFIGS", None)
+        task_name = self._wan_task_name()
+        if not config_table or task_name not in config_table:
+            available = sorted(config_table.keys()) if isinstance(config_table, dict) else []
+            raise RuntimeError(f"Wan task config {task_name!r} not found; available={available}")
+        cls = getattr(image2video_fast, "WanI2VFast")
+        return cls, config_table[task_name], root
+
+    def _load_fast_pipeline(self, *, device: str = "cuda", dtype: str = "bf16") -> tuple[Any, dict[str, Any]]:
+        import copy
+        import torch  # type: ignore
+
+        start = time.time()
+        device_obj = _torch_device(device)
+        dtype_obj = _torch_dtype(dtype)
+        if device_obj.type != "cuda":
+            device_id = 0
+        else:
+            device_id = int(str(device_obj).split(":")[-1]) if ":" in str(device_obj) else 0
+        cls, wan_cfg, code_root = self._import_fast_pipeline()
+        # Disable the optional physics adapter in this DPO plumbing dry-run.
+        # The Fast checkpoint does not contain those extra weights in the local
+        # bundle, and allowing random initialization would contaminate energy.
+        wan_cfg = copy.copy(wan_cfg)
+        setattr(wan_cfg, "enable_physics_adapter", False)
+        checkpoint_dir = self._runtime_checkpoint_dir()
+        info: dict[str, Any] = {
+            "checkpoint_dir": str(checkpoint_dir),
+            "checkpoint_dir_exists": checkpoint_dir.exists(),
+            "lingbot_code_root": str(code_root),
+            "wan_task": self._wan_task_name(),
+            "class": cls.__name__,
+            "device": str(device_obj),
+            "device_id": device_id,
+            "dtype": str(dtype_obj).replace("torch.", ""),
+            "memory_before": _gpu_memory(),
+        }
+        if not checkpoint_dir.exists():
+            raise FileNotFoundError(str(checkpoint_dir))
+        with torch.no_grad():
+            pipe = cls(
+                config=wan_cfg,
+                checkpoint_dir=str(checkpoint_dir),
+                device_id=device_id,
+                rank=0,
+                t5_fsdp=False,
+                dit_fsdp=False,
+                use_sp=False,
+                t5_cpu=device_obj.type != "cuda",
+                init_on_cpu=True,
+                convert_model_dtype=False,
+                pipe_dtype=dtype_obj,
+            )
+        model = getattr(pipe, "model", None)
+        if model is not None and hasattr(model, "enable_physics_adapter"):
+            # Some checkpoint configs carry optional physics-adapter modules
+            # whose weights are absent in the Fast bundle. Keep those modules
+            # disabled for this LingBot energy dry-run.
+            model.enable_physics_adapter = False
+        info.update(
+            {
+                "success": True,
+                "elapsed_sec": time.time() - start,
+                "memory_after": _gpu_memory(),
+                "control_type": getattr(pipe, "control_type", None),
+                "physics_adapter_enabled": bool(getattr(model, "enable_physics_adapter", False)) if model is not None else None,
+                "num_train_timesteps": getattr(pipe, "num_train_timesteps", None),
+                "scheduler_class": type(getattr(pipe, "scheduler", None)).__name__ if getattr(pipe, "scheduler", None) is not None else None,
+                "model_class": type(model).__name__ if model is not None else None,
+                "model_param_summary": _module_param_summary(model),
+            }
+        )
+        return pipe, info
 
     def _vae_path(self) -> Path:
         candidates = [
@@ -235,11 +389,57 @@ class LingBotFastVideoGPAAdapter:
                     return obj, module, root
         raise RuntimeError(f"No VAE class found in known Wan VAE modules: {errors}")
 
-    def load_policy_model(self):
-        raise NotImplementedError("Policy loading for VideoGPA is not implemented. Reuse LingBot runtime loader only after the forward contract is known.")
+    def load_policy_model(self, *, device: str = "cuda", dtype: str = "bf16", dry_run: bool = False) -> dict[str, Any]:
+        """Load the real LingBot-Fast runtime model without optimizer/training state."""
 
-    def load_reference_model(self):
-        raise NotImplementedError("Frozen reference loading is not implemented. Do not start DPO before this is real.")
+        if dry_run:
+            return {
+                "success": True,
+                "dry_run": True,
+                "checkpoint_dir": str(self._runtime_checkpoint_dir()),
+                "wan_task": self._wan_task_name(),
+                "training_allowed": False,
+            }
+        pipe, info = self._load_fast_pipeline(device=device, dtype=dtype)
+        model = getattr(pipe, "model", None)
+        if model is not None:
+            model.eval()
+            for param in model.parameters():
+                param.requires_grad_(False)
+        info.update(
+            {
+                "object": pipe,
+                "training_allowed": False,
+                "model_mode": "eval",
+                "model_param_summary_after_freeze": _module_param_summary(model),
+                "forward_signature": str(inspect.signature(model.forward)) if model is not None and hasattr(model, "forward") else None,
+            }
+        )
+        return info
+
+    def load_reference_model(self, *, device: str = "cuda", dtype: str = "bf16", defer: bool = True) -> dict[str, Any]:
+        """Return a frozen reference status.
+
+        A second full LingBot-Fast model doubles memory. For this 1-pair energy
+        dry-run the reference path is explicit and deferred rather than faked.
+        """
+
+        if defer:
+            return {
+                "success": True,
+                "deferred": True,
+                "reason": "reference model is a frozen same-weight LingBot-Fast copy; not loaded for no-optimization 1-pair policy-energy dry-run",
+                "training_allowed": False,
+            }
+        result = self.load_policy_model(device=device, dtype=dtype, dry_run=False)
+        pipe = result.get("object")
+        model = getattr(pipe, "model", None)
+        if model is not None:
+            model.eval()
+            for param in model.parameters():
+                param.requires_grad_(False)
+        result["reference"] = True
+        return result
 
     def load_vae(self, *, device: str = "cuda", dtype: str = "bf16", dry_run: bool = False) -> dict[str, Any]:
         import torch  # type: ignore
@@ -497,6 +697,9 @@ class LingBotFastVideoGPAAdapter:
         summary = {
             "pair_id": pair.get("pair_id"),
             "pair_type": pair.get("pair_type"),
+            "latent_root": str(latent_root),
+            "winner_latent_path": str(winner_path),
+            "loser_latent_path": str(loser_path),
             "winner_latent": _tensor_summary(winner),
             "loser_latent": _tensor_summary(loser),
             "shape_crop": crop,
@@ -512,6 +715,20 @@ class LingBotFastVideoGPAAdapter:
         if out_dir:
             out = Path(out_dir)
             out.mkdir(parents=True, exist_ok=True)
+            tensors_path = out / "batch_tensors.pt"
+            torch.save(
+                {
+                    "winner_latent": winner.detach().cpu(),
+                    "loser_latent": loser.detach().cpu(),
+                    "winner_noise": noise.detach().cpu(),
+                    "loser_noise": loser_noise.detach().cpu(),
+                    "winner_timestep": t.detach().cpu(),
+                    "loser_timestep": loser_t.detach().cpu(),
+                },
+                tensors_path,
+            )
+            summary["batch_tensors_path"] = str(tensors_path)
+            write_json({"pair_id": pair.get("pair_id"), "condition": pair.get("condition"), "prompt": pair.get("prompt"), "metadata": pair.get("metadata")}, out / "condition_sidecar.json")
             write_json(summary, out / "batch_summary.json")
         return summary
 
@@ -534,11 +751,416 @@ class LingBotFastVideoGPAAdapter:
             },
         }
 
+    def _prepare_condition_dir(self, pair: dict[str, Any], out_dir: str | Path, *, num_frames: int, resolution: str) -> tuple[Path, dict[str, Any]]:
+        pair = _normalize_pair(pair)
+        condition = pair.get("condition") or {}
+        out = Path(out_dir) / "lingbot_condition"
+        out.mkdir(parents=True, exist_ok=True)
+        height, width = [int(x) for x in str(resolution).lower().split("x", 1)]
+        poses_path = Path(str(condition.get("poses") or ""))
+        intr_path = Path(str(condition.get("intrinsics") or ""))
+        action_path = Path(str(condition.get("action") or condition.get("dummy_action") or ""))
+        metadata_path = Path(str(condition.get("metadata") or ""))
+        if not poses_path.exists():
+            raise FileNotFoundError(f"poses missing: {poses_path}")
+        if not intr_path.exists():
+            raise FileNotFoundError(f"intrinsics missing: {intr_path}")
+        poses = np.load(poses_path)
+        intr_raw = np.load(intr_path)
+        metadata = _read_json(metadata_path)
+        source_width = int(metadata.get("width") or width)
+        source_height = int(metadata.get("height") or height)
+        intr, conversion = convert_projection_to_lingbot_intrinsics(intr_raw, width=source_width, height=source_height, convention="auto")
+        np.save(out / "poses.npy", poses)
+        np.save(out / "intrinsics.npy", intr)
+        if action_path.exists():
+            action = np.load(action_path)
+        else:
+            action = np.zeros((max(int(poses.shape[0]), num_frames), 4), dtype=np.float32)
+        np.save(out / "action.npy", action.astype(np.float32))
+        sidecar = {
+            "condition_dir": str(out),
+            "poses_source": str(poses_path),
+            "intrinsics_source": str(intr_path),
+            "intrinsics_raw_shape": list(intr_raw.shape),
+            "intrinsics_converted_shape": list(intr.shape),
+            "intrinsics_conversion": conversion,
+            "action_source": str(action_path) if action_path.exists() else "dummy_zero_generated",
+            "action_shape": list(action.shape),
+            "dummy_action_norm": float(np.linalg.norm(action.astype("float32"))),
+            "use_action": False,
+            "source_width": source_width,
+            "source_height": source_height,
+            "resolution": resolution,
+        }
+        write_json(sidecar, out / "condition_summary.json")
+        return out, sidecar
+
+    def _image_condition_latent(
+        self,
+        *,
+        pipe: Any,
+        image_path: str | Path,
+        latent_shape: list[int],
+        num_frames: int,
+        resolution: str,
+        dtype: str,
+        device: str,
+    ):
+        import torch  # type: ignore
+        from PIL import Image  # type: ignore
+
+        device_obj = _torch_device(device)
+        dtype_obj = _torch_dtype(dtype)
+        height, width = [int(x) for x in str(resolution).lower().split("x", 1)]
+        image = Image.open(image_path).convert("RGB").resize((width, height))
+        image_arr = np.asarray(image).astype("float32") / 127.5 - 1.0
+        zeros = np.zeros_like(image_arr)
+        frames = [image_arr] + [zeros for _ in range(max(num_frames - 1, 0))]
+        video = torch.from_numpy(np.stack(frames[:num_frames])).permute(3, 0, 1, 2).contiguous().to(device=device_obj, dtype=dtype_obj)
+        with torch.no_grad():
+            y_latent, pattern = _call_vae_encode(pipe.vae, video)
+        y_latent = y_latent.detach().to(device=device_obj, dtype=dtype_obj)
+        if len(latent_shape) != 4:
+            raise ValueError(f"expected C,F,H,W latent shape, got {latent_shape}")
+        _, lat_f, lat_h, lat_w = [int(v) for v in latent_shape]
+        if y_latent.ndim == 5:
+            y_latent = y_latent[0]
+        if list(y_latent.shape[-3:]) != [lat_f, lat_h, lat_w]:
+            f = min(lat_f, int(y_latent.shape[-3]))
+            h = min(lat_h, int(y_latent.shape[-2]))
+            w = min(lat_w, int(y_latent.shape[-1]))
+            tmp = torch.zeros((int(y_latent.shape[0]), lat_f, lat_h, lat_w), device=device_obj, dtype=dtype_obj)
+            tmp[:, :f, :h, :w] = y_latent[:, :f, :h, :w]
+            y_latent = tmp
+        mask = torch.zeros((4, lat_f, lat_h, lat_w), device=device_obj, dtype=dtype_obj)
+        mask[:, 0] = 1.0
+        y = torch.cat([mask, y_latent], dim=0)
+        return y, {"image_path": str(image_path), "image_condition_encode_pattern": pattern, "y_summary": _tensor_summary(y)}
+
+    def _build_forward_condition(
+        self,
+        *,
+        pair: dict[str, Any],
+        pipe: Any,
+        latent_shape: list[int],
+        out_dir: str | Path,
+        num_frames: int,
+        resolution: str,
+        device: str,
+        dtype: str,
+    ) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        pair = _normalize_pair(pair)
+        condition = pair.get("condition") or {}
+        device_obj = _torch_device(device)
+        dtype_obj = _torch_dtype(dtype)
+        height, width = [int(x) for x in str(resolution).lower().split("x", 1)]
+        _, lat_f, lat_h, lat_w = [int(v) for v in latent_shape]
+        condition_dir, condition_sidecar = self._prepare_condition_dir(pair, out_dir, num_frames=num_frames, resolution=resolution)
+        poses = np.load(condition_dir / "poses.npy")
+        intr = np.load(condition_dir / "intrinsics.npy")
+        action = np.load(condition_dir / "action.npy")
+        control_type = str(getattr(pipe, "control_type", None) or self.adapter_cfg.get("control_type") or "cam").lower()
+        cam_utils = _load_cam_utils(self.config_path, self.paths.get("lingbot_code"))
+        control = _build_embedding(
+            poses_np=poses[:num_frames],
+            intrinsics_np=intr[:num_frames],
+            actions_np=action[:num_frames] if control_type == "act" else None,
+            cam_utils=cam_utils,
+            source_width=int(condition_sidecar["source_width"]),
+            source_height=int(condition_sidecar["source_height"]),
+            height=height,
+            width=width,
+            lat_f=lat_f,
+            lat_h=lat_h,
+            lat_w=lat_w,
+            control_type=control_type,
+            device="cpu",
+        )["control"].to(device=device_obj, dtype=dtype_obj)
+        prompt = pair.get("prompt") or ""
+        prompt_path = Path(str(condition.get("prompt") or ""))
+        if not prompt and prompt_path.exists():
+            prompt = prompt_path.read_text(encoding="utf-8", errors="replace").strip()
+        if not prompt:
+            prompt = "A synthetic physical scene."
+        # WanI2VFast constructs T5 on CPU and only moves it inside
+        # generate() when t5_cpu=False. This adapter keeps prompt encoding on
+        # CPU, then moves the resulting context to the model device. That avoids
+        # a CPU-token / CUDA-embedding mismatch and avoids holding T5 on GPU
+        # during the subsequent DiT forward.
+        with torch.no_grad():
+            context = pipe.text_encoder([prompt], torch.device("cpu"))
+        if isinstance(context, (tuple, list)):
+            context0 = context[0]
+        else:
+            context0 = context
+        image_path = Path(str(condition.get("image") or ""))
+        if not image_path.exists():
+            raise FileNotFoundError(f"condition image missing: {image_path}")
+        y, y_info = self._image_condition_latent(
+            pipe=pipe,
+            image_path=image_path,
+            latent_shape=latent_shape,
+            num_frames=num_frames,
+            resolution=resolution,
+            dtype=dtype,
+            device=device,
+        )
+        model_args = pipe.model.config
+        patch_t, patch_h, patch_w = [int(v) for v in (_cfg_get(model_args, "patch_size") or pipe.patch_size)]
+        seq_len = int(math.ceil((lat_f * lat_h * lat_w) / (patch_t * patch_h * patch_w)) * (patch_t * patch_h * patch_w))
+        frame_seqlen = int(lat_h * lat_w // (patch_h * patch_w))
+        kv_size = int(frame_seqlen * lat_f)
+        model_dim = int(_cfg_get(model_args, "dim"))
+        num_heads = int(_cfg_get(model_args, "num_heads"))
+        num_layers = int(_cfg_get(model_args, "num_layers"))
+        head_dim = int(model_dim // num_heads)
+        local_heads = int(num_heads // getattr(pipe, "sp_size", 1))
+        kv_cache = pipe._initialize_self_kv_cache(
+            num_layers,
+            [1, kv_size, local_heads, head_dim],
+            getattr(pipe, "pipe_dtype", dtype_obj),
+            pipe.device,
+        )
+        crossattn_cache = pipe._initialize_crossattn_cache(
+            num_layers,
+            [1, int(getattr(pipe, "text_len", 512)), num_heads, head_dim],
+            getattr(pipe, "pipe_dtype", dtype_obj),
+            pipe.device,
+        )
+        forward_kwargs = {
+            "context": [context0.to(device_obj)],
+            "seq_len": seq_len,
+            "y": [y],
+            "dit_cond_dict": {"c2ws_plucker_emb": (control,)},
+            "kv_cache": kv_cache,
+            "crossattn_cache": crossattn_cache,
+            "current_start": 0,
+            "max_attention_size": kv_size,
+        }
+        summary = {
+            "prompt": prompt,
+            "text_context_summary": _tensor_summary(context0),
+            "condition_dir": str(condition_dir),
+            "condition_sidecar": condition_sidecar,
+            "control_type": control_type,
+            "control_summary": _tensor_summary(control),
+            "y_info": y_info,
+            "seq_len": seq_len,
+            "kv_size": kv_size,
+            "forward_kwargs_keys": sorted(forward_kwargs.keys()),
+            "use_action": False,
+            "dummy_action_norm": condition_sidecar["dummy_action_norm"],
+        }
+        write_json(summary, Path(out_dir) / "forward_condition_summary.json")
+        return {"kwargs": forward_kwargs, "summary": summary}
+
+    def _load_batch_tensors(self, batch_dir: str | Path, *, device: str, dtype: str) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        batch_dir = Path(batch_dir)
+        summary = _read_json(batch_dir / "batch_summary.json")
+        tensor_path = Path(summary.get("batch_tensors_path") or batch_dir / "batch_tensors.pt")
+        if not tensor_path.exists():
+            raise FileNotFoundError(f"batch tensors missing: {tensor_path}; rerun dpo_batch_shape_dryrun with the current adapter")
+        payload = torch.load(tensor_path, map_location="cpu")
+        device_obj = _torch_device(device)
+        dtype_obj = _torch_dtype(dtype)
+        for key in ["winner_latent", "loser_latent", "winner_noise", "loser_noise"]:
+            payload[key] = payload[key].to(device=device_obj, dtype=dtype_obj)
+        for key in ["winner_timestep", "loser_timestep"]:
+            payload[key] = payload[key].to(device=device_obj)
+        return {"summary": summary, "tensors": payload, "tensor_path": str(tensor_path)}
+
+    def _flow_noisy_and_target(self, x0: Any, noise: Any, timestep: Any, *, num_train_timesteps: int) -> tuple[Any, Any, dict[str, Any]]:
+        sigma = (timestep.float() / float(num_train_timesteps)).view(1, 1, 1, 1)
+        x0_f = x0.float()
+        noise_f = noise.float()
+        z_t = (1.0 - sigma) * x0_f + sigma * noise_f
+        target = noise_f - x0_f
+        return z_t.to(dtype=x0.dtype, device=x0.device), target, {
+            "target_type": "flow_velocity_noise_minus_x0",
+            "sigma_formula": "sigma = timestep / num_train_timesteps",
+            "sigma": sigma.detach().cpu().reshape(-1).tolist(),
+            "evidence": "LingBot scripts/train_lingbot_physics_predictor.py::sample_flow_batch",
+        }
+
+    def _model_forward_once(self, *, pipe: Any, x0: Any, noise: Any, timestep: Any, forward_condition: dict[str, Any]) -> tuple[Any, Any, dict[str, Any]]:
+        import torch  # type: ignore
+
+        num_train_timesteps = int(getattr(pipe, "num_train_timesteps", 1000) or 1000)
+        z_t, target, target_info = self._flow_noisy_and_target(x0, noise, timestep, num_train_timesteps=num_train_timesteps)
+        autocast_enabled = z_t.device.type == "cuda"
+        with torch.no_grad(), torch.amp.autocast("cuda", dtype=getattr(pipe, "param_dtype", z_t.dtype), enabled=autocast_enabled):
+            pred = pipe.model(x=[z_t], t=timestep, **forward_condition["kwargs"])[0]
+        return pred, target, target_info
+
+    def model_forward_probe(
+        self,
+        *,
+        pair: dict[str, Any],
+        batch_dir: str | Path,
+        out_dir: str | Path,
+        device: str = "cuda",
+        dtype: str = "bf16",
+        num_frames: int = 8,
+        resolution: str = "480x832",
+    ) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        out = Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        load_result = self.load_policy_model(device=device, dtype=dtype, dry_run=False)
+        pipe = load_result.pop("object", None)
+        batch = self._load_batch_tensors(batch_dir, device=device, dtype=dtype)
+        tensors = batch["tensors"]
+        latent_shape = list(tensors["winner_latent"].shape)
+        condition = self._build_forward_condition(
+            pair=pair,
+            pipe=pipe,
+            latent_shape=latent_shape,
+            out_dir=out,
+            num_frames=num_frames,
+            resolution=resolution,
+            device=device,
+            dtype=dtype,
+        )
+        result: dict[str, Any] = {
+            "success": False,
+            "policy_load": load_result,
+            "batch_summary": batch["summary"],
+            "condition_summary": condition["summary"],
+            "no_backward": True,
+            "no_optimizer": True,
+        }
+        try:
+            winner_pred, winner_target, target_info = self._model_forward_once(
+                pipe=pipe,
+                x0=tensors["winner_latent"],
+                noise=tensors["winner_noise"],
+                timestep=tensors["winner_timestep"],
+                forward_condition=condition,
+            )
+            loser_pred, loser_target, _ = self._model_forward_once(
+                pipe=pipe,
+                x0=tensors["loser_latent"],
+                noise=tensors["loser_noise"],
+                timestep=tensors["loser_timestep"],
+                forward_condition=condition,
+            )
+            result.update(
+                {
+                    "success": True,
+                    "target_info": target_info,
+                    "winner_pred": _tensor_summary(winner_pred),
+                    "loser_pred": _tensor_summary(loser_pred),
+                    "winner_target": _tensor_summary(winner_target),
+                    "loser_target": _tensor_summary(loser_target),
+                    "pred_shape_matches_latent": list(winner_pred.shape) == list(tensors["winner_latent"].shape) and list(loser_pred.shape) == list(tensors["loser_latent"].shape),
+                    "memory": _gpu_memory(),
+                }
+            )
+        except Exception as exc:
+            result.update({"success": False, "error": repr(exc), "error_type": "model_forward_failed", "memory": _gpu_memory()})
+        write_json(_jsonable(result), out / "model_forward_probe_summary.json")
+        return result
+
+    def compute_dpo_energy_or_logprob(
+        self,
+        *,
+        pair: dict[str, Any],
+        batch_dir: str | Path,
+        out_dir: str | Path,
+        device: str = "cuda",
+        dtype: str = "bf16",
+        num_frames: int = 8,
+        resolution: str = "480x832",
+        require_real_target: bool = True,
+    ) -> dict[str, Any]:
+        import torch  # type: ignore
+
+        if not require_real_target:
+            raise NotImplementedError("Energy dry-run requires a real target. Refusing to run without --require_real_target true.")
+        out = Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        load_result = self.load_policy_model(device=device, dtype=dtype, dry_run=False)
+        pipe = load_result.pop("object", None)
+        reference = self.load_reference_model(device=device, dtype=dtype, defer=True)
+        batch = self._load_batch_tensors(batch_dir, device=device, dtype=dtype)
+        tensors = batch["tensors"]
+        condition = self._build_forward_condition(
+            pair=pair,
+            pipe=pipe,
+            latent_shape=list(tensors["winner_latent"].shape),
+            out_dir=out,
+            num_frames=num_frames,
+            resolution=resolution,
+            device=device,
+            dtype=dtype,
+        )
+        result: dict[str, Any] = {
+            "success": False,
+            "policy_load": load_result,
+            "reference_status": reference,
+            "batch_summary": batch["summary"],
+            "condition_summary": condition["summary"],
+            "target_type": "flow_velocity_noise_minus_x0",
+            "target_evidence": [
+                "local_assets/third_party/lingbot_world/scripts/train_lingbot_physics_predictor.py::sample_flow_batch",
+                "local_assets/third_party/VideoGPA/official_repo/train/Wan2.2-TI2V-5B/03_train.py::flow_matching_get_velocity",
+                "local_assets/third_party/lingbot_world/wan/image2video_fast.py::_convert_flow_pred_to_x0 docstring",
+            ],
+            "no_backward": True,
+            "no_optimizer": True,
+            "dpo_loss_computed": False,
+        }
+        try:
+            winner_pred, winner_target, target_info = self._model_forward_once(
+                pipe=pipe,
+                x0=tensors["winner_latent"],
+                noise=tensors["winner_noise"],
+                timestep=tensors["winner_timestep"],
+                forward_condition=condition,
+            )
+            loser_pred, loser_target, _ = self._model_forward_once(
+                pipe=pipe,
+                x0=tensors["loser_latent"],
+                noise=tensors["loser_noise"],
+                timestep=tensors["loser_timestep"],
+                forward_condition=condition,
+            )
+            e_winner = torch.mean((winner_pred.float() - winner_target.float()) ** 2)
+            e_loser = torch.mean((loser_pred.float() - loser_target.float()) ** 2)
+            result.update(
+                {
+                    "success": bool(torch.isfinite(e_winner).item() and torch.isfinite(e_loser).item()),
+                    "target_info": target_info,
+                    "E_policy_winner": float(e_winner.detach().cpu().item()),
+                    "E_policy_loser": float(e_loser.detach().cpu().item()),
+                    "Delta_policy_loser_minus_winner": float((e_loser - e_winner).detach().cpu().item()),
+                    "E_ref_winner": None,
+                    "E_ref_loser": None,
+                    "reference_delta": None,
+                    "winner_pred": _tensor_summary(winner_pred),
+                    "loser_pred": _tensor_summary(loser_pred),
+                    "winner_target": _tensor_summary(winner_target),
+                    "loser_target": _tensor_summary(loser_target),
+                    "finite_check": {
+                        "winner": bool(torch.isfinite(e_winner).item()),
+                        "loser": bool(torch.isfinite(e_loser).item()),
+                    },
+                    "memory": _gpu_memory(),
+                }
+            )
+        except Exception as exc:
+            result.update({"success": False, "error": repr(exc), "error_type": "energy_forward_failed", "memory": _gpu_memory()})
+        write_json(_jsonable(result), out / "energy_logprob_summary.json")
+        return result
+
     def sample_same_noise_timestep(self, *args, **kwargs):
         raise NotImplementedError("Use collate_winner_loser_batch for tensor-level dry-run. Scheduler-specific timestep sampling is not wired.")
-
-    def compute_dpo_energy_or_logprob(self, *args, **kwargs):
-        raise NotImplementedError("No fake DPO energy/logprob. A real LingBot denoising/velocity forward target is not wired yet.")
 
     def save_lora_adapter(self, *args, **kwargs):
         raise NotImplementedError("LoRA save path belongs to the future training adapter.")
@@ -550,14 +1172,15 @@ class LingBotFastVideoGPAAdapter:
         fast = inspect_checkpoint(self.paths["lingbot_fast"], label="LingBot-Fast")
         base = inspect_checkpoint(self.paths["lingbot_base"], label="LingBot-Base")
         methods = [
-            AdapterStatus("load_policy_model", False, "wan.WanI2VFast + runtime symlink bundle", "paths/config", "policy model", True, True, False, "runtime inference exists separately; VideoGPA policy object not wired"),
-            AdapterStatus("load_reference_model", False, "same as load_policy_model", "paths/config", "frozen ref model", True, True, False, "required before DPO"),
+            AdapterStatus("load_policy_model", True, "wan.WanI2VFast + runtime symlink bundle", "paths/config", "frozen eval policy model", True, True, False, "real LingBot-Fast runtime load; no optimizer/backward"),
+            AdapterStatus("load_reference_model", True, "same as load_policy_model", "paths/config", "deferred frozen ref status", True, True, False, "explicitly deferred for 1-pair energy dry-run to avoid duplicate model memory"),
             AdapterStatus("load_vae", True, "LingBot/Wan VAE", "paths/config", "VAE object + metadata", False, False, False, "real VAE class is dynamically loaded from wan.modules.vae2_1/vae2_2"),
             AdapterStatus("encode_video_to_latent", True, "LingBot Wan VAE", "mp4/video tensor", "latent tensor", False, False, False, "real VAE encode is attempted; no fake latent"),
             AdapterStatus("encode_condition", True, "cam-only sample files + LingBot cam utils", "sample/pair condition", "condition summary + camera control shape", True, True, True, "text embedding deferred; Plucker/control tensor smoke attempted"),
             AdapterStatus("collate_winner_loser_batch", True, "VideoGPA pair JSON + LingBot latents", "pair dict + latent files", "batch summary", True, True, True, "same-noise/same-timestep tensor dry-run"),
-            AdapterStatus("sample_same_noise_timestep", False, "LingBot scheduler", "batch size + latent shape", "scheduler-specific timestep", False, False, False, "generic tensor dry-run exists; scheduler-specific sampling deferred"),
-            AdapterStatus("compute_dpo_energy_or_logprob", False, "LingBot forward/noise scheduler", "winner/loser latents + condition", "scalar energy/logprob delta", True, True, False, "must remain NotImplemented until real forward target is identified"),
+            AdapterStatus("sample_same_noise_timestep", True, "LingBot flow target contract", "batch size + latent shape", "same tensor noise + timestep", False, False, False, "implemented inside collate_winner_loser_batch"),
+            AdapterStatus("model_forward_probe", True, "LingBot Fast WanModelFast.forward", "winner/loser latent + condition", "velocity prediction tensor", True, True, False, "no target/loss in this mode"),
+            AdapterStatus("compute_dpo_energy_or_logprob", True, "LingBot flow target noise-x0", "winner/loser latents + condition", "finite policy energies if forward passes", True, True, False, "no DPO loss/backward/optimizer; reference deferred"),
         ]
         return {
             "paths": self.paths,
@@ -707,28 +1330,72 @@ def _mode_batch(args) -> dict[str, Any]:
     )
 
 
-def _mode_energy(args) -> dict[str, Any]:
+def _mode_policy_reference(args) -> dict[str, Any]:
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    inspect_result = _inspect_forward_paths(args.config)
-    batch_summary = _read_json(Path(args.batch) / "batch_summary.json")
-    result = {
-        "status": "not_implemented",
-        "energy_logprob_passed": False,
-        "batch_summary_exists": bool(batch_summary),
-        "forward_inspect": inspect_result,
-        "no_backward": _bool_arg(args.no_backward),
-        "no_optimizer": _bool_arg(args.no_optimizer),
-        "error": "compute_dpo_energy_or_logprob remains NotImplementedError because a real LingBot denoising/velocity loss forward was not wired.",
-    }
-    write_json(result, out / "energy_logprob_summary.json")
+    adapter = LingBotFastVideoGPAAdapter(args.config)
+    result: dict[str, Any] = {"success": False, "no_backward": True, "no_optimizer": True}
+    try:
+        policy = adapter.load_policy_model(device=args.device, dtype=args.dtype, dry_run=False)
+        policy.pop("object", None)
+        reference = adapter.load_reference_model(device=args.device, dtype=args.dtype, defer=True)
+        result.update({"success": True, "policy": policy, "reference": reference})
+    except Exception as exc:
+        result.update({"success": False, "error": repr(exc), "error_type": "policy_reference_load_failed", "memory": _gpu_memory()})
+    write_json(_jsonable(result), out / "policy_reference_load_summary.json")
     return result
+
+
+def _mode_model_forward_probe(args) -> dict[str, Any]:
+    if not _bool_arg(args.no_backward) or not _bool_arg(args.no_optimizer):
+        raise RuntimeError("model_forward_probe requires --no_backward true and --no_optimizer true")
+    adapter = LingBotFastVideoGPAAdapter(args.config)
+    pair = _load_pair_from_args_or_batch(args)
+    return adapter.model_forward_probe(
+        pair=pair,
+        batch_dir=args.batch,
+        out_dir=args.out,
+        device=args.device,
+        dtype=args.dtype,
+        num_frames=args.num_frames,
+        resolution=args.resolution,
+    )
+
+
+def _mode_energy(args) -> dict[str, Any]:
+    if not _bool_arg(args.no_backward) or not _bool_arg(args.no_optimizer):
+        raise RuntimeError("energy_logprob_dryrun requires --no_backward true and --no_optimizer true")
+    adapter = LingBotFastVideoGPAAdapter(args.config)
+    pair = _load_pair_from_args_or_batch(args)
+    return adapter.compute_dpo_energy_or_logprob(
+        pair=pair,
+        batch_dir=args.batch,
+        out_dir=args.out,
+        device=args.device,
+        dtype=args.dtype,
+        num_frames=args.num_frames,
+        resolution=args.resolution,
+        require_real_target=_bool_arg(args.require_real_target),
+    )
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="configs/cam_physgeo/videogpa_adapter.yaml")
-    ap.add_argument("--mode", default="status", choices=["status", "load_vae_dryrun", "encode_pair_latent_smoke", "encode_condition_smoke", "dpo_batch_shape_dryrun", "energy_logprob_dryrun"])
+    ap.add_argument(
+        "--mode",
+        default="status",
+        choices=[
+            "status",
+            "load_vae_dryrun",
+            "encode_pair_latent_smoke",
+            "encode_condition_smoke",
+            "dpo_batch_shape_dryrun",
+            "load_policy_reference_dryrun",
+            "model_forward_probe",
+            "energy_logprob_dryrun",
+        ],
+    )
     ap.add_argument("--sample", default="")
     ap.add_argument("--pair", default="")
     ap.add_argument("--pairs", default="")
@@ -745,6 +1412,7 @@ def main(argv=None) -> int:
     ap.add_argument("--preserve_camera_metadata", default="true")
     ap.add_argument("--no_backward", default="true")
     ap.add_argument("--no_optimizer", default="true")
+    ap.add_argument("--require_real_target", default="true")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
 
@@ -756,6 +1424,10 @@ def main(argv=None) -> int:
         result = _mode_condition(args)
     elif args.mode == "dpo_batch_shape_dryrun":
         result = _mode_batch(args)
+    elif args.mode == "load_policy_reference_dryrun":
+        result = _mode_policy_reference(args)
+    elif args.mode == "model_forward_probe":
+        result = _mode_model_forward_probe(args)
     elif args.mode == "energy_logprob_dryrun":
         result = _mode_energy(args)
     else:
