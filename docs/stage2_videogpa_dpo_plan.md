@@ -390,3 +390,32 @@ remote above. Do not push code, docs, or reports to a remote containing
 `world_model_phys.git`. The helper script
 `scripts/check_github_remote_integrity.sh` performs this check and should be
 used before future push operations.
+
+## 5-Pair Tiny Overfit Gate Update
+
+- Gate A: passed.
+- Gate B: passed.
+- Gate C: partial/pass.
+- Gate D: partial/pass for smoke.
+- Gate E: partial. VideoGPA pair/metadata, LingBot latent encode, condition
+  encode, batch shape, policy energy, reference energy, scalar loss,
+  backward-only, tiny camera-control LoRA backward-only, 1-pair optimizer-step,
+  1-pair 5-step mini-loop, and fixed-noise diagnostic have all passed at the
+  plumbing/safety level. Signal sensitivity remains weak/incomplete.
+- Gate F: no. Real DPO training remains disallowed.
+
+Signal-sensitivity result:
+
+- LoRA functional influence: passed.
+- Default rank-2 camera-control LoRA energy movement: very weak, about
+  `5.960e-08`.
+- Scaled LoRA changes energy, so the forward path is active.
+- Full LR sweep: runtime-blocked.
+- Fallback `lr=1e-4`, 1 step: safe but still tiny preference logit.
+- Scope sweep: skipped.
+- 5-pair tiny overfit: skipped by gate.
+
+Next permitted action is not real training. Before 5-pair/10-pair tiny overfit,
+run an optimized short LR/scope sensitivity diagnostic that reuses loaded
+models and tests current vs last-2-block camera LoRA targets. Saved LoRA and
+checkpoint paths remain disabled.

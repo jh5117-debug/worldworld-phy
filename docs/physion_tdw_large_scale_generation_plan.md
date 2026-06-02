@@ -124,3 +124,22 @@ Generation sources remain:
 - official Physion / `physics-benchmarking-neurips2021`;
 - `tdw_physics` / TDW;
 - project moving-camera extension scripts.
+
+## Reminder After 5-Pair Gate
+
+Large TDW/Physion generation is still not the next automatic step. The current
+DPO path has reached 1-pair LoRA optimizer and fixed-noise diagnostics, but the
+learning signal for the tiny camera-control LoRA remains weak and 5-pair tiny
+overfit was skipped by gate.
+
+When the user explicitly asks for data generation, start only with:
+
+1. 1 sample TDW generation dry-run;
+2. 10 samples smoke;
+3. 50 samples validation;
+4. 200 samples pilot;
+5. 1k+ generation only after storage/runtime/template/camera-motion approval.
+
+Every stage must check RGB, HDF5, depth, ID mask, camera pose, intrinsics,
+object state, prompt, LingBot cam-only conversion, reward score, contact sheet,
+storage, and generation speed.
