@@ -320,3 +320,51 @@ Next permitted step is not real training. If the user explicitly confirms, a
 future round may do only a tiny 5-pair or 10-pair overfit smoke, or a fixed
 noise/timestep 1-pair diagnostic. Saved LoRA remains disabled by default, and
 multi-pair real DPO training remains blocked.
+
+## Fixed-Noise DPO Diagnostic Update
+
+- Gate A: passed.
+- Gate B: passed.
+- Gate C: partial/pass.
+- Gate D: partial/pass for smoke.
+- Gate E: pass/partial. VideoGPA pair/metadata, LingBot latent encode,
+  condition encode, batch shape, policy energy, reference energy, scalar loss,
+  backward-only, tiny camera-control LoRA backward-only, 1-pair optimizer-step,
+  1-pair 5-step resampled mini-loop, and a fixed-noise/fixed-timestep
+  diagnostic all pass at the plumbing/safety level.
+- Gate F: no. Real DPO training remains disallowed.
+
+Fixed diagnostic details:
+
+- Scope: `camera_control_lora_tiny`.
+- Runtime target modules:
+  `blocks.39.cam_shift_layer`, `blocks.39.cam_scale_layer`.
+- Rank/alpha: `2` / `4.0`.
+- Optimizer: `AdamW`, lr `1e-5`, LoRA params only.
+- Steps: `10` on the same pair.
+- Fixed noise seed: `123`.
+- Fixed timestep: `579`.
+- Loss values: `[0.6931471228599548, 0.6931471824645996,
+  0.6931471824645996, 0.6931471824645996, 0.6931472420692444,
+  0.6931471824645996, 0.6931472420692444, 0.6931472420692444,
+  0.6931471824645996, 0.6931471824645996]`.
+- Loss monotonic: no.
+- Loss delta: `+5.960464477539063e-08`.
+- Preference logits stayed near zero, around `1e-7`.
+- LoRA params changed: yes, max abs diff `0.0001006147067528218`.
+- Base sample params changed: no, max abs diff `0.0`.
+- Reference sample params changed: no, max abs diff `0.0`.
+- NaN/Inf gradients: no.
+- OOM: no.
+- LoRA save / checkpoint save: none.
+- `restore_after_loop`: passed.
+
+Interpretation: fixed-noise plumbing and safety passed, but the overfit signal
+is weak and not monotonic at rank 2 / lr `1e-5`. The sign convention is still
+consistent: larger positive preference logit lowers DPO loss, but the observed
+logits are extremely small. This is not a reason to launch real training.
+
+Next permitted step is not real training. If the user explicitly confirms, the
+next round may do either a stronger fixed-noise sensitivity diagnostic, or a
+very small 5-pair/10-pair overfit smoke with saved LoRA disabled. Full DPO
+training remains blocked.

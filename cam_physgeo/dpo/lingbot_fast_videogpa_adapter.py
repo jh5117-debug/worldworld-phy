@@ -1407,6 +1407,8 @@ class LingBotFastVideoGPAAdapter:
         resample_timestep: bool,
         num_train_timesteps: int,
         seed: int = 12345,
+        fixed_noise_seed: int | None = None,
+        fixed_timestep: int | None = None,
     ) -> dict[str, Any]:
         import copy
         import torch  # type: ignore
@@ -1427,6 +1429,17 @@ class LingBotFastVideoGPAAdapter:
             )
             tensors["winner_noise"] = noise
             tensors["loser_noise"] = noise.clone()
+        elif fixed_noise_seed is not None:
+            fixed_generator = torch.Generator(device=device)
+            fixed_generator.manual_seed(int(fixed_noise_seed))
+            noise = torch.randn(
+                tuple(tensors_in["winner_latent"].shape),
+                generator=fixed_generator,
+                device=device,
+                dtype=dtype,
+            )
+            tensors["winner_noise"] = noise
+            tensors["loser_noise"] = noise.clone()
         if resample_timestep:
             timestep = torch.randint(
                 low=0,
@@ -1438,11 +1451,23 @@ class LingBotFastVideoGPAAdapter:
             )
             tensors["winner_timestep"] = timestep
             tensors["loser_timestep"] = timestep.clone()
+        elif fixed_timestep is not None:
+            timestep_value = max(0, min(int(fixed_timestep), int(num_train_timesteps) - 1))
+            timestep = torch.full(
+                tuple(tensors_in["winner_timestep"].shape),
+                timestep_value,
+                device=device,
+                dtype=tensors_in["winner_timestep"].dtype,
+            )
+            tensors["winner_timestep"] = timestep
+            tensors["loser_timestep"] = timestep.clone()
         summary = copy.deepcopy(batch.get("summary") or {})
         summary["miniloop_step"] = int(step_index)
         summary["resample_noise"] = bool(resample_noise)
         summary["resample_timestep"] = bool(resample_timestep)
         summary["step_seed"] = step_seed
+        summary["fixed_noise_seed"] = int(fixed_noise_seed) if fixed_noise_seed is not None else None
+        summary["fixed_timestep"] = int(fixed_timestep) if fixed_timestep is not None else None
         summary["winner_timestep"] = [int(x) for x in tensors["winner_timestep"].detach().cpu().reshape(-1).tolist()]
         summary["loser_timestep"] = [int(x) for x in tensors["loser_timestep"].detach().cpu().reshape(-1).tolist()]
         return {
@@ -1452,6 +1477,8 @@ class LingBotFastVideoGPAAdapter:
             "step_seed": step_seed,
             "noise_resampled": bool(resample_noise),
             "timestep_resampled": bool(resample_timestep),
+            "noise_fixed": not bool(resample_noise),
+            "timestep_fixed": not bool(resample_timestep),
         }
 
     def model_forward_probe(
@@ -2864,6 +2891,8 @@ class LingBotFastVideoGPAAdapter:
         num_steps: int = 5,
         resample_noise_each_step: bool = True,
         resample_timestep_each_step: bool = True,
+        fixed_noise_seed: int | None = None,
+        fixed_timestep: int | None = None,
         save_param_diff: bool = True,
         no_save_lora: bool = True,
         no_checkpoint: bool = True,
@@ -2875,8 +2904,9 @@ class LingBotFastVideoGPAAdapter:
 
         if trainable_scope != "camera_control_lora_tiny":
             raise RuntimeError("1-pair mini-loop is only allowed for camera_control_lora_tiny")
-        if int(num_steps) < 1 or int(num_steps) > 5:
-            raise RuntimeError(f"num_steps must be in [1, 5] for this dry-run, got {num_steps}")
+        max_steps = 10 if (not resample_noise_each_step and not resample_timestep_each_step) else 5
+        if int(num_steps) < 1 or int(num_steps) > max_steps:
+            raise RuntimeError(f"num_steps must be in [1, {max_steps}] for this dry-run, got {num_steps}")
         if not no_save_lora or not no_checkpoint:
             raise RuntimeError("1-pair mini-loop requires --no_save_lora true and --no_checkpoint true")
         if str(optimizer_name).lower() != "adamw":
@@ -2900,6 +2930,9 @@ class LingBotFastVideoGPAAdapter:
             "limit_pairs": 1,
             "resample_noise_each_step": bool(resample_noise_each_step),
             "resample_timestep_each_step": bool(resample_timestep_each_step),
+            "fixed_noise_seed": int(fixed_noise_seed) if fixed_noise_seed is not None else None,
+            "fixed_timestep": int(fixed_timestep) if fixed_timestep is not None else None,
+            "fixed_noise_diagnostic": bool(not resample_noise_each_step and not resample_timestep_each_step),
             "no_save_lora": True,
             "no_checkpoint": True,
             "training_allowed": False,
@@ -2930,8 +2963,21 @@ class LingBotFastVideoGPAAdapter:
                         resample_noise=bool(resample_noise_each_step),
                         resample_timestep=bool(resample_timestep_each_step),
                         num_train_timesteps=num_train_timesteps,
+                        fixed_noise_seed=fixed_noise_seed,
+                        fixed_timestep=fixed_timestep,
                     )
                     step_batches.append(step_batch)
+                    if (
+                        step_idx > 0
+                        and not resample_noise_each_step
+                        and not resample_timestep_each_step
+                        and reference_step_metrics
+                    ):
+                        cached_ref = dict(reference_step_metrics[0])
+                        cached_ref["cached_from_step"] = 0
+                        cached_ref["cache_reason"] = "fixed_noise_fixed_timestep_reference"
+                        reference_step_metrics.append(cached_ref)
+                        continue
                     ref_energy = self._compute_energy_with_pipe(
                         pipe=ref_pipe,
                         pair=pair,
@@ -3020,7 +3066,8 @@ class LingBotFastVideoGPAAdapter:
                 delta_policy = e_policy_l - e_policy_w
                 delta_ref_value = e_ref_l - e_ref_w
                 delta_ref = torch.tensor(delta_ref_value, device=delta_policy.device, dtype=torch.float32)
-                loss = -torch.nn.functional.logsigmoid(torch.tensor(float(beta), device=delta_policy.device, dtype=torch.float32) * (delta_policy.float() - delta_ref))
+                preference_logit = torch.tensor(float(beta), device=delta_policy.device, dtype=torch.float32) * (delta_policy.float() - delta_ref)
+                loss = -torch.nn.functional.logsigmoid(preference_logit)
                 loss.backward()
                 grad_summary_before_clip = self._grad_summary(model, lora_initial)
                 base_params_with_grad = sum(1 for name, param in model.named_parameters() if "lora_" not in name and param.grad is not None)
@@ -3064,10 +3111,12 @@ class LingBotFastVideoGPAAdapter:
                     "E_policy_winner": float(e_policy_w.detach().cpu().item()),
                     "E_policy_loser": float(e_policy_l.detach().cpu().item()),
                     "E_ref_winner": e_ref_w,
-                    "E_ref_loser": e_ref_l,
-                    "Delta_policy": float(delta_policy.detach().cpu().item()),
-                    "Delta_ref": float(delta_ref_value),
-                    "grad_norm_before_clip": grad_norm_before_clip,
+                        "E_ref_loser": e_ref_l,
+                        "Delta_policy": float(delta_policy.detach().cpu().item()),
+                        "Delta_ref": float(delta_ref_value),
+                        "preference_logit": float(preference_logit.detach().cpu().item()),
+                        "sign_convention": "lower energy is better; DPO improves when Delta_policy exceeds Delta_ref under E_loser - E_winner",
+                        "grad_norm_before_clip": grad_norm_before_clip,
                     "clip_returned_norm": clip_returned_norm,
                     "grad_norm_after_clip": grad_norm_after_clip,
                     "lora_param_norm": lora_norm,
@@ -3088,7 +3137,7 @@ class LingBotFastVideoGPAAdapter:
                 for param in model.parameters():
                     if param.grad is not None:
                         param.grad = None
-                del policy_energy, loss, e_policy_w, e_policy_l, delta_policy, delta_ref
+                del policy_energy, loss, e_policy_w, e_policy_l, delta_policy, delta_ref, preference_logit
 
             optimizer.zero_grad(set_to_none=True)
             lora_diff_after_loop = self._diff_full_snapshot(model, lora_initial)
@@ -3104,6 +3153,8 @@ class LingBotFastVideoGPAAdapter:
 
             losses = [float(row["L_DPO"]) for row in per_step if row.get("success")]
             delta_policies = [float(row["Delta_policy"]) for row in per_step if row.get("success")]
+            preference_logits = [float(row["preference_logit"]) for row in per_step if row.get("success")]
+            monotonic_nonincreasing = all(losses[idx] <= losses[idx - 1] for idx in range(1, len(losses))) if len(losses) >= 2 else None
             lora_changed = lora_diff_after_loop["params_changed_count"] > 0 and lora_diff_after_loop["max_abs_diff"] > 0.0
             base_unchanged = base_diff_after_loop["max_abs_diff"] == 0.0 and base_diff_after_loop["params_changed_count"] == 0
             ref_unchanged = reference_param_diff.get("max_abs_diff", 0.0) == 0.0 and reference_param_diff.get("params_changed_count", 0) == 0
@@ -3127,15 +3178,22 @@ class LingBotFastVideoGPAAdapter:
                     "loss_values": losses,
                     "loss_first": losses[0] if losses else None,
                     "loss_last": losses[-1] if losses else None,
+                    "loss_min": min(losses) if losses else None,
+                    "loss_max": max(losses) if losses else None,
                     "loss_delta_last_minus_first": (losses[-1] - losses[0]) if len(losses) >= 2 else None,
+                    "loss_monotonic_nonincreasing": monotonic_nonincreasing,
                     "delta_policy_values": delta_policies,
                     "delta_policy_delta_last_minus_first": (delta_policies[-1] - delta_policies[0]) if len(delta_policies) >= 2 else None,
+                    "preference_logit_values": preference_logits,
+                    "preference_logit_delta_last_minus_first": (preference_logits[-1] - preference_logits[0]) if len(preference_logits) >= 2 else None,
                     "loss_trend_interpretation": (
                         "not expected to be monotonic because noise/timestep are resampled each step"
                         if (resample_noise_each_step or resample_timestep_each_step)
                         else "fixed noise/timestep makes loss trend more directly interpretable"
                     ),
+                    "trend_meaningful": bool((not resample_noise_each_step and not resample_timestep_each_step) and len(losses) >= 2),
                     "overfit_signal_observed": bool(len(delta_policies) >= 2 and abs(delta_policies[-1] - delta_policies[0]) > 0.0),
+                    "sign_convention": "energy is MSE to flow target; lower winner energy and higher Delta=E_loser-E_winner are preferred",
                     "reference_step_metrics": reference_step_metrics,
                     "per_step_metrics": per_step,
                     "policy_load": policy_load,
@@ -3846,6 +3904,8 @@ def _mode_dpo_1pair_overfit_miniloop(args) -> dict[str, Any]:
         num_steps=int(args.num_steps),
         resample_noise_each_step=_bool_arg(args.resample_noise_each_step),
         resample_timestep_each_step=_bool_arg(args.resample_timestep_each_step),
+        fixed_noise_seed=args.fixed_noise_seed,
+        fixed_timestep=args.fixed_timestep,
         save_param_diff=_bool_arg(args.save_param_diff),
         no_save_lora=_bool_arg(args.no_save_lora),
         no_checkpoint=_bool_arg(args.no_checkpoint),
@@ -3925,6 +3985,8 @@ def main(argv=None) -> int:
     ap.add_argument("--num_steps", type=int, default=5)
     ap.add_argument("--resample_noise_each_step", default="true")
     ap.add_argument("--resample_timestep_each_step", default="true")
+    ap.add_argument("--fixed_noise_seed", type=int, default=None)
+    ap.add_argument("--fixed_timestep", type=int, default=None)
     ap.add_argument("--restore_after_loop", default="true")
     ap.add_argument("--log_every_step", default="true")
     ap.add_argument("--dry-run", action="store_true")
