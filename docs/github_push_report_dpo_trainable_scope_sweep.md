@@ -12,7 +12,7 @@
   this push report and force-pushed to the same branch.
 - Remote branch: `origin/physion-dpo-trainable-scope-sweep`
 - Remote URL used by local repo:
-  `ssh://ssh.github.com:443/jh5117-debug/worldworld-phy.git`
+  `ssh://git@ssh.github.com:443/jh5117-debug/worldworld-phy.git`
 - Pull request URL suggested by remote:
   `https://github.com/jh5117-debug/worldworld-phy/pull/new/physion-dpo-trainable-scope-sweep`
 

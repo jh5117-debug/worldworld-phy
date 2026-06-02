@@ -8,7 +8,18 @@
 - Final pushed branch tip is the commit containing this report; verify with
   `git log -1 --oneline physion-dpo-1pair-overfit-miniloop`.
 - Remote: `origin`
-- Remote URL: `ssh://git@ssh.github.com:443/jh5117-debug/world_model_phys.git`
+- Remote URL: `ssh://git@ssh.github.com:443/jh5117-debug/worldworld-phy.git`
+
+Remote integrity correction: this branch was missing from the correct
+user-visible repository until the remote was checked against
+`jh5117-debug/worldworld-phy` and pushed explicitly. Future push checks must run:
+
+```bash
+git remote -v
+git ls-remote --heads origin
+```
+
+Do not push this branch to `world_model_phys.git`.
 
 ## Scope Committed
 

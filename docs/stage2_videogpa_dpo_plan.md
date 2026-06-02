@@ -368,3 +368,25 @@ Next permitted step is not real training. If the user explicitly confirms, the
 next round may do either a stronger fixed-noise sensitivity diagnostic, or a
 very small 5-pair/10-pair overfit smoke with saved LoRA disabled. Full DPO
 training remains blocked.
+
+## GitHub Remote Integrity Gate
+
+Future push steps must target the user-visible repository:
+
+- Correct repo: `jh5117-debug/worldworld-phy`
+- Fixed remote:
+  `ssh://git@ssh.github.com:443/jh5117-debug/worldworld-phy.git`
+- Old incorrect remote: `world_model_phys.git`
+
+Before pushing any branch, run:
+
+```bash
+git remote -v
+git ls-remote --heads origin
+```
+
+The push is allowed only if `origin` fetch and push URLs both match the fixed
+remote above. Do not push code, docs, or reports to a remote containing
+`world_model_phys.git`. The helper script
+`scripts/check_github_remote_integrity.sh` performs this check and should be
+used before future push operations.

@@ -6,7 +6,18 @@
 - Base branch: `physion-dpo-1pair-overfit-miniloop`
 - Final pushed commit: this report commit; verify with `git rev-parse HEAD` after checkout.
 - Remote: `origin`
-- Remote URL: `ssh://git@ssh.github.com:443/jh5117-debug/world_model_phys.git`
+- Remote URL: `ssh://git@ssh.github.com:443/jh5117-debug/worldworld-phy.git`
+
+Remote integrity correction: this branch is confirmed on the correct
+user-visible repository, `jh5117-debug/worldworld-phy`. Future push checks must
+run:
+
+```bash
+git remote -v
+git ls-remote --heads origin
+```
+
+Do not push this branch to `world_model_phys.git`.
 
 ## Scope Committed
 

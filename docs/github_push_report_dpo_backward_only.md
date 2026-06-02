@@ -11,7 +11,7 @@
 - Push status: success. The first push created the branch, then the commit was
   amended to include this push report and force-pushed to the same branch.
 - Remote branch: `origin/physion-dpo-backward-only-dryrun`
-- Remote URL used by local repo: `ssh://ssh.github.com:443/jh5117-debug/worldworld-phy.git`
+- Remote URL used by local repo: `ssh://git@ssh.github.com:443/jh5117-debug/worldworld-phy.git`
 - Pull request URL suggested by remote:
   `https://github.com/jh5117-debug/worldworld-phy/pull/new/physion-dpo-backward-only-dryrun`
 

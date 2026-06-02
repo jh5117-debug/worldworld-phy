@@ -5,7 +5,7 @@
 - Branch: `physion-dpo-tiny-lora-backward`
 - Commit message: `Add tiny camera-control LoRA backward-only dry-run`
 - Remote URL:
-  `ssh://ssh.github.com:443/jh5117-debug/worldworld-phy.git`
+  `ssh://git@ssh.github.com:443/jh5117-debug/worldworld-phy.git`
 
 ## Push Status
 
