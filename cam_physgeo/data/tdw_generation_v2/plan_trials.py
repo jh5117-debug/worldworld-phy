@@ -4,14 +4,16 @@ import argparse
 import json
 from pathlib import Path
 
-from .generation_config import get_profile, load_config
+from .generation_config import get_profile, load_config, upstream_camera_mapping, validate_profile_camera_set
 
 
 def build_trials(config_path: Path, profile_name: str, templates: list[str], num_trials: int) -> list[dict]:
     config = load_config(config_path)
     profile = get_profile(config, profile_name)
+    validate_profile_camera_set(config, profile)
     templates = templates or profile.templates
     variants = profile.camera_variants
+    upstream_variants = {row["name"]: row for row in upstream_camera_mapping(config, profile)}
     if not variants:
         raise ValueError(f"Profile {profile_name} has no camera_variants")
     seed_start = int(config.get("seed_start", 20000))
@@ -21,13 +23,24 @@ def build_trials(config_path: Path, profile_name: str, templates: list[str], num
         variant = variants[idx % len(variants)]
         seed = seed_start + idx
         trial_id = f"tdw_v2_{profile_name}_{template}_{variant['name']}_seed{seed}"
+        camera_variant_name = str(variant["name"])
+        upstream_variant = dict(upstream_variants[camera_variant_name])
         trials.append({
             "trial_id": trial_id,
             "profile": profile_name,
             "purpose": profile.purpose,
             "template": template,
             "seed": seed,
-            "camera_variant": variant,
+            "camera_set": profile.camera_set,
+            "camera_variant": camera_variant_name,
+            "camera_motion": str(variant.get("motion", upstream_variant.get("motion", ""))),
+            "camera_args": {
+                "yaw_degrees": variant.get("yaw_degrees"),
+                "translation": variant.get("translation"),
+                "height_delta": variant.get("height_delta"),
+                "stress": bool(variant.get("stress", False)),
+            },
+            "upstream_camera_variant": upstream_variant,
             "filters": profile.filters,
             "status": "planned",
             "notes": "Physion-style TDW simulated moving-camera plan; not real-world data.",
@@ -55,7 +68,8 @@ def main() -> None:
         "profile": args.profile,
         "num_trials": len(trials),
         "templates": sorted(set(t["template"] for t in trials)),
-        "camera_variants": sorted(set(t["camera_variant"]["name"] for t in trials)),
+        "camera_set": trials[0].get("camera_set") if trials else None,
+        "camera_variants": sorted(set(str(t["camera_variant"]) for t in trials)),
         "out": str(args.out),
         "dry_run": bool(args.dry_run),
     }

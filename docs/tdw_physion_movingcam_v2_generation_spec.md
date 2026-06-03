@@ -31,6 +31,23 @@ Requirements:
 - suggested max yaw: 10-25 degrees;
 - output RGB, depth, ID, camera_pose, intrinsics/projection, object_state, and prompt.
 
+Explicit camera set:
+
+- `orbit_left_12`
+- `orbit_right_12`
+- `strafe_left_025`
+- `strafe_right_025`
+- `dolly_in_010`
+- `dolly_out_010`
+
+These are the only variants allowed in `warmup_mild`. The wrapper rejects lookaway, offscreen, reobserve, relative-yaw-180, occluder, and extreme camera terms before generation.
+
+Upstream mapping:
+
+- orbit uses `camera_motion=orbit` and `camera_orbit_degrees=+/-12`;
+- strafe uses `camera_motion=strafe` and `camera_strafe_distance=+/-0.25`;
+- dolly uses the existing orbit/radius path with `camera_radius_delta=+/-0.10`.
+
 ## Profile 2: train_moderate
 
 Purpose: later reward/DPO pair pool.
@@ -79,3 +96,7 @@ Reject or mark as stress-only if:
 - frame count or duration invalid.
 
 Every stage should output a validation report, contact sheet, storage estimate, and generation speed.
+
+## Current Mild-Smoke Status
+
+The `warmup_mild` plan dry-run is valid and contains no stress/reobserve variants. Actual TDW generation is gated on TDW display/GPU routing because the observed display `:8` appears to be configured on GPU0, while the current task only permits GPU6/7.

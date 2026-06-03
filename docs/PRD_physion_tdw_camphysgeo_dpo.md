@@ -149,7 +149,15 @@ Generation must be staged:
 
 ## 10. TDW / Physion-style Generation v2 Partial Data
 
-This PRD adds the v2 spec and wrapper/validator skeleton. Stage 0 dry-run planning is supported. Actual warmup generation is blocked until the runner can guarantee mild-only camera variants, because the upstream batch script does not expose an explicit mild-only `camera_set`. This is intentional: we should not silently mix stress/reobserve camera motions into the warmup split.
+This PRD adds the v2 spec and wrapper/validator skeleton. Stage 0 dry-run planning is supported. The `warmup_mild` camera set has now been made explicit in the v2 wrapper/config:
+
+- allowed: `orbit_left_12`, `orbit_right_12`, `strafe_left_025`, `strafe_right_025`, `dolly_in_010`, `dolly_out_010`;
+- banned: lookaway, offscreen, reobserve, relative-yaw-180, occluder, extreme camera motions;
+- dry-run plan check: 10 planned trials, `bad_count=0`.
+
+Actual TDW generation is still blocked until the TDW display/GPU routing is approved or moved to GPU6/7. The observed TDW display `:8` is configured through a GPU0 Xorg config, while this round only permits GPU6/7.
+
+No 1/10/50 new TDW samples have been generated yet in this mild-smoke round. This is a safety gate, not a fake success.
 
 Representative existing videos and new generation deliverables are indexed under:
 
@@ -161,6 +169,7 @@ Representative existing videos and new generation deliverables are indexed under
 - Run short fixed-noise LR/scope sweep for DPO signal sensitivity.
 - If signal improves, run 5-pair tiny overfit only after explicit approval.
 - Complete TDW generation v2 mild-only support and run 1 -> 10 -> 50 staged generation.
+- Resolve TDW display/GPU routing before actual v2 smoke generation.
 - Use `warmup_mild` for later LingBot-Fast camera-conditioned warmup.
 - After enough data exists, use reward to choose top/bottom winner-loser pairs for DPO.
 - Full TDW generation and real DPO training remain disallowed until gates pass.

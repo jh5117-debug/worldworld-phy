@@ -397,3 +397,21 @@ used before future push operations.
 DPO engineering gates are mostly passed for smoke: VideoGPA pair/metadata dry-run, LingBot latent encode, condition encode, same-noise/same-timestep batch, policy energy, reference energy, scalar DPO loss, LoRA backward, optimizer-step dry-run, and 1-pair mini-loop have all been validated. However, signal sensitivity remains weak, the 5-pair tiny overfit was skipped, and real DPO training is still not allowed.
 
 Before any real training, we need stronger signal through a fixed-noise LR/scope sweep and a better data pool. TDW / Physion-style moving-camera v2 generation is therefore needed for camera-conditioned warmup and later reward-selected top/bottom winner-loser pairs. No VideoGPA 03_train, no Stage1, and no real DPO training should run at this stage.
+
+## TDW Generation v2 Mild-Smoke Gate
+
+The TDW / Physion-style generation v2 wrapper now has an explicit
+`warmup_mild` camera set. The plan-level blocker that allowed possible
+stress/reobserve leakage is fixed:
+
+- allowed mild variants: `orbit_left_12`, `orbit_right_12`,
+  `strafe_left_025`, `strafe_right_025`, `dolly_in_010`, `dolly_out_010`;
+- banned warmup terms: lookaway, offscreen, reobserve, relative-yaw-180,
+  occluder, extreme;
+- 10-trial dry-run plan check: `bad_count=0`.
+
+Actual TDW generation is still gated by display/GPU routing. The observed TDW
+display `:8` appears to be configured on GPU0, while the current task only
+allows GPU6/7. Therefore 1-sample actual TDW generation must wait for either a
+GPU6/7 TDW display or explicit user approval. This does not change DPO gates:
+real DPO training remains `no`.

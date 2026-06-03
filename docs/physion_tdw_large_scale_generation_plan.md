@@ -133,3 +133,18 @@ Large-scale TDW / Physion-style generation is not the immediate next step unless
 Warmup data must use mild/smooth camera motion and must reject clips where the target foreground disappears for too long. Strong reobserve and relative-yaw stress clips should remain in a stress/test split, not the main LingBot-Fast warmup split.
 
 Current v2 blocker: the existing upstream batch runner does not expose an explicit mild-only camera-set option. Until this is added, warmup_mild actual generation should remain blocked rather than silently mixing stress/reobserve variants into warmup data.
+
+## Mild Camera Set Patch Status
+
+The v2 wrapper now defines an explicit `warmup_mild` set and runtime upstream mapping. The previous mild-only camera-set blocker is fixed at the planning/wrapper level:
+
+- `orbit_left_12`
+- `orbit_right_12`
+- `strafe_left_025`
+- `strafe_right_025`
+- `dolly_in_010`
+- `dolly_out_010`
+
+The warmup plan check produced `bad_count=0` for stress/reobserve keywords.
+
+Actual TDW generation remains blocked by the display/GPU routing gate: the observed TDW display is likely bound to GPU0, while current smoke work only permits GPU6/7. Do not run 1/10/50 actual generation until a GPU6/7 display is available or the user explicitly approves the existing display.

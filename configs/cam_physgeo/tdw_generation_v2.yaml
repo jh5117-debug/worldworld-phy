@@ -4,6 +4,10 @@ existing_moving_camera_workspace: /home/nvme03/workspace/physion_moving_camera_m
 output_root: local_assets/data/physion/generated_v2
 seed_start: 22000
 display: ":8"
+tdw_display:
+  display: ":8"
+  gpu_index: 0
+allowed_gpu_indices: [6, 7]
 default_templates: [drop, collision, roll, containment]
 resolution:
   width: 832
@@ -19,22 +23,108 @@ output:
   require_camera_pose: true
   require_intrinsics: true
   require_object_state: true
+camera_sets:
+  warmup_mild:
+    purpose: Mild camera motions for LingBot-Fast camera-conditioned warmup.
+    allowed_variants:
+      - orbit_left_12
+      - orbit_right_12
+      - strafe_left_025
+      - strafe_right_025
+      - dolly_in_010
+      - dolly_out_010
+    banned_keywords:
+      - lookaway
+      - offscreen
+      - relative_yaw_180
+      - relative_lookaway
+      - reobserve
+      - occluder
+      - extreme
+    upstream_mapping:
+      orbit_left_12:
+        motion: orbit
+        orbit: -12.0
+        height: 0.02
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_right_12:
+        motion: orbit
+        orbit: 12.0
+        height: 0.02
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      strafe_left_025:
+        motion: strafe
+        orbit: 0.0
+        height: 0.02
+        radius: 0.0
+        strafe: -0.25
+        require_reobserve: false
+      strafe_right_025:
+        motion: strafe
+        orbit: 0.0
+        height: 0.02
+        radius: 0.0
+        strafe: 0.25
+        require_reobserve: false
+      dolly_in_010:
+        motion: orbit
+        orbit: 0.0
+        height: 0.01
+        radius: -0.10
+        strafe: 0.0
+        require_reobserve: false
+      dolly_out_010:
+        motion: orbit
+        orbit: 0.0
+        height: 0.01
+        radius: 0.10
+        strafe: 0.0
+        require_reobserve: false
 profiles:
   warmup_mild:
     purpose: LingBot-Fast camera-conditioned warmup with smooth camera motion and visible target.
     templates: [drop, collision, roll, containment]
+    camera_set: warmup_mild
     camera_variants:
       - name: orbit_left_12
         motion: orbit
+        yaw_degrees: -12
+        translation: 0.0
+        height_delta: 0.02
+        stress: false
+      - name: orbit_right_12
+        motion: orbit
         yaw_degrees: 12
         translation: 0.0
-        height_delta: 0.03
+        height_delta: 0.02
+        stress: false
+      - name: strafe_left_025
+        motion: strafe
+        yaw_degrees: 0
+        translation: -0.25
+        height_delta: 0.02
         stress: false
       - name: strafe_right_025
         motion: strafe
         yaw_degrees: 0
         translation: 0.25
         height_delta: 0.02
+        stress: false
+      - name: dolly_in_010
+        motion: dolly_in
+        yaw_degrees: 0
+        translation: -0.10
+        height_delta: 0.01
+        stress: false
+      - name: dolly_out_010
+        motion: dolly_out
+        yaw_degrees: 0
+        translation: 0.10
+        height_delta: 0.01
         stress: false
     filters:
       target_visible_ratio_min: 0.75
