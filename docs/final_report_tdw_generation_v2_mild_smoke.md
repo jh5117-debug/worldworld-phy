@@ -125,7 +125,7 @@ No new TDW v2 warmup videos were added. The old clean GT sample remains a stress
 
 ## 8. Next Steps
 
-1. Fix or approve TDW display/GPU routing so actual generation can use GPU6/7 or an explicitly approved display.
+1. Fix or approve TDW display/GPU routing so actual generation can use GPU6/7 or an explicitly approved display. The follow-up audit found `:9` to `:13` are Xvfb/llvmpipe displays, not GPU6/7 Xorg displays.
 2. Run 1-sample `warmup_mild` actual smoke.
 3. Validate HDF5 completeness, camera metadata, target visibility, and contact sheet.
 4. Only if 1-sample passes, run 10-sample smoke.

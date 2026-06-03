@@ -36,3 +36,12 @@ Please confirm one of the following before actual TDW generation:
 2. Explicitly approve a one-sample smoke on the existing GPU0-bound display.
 3. Keep actual generation blocked and only proceed with wrapper/plan/validator work.
 
+## Current User Choices
+
+A. I approve using the current GPU0-bound display only for one `warmup_mild` sample smoke.
+
+B. Configure or provide a GPU6/7 display first.
+
+C. Pause TDW generation and keep only plan/wrapper validation.
+
+No 10/50 sample generation is allowed under option A without a separate confirmation.

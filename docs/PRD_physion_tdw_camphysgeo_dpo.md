@@ -159,6 +159,8 @@ Actual TDW generation is still blocked until the TDW display/GPU routing is appr
 
 No 1/10/50 new TDW samples have been generated yet in this mild-smoke round. This is a safety gate, not a fake success.
 
+The display-routing audit found Xvfb displays `:9` to `:13`, but these are Mesa llvmpipe software displays, not GPU6/7 TDW Xorg displays. They do not prove TDW/Unity generation is safe in CPU/headless mode.
+
 Representative existing videos and new generation deliverables are indexed under:
 
 - `local_assets/reports/tdw_video_deliverables/video_index.md`
@@ -170,6 +172,7 @@ Representative existing videos and new generation deliverables are indexed under
 - If signal improves, run 5-pair tiny overfit only after explicit approval.
 - Complete TDW generation v2 mild-only support and run 1 -> 10 -> 50 staged generation.
 - Resolve TDW display/GPU routing before actual v2 smoke generation.
+- If the user approves GPU0, run exactly one `warmup_mild` sample first; otherwise configure GPU6/7 display before generation.
 - Use `warmup_mild` for later LingBot-Fast camera-conditioned warmup.
 - After enough data exists, use reward to choose top/bottom winner-loser pairs for DPO.
 - Full TDW generation and real DPO training remain disallowed until gates pass.

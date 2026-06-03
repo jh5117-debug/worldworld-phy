@@ -12,6 +12,11 @@ while [[ $# -gt 0 ]]; do
     --profile) PROFILE="$2"; shift 2 ;;
     --num_trials) NUM_TRIALS="$2"; shift 2 ;;
     --out_root) OUT_ROOT="$2"; shift 2 ;;
+    --display) EXTRA+=("--display" "$2"); shift 2 ;;
+    --allowed_gpu_ids) EXTRA+=("--allowed_gpu_ids" "$2"); shift 2 ;;
+    --require_allowed_gpu_display) EXTRA+=("--require_allowed_gpu_display"); shift ;;
+    --dry-run-display-check) EXTRA+=("--dry-run-display-check"); shift ;;
+    --no_run_if_display_gpu_mismatch) EXTRA+=("--no_run_if_display_gpu_mismatch"); shift ;;
     --dry-run) DRY_RUN=1; shift ;;
     --no_overwrite) EXTRA+=("--no_overwrite"); shift ;;
     *) EXTRA+=("$1"); shift ;;

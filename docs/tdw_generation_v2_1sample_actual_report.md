@@ -45,6 +45,8 @@ Actual TDW/Unity generation was not started. The gate report recorded:
 
 A GPU approval/display request was written to `docs/gpu_usage_approval_request.md`.
 
+Follow-up display audit found Xvfb displays `:9` to `:13`, but no GPU6/7 Xorg display. `:9` uses Mesa llvmpipe and is not yet a confirmed TDW/Unity CPU/headless generation path.
+
 ## Continue To 10-Sample?
 
 No. 10-sample smoke remains skipped until the 1-sample actual generation passes validation.

@@ -148,3 +148,13 @@ The v2 wrapper now defines an explicit `warmup_mild` set and runtime upstream ma
 The warmup plan check produced `bad_count=0` for stress/reobserve keywords.
 
 Actual TDW generation remains blocked by the display/GPU routing gate: the observed TDW display is likely bound to GPU0, while current smoke work only permits GPU6/7. Do not run 1/10/50 actual generation until a GPU6/7 display is available or the user explicitly approves the existing display.
+
+## Display / GPU Routing Update
+
+The current TDW display `:8` is bound to GPU0 through `/etc/X11/tdw-xorg-gpu0.conf`. Existing displays `:9` to `:13` are Xvfb / Mesa llvmpipe software displays; they are useful for lightweight display checks, but they do not prove TDW/Unity generation can run safely in CPU/headless mode.
+
+No actual TDW sample should be generated until one of these happens:
+
+1. a GPU6/7 TDW Xorg display is provided;
+2. the user explicitly approves one GPU0-bound 1-sample smoke;
+3. TDW headless/CPU mode is separately validated.
