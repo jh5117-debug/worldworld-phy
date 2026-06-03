@@ -161,10 +161,19 @@ No actual TDW sample should be generated until one of these happens:
 
 ## GPU0 One-Sample Approval Result
 
-The user approved exactly one GPU0-bound `DISPLAY=:8` `warmup_mild` smoke. The run failed before TDW/Unity generated a scene:
+The user approved exactly one GPU0-bound `DISPLAY=:8` `warmup_mild` smoke. The
+first attempt failed before scene generation due wrapper startup issues; those
+issues were fixed. The rerun produced one valid HDF5:
 
-- first blocker: runtime wrapper path was relative;
-- second blocker: generated Python wrapper used JSON `false`;
-- generated sample count: 0.
+- HDF5:
+  `local_assets/data/physion/generated_v2/raw_hdf5/warmup_mild_1samples/00000_drop_orbit_left_12_seed10000/0000.hdf5`
+- template / camera: `drop` / `orbit_left_12`
+- target visible ratio: `1.0`
+- max consecutive invisible frames: `0`
+- camera path length: `0.5927`
+- HDF5 completeness: RGB/depth/id/camera/object state all present.
 
-The code fixes are recorded, but 10/50 generation remains disallowed. A follow-up 1-sample retry requires user confirmation.
+The LingBot cam-only conversion is partial because the target MP4 still needs a
+probe-confirmed writer fix. Therefore 10/50 generation remains disallowed until
+the user explicitly approves 10-sample GPU0 use or a GPU6/7 TDW display is
+available.

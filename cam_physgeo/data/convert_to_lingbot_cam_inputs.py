@@ -47,8 +47,11 @@ def convert_sample(sample: dict, out_root: Path, args) -> dict:
     elif sample.get("hdf5_path"):
         hdf5_payload = read_physion_sample(sample["hdf5_path"], limit_frames=args.num_frames)
         if hdf5_payload.get("rgb") is not None and not dry:
-            write_video_frames(hdf5_payload["rgb"][: args.num_frames], target_video, fps=args.fps)
-            extract_first_frame(target_video, image_path, dry_run=False)
+            wrote_video = write_video_frames(hdf5_payload["rgb"][: args.num_frames], target_video, fps=args.fps)
+            if wrote_video:
+                extract_first_frame(target_video, image_path, dry_run=False)
+            if not image_path.exists():
+                write_first_rgb_frame(hdf5_payload["rgb"], image_path)
 
     if hdf5_payload is None and sample.get("hdf5_path") and not dry:
         hdf5_payload = read_physion_sample(sample["hdf5_path"], limit_frames=args.num_frames)
@@ -115,6 +118,26 @@ def write_optional_arrays(hdf5_payload: dict | None, out_dir: Path) -> None:
         value = hdf5_payload.get(key)
         if value is not None:
             np.save(out_dir / name, value)
+
+
+def write_first_rgb_frame(frames, out_path: Path) -> bool:
+    try:
+        import numpy as np
+        from PIL import Image
+
+        arr = np.asarray(frames)
+        if arr.ndim < 3 or len(arr) == 0:
+            return False
+        frame = arr[0]
+        if frame.dtype != np.uint8:
+            frame = np.clip(frame, 0, 255).astype("uint8")
+        if frame.ndim == 2:
+            frame = np.repeat(frame[..., None], 3, axis=-1)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        Image.fromarray(frame[..., :3]).save(out_path, quality=92)
+        return out_path.exists()
+    except Exception:
+        return False
 
 
 def extract_hdf5_array(uri: str):

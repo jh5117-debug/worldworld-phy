@@ -45,6 +45,8 @@ def extract_first_frame(video_path: str|Path, out_path: str|Path, dry_run: bool=
 
 def write_video_frames(frames, out_path: str|Path, *, fps: int|float=16) -> bool:
     """Write RGB or grayscale numpy frames to an mp4 file."""
+    import subprocess
+
     try:
         import cv2  # type: ignore
         import numpy as np  # type: ignore
@@ -68,7 +70,63 @@ def write_video_frames(frames, out_path: str|Path, *, fps: int|float=16) -> bool
                 f=cv2.cvtColor(f, cv2.COLOR_RGB2BGR)
             writer.write(f)
         writer.release()
-        return out.exists()
+        if out.exists() and out.stat().st_size > 0 and probe_video(out).get('ok'):
+            return True
+        if out.exists():
+            out.unlink(missing_ok=True)
+    except Exception:
+        pass
+    try:
+        import imageio  # type: ignore
+        import numpy as np  # type: ignore
+
+        arr=np.asarray(frames)
+        if arr.ndim < 3 or len(arr)==0:
+            return False
+        if arr.dtype != np.uint8:
+            arr=np.clip(arr,0,255).astype('uint8')
+        if arr[0].ndim == 2:
+            arr=np.repeat(arr[...,None],3,axis=-1)
+        out=Path(out_path); out.parent.mkdir(parents=True, exist_ok=True)
+        imageio.mimsave(str(out), list(arr), fps=float(fps or 16))
+        if out.exists() and out.stat().st_size > 0 and probe_video(out).get('ok'):
+            return True
+        if out.exists():
+            out.unlink(missing_ok=True)
+    except Exception:
+        pass
+    try:
+        import numpy as np  # type: ignore
+
+        arr=np.asarray(frames)
+        if arr.ndim < 3 or len(arr)==0:
+            return False
+        if arr.dtype != np.uint8:
+            arr=np.clip(arr,0,255).astype('uint8')
+        if arr[0].ndim == 2:
+            arr=np.repeat(arr[...,None],3,axis=-1)
+        h,w=arr[0].shape[:2]
+        out=Path(out_path); out.parent.mkdir(parents=True, exist_ok=True)
+        raw=arr[..., :3].copy().tobytes()
+        for codec_args in (['-vcodec','libx264','-pix_fmt','yuv420p'], ['-vcodec','mpeg4','-pix_fmt','yuv420p']):
+            if out.exists():
+                out.unlink(missing_ok=True)
+            cmd=[
+                'ffmpeg','-y',
+                '-f','rawvideo',
+                '-vcodec','rawvideo',
+                '-s',f'{w}x{h}',
+                '-pix_fmt','rgb24',
+                '-r',str(float(fps or 16)),
+                '-i','-',
+                '-an',
+                *codec_args,
+                str(out),
+            ]
+            pr=subprocess.run(cmd,input=raw,capture_output=True,timeout=300)
+            if pr.returncode==0 and out.exists() and out.stat().st_size > 0 and probe_video(out).get('ok'):
+                return True
+        return False
     except Exception:
         return False
 

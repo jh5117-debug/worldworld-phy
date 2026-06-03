@@ -415,3 +415,36 @@ display `:8` appears to be configured on GPU0, while the current task only
 allows GPU6/7. Therefore 1-sample actual TDW generation must wait for either a
 GPU6/7 TDW display or explicit user approval. This does not change DPO gates:
 real DPO training remains `no`.
+
+## Accelerated TDW / DPO Gate Update
+
+After explicit one-sample approval for GPU0-bound `DISPLAY=:8`, one
+`warmup_mild` TDW sample was generated and validated:
+
+- HDF5: `local_assets/data/physion/generated_v2/raw_hdf5/warmup_mild_1samples/00000_drop_orbit_left_12_seed10000/0000.hdf5`
+- template / camera: `drop` / `orbit_left_12`
+- frame count: `83`
+- target visible ratio: `1.0`
+- max invisible frames: `0`
+- camera path length: `0.5927`
+- RGB/depth/id/camera/object state: present
+- suitable for warmup: yes
+
+LingBot camera arrays converted with `use_action=false` and dummy action, but
+the converted `target.mp4` still needs a probe-confirmed writer fix. Therefore:
+
+| Gate | Status |
+|---|---|
+| TDW 1-sample HDF5 | passed |
+| TDW 1-sample validation | passed |
+| TDW LingBot conversion | partial |
+| TDW 10-sample smoke | not run; GPU0 approval required |
+| TDW 50-sample validation | not run |
+| DPO fast signal sweep | implemented, not completed on GPU |
+| 5-pair tiny overfit | no-go |
+| real DPO training | no |
+
+The new `dpo_signal_sensitivity_fast` mode reuses policy/reference model loads
+for fixed-noise LR sweeps, but the GPU run did not complete in this pass due
+remote access instability. Pair-count expansion remains blocked until the signal
+gate is actually measured.

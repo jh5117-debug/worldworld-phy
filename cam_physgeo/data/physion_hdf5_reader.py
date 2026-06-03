@@ -168,11 +168,17 @@ def read_physion_sample(
             if obj is not None:
                 object_positions.append(np.asarray(obj))
         if rgb:
-            result["rgb"] = np.stack(rgb)
+            result["rgb"] = _stack_same_shape(rgb)
+            if result["rgb"] is None:
+                result["metadata"]["rgb_stack_skipped"] = "decoded RGB frames had inconsistent shapes"
         if depth:
-            result["depth"] = np.stack(depth)
+            result["depth"] = _stack_same_shape(depth)
+            if result["depth"] is None:
+                result["metadata"]["depth_stack_skipped"] = "decoded depth frames had inconsistent shapes"
         if ids:
-            result["id_mask"] = np.stack(ids)
+            result["id_mask"] = _stack_same_shape(ids)
+            if result["id_mask"] is None:
+                result["metadata"]["id_mask_stack_skipped"] = "decoded ID frames had inconsistent shapes"
         if poses:
             result["camera_pose"] = np.stack(poses)
         elif positions and aims:
@@ -186,7 +192,11 @@ def read_physion_sample(
             result["intrinsics"] = np.stack([intrinsics_from_projection(p, width=None, height=None) for p in projections])
             result["metadata"]["intrinsics_source"] = "hdf5" if mapping.get("intrinsics_key") else "projection_matrix"
         if object_positions:
-            result["object_states"] = {"positions": np.stack(object_positions)}
+            stacked_objects = _stack_same_shape(object_positions)
+            if stacked_objects is not None:
+                result["object_states"] = {"positions": stacked_objects}
+            else:
+                result["metadata"]["object_state_stack_skipped"] = "object position arrays had inconsistent shapes"
     if result["camera_pose"] is None:
         result["metadata"]["camera_metadata_missing"] = True
     return result
@@ -203,6 +213,13 @@ def decode_image_array(arr: Any) -> np.ndarray:
                 if decoded.ndim == 3:
                     decoded = cv2.cvtColor(decoded, cv2.COLOR_BGR2RGB)
                 return decoded
+        except Exception:
+            pass
+        try:
+            from PIL import Image
+
+            image = Image.open(io.BytesIO(arr.tobytes()))
+            return np.asarray(image.convert("RGB"))
         except Exception:
             pass
     return arr
@@ -272,3 +289,13 @@ def _reshape_matrix(arr: Any) -> np.ndarray:
     if mat.shape == (16,):
         mat = mat.reshape(4, 4)
     return mat
+
+
+def _stack_same_shape(values: list[Any]) -> np.ndarray | None:
+    arrays = [np.asarray(v) for v in values]
+    if not arrays:
+        return None
+    first_shape = arrays[0].shape
+    if any(arr.shape != first_shape for arr in arrays):
+        return None
+    return np.stack(arrays)

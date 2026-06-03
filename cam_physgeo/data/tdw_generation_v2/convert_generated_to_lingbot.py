@@ -1,24 +1,161 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
+from types import SimpleNamespace
+from typing import Any
+
+from cam_physgeo.data.convert_to_lingbot_cam_inputs import convert_sample
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Plan conversion of generated TDW v2 samples to LingBot cam-only inputs.")
+def _bool_arg(value: str | bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in {"1", "true", "yes", "y"}
+
+
+def _latest_validation_json(root: Path) -> Path | None:
+    candidates = sorted((root / "reports").glob("validation_*.json"))
+    if not candidates:
+        return None
+    preferred = [
+        root / "reports" / "validation_50sample.json",
+        root / "reports" / "validation_10sample.json",
+        root / "reports" / "validation_1sample.json",
+    ]
+    for path in preferred:
+        if path.exists():
+            return path
+    return candidates[-1]
+
+
+def _camera_variant_from_dir(name: str) -> str | None:
+    parts = name.split("_")
+    if len(parts) < 4:
+        return None
+    if "seed" in parts:
+        seed_idx = parts.index("seed")
+        return "_".join(parts[2:seed_idx]) or None
+    for idx, part in enumerate(parts):
+        if part.startswith("seed"):
+            return "_".join(parts[2:idx]) or None
+    return "_".join(parts[2:-1]) or None
+
+
+def _template_from_dir(name: str) -> str | None:
+    parts = name.split("_")
+    return parts[1] if len(parts) >= 2 else None
+
+
+def _accepted_rows(root: Path, *, only_accepted: bool) -> tuple[list[dict[str, Any]], Path | None]:
+    validation_path = _latest_validation_json(root)
+    if validation_path is None:
+        return [], None
+    payload = json.loads(validation_path.read_text(encoding="utf-8"))
+    rows = []
+    for row in payload.get("rows", []):
+        visible = row.get("target_visible_ratio")
+        max_invisible = row.get("target_disappeared_consecutive_max")
+        accepted = (
+            row.get("status") == "ok"
+            and row.get("has_rgb")
+            and row.get("has_depth")
+            and row.get("has_id")
+            and row.get("has_camera_pose")
+            and row.get("has_projection_or_camera_matrix")
+            and row.get("has_object_state")
+            and (visible is None or float(visible) >= 0.75)
+            and (max_invisible is None or int(max_invisible) <= 20)
+        )
+        if only_accepted and not accepted:
+            continue
+        row = dict(row)
+        row["accepted_for_warmup"] = bool(accepted)
+        rows.append(row)
+    return rows, validation_path
+
+
+def _sample_from_validation_row(row: dict[str, Any]) -> dict[str, Any]:
+    hdf5_path = Path(str(row["path"]))
+    trial_name = hdf5_path.parent.name
+    sample_id = f"tdw_v2_{trial_name}_{hdf5_path.stem}"
+    template = _template_from_dir(trial_name)
+    camera_variant = _camera_variant_from_dir(trial_name)
+    return {
+        "sample_id": sample_id,
+        "source": "tdw_generated_v2",
+        "hdf5_path": str(hdf5_path),
+        "template": template,
+        "camera_variant": camera_variant,
+        "camera_profile": "warmup_mild",
+        "has_depth": bool(row.get("has_depth")),
+        "has_id_mask": bool(row.get("has_id")),
+        "has_camera_pose": bool(row.get("has_camera_pose")),
+        "has_intrinsics": bool(row.get("has_projection_or_camera_matrix")),
+        "has_object_state": bool(row.get("has_object_state")),
+        "target_visible_ratio": row.get("target_visible_ratio"),
+        "target_disappeared_consecutive_max": row.get("target_disappeared_consecutive_max"),
+        "camera_path_length": row.get("camera_path_length"),
+        "contact_sheet_path": row.get("contact_sheet_path"),
+        "prompt_path": "generated://tdw_v2_warmup_mild",
+    }
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description="Convert accepted generated TDW v2 samples to LingBot cam-only inputs.")
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--only_accepted", type=_bool_arg, default=True)
+    parser.add_argument("--num_frames", type=int, default=81)
+    parser.add_argument("--fps", type=int, default=16)
+    parser.add_argument("--size", default="480x832")
+    parser.add_argument("--use_action", type=_bool_arg, default=False)
+    parser.add_argument("--make_dummy_action", type=_bool_arg, default=True)
+    parser.add_argument("--prompt-level", default="P1", choices=["P0", "P1", "P2"])
     parser.add_argument("--dry-run", action="store_true")
-    args = parser.parse_args()
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(
-        "# TDW Generation v2 LingBot Conversion Plan\n\n"
-        f"Root: `{args.root}`\n\n"
-        f"Dry run: {args.dry_run}\n\n"
-        "Conversion is intentionally gated behind HDF5 validation and filtering. Expected output fields: target.mp4, first_frame.png, prompt.txt, poses.npy, intrinsics.npy, dummy action.npy with use_action=false.\n",
-        encoding="utf-8",
+    args = parser.parse_args(argv)
+    if args.use_action:
+        raise SystemExit("TDW v2 cam-only conversion requires --use_action false; action.npy is dummy fallback only.")
+    rows, validation_path = _accepted_rows(args.root, only_accepted=bool(args.only_accepted))
+    args.out.mkdir(parents=True, exist_ok=True)
+    convert_args = SimpleNamespace(
+        dry_run=bool(args.dry_run),
+        source="",
+        num_frames=int(args.num_frames),
+        fps=int(args.fps),
+        size=str(args.size),
+        use_action=False,
+        make_dummy_action=bool(args.make_dummy_action),
+        prefix_frames=0,
+        prompt_level=args.prompt_level,
+        link_mode="copy",
     )
-    print({"out": str(args.out), "dry_run": args.dry_run})
+    converted = []
+    errors = []
+    for row in rows:
+        sample = _sample_from_validation_row(row)
+        try:
+            converted.append(convert_sample(sample, args.out, convert_args))
+        except Exception as exc:
+            errors.append({"sample_id": sample.get("sample_id"), "hdf5_path": sample.get("hdf5_path"), "error": repr(exc)})
+    summary = {
+        "root": str(args.root),
+        "out": str(args.out),
+        "validation_json": str(validation_path) if validation_path else None,
+        "only_accepted": bool(args.only_accepted),
+        "converted_count": len(converted),
+        "error_count": len(errors),
+        "converted": converted,
+        "errors": errors,
+        "use_action": False,
+        "dummy_action": bool(args.make_dummy_action),
+        "required_files": ["image.jpg", "target.mp4", "poses.npy", "intrinsics.npy", "prompt.txt", "metadata.json", "action.npy"],
+    }
+    (args.out / "conversion_summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(json.dumps(summary, indent=2, ensure_ascii=False))
+    return 0 if not errors else 2
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

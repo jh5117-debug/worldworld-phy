@@ -155,9 +155,29 @@ This PRD adds the v2 spec and wrapper/validator skeleton. Stage 0 dry-run planni
 - banned: lookaway, offscreen, reobserve, relative-yaw-180, occluder, extreme camera motions;
 - dry-run plan check: 10 planned trials, `bad_count=0`.
 
-Actual TDW generation is still blocked until the TDW display/GPU routing is approved or moved to GPU6/7. The observed TDW display `:8` is configured through a GPU0 Xorg config, while this round only permits GPU6/7.
+Actual TDW generation has now passed for exactly one user-approved GPU0-bound
+`DISPLAY=:8` sample:
 
-No 1/10/50 new TDW samples have been generated yet in this mild-smoke round. This is a safety gate, not a fake success.
+| Item | Value |
+|---|---|
+| generated count | 1 |
+| HDF5 | `local_assets/data/physion/generated_v2/raw_hdf5/warmup_mild_1samples/00000_drop_orbit_left_12_seed10000/0000.hdf5` |
+| template | `drop` |
+| camera variant | `orbit_left_12` |
+| frame count | 83 |
+| RGB/depth/id/camera/object state | present |
+| target visible ratio | 1.0 |
+| max invisible frames | 0 |
+| camera path length | 0.5927 |
+| suitable for warmup | yes |
+
+LingBot cam-only camera arrays were converted for this sample, with
+`use_action=false` and dummy zero `action.npy`. The `target.mp4` writer/probe is
+still partial and must be fixed before the converted sample is considered fully
+ready for LingBot warmup.
+
+No 10/50 samples were generated. Multi-sample use of GPU0-bound `DISPLAY=:8`
+requires separate user approval.
 
 The display-routing audit found Xvfb displays `:9` to `:13`, but these are Mesa llvmpipe software displays, not GPU6/7 TDW Xorg displays. They do not prove TDW/Unity generation is safe in CPU/headless mode.
 
@@ -168,11 +188,11 @@ Representative existing videos and new generation deliverables are indexed under
 
 ## 11. Next Plan
 
-- Run short fixed-noise LR/scope sweep for DPO signal sensitivity.
-- If signal improves, run 5-pair tiny overfit only after explicit approval.
-- Complete TDW generation v2 mild-only support and run 1 -> 10 -> 50 staged generation.
-- Resolve TDW display/GPU routing before actual v2 smoke generation.
-- The user approved exactly one GPU0-bound `warmup_mild` smoke, but that run failed before TDW/Unity generated a scene due runtime-wrapper startup issues. No generated sample exists yet; another actual sample retry requires user confirmation.
+- Finish probe-confirmed `target.mp4` writing for the accepted 1-sample.
+- Run short fixed-noise LR/scope sweep for DPO signal sensitivity once SSH/GPU access is stable.
+- If signal improves, run 5-pair tiny overfit only after the go/no-go gate is updated.
+- Ask for explicit approval before GPU0-bound 10-sample TDW smoke, or configure a GPU6/7 TDW display.
+- Continue TDW generation v2 as staged 1 -> 10 -> 50 -> 200 -> 1k+, never directly full scale.
 - Use `warmup_mild` for later LingBot-Fast camera-conditioned warmup.
 - After enough data exists, use reward to choose top/bottom winner-loser pairs for DPO.
 - Full TDW generation and real DPO training remain disallowed until gates pass.

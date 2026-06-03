@@ -2,56 +2,68 @@
 
 ## Status
 
-Failed before TDW/Unity sample generation. No HDF5, MP4, or contact sheet was produced.
+Passed for actual TDW generation and HDF5 validation.
 
-## Reason
+This run used the user-approved GPU0-bound `DISPLAY=:8` for exactly one
+`warmup_mild` sample. No 10-sample or 50-sample generation was run.
 
-The user explicitly approved `DISPLAY=:8` / GPU0 for exactly one `warmup_mild` sample smoke. The display guard accepted the run with `allow_unapproved_gpu=true` and `gpu_confirmation_token_ok=true`.
+## Generation Command
 
-The command then failed before TDW/Unity scene generation due wrapper startup issues:
+```bash
+bash scripts/31_run_tdw_generation_v2_smoke.sh \
+  --profile warmup_mild \
+  --num_trials 1 \
+  --out_root local_assets/data/physion/generated_v2 \
+  --display :8 \
+  --allowed_gpu_ids 6,7 \
+  --allow_unapproved_gpu \
+  --gpu_confirmation_token USER_CONFIRMED_UNAPPROVED_GPU \
+  --no_overwrite
+```
 
-1. relative wrapper path was invalid after subprocess cwd changed to the upstream TDW workspace;
-2. generated wrapper source embedded JSON `false` instead of Python `False`.
+## Output
 
-Both were code-side wrapper blockers, not data validation failures.
-
-## Planned 1-Sample Settings
-
-- profile: `warmup_mild`
-- camera set: `warmup_mild`
-- allowed variants: `orbit_left_12`, `orbit_right_12`, `strafe_left_025`, `strafe_right_025`, `dolly_in_010`, `dolly_out_010`
-- banned variants: lookaway/offscreen/reobserve/extreme
-- output root: `local_assets/data/physion/generated_v2`
-
-## Generated Artifacts
-
-None. `find` found no `.hdf5`, `.h5`, `.mp4`, `.jpg`, or `.png` generated under the v2 output root for this sample.
+| Item | Value |
+|---|---|
+| Status | passed |
+| Profile | `warmup_mild` |
+| Template | `drop` |
+| Camera variant | `orbit_left_12` |
+| Display | `:8` |
+| Detected GPU | GPU0 |
+| HDF5 | `local_assets/data/physion/generated_v2/raw_hdf5/warmup_mild_1samples/00000_drop_orbit_left_12_seed10000/0000.hdf5` |
+| HDF5 size | about 89 MB |
+| MP4 from generation | not emitted by upstream runner |
+| Contact sheet | `local_assets/data/physion/generated_v2/reports/contact_sheets/00000_drop_orbit_left_12_seed10000_0000_contact_sheet.jpg` |
 
 ## Validation
 
-Validator was run after the blocked gate and found no generated HDF5 files:
+Validated with the TDW environment Python because the system Python did not
+have `h5py`.
 
-- HDF5 count: 0
-- validation ok count: 0
-- suitable for warmup: 0
+| Check | Result |
+|---|---|
+| HDF5 count | 1 |
+| Validation ok count | 1 |
+| Suitable for warmup count | 1 |
+| Frame count | 83 |
+| RGB `_img` | true |
+| `_depth` | true |
+| `_id` | true |
+| `camera_pose` | true |
+| `camera_position` / `camera_aim` | true |
+| projection / camera matrix | true |
+| object state | true |
+| target visible ratio | 1.0 |
+| max consecutive invisible frames | 0 |
+| camera path length | 0.5927 |
 
-Validation report path on H20:
+## Interpretation
 
-- `local_assets/data/physion/generated_v2/reports/validation_1sample.md`
+This sample is a valid Physion-style TDW simulated clean GT sample. It uses the
+new mild camera set, keeps the target visible for all frames, and is suitable
+for warmup validation.
 
-## GPU Usage
-
-The first display gate recorded:
-
-- `tdw_display`: `:8`
-- `tdw_display_gpu_index`: 0
-- allowed GPU indices: `[6, 7]`
-- user approval token: later set to `USER_CONFIRMED_UNAPPROVED_GPU`
-
-After approval, the display guard no longer blocked GPU0. The run still failed before scene generation because of the wrapper issues above.
-
-Follow-up display audit found Xvfb displays `:9` to `:13`, but no GPU6/7 Xorg display. `:9` uses Mesa llvmpipe and is not yet a confirmed TDW/Unity CPU/headless generation path.
-
-## Continue To 10-Sample?
-
-No. 10-sample smoke remains skipped until a 1-sample actual generation completes and passes validation, and until the user explicitly confirms the next stage.
+10-sample smoke was not run in this pass because the current available TDW
+display is still GPU0-bound and multi-sample GPU0 use requires separate user
+approval.
