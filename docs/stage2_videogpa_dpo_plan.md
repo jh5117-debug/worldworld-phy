@@ -448,3 +448,37 @@ The new `dpo_signal_sensitivity_fast` mode reuses policy/reference model loads
 for fixed-noise LR sweeps, but the GPU run did not complete in this pass due
 remote access instability. Pair-count expansion remains blocked until the signal
 gate is actually measured.
+## 2026-06-04 Gate Update: TDW Conversion + DPO Signal
+
+Gate A: passed.
+
+Gate B: passed.
+
+Gate C: partial/pass.
+
+Gate D: partial/pass.
+
+Gate E:
+
+| Component | Status |
+|---|---|
+| VideoGPA pair/metadata dry-run | passed |
+| LingBot latent encode | passed |
+| Condition encode | passed |
+| Batch shape | passed |
+| Policy energy | passed |
+| Reference energy | passed |
+| DPO scalar loss | passed |
+| Backward-only | passed |
+| Tiny camera-control LoRA backward-only | passed |
+| 1-pair optimizer-step dry-run | passed |
+| 1-pair mini-loop | passed |
+| Fixed-noise diagnostic | stable but weak |
+| `dpo_signal_sensitivity_fast` | runtime blocker; no completed LR summary |
+| 5-pair tiny overfit | no-go |
+
+Gate F:
+
+Real DPO training: still no.
+
+Next allowed DPO action: fix signal runner/runtime or target scope. Do not run 5-pair, 10-pair, or real training until signal gate passes.

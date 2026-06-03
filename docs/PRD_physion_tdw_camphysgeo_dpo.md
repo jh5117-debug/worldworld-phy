@@ -171,10 +171,9 @@ Actual TDW generation has now passed for exactly one user-approved GPU0-bound
 | camera path length | 0.5927 |
 | suitable for warmup | yes |
 
-LingBot cam-only camera arrays were converted for this sample, with
-`use_action=false` and dummy zero `action.npy`. The `target.mp4` writer/probe is
-still partial and must be fixed before the converted sample is considered fully
-ready for LingBot warmup.
+LingBot cam-only camera arrays and `target.mp4` were converted for this sample,
+with `use_action=false` and dummy zero `action.npy`. The `target.mp4` writer/probe
+now passes and the converted sample is ready for LingBot warmup inspection.
 
 No 10/50 samples were generated. Multi-sample use of GPU0-bound `DISPLAY=:8`
 requires separate user approval.
@@ -196,3 +195,16 @@ Representative existing videos and new generation deliverables are indexed under
 - Use `warmup_mild` for later LingBot-Fast camera-conditioned warmup.
 - After enough data exists, use reward to choose top/bottom winner-loser pairs for DPO.
 - Full TDW generation and real DPO training remain disallowed until gates pass.
+## 2026-06-04 TDW Conversion + DPO Signal Finalize Update
+
+- TDW v2 `warmup_mild` 1-sample HDF5 validation passed.
+- Accepted sample: `00000_drop_orbit_left_12_seed10000`, template `drop`, camera variant `orbit_left_12`.
+- LingBot cam-only conversion now passed for the accepted sample.
+- `target.mp4` probe passed: 81 frames, 16 fps, 832x480.
+- `poses.npy` and `intrinsics.npy` are `(81, 4, 4)`.
+- `action.npy` is dummy zero, norm `0.0`; `metadata.json` keeps `use_action=false`.
+- Video deliverables were updated under `local_assets/reports/tdw_video_deliverables/`.
+- 10-sample TDW smoke was not run. It requires a new user approval because the available TDW display is still GPU0-bound `DISPLAY=:8`.
+- DPO `dpo_signal_sensitivity_fast` was launched on GPU6/7 but did not produce a complete LR sweep in the safe runtime window. It was interrupted and recorded as a runtime blocker.
+- 5-pair tiny overfit remains no-go.
+- Real DPO training remains no.

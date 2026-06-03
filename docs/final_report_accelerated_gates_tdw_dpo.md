@@ -123,3 +123,16 @@ Gate decision:
    stable nonzero `Delta_policy` movement.
 5. Full TDW generation and real DPO training remain blocked until staged gates
    pass and the user explicitly approves.
+## 2026-06-04 Follow-up: Conversion Probe + DPO Signal
+
+TDW 1-sample conversion was finalized:
+
+- `target.mp4` probe passed with 81 frames, 16 fps, 832x480.
+- LingBot cam-only output includes `image.jpg`, `target.mp4`, `poses.npy`, `intrinsics.npy`, `prompt.txt`, `metadata.json`, dummy `action.npy`, `depth.npy`, and `id_mask.npy`.
+- `use_action=false` remains enforced.
+
+TDW 10-sample was not run because the available TDW display is GPU0-bound `DISPLAY=:8`; the previous user approval covered one sample only.
+
+DPO signal fast sweep was attempted on GPU6/7. It loaded the model and entered the diagnostic path but did not complete a usable LR summary in the safe runtime window. The process was interrupted and the signal gate remains no-go.
+
+No training, no DPO training, no VideoGPA `03_train.py`, no Stage1, no LingBot rollout, no reward calibration, and no 10/50 TDW generation were run.

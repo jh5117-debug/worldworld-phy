@@ -17,7 +17,9 @@ approval was consumed by the successful 1-sample smoke.
 - Target visible ratio: `1.0`.
 - Max invisible frames: `0`.
 - Camera path length: `0.5927`.
-- LingBot camera arrays converted, but target MP4 probe still needs final fix.
+- LingBot cam-only conversion now passed.
+- `target.mp4` probe passed: 81 frames, 16 fps, 832x480.
+- `metadata.json` keeps `use_action=false`; `action.npy` is dummy zero, norm `0.0`.
 
 ## Requested Command
 
@@ -48,8 +50,8 @@ bash scripts/31_run_tdw_generation_v2_smoke.sh \
 ## Alternatives
 
 1. Configure a TDW display on GPU6/7 and run 10-sample there.
-2. Finish MP4 conversion/probe first, then request 10-sample.
-3. Pause TDW generation and continue DPO signal diagnostics on GPU6/7 only.
+2. Pause TDW generation and continue DPO signal diagnostics on GPU6/7 only.
+3. Keep only the accepted 1-sample for presentation/warmup inspection.
 
 ## Required User Choice
 

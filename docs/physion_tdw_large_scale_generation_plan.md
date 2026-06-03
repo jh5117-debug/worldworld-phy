@@ -177,3 +177,20 @@ The LingBot cam-only conversion is partial because the target MP4 still needs a
 probe-confirmed writer fix. Therefore 10/50 generation remains disallowed until
 the user explicitly approves 10-sample GPU0 use or a GPU6/7 TDW display is
 available.
+## 2026-06-04 TDW v2 Staging Update
+
+Current generated-v2 status:
+
+- `warmup_mild` 1-sample generation: passed.
+- HDF5 validation: passed.
+- LingBot cam-only conversion: passed.
+- `target.mp4` probe: passed.
+- 10-sample smoke: not run; requires explicit user approval if using GPU0-bound `DISPLAY=:8`.
+- 50/200/1k generation: not allowed yet.
+
+The accepted 1-sample is suitable for warmup inspection, but it is not enough for training or dataset-scale decisions. The next data action must be either:
+
+1. configure a TDW display on GPU6/7 and run 10-sample smoke there; or
+2. get explicit user approval to use GPU0-bound `DISPLAY=:8` for exactly 10 `warmup_mild` samples.
+
+No full generation should start before 10-sample and 50-sample staged validation.

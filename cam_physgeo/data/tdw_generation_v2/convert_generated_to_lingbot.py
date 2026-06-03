@@ -113,6 +113,8 @@ def main(argv=None) -> int:
     parser.add_argument("--use_action", type=_bool_arg, default=False)
     parser.add_argument("--make_dummy_action", type=_bool_arg, default=True)
     parser.add_argument("--prompt-level", default="P1", choices=["P0", "P1", "P2"])
+    parser.add_argument("--force_rewrite_video", type=_bool_arg, default=False)
+    parser.add_argument("--probe_video", type=_bool_arg, default=False)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
     if args.use_action:
@@ -130,6 +132,8 @@ def main(argv=None) -> int:
         prefix_frames=0,
         prompt_level=args.prompt_level,
         link_mode="copy",
+        force_rewrite_video=bool(args.force_rewrite_video),
+        probe_video=bool(args.probe_video),
     )
     converted = []
     errors = []
@@ -150,6 +154,8 @@ def main(argv=None) -> int:
         "errors": errors,
         "use_action": False,
         "dummy_action": bool(args.make_dummy_action),
+        "force_rewrite_video": bool(args.force_rewrite_video),
+        "probe_video": bool(args.probe_video),
         "required_files": ["image.jpg", "target.mp4", "poses.npy", "intrinsics.npy", "prompt.txt", "metadata.json", "action.npy"],
     }
     (args.out / "conversion_summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")

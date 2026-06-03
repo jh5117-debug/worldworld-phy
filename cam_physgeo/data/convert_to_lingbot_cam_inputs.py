@@ -39,6 +39,13 @@ def convert_sample(sample: dict, out_root: Path, args) -> dict:
     hdf5_payload = None
     target_video = out_dir / "target.mp4"
     image_path = out_dir / "image.jpg"
+    if bool(getattr(args, "force_rewrite_video", False)) and not dry:
+        for path in (target_video, image_path):
+            try:
+                if path.exists() or path.is_symlink():
+                    path.unlink()
+            except FileNotFoundError:
+                pass
     if sample.get("video_path"):
         link_or_copy(sample["video_path"], target_video, args.link_mode, dry)
         extract_first_frame(sample["video_path"], image_path, dry_run=dry)
@@ -62,18 +69,21 @@ def convert_sample(sample: dict, out_root: Path, args) -> dict:
 
     prompt = read_prompt(sample) or build_prompt(sample, args.prompt_level)
     if not dry:
+        video_probe = probe_video(sample.get("video_path") or target_video)
         (out_dir / "prompt.txt").write_text(prompt + "\n", encoding="utf-8")
         meta = dict(sample)
         meta.update(
             {
                 "use_action": False,
                 "dummy_action": bool(args.make_dummy_action),
+                "force_rewrite_video": bool(getattr(args, "force_rewrite_video", False)),
+                "probe_video_requested": bool(getattr(args, "probe_video", False)),
                 "prompt_level": args.prompt_level,
                 "target_num_frames": args.num_frames,
                 "target_fps": args.fps,
                 "target_size": args.size,
                 "input_mode": "v2v_prefix" if int(args.prefix_frames or 0) > 0 else "i2v_first_frame",
-                "video_probe": probe_video(sample.get("video_path") or target_video),
+                "video_probe": video_probe,
                 "camera_metadata_source": camera_metadata_source(sample, hdf5_payload),
                 "intrinsics_source": intrinsics_source(sample, hdf5_payload),
                 "lingbot_intrinsics_runtime": lingbot_intrinsics_runtime_metadata(out_dir, args),
@@ -84,6 +94,8 @@ def convert_sample(sample: dict, out_root: Path, args) -> dict:
         write_json(meta, out_dir / "metadata.json")
         if args.make_dummy_action:
             write_dummy_action(out_dir / "action.npy", args.num_frames)
+        if bool(getattr(args, "probe_video", False)) and not video_probe.get("ok"):
+            raise RuntimeError(f"target.mp4 probe failed for {target_video}: {video_probe}")
     return {"sample_id": sample_id, "out_dir": str(out_dir)}
 
 
