@@ -102,3 +102,5 @@ Every stage should output a validation report, contact sheet, storage estimate, 
 The `warmup_mild` plan dry-run is valid and contains no stress/reobserve variants. Actual TDW generation is gated on TDW display/GPU routing because the observed display `:8` appears to be configured on GPU0, while the current task only permits GPU6/7.
 
 The wrapper now includes a display guard. A generation command must specify or inherit a display whose GPU is either detected as GPU6/7 or explicitly approved by the user. Unknown displays and GPU0-bound displays are blocked by default.
+
+The approved GPU0 one-sample smoke did not produce data because the runtime wrapper failed before scene generation. No generated v2 sample should be treated as accepted until HDF5 validation succeeds.

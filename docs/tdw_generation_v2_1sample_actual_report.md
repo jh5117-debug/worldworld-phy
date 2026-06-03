@@ -2,13 +2,18 @@
 
 ## Status
 
-Blocked. No TDW/Unity actual sample was generated in this run.
+Failed before TDW/Unity sample generation. No HDF5, MP4, or contact sheet was produced.
 
 ## Reason
 
-The `warmup_mild` plan is now valid and stress-free, but actual TDW generation requires the configured display `:8`. The H20 process audit showed `:8` is configured through `tdw-xorg-gpu0.conf`, which likely uses GPU0. This task only allows GPU6/7 for smoke work and requires stopping before any non-6/7 GPU use.
+The user explicitly approved `DISPLAY=:8` / GPU0 for exactly one `warmup_mild` sample smoke. The display guard accepted the run with `allow_unapproved_gpu=true` and `gpu_confirmation_token_ok=true`.
 
-Remote SSH was intermittent during syncing, but the remote actual-generation gate was eventually executed. The gate returned `status=blocked` before launching Unity.
+The command then failed before TDW/Unity scene generation due wrapper startup issues:
+
+1. relative wrapper path was invalid after subprocess cwd changed to the upstream TDW workspace;
+2. generated wrapper source embedded JSON `false` instead of Python `False`.
+
+Both were code-side wrapper blockers, not data validation failures.
 
 ## Planned 1-Sample Settings
 
@@ -20,7 +25,7 @@ Remote SSH was intermittent during syncing, but the remote actual-generation gat
 
 ## Generated Artifacts
 
-None.
+None. `find` found no `.hdf5`, `.h5`, `.mp4`, `.jpg`, or `.png` generated under the v2 output root for this sample.
 
 ## Validation
 
@@ -36,17 +41,17 @@ Validation report path on H20:
 
 ## GPU Usage
 
-Actual TDW/Unity generation was not started. The gate report recorded:
+The first display gate recorded:
 
 - `tdw_display`: `:8`
 - `tdw_display_gpu_index`: 0
 - allowed GPU indices: `[6, 7]`
-- blocked reason: display GPU0 is outside the allowed GPU set.
+- user approval token: later set to `USER_CONFIRMED_UNAPPROVED_GPU`
 
-A GPU approval/display request was written to `docs/gpu_usage_approval_request.md`.
+After approval, the display guard no longer blocked GPU0. The run still failed before scene generation because of the wrapper issues above.
 
 Follow-up display audit found Xvfb displays `:9` to `:13`, but no GPU6/7 Xorg display. `:9` uses Mesa llvmpipe and is not yet a confirmed TDW/Unity CPU/headless generation path.
 
 ## Continue To 10-Sample?
 
-No. 10-sample smoke remains skipped until the 1-sample actual generation passes validation.
+No. 10-sample smoke remains skipped until a 1-sample actual generation completes and passes validation, and until the user explicitly confirms the next stage.

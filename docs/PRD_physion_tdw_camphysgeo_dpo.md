@@ -172,7 +172,7 @@ Representative existing videos and new generation deliverables are indexed under
 - If signal improves, run 5-pair tiny overfit only after explicit approval.
 - Complete TDW generation v2 mild-only support and run 1 -> 10 -> 50 staged generation.
 - Resolve TDW display/GPU routing before actual v2 smoke generation.
-- If the user approves GPU0, run exactly one `warmup_mild` sample first; otherwise configure GPU6/7 display before generation.
+- The user approved exactly one GPU0-bound `warmup_mild` smoke, but that run failed before TDW/Unity generated a scene due runtime-wrapper startup issues. No generated sample exists yet; another actual sample retry requires user confirmation.
 - Use `warmup_mild` for later LingBot-Fast camera-conditioned warmup.
 - After enough data exists, use reward to choose top/bottom winner-loser pairs for DPO.
 - Full TDW generation and real DPO training remain disallowed until gates pass.

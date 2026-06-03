@@ -158,3 +158,13 @@ No actual TDW sample should be generated until one of these happens:
 1. a GPU6/7 TDW Xorg display is provided;
 2. the user explicitly approves one GPU0-bound 1-sample smoke;
 3. TDW headless/CPU mode is separately validated.
+
+## GPU0 One-Sample Approval Result
+
+The user approved exactly one GPU0-bound `DISPLAY=:8` `warmup_mild` smoke. The run failed before TDW/Unity generated a scene:
+
+- first blocker: runtime wrapper path was relative;
+- second blocker: generated Python wrapper used JSON `false`;
+- generated sample count: 0.
+
+The code fixes are recorded, but 10/50 generation remains disallowed. A follow-up 1-sample retry requires user confirmation.

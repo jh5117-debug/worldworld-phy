@@ -31,9 +31,10 @@ def _write_mild_batch_wrapper(wrapper_path: Path, batch_runner: Path, variants: 
     wrapper_path.write_text(
         "from __future__ import annotations\n"
         "import importlib.util\n"
+        "import json\n"
         "import sys\n"
         f"BATCH_RUNNER = {str(batch_runner)!r}\n"
-        f"MILD_CAMERA_VARIANTS = {json.dumps(variants, ensure_ascii=False, indent=2)}\n"
+        f"MILD_CAMERA_VARIANTS = json.loads({json.dumps(variants, ensure_ascii=False)!r})\n"
         "spec = importlib.util.spec_from_file_location('tdw_mild_batch_runner', BATCH_RUNNER)\n"
         "if spec is None or spec.loader is None:\n"
         "    raise RuntimeError(f'Cannot import upstream batch runner: {BATCH_RUNNER}')\n"
@@ -150,6 +151,7 @@ def build_existing_batch_command(
 ) -> tuple[list[str], dict]:
     profile = get_profile(config, profile_name)
     validate_profile_camera_set(config, profile)
+    out_root = out_root.resolve()
     workspace = existing_workspace(config)
     runner = workspace / "scripts" / "batch_generate_physion_dpo_conditions.py"
     mild_variants = upstream_camera_mapping(config, profile)

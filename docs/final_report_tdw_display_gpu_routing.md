@@ -81,3 +81,6 @@ Choose one:
 
 Do not run 10/50 samples until one-sample actual generation passes and the user confirms the next stage.
 
+## GPU0 Approval Follow-Up
+
+The user later approved exactly one GPU0-bound 1-sample smoke. The display guard accepted the approval token, but the command failed before TDW/Unity generated a scene due runtime-wrapper startup issues. No data was generated, and no 10/50 stage was started.
