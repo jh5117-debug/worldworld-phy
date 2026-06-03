@@ -482,3 +482,26 @@ Gate F:
 Real DPO training: still no.
 
 Next allowed DPO action: fix signal runner/runtime or target scope. Do not run 5-pair, 10-pair, or real training until signal gate passes.
+
+## 2026-06-04 TDW 10-Sample Data Gate Update
+
+TDW generation side:
+
+| Gate | Status |
+|---|---|
+| warmup_mild plan | passed; bad_count 0 |
+| 1-sample actual | passed |
+| 1-sample LingBot conversion | passed |
+| 10-sample actual | passed |
+| 10-sample validation | passed |
+| 10-sample LingBot conversion | passed |
+| 50-sample | not run; approval required |
+| 200 / 1k+ | no |
+
+DPO side is unchanged:
+
+- `dpo_signal_sensitivity_fast` remains runtime-blocked / incomplete;
+- 5-pair tiny overfit remains no-go;
+- real DPO training remains no.
+
+Data caveat: the 10-sample run generated only `drop` scenes. Template-diverse generation should be fixed or explicitly waived before 50-sample validation.

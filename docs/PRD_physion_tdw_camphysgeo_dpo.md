@@ -208,3 +208,21 @@ Representative existing videos and new generation deliverables are indexed under
 - DPO `dpo_signal_sensitivity_fast` was launched on GPU6/7 but did not produce a complete LR sweep in the safe runtime window. It was interrupted and recorded as a runtime blocker.
 - 5-pair tiny overfit remains no-go.
 - Real DPO training remains no.
+
+## 2026-06-04 TDW v2 10-Sample Warmup Smoke Update
+
+- User explicitly approved GPU0-bound `DISPLAY=:8` for exactly 10 `warmup_mild` samples.
+- 10-sample TDW / Physion-style generation v2 smoke passed.
+- Generated HDF5 count: 10.
+- Validation ok count: 10.
+- Rejected count: 0.
+- Suitable for warmup: 10.
+- target_visible_ratio avg/min/max: 1.0 / 1.0 / 1.0.
+- max invisible frames max: 0.
+- camera_path_length avg/min/max: 0.3575 / 0.1005 / 0.5927.
+- LingBot cam-only conversion passed for all 10 new samples.
+- `target.mp4` probe passed for all 10 converted samples.
+- `metadata.json` keeps `use_action=false`; `action.npy` is dummy zero.
+- No 50/200/1k generation was run.
+
+Important limitation: the actual upstream generation produced only `drop` template samples, even though the dry-run plan requested `drop`, `collision`, `roll`, and `containment`. Before larger validation, we should either fix template coverage or explicitly approve a drop-only 50-sample validation.

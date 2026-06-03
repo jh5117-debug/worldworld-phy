@@ -194,3 +194,27 @@ The accepted 1-sample is suitable for warmup inspection, but it is not enough fo
 2. get explicit user approval to use GPU0-bound `DISPLAY=:8` for exactly 10 `warmup_mild` samples.
 
 No full generation should start before 10-sample and 50-sample staged validation.
+
+## 2026-06-04 10-Sample Warmup Mild Result
+
+The approved GPU0-bound `DISPLAY=:8` 10-sample `warmup_mild` smoke completed successfully:
+
+| Stage | Status |
+|---|---|
+| 1 sample | passed |
+| 10 sample | passed |
+| 50 sample | not run; approval required |
+| 200 / 1k+ | not allowed |
+
+10-sample metrics:
+
+- generated HDF5 count: 10;
+- validation ok: 10;
+- rejected: 0;
+- suitable_for_warmup: 10;
+- target_visible_ratio: 1.0 for all;
+- max invisible frames: 0;
+- converted LingBot cam-only videos: 10;
+- target.mp4 probe passed: 10.
+
+Before 50-sample, resolve or explicitly accept the template coverage issue: this 10-sample run generated only `drop` scenes.

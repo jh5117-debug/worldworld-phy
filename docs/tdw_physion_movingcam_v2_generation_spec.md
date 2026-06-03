@@ -120,3 +120,19 @@ The sample is suitable as a TDW clean-GT warmup candidate at the HDF5 level.
 The LingBot cam-only conversion is partial until `target.mp4` is
 probe-confirmed. Do not proceed to 10/50/200/1k without the staged gate and
 separate GPU approval if using `DISPLAY=:8`.
+## 2026-06-04 10-Sample Smoke Observation
+
+`warmup_mild` camera selection behaved as intended in the approved 10-sample smoke:
+
+- no stress/reobserve camera variants were generated;
+- target visibility stayed at 1.0 for all samples;
+- max invisible frames was 0;
+- camera variants covered orbit, strafe, and dolly mild motions.
+
+However, template coverage did not match the dry-run request. The upstream execution produced only `drop` templates. The v2 wrapper should add a template coverage check before 50-sample validation or larger generation.
+
+Suggested added validator:
+
+- compare requested template distribution vs generated template distribution;
+- fail or warn if non-drop templates are missing;
+- require user confirmation before expanding a drop-only batch.
