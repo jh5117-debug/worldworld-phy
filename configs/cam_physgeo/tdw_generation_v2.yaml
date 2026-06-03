@@ -1,0 +1,94 @@
+# Physion-style TDW moving-camera generation v2 config.
+# Physion is TDW/ThreeDWorld simulation; this is not real-world video data.
+existing_moving_camera_workspace: /home/nvme03/workspace/physion_moving_camera_mainline_20260505
+output_root: local_assets/data/physion/generated_v2
+seed_start: 22000
+display: ":8"
+default_templates: [drop, collision, roll, containment]
+resolution:
+  width: 832
+  height: 480
+frames:
+  max_frames: 81
+  min_frames: 81
+  aligned_frames: 81
+output:
+  require_rgb: true
+  require_depth: true
+  require_id: true
+  require_camera_pose: true
+  require_intrinsics: true
+  require_object_state: true
+profiles:
+  warmup_mild:
+    purpose: LingBot-Fast camera-conditioned warmup with smooth camera motion and visible target.
+    templates: [drop, collision, roll, containment]
+    camera_variants:
+      - name: orbit_left_12
+        motion: orbit
+        yaw_degrees: 12
+        translation: 0.0
+        height_delta: 0.03
+        stress: false
+      - name: strafe_right_025
+        motion: strafe
+        yaw_degrees: 0
+        translation: 0.25
+        height_delta: 0.02
+        stress: false
+    filters:
+      target_visible_ratio_min: 0.75
+      target_area_ratio_min: 0.002
+      max_disappeared_consecutive_frames: 8
+      max_yaw_degrees: 25
+      max_camera_jerk: mild
+      reject_extreme_reobserve: true
+  train_moderate:
+    purpose: Reward/DPO pair pool with moderate camera diversity.
+    templates: [drop, collision, roll, containment]
+    camera_variants:
+      - name: orbit_left_20
+        motion: orbit
+        yaw_degrees: 20
+        translation: 0.0
+        height_delta: 0.04
+        stress: false
+      - name: strafe_right_045
+        motion: strafe
+        yaw_degrees: 0
+        translation: 0.45
+        height_delta: 0.04
+        stress: false
+    filters:
+      target_visible_ratio_min: 0.60
+      max_disappeared_consecutive_frames: 16
+      reject_completely_offscreen: true
+  stress_reobserve:
+    purpose: Test/stress split for reobserve and offscreen recovery; not warmup main data.
+    templates: [drop, collision, roll, containment]
+    camera_variants:
+      - name: relative_yaw_180_reobserve
+        motion: relative_lookaway_return
+        yaw_degrees: 180
+        stress: true
+      - name: offscreen_x_reobserve
+        motion: orbit_lookaway_return
+        yaw_degrees: 28
+        stress: true
+    filters:
+      target_visible_first_segment: true
+      target_visible_reobserve_segment: true
+      allow_offscreen_mid_segment: true
+  camera_only_static:
+    purpose: Camera-following/background-rigidity test with minimal foreground motion.
+    templates: [drop, collision]
+    camera_variants:
+      - name: orbit_left_12
+        motion: orbit
+        yaw_degrees: 12
+        translation: 0.0
+        height_delta: 0.03
+        stress: false
+    filters:
+      foreground_motion: minimal
+      target_visible_ratio_min: 0.85

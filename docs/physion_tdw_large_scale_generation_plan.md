@@ -124,3 +124,12 @@ Generation sources remain:
 - official Physion / `physics-benchmarking-neurips2021`;
 - `tdw_physics` / TDW;
 - project moving-camera extension scripts.
+
+
+## Generation v2 Gate Dependency Update
+
+Large-scale TDW / Physion-style generation is not the immediate next step unless explicitly requested. The project is currently at the staged generation-spec and partial-smoke stage. v2 generation must remain staged: 1 sample -> 10 samples -> 50 validation -> 200 pilot -> 1k+ only after user confirmation.
+
+Warmup data must use mild/smooth camera motion and must reject clips where the target foreground disappears for too long. Strong reobserve and relative-yaw stress clips should remain in a stress/test split, not the main LingBot-Fast warmup split.
+
+Current v2 blocker: the existing upstream batch runner does not expose an explicit mild-only camera-set option. Until this is added, warmup_mild actual generation should remain blocked rather than silently mixing stress/reobserve variants into warmup data.

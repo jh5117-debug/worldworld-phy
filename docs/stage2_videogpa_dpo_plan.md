@@ -390,3 +390,10 @@ remote above. Do not push code, docs, or reports to a remote containing
 `world_model_phys.git`. The helper script
 `scripts/check_github_remote_integrity.sh` performs this check and should be
 used before future push operations.
+
+
+## Current DPO Status Before TDW Generation v2
+
+DPO engineering gates are mostly passed for smoke: VideoGPA pair/metadata dry-run, LingBot latent encode, condition encode, same-noise/same-timestep batch, policy energy, reference energy, scalar DPO loss, LoRA backward, optimizer-step dry-run, and 1-pair mini-loop have all been validated. However, signal sensitivity remains weak, the 5-pair tiny overfit was skipped, and real DPO training is still not allowed.
+
+Before any real training, we need stronger signal through a fixed-noise LR/scope sweep and a better data pool. TDW / Physion-style moving-camera v2 generation is therefore needed for camera-conditioned warmup and later reward-selected top/bottom winner-loser pairs. No VideoGPA 03_train, no Stage1, and no real DPO training should run at this stage.
