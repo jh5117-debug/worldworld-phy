@@ -218,3 +218,25 @@ The approved GPU0-bound `DISPLAY=:8` 10-sample `warmup_mild` smoke completed suc
 - target.mp4 probe passed: 10.
 
 Before 50-sample, resolve or explicitly accept the template coverage issue: this 10-sample run generated only `drop` scenes.
+
+## 2026-06-03 Template Coverage Fix Status
+
+The template coverage issue has been fixed at the wrapper/plan level:
+
+- exact template counts are now supported;
+- manifest-driven execution forces each planned row's template;
+- dry-run plan distribution is `drop:3`, `collision:3`, `roll:2`, `containment:2`;
+- stress/reobserve camera variant count remains zero.
+
+Actual template-diverse 10-sample generation is still pending because it requires the current GPU0-bound TDW display `:8`. The current turn did not include a new GPU0 approval for this actual run.
+
+Large-scale generation readiness:
+
+| Scale | Status |
+|---|---|
+| template-diverse 10 | pending approval |
+| 50 | no-go until template-diverse 10 passes |
+| 200 | no-go |
+| 1k+ | no-go |
+
+Next required user decision: approve GPU0 `DISPLAY=:8` for exactly one template-diverse 10-sample smoke, or configure TDW on GPU6/7.

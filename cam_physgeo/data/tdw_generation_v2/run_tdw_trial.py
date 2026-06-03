@@ -60,6 +60,83 @@ def _upstream_importable_main(runner: Path) -> bool:
         return False
 
 
+def _load_plan(path: Path) -> list[dict]:
+    rows = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    if not rows:
+        raise ValueError(f"Plan is empty: {path}")
+    return rows
+
+
+def _trial_dir_name(index: int, trial: dict) -> str:
+    template = str(trial.get("template") or "unknown")
+    variant = str(trial.get("camera_variant") or "unknown")
+    seed = int(trial.get("seed", index))
+    return f"{index:05d}_{template}_{variant}_seed{seed}"
+
+
+def _plan_output_subdir(profile_name: str, plan_path: Path, num_trials: int) -> str:
+    stem = plan_path.stem
+    if "template_diverse" in stem:
+        return f"{profile_name}_template_diverse_{num_trials}samples"
+    return f"{profile_name}_plan_{num_trials}samples"
+
+
+def _single_trial_command(config: dict, root: Path, output_subdir: str, trial: dict, index: int) -> list[str]:
+    workspace = existing_workspace(config)
+    py = workspace / ".conda_envs" / "tdw-physion" / "bin" / "python3"
+    if not py.exists():
+        py = workspace / ".conda_envs" / "tdw-physion" / "bin" / "python"
+    runner = workspace / "scripts" / "tdw_physion_multi_template_moving_camera.py"
+    upstream = dict(trial.get("upstream_camera_variant") or {})
+    motion = str(upstream.get("motion") or trial.get("camera_motion") or "orbit")
+    template = str(trial.get("template"))
+    seed = int(trial.get("seed", 10000))
+    out_dir = root / "raw_hdf5" / output_subdir / _trial_dir_name(index, trial)
+    cmd = [
+        str(py), str(runner),
+        "--template", template,
+        "--port", str(1700 + index),
+        "--gpu", "None",
+        "--local_asset_dir", str(workspace / "assets" / "tdw_asset_bundles"),
+        "--dir", str(out_dir),
+        "--num", "1",
+        "--width", str(config.get("resolution", {}).get("width", 832)),
+        "--height", str(config.get("resolution", {}).get("height", 480)),
+        "--framerate", "30",
+        "--seed", str(seed),
+        "--max_frames", str(config.get("frames", {}).get("max_frames", 81)),
+        "--camera_motion", motion,
+        "--camera_motion_start", "24",
+        "--camera_motion_end", "57",
+        "--camera_orbit_degrees", str(float(upstream.get("orbit", 0.0))),
+        "--camera_height_delta", str(float(upstream.get("height", 0.0))),
+        "--camera_radius_delta", str(float(upstream.get("radius", 0.0))),
+        "--camera_strafe_distance", str(float(upstream.get("strafe", 0.0))),
+        "--camera_lookaway_yaw_degrees", "0.0",
+        "--camera_lookaway_pitch_degrees", "0.0",
+        "--camera_aim_offset_x", "0.0",
+        "--camera_aim_offset_y", "0.0",
+        "--camera_aim_offset_z", "0.0",
+        "--write_passes", "_img,_id,_depth",
+        "--random", "0",
+        "--num_distractors", "0",
+        "--num_occluders", "0",
+        "--room", "box",
+        "--drop", "cube,sphere",
+        "--target", "cube,sphere",
+        "--ymin", "1.1",
+        "--ymax", "1.8",
+        "--dscale", "[0.15,0.45]",
+        "--tscale", "[0.25,0.65]",
+    ]
+    return cmd
+
+
 def _parse_gpu_ids(raw: str | None, fallback: list[int]) -> list[int]:
     if raw is None or raw == "":
         return fallback
@@ -235,6 +312,7 @@ def main() -> None:
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--profile", required=True)
     parser.add_argument("--num_trials", type=int, required=True)
+    parser.add_argument("--plan", type=Path, default=None)
     parser.add_argument("--out_root", default=None)
     parser.add_argument("--no_overwrite", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
@@ -256,10 +334,12 @@ def main() -> None:
         (root / sub).mkdir(parents=True, exist_ok=True)
     allowed = _parse_gpu_ids(args.allowed_gpu_ids, allowed_gpu_indices(config))
     display_check_only = bool(args.dry_run_display_check)
+    plan_rows = _load_plan(args.plan) if args.plan else None
+    effective_num_trials = len(plan_rows) if plan_rows is not None else args.num_trials
     cmd, meta = build_existing_batch_command(
         config,
         args.profile,
-        args.num_trials,
+        effective_num_trials,
         root,
         args.dry_run or not args.execute_existing_batch or display_check_only,
         display=args.display,
@@ -272,22 +352,44 @@ def main() -> None:
     )
     report = {
         "profile": args.profile,
-        "num_trials": args.num_trials,
+        "num_trials": effective_num_trials,
         "out_root": str(root),
         "started_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         "dry_run": bool(args.dry_run or not args.execute_existing_batch),
         "execute_existing_batch": bool(args.execute_existing_batch),
         "dry_run_display_check": display_check_only,
+        "plan": str(args.plan) if args.plan else None,
         "no_overwrite": bool(args.no_overwrite),
         **meta,
     }
-    cmd_txt = root / "logs" / f"run_{args.profile}_{args.num_trials}.cmd.txt"
-    cmd_txt.write_text(shlex.join(cmd) + "\n", encoding="utf-8")
-    _write_json(root / "reports" / f"run_{args.profile}_{args.num_trials}.json", report)
+    report_name = f"run_{args.profile}_{'plan_' if args.plan else ''}{effective_num_trials}"
+    cmd_txt = root / "logs" / f"{report_name}.cmd.txt"
+    if plan_rows is not None:
+        output_subdir = _plan_output_subdir(args.profile, args.plan, effective_num_trials)
+        plan_commands = [_single_trial_command(config, root, output_subdir, row, idx) for idx, row in enumerate(plan_rows)]
+        batch_blocker = meta.get("blocked_reason")
+        if isinstance(batch_blocker, str) and "upstream batch runner" in batch_blocker:
+            meta["batch_runner_blocked_reason_ignored_for_plan"] = batch_blocker
+            meta["blocked_reason"] = None
+            report["blocked_reason"] = None
+            report["batch_runner_blocked_reason_ignored_for_plan"] = batch_blocker
+        report.update({
+            "execution_mode": "plan_per_trial",
+            "plan_output_subdir": output_subdir,
+            "plan_templates": [row.get("template") for row in plan_rows],
+            "plan_camera_variants": [row.get("camera_variant") for row in plan_rows],
+            "plan_commands": plan_commands,
+        })
+        cmd_txt.write_text("\n".join(shlex.join(c) for c in plan_commands) + "\n", encoding="utf-8")
+    else:
+        plan_commands = None
+        output_subdir = None
+        cmd_txt.write_text(shlex.join(cmd) + "\n", encoding="utf-8")
+    _write_json(root / "reports" / f"{report_name}.json", report)
 
     if meta.get("blocked_reason") and not args.allow_warmup_mild_blocked_execution:
         report.update({"status": "blocked", "returncode": None})
-        _write_json(root / "reports" / f"run_{args.profile}_{args.num_trials}.json", report)
+        _write_json(root / "reports" / f"{report_name}.json", report)
         print(json.dumps(report, indent=2, ensure_ascii=False))
         return
 
@@ -296,17 +398,61 @@ def main() -> None:
         if display_check_only and meta.get("blocked_reason"):
             status = "display_check_blocked"
         report.update({"status": status, "returncode": None})
-        _write_json(root / "reports" / f"run_{args.profile}_{args.num_trials}.json", report)
+        _write_json(root / "reports" / f"{report_name}.json", report)
         print(json.dumps(report, indent=2, ensure_ascii=False))
         return
 
     env = os.environ.copy()
     env.setdefault("DISPLAY", meta.get("tdw_display", str(config.get("display", ":8"))))
-    log_path = root / "logs" / f"run_{args.profile}_{args.num_trials}.stdout_stderr.log"
-    with log_path.open("w", encoding="utf-8") as log:
-        proc = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT, cwd=str(existing_workspace(config)), env=env)
-    report.update({"status": "passed" if proc.returncode == 0 else "failed", "returncode": proc.returncode, "log_path": str(log_path)})
-    _write_json(root / "reports" / f"run_{args.profile}_{args.num_trials}.json", report)
+    if plan_rows is not None and plan_commands is not None and output_subdir is not None:
+        trial_results = []
+        for idx, (trial, trial_cmd) in enumerate(zip(plan_rows, plan_commands)):
+            out_dir = root / "raw_hdf5" / output_subdir / _trial_dir_name(idx, trial)
+            final_hdf5 = out_dir / "0000.hdf5"
+            temp_hdf5 = out_dir / "temp.hdf5"
+            log_path = root / "logs" / f"{report_name}_trial_{idx:05d}.stdout_stderr.log"
+            if args.no_overwrite and final_hdf5.exists():
+                trial_results.append({
+                    "index": idx,
+                    "template": trial.get("template"),
+                    "camera_variant": trial.get("camera_variant"),
+                    "seed": trial.get("seed"),
+                    "status": "skipped_existing",
+                    "returncode": 0,
+                    "hdf5": str(final_hdf5),
+                    "log_path": str(log_path),
+                })
+                continue
+            if temp_hdf5.exists() and not final_hdf5.exists():
+                temp_hdf5.unlink(missing_ok=True)
+            with log_path.open("w", encoding="utf-8") as log:
+                proc = subprocess.run(trial_cmd, stdout=log, stderr=subprocess.STDOUT, cwd=str(existing_workspace(config)), env=env)
+            trial_results.append({
+                "index": idx,
+                "template": trial.get("template"),
+                "camera_variant": trial.get("camera_variant"),
+                "seed": trial.get("seed"),
+                "status": "passed" if proc.returncode == 0 else "failed",
+                "returncode": proc.returncode,
+                "hdf5": str(final_hdf5) if final_hdf5.exists() else str(temp_hdf5) if temp_hdf5.exists() else None,
+                "log_path": str(log_path),
+                "command": trial_cmd,
+            })
+            if proc.returncode != 0:
+                continue
+        failed = [row for row in trial_results if row.get("returncode") not in (0, None)]
+        report.update({
+            "status": "passed" if not failed else "failed",
+            "returncode": 0 if not failed else 1,
+            "trial_results": trial_results,
+            "failed_count": len(failed),
+        })
+    else:
+        log_path = root / "logs" / f"{report_name}.stdout_stderr.log"
+        with log_path.open("w", encoding="utf-8") as log:
+            proc = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT, cwd=str(existing_workspace(config)), env=env)
+        report.update({"status": "passed" if proc.returncode == 0 else "failed", "returncode": proc.returncode, "log_path": str(log_path)})
+    _write_json(root / "reports" / f"{report_name}.json", report)
     print(json.dumps(report, indent=2, ensure_ascii=False))
 
 

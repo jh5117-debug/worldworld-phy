@@ -76,6 +76,65 @@ def _accepted_rows(root: Path, *, only_accepted: bool) -> tuple[list[dict[str, A
     return rows, validation_path
 
 
+def _trial_dir_name(index: int, trial: dict[str, Any]) -> str:
+    template = str(trial.get("template") or "unknown")
+    variant = str(trial.get("camera_variant") or "unknown")
+    seed = int(trial.get("seed", index))
+    return f"{index:05d}_{template}_{variant}_seed{seed}"
+
+
+def _manifest_output_subdir(profile: str, manifest: Path, num_trials: int) -> str:
+    if "template_diverse" in manifest.stem:
+        return f"{profile}_template_diverse_{num_trials}samples"
+    return f"{profile}_plan_{num_trials}samples"
+
+
+def _expected_paths_from_manifest(root: Path, manifest: Path) -> set[str]:
+    rows = [json.loads(line) for line in manifest.read_text(encoding="utf-8").splitlines() if line.strip()]
+    profile = str(rows[0].get("profile") or "warmup_mild") if rows else "warmup_mild"
+    subdir = _manifest_output_subdir(profile, manifest, len(rows))
+    out = set()
+    for idx, row in enumerate(rows):
+        trial_dir = root / "raw_hdf5" / subdir / _trial_dir_name(idx, row)
+        out.add(str(trial_dir / "0000.hdf5"))
+        out.add(str(trial_dir / "temp.hdf5"))
+    return out
+
+
+def _accepted_rows_for_manifest(root: Path, manifest: Path, *, only_accepted: bool) -> tuple[list[dict[str, Any]], Path | None]:
+    expected = _expected_paths_from_manifest(root, manifest)
+    validation_path = None
+    if "template_diverse" in manifest.stem:
+        candidate = root / "reports" / "validation_template_diverse_10.json"
+        if candidate.exists():
+            validation_path = candidate
+    if validation_path is None:
+        rows, validation_path = _accepted_rows(root, only_accepted=only_accepted)
+        return [row for row in rows if str(row.get("path")) in expected], validation_path
+    payload = json.loads(validation_path.read_text(encoding="utf-8"))
+    rows = []
+    for row in payload.get("rows", []):
+        visible = row.get("target_visible_ratio")
+        max_invisible = row.get("target_disappeared_consecutive_max")
+        accepted = (
+            row.get("status") == "ok"
+            and row.get("has_rgb")
+            and row.get("has_depth")
+            and row.get("has_id")
+            and row.get("has_camera_pose")
+            and row.get("has_projection_or_camera_matrix")
+            and row.get("has_object_state")
+            and (visible is None or float(visible) >= 0.75)
+            and (max_invisible is None or int(max_invisible) <= 20)
+        )
+        if only_accepted and not accepted:
+            continue
+        row = dict(row)
+        row["accepted_for_warmup"] = bool(accepted)
+        rows.append(row)
+    return [row for row in rows if str(row.get("path")) in expected], validation_path
+
+
 def _sample_from_validation_row(row: dict[str, Any]) -> dict[str, Any]:
     hdf5_path = Path(str(row["path"]))
     trial_name = hdf5_path.parent.name
@@ -105,6 +164,7 @@ def _sample_from_validation_row(row: dict[str, Any]) -> dict[str, Any]:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Convert accepted generated TDW v2 samples to LingBot cam-only inputs.")
     parser.add_argument("--root", type=Path, required=True)
+    parser.add_argument("--manifest", type=Path, default=None)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--only_accepted", type=_bool_arg, default=True)
     parser.add_argument("--num_frames", type=int, default=81)
@@ -119,7 +179,10 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     if args.use_action:
         raise SystemExit("TDW v2 cam-only conversion requires --use_action false; action.npy is dummy fallback only.")
-    rows, validation_path = _accepted_rows(args.root, only_accepted=bool(args.only_accepted))
+    if args.manifest:
+        rows, validation_path = _accepted_rows_for_manifest(args.root, args.manifest, only_accepted=bool(args.only_accepted))
+    else:
+        rows, validation_path = _accepted_rows(args.root, only_accepted=bool(args.only_accepted))
     args.out.mkdir(parents=True, exist_ok=True)
     convert_args = SimpleNamespace(
         dry_run=bool(args.dry_run),
@@ -147,6 +210,7 @@ def main(argv=None) -> int:
         "root": str(args.root),
         "out": str(args.out),
         "validation_json": str(validation_path) if validation_path else None,
+        "manifest": str(args.manifest) if args.manifest else None,
         "only_accepted": bool(args.only_accepted),
         "converted_count": len(converted),
         "error_count": len(errors),

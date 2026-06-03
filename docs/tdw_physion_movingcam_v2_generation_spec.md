@@ -136,3 +136,27 @@ Suggested added validator:
 - compare requested template distribution vs generated template distribution;
 - fail or warn if non-drop templates are missing;
 - require user confirmation before expanding a drop-only batch.
+
+## 2026-06-03 Template-Diverse Execution Update
+
+The v2 wrapper now implements the requested template coverage behavior:
+
+- `plan_trials --template_counts drop:3,collision:3,roll:2,containment:2`;
+- `run_tdw_trial --plan <manifest>` executes one upstream command per manifest row;
+- output directories include template names;
+- validation and LingBot conversion can filter by manifest.
+
+Required template-diverse 10-sample command shape:
+
+```bash
+bash scripts/31_run_tdw_generation_v2_smoke.sh \
+  --profile warmup_mild \
+  --plan local_assets/data/physion/generated_v2/manifests/plan_warmup_mild_template_diverse_10.jsonl \
+  --out_root local_assets/data/physion/generated_v2 \
+  --display :8 \
+  --allow_unapproved_gpu \
+  --gpu_confirmation_token USER_CONFIRMED_UNAPPROVED_GPU \
+  --no_overwrite
+```
+
+This command must not be run unless the user approves GPU0 `DISPLAY=:8` for this specific template-diverse 10-sample smoke, or a GPU6/7 TDW display is available.

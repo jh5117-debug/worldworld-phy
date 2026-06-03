@@ -226,3 +226,23 @@ Representative existing videos and new generation deliverables are indexed under
 - No 50/200/1k generation was run.
 
 Important limitation: the actual upstream generation produced only `drop` template samples, even though the dry-run plan requested `drop`, `collision`, `roll`, and `containment`. Before larger validation, we should either fix template coverage or explicitly approve a drop-only 50-sample validation.
+
+## 2026-06-03 Template-Diverse TDW Gate Update
+
+The drop-only limitation has been addressed in code, but the new actual TDW run has not been executed yet.
+
+- `plan_trials.py` now supports exact `--template_counts`.
+- `run_tdw_trial.py` now supports manifest-driven per-trial execution via `--plan`.
+- The template-diverse 10-sample dry-run plan passes:
+  - `drop:3`
+  - `collision:3`
+  - `roll:2`
+  - `containment:2`
+- Stress/reobserve bad count remains `0`.
+- Validation and LingBot conversion now accept `--manifest` so template-diverse runs can be audited separately from older drop-only samples.
+
+Actual template-diverse generation is still pending because it would use the GPU0-bound `DISPLAY=:8`, and this specific run has not been approved yet. The request is documented in:
+
+- `docs/gpu_usage_approval_request_tdw_template_diverse_10.md`
+
+Until that approval is granted and the 10-sample template-diverse batch passes, 50/200/1k TDW generation remains disallowed. Real DPO training also remains disallowed.

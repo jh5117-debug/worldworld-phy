@@ -505,3 +505,29 @@ DPO side is unchanged:
 - real DPO training remains no.
 
 Data caveat: the 10-sample run generated only `drop` scenes. Template-diverse generation should be fixed or explicitly waived before 50-sample validation.
+
+## 2026-06-03 Template-Diverse TDW + DPO Signal Gate Update
+
+TDW data side:
+
+| Gate | Status |
+|---|---|
+| drop-only 10-sample smoke | passed |
+| template coverage audit | completed |
+| template-diverse plan | passed |
+| template-diverse actual 10-sample | not run; GPU0 approval required |
+| 50-sample validation | no-go until template-diverse 10 passes |
+
+The new plan distribution is `drop:3`, `collision:3`, `roll:2`, `containment:2`, with no stress/reobserve camera variants.
+
+DPO side:
+
+| Gate | Status |
+|---|---|
+| scalar loss / backward / LoRA / optimizer plumbing | passed |
+| fixed-noise diagnostic | stable but weak |
+| `dpo_signal_sensitivity_fast` | no usable new multi-LR summary |
+| 5-pair tiny overfit | no-go |
+| real DPO training | no |
+
+Next allowed DPO action remains signal/scope debugging only. Do not run 5-pair, 10-pair, or real DPO training until the signal gate passes.

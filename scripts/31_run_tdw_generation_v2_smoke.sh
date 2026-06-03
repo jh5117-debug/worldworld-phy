@@ -11,6 +11,7 @@ while [[ $# -gt 0 ]]; do
     --config) CONFIG="$2"; shift 2 ;;
     --profile) PROFILE="$2"; shift 2 ;;
     --num_trials) NUM_TRIALS="$2"; shift 2 ;;
+    --plan) EXTRA+=("--plan" "$2"); shift 2 ;;
     --out_root) OUT_ROOT="$2"; shift 2 ;;
     --display) EXTRA+=("--display" "$2"); shift 2 ;;
     --allowed_gpu_ids) EXTRA+=("--allowed_gpu_ids" "$2"); shift 2 ;;

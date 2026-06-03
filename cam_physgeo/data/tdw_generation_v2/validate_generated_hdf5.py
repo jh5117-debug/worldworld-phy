@@ -190,13 +190,43 @@ def validate_hdf5(path: Path) -> dict[str, Any]:
     return info
 
 
+def _trial_dir_name(index: int, trial: dict[str, Any]) -> str:
+    template = str(trial.get("template") or "unknown")
+    variant = str(trial.get("camera_variant") or "unknown")
+    seed = int(trial.get("seed", index))
+    return f"{index:05d}_{template}_{variant}_seed{seed}"
+
+
+def _manifest_output_subdir(profile: str, manifest: Path, num_trials: int) -> str:
+    if "template_diverse" in manifest.stem:
+        return f"{profile}_template_diverse_{num_trials}samples"
+    return f"{profile}_plan_{num_trials}samples"
+
+
+def _paths_from_manifest(root: Path, manifest: Path) -> list[Path]:
+    rows = [json.loads(line) for line in manifest.read_text(encoding="utf-8").splitlines() if line.strip()]
+    profile = str(rows[0].get("profile") or "warmup_mild") if rows else "warmup_mild"
+    subdir = _manifest_output_subdir(profile, manifest, len(rows))
+    paths: list[Path] = []
+    for idx, row in enumerate(rows):
+        trial_dir = root / "raw_hdf5" / subdir / _trial_dir_name(idx, row)
+        final_path = trial_dir / "0000.hdf5"
+        temp_path = trial_dir / "temp.hdf5"
+        paths.append(final_path if final_path.exists() else temp_path)
+    return paths
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate generated TDW/Physion-style HDF5 files.")
     parser.add_argument("--root", type=Path, required=True)
+    parser.add_argument("--manifest", type=Path, default=None)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--make_contact_sheet", action="store_true")
     args = parser.parse_args()
-    hdf5_paths = sorted(args.root.rglob("*.hdf5")) + sorted(args.root.rglob("*.h5"))
+    if args.manifest:
+        hdf5_paths = _paths_from_manifest(args.root, args.manifest)
+    else:
+        hdf5_paths = sorted(args.root.rglob("*.hdf5")) + sorted(args.root.rglob("*.h5"))
     rows = [validate_hdf5(p) for p in hdf5_paths]
     contact_dir = args.out.parent / "contact_sheets"
     contact_index: list[dict[str, str]] = []

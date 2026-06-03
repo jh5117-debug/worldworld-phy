@@ -1,33 +1,35 @@
 # 5-Pair Tiny Overfit Go / No-Go
 
-Generated: 2026-06-04
+Date: 2026-06-03
 
-Decision: no-go.
+## Decision
+
+No-go.
 
 ## Required Conditions
 
 | Condition | Status |
 |---|---|
-| At least 2 LR settings completed | failed |
-| Finite losses for completed settings | unavailable |
-| No NaN/Inf | no final summary |
-| No OOM | no explicit OOM, but runtime blocker |
-| Delta_policy movement clearly above previous `5.960e-08` baseline | not demonstrated |
-| Recommended LR exists | no |
-| Base/reference unchanged | not revalidated in completed summary |
-| LoRA functional influence valid | prior evidence only |
+| At least 2 LR settings completed | not met |
+| Finite losses | not newly verified |
+| No NaN/Inf | not newly verified |
+| No OOM | not newly verified |
+| Delta_policy movement clearly above `5.960e-08` baseline | not met |
+| Recommended LR exists | not met |
+| Base/reference unchanged | previously passed, not enough alone |
+| LoRA influence valid | previously passed, but signal remains weak |
 
-## Reason
+## Rationale
 
-`dpo_signal_sensitivity_fast` did not complete a usable LR sweep within the safe runtime window, so there is not enough evidence to start 5-pair tiny overfit.
+The DPO engineering chain is already validated up through 1-pair LoRA backward, one optimizer step, and a 5-step mini-loop. The missing gate is not plumbing; it is signal strength.
+
+Because the fast LR sweep did not produce a usable multi-LR summary and the previous measured movement was near numerical floor, running 5-pair would not be an informative smoke test yet.
 
 ## Next Action
 
-Fix the signal runner/runtime first. Suggested directions:
+Do not run 5-pair in this turn. First fix one of:
 
-- add per-step progress JSONL so partial LR settings are visible before summary;
-- reduce `steps_per_lr` for the first diagnostic;
-- add a single-LR quick mode before the 3-LR sweep;
-- consider a stronger camera-control LoRA target or a more sensitive loss probe.
+- robust `dpo_signal_sensitivity_fast` execution with clear per-LR summaries;
+- stronger camera-control LoRA target/scope;
+- fixed-noise diagnostic with larger but still safe LR/scope.
 
-Do not run 5-pair, 10-pair, real DPO training, or VideoGPA `03_train.py` yet.
