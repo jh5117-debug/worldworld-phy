@@ -189,3 +189,18 @@ v2 wrapper requirements:
 - dry-run command reports must explicitly show whether `--run 1` would be passed;
 - validation must treat command return code `0` without HDF5 as a failed generation, not as accepted data;
 - template-diverse 10 cannot run until non-drop actual HDF5 validation passes.
+
+## 2026-06-04 Non-Drop HDF5 Requirement
+
+The fixed `--run 1` non-drop smoke showed that successful upstream exit is not enough.
+
+Additional v2 acceptance rule:
+
+- for every planned row, the runner must record a concrete HDF5 path;
+- `returncode=0` with `hdf5=None` is a failed sample;
+- expected `temp.hdf5` paths that do not exist are failed samples;
+- template-diverse 10 must be blocked if any required non-drop template cannot write HDF5.
+
+Current non-drop blocker:
+
+`collision`, `roll`, and `containment` all return `0` but write no HDF5 under the current random single-sample invocation. The wrapper must either supply the required upstream template-specific parameters/stimuli or use an upstream-supported non-drop generation entry point before larger generation.

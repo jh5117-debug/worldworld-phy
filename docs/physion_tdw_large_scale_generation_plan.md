@@ -275,3 +275,18 @@ The non-drop retry narrowed the TDW blocker:
 | template-diverse 10 retry | skipped pending fresh approval |
 
 Large-scale generation remains blocked. The next staged generation step is not 50; it is a rerun of the fixed non-drop 3-sample smoke. Only after that and a template-diverse 10-sample retry pass should 50-sample validation be considered.
+
+## 2026-06-04 Non-Drop `--run 1` Retry Result
+
+The fixed non-drop smoke was rerun and still did not pass:
+
+| Stage | Status |
+|---|---|
+| non-drop dry-run with `--run 1` | passed |
+| collision actual | return 0, no HDF5 |
+| roll actual | return 0, no HDF5 |
+| containment actual | return 0, no HDF5 |
+| template-diverse 10 | skipped |
+| 50 | no-go |
+
+This blocks any larger staged generation. The next data engineering task is to determine which upstream non-drop arguments or stimulus/template settings are required to make `collision`, `roll`, and `containment` write HDF5. Do not expand to 50/200/1k until this is solved and a template-diverse 10-sample validation passes.

@@ -310,3 +310,33 @@ Current TDW data gate:
 | 50/200/1k generation | no-go |
 
 DPO signal retry on GPU6/7 did not produce a usable two-LR summary, so 5-pair tiny overfit remains no-go. Real training remains disallowed.
+
+## 2026-06-04 Non-Drop `--run 1` Retry Result
+
+The user approved GPU0-bound `DISPLAY=:8` for a fixed non-drop 3-sample retry and conditional template-diverse 10.
+
+Command dry-run passed:
+
+- `collision`, `roll`, and `containment` all include `--run 1`;
+- non-drop templates do not receive `--drop`, `--ymin`, `--ymax`, or `--dscale`;
+- output directories include the template name;
+- camera variants are from `warmup_mild`.
+
+Actual result:
+
+| Template | Camera variant | Command return | HDF5 validation |
+|---|---|---:|---|
+| collision | `orbit_left_12` | 0 | failed; no HDF5 |
+| roll | `orbit_right_12` | 0 | failed; no HDF5 |
+| containment | `strafe_left_025` | 0 | failed; no HDF5 |
+
+The upstream TDW logs show TDW started and closed successfully, but no HDF5 files were written. This means the previous `--run 1` blocker is fixed, but non-drop template generation is still not producing data under the current random single-sample wrapper invocation.
+
+Dependency decision:
+
+- template-diverse 10 `run1`: skipped;
+- LingBot conversion: skipped;
+- video deliverables: unchanged;
+- 50/200/1k generation: no-go.
+
+Next TDW action is to inspect and fix upstream non-drop template arguments/stimulus requirements before another generation attempt. DPO signal remains a separate no-go gate.

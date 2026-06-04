@@ -587,3 +587,19 @@ Next allowed actions:
 1. request approval to rerun fixed non-drop 3-sample smoke, then template-diverse 10 only if non-drop validates;
 2. make DPO signal runner faster or test a stronger LoRA target/scope;
 3. keep 5-pair, 10-pair, VideoGPA `03_train.py`, and real DPO training disabled.
+
+## 2026-06-04 Non-Drop `--run 1` Retry Gate
+
+TDW side:
+
+| Gate | Status |
+|---|---|
+| non-drop command dry-run with `--run 1` | passed |
+| non-drop actual command return | 3/3 returned 0 |
+| non-drop HDF5 validation | failed; 0/3 accepted |
+| template-diverse 10 `run1` | skipped |
+| 50-sample validation | no-go |
+
+The commands now include `--run 1` and exclude drop-only arguments for non-drop templates. The remaining blocker is upstream non-drop template generation writing no HDF5 despite successful exit. Do not run template-diverse 10 or 50 until non-drop HDF5 generation works.
+
+DPO side remains unchanged in this round: no DPO signal sweep was run, 5-pair remains no-go, and real DPO training remains no.
