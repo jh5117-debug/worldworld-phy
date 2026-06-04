@@ -623,3 +623,27 @@ This does not change DPO readiness:
 - 5-pair tiny overfit remains no-go until DPO signal improves;
 - real DPO training remains no;
 - VideoGPA `03_train.py` remains disallowed.
+
+## TDW 50-Sample Data Gate Update
+
+The TDW / Physion-style data gate has progressed independently of DPO training.
+This does not permit DPO training yet.
+
+Current TDW v2 status:
+
+- `warmup_mild` camera set: passed.
+- non-drop templates: passed after the absolute-output-path wrapper fix.
+- template-diverse 10-sample smoke: passed.
+- template-diverse 50-sample validation: passed.
+- 50 planned distribution: `drop:15`, `collision:15`, `roll:10`, `containment:10`.
+- 50 validation: `50/50` HDF5 complete, `50/50` suitable for warmup.
+- LingBot cam-only conversion: `50/50`, with `use_action=false` and dummy zero `action.npy`.
+
+DPO status is unchanged:
+
+- signal-sensitivity remains weak / incomplete;
+- 5-pair tiny overfit remains no-go;
+- real DPO training remains no;
+- VideoGPA `03_train.py` remains disallowed.
+
+The data gate is now ready for a user-approved 200-sample TDW pilot, but that does not replace the DPO signal gate. Before any 5-pair or real DPO work, the fixed-noise signal sweep still needs a clear nonzero policy movement and a go/no-go report.

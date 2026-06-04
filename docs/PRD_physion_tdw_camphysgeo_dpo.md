@@ -375,3 +375,40 @@ Result:
 | 50-sample | approval request only, not run |
 
 DPO signal remains a separate no-go gate. Real training remains disallowed.
+
+## TDW Template-Diverse 50-Sample Validation Update
+
+The non-drop output-path blocker has been resolved and the template-diverse staged gate has now reached 50-sample validation.
+
+Root cause previously fixed:
+
+- the v2 wrapper passed a relative `--dir local_assets/...` to the upstream TDW runner;
+- the subprocess ran with the upstream Physion workspace as `cwd`;
+- non-drop HDF5 files were therefore not discovered under the intended project output tree;
+- the wrapper now passes absolute output directories and creates each trial directory before launch.
+
+50-sample validation result:
+
+| Item | Value |
+|---|---|
+| Approved scope | GPU0-bound `DISPLAY=:8`, 50 samples only |
+| Planned distribution | `drop:15`, `collision:15`, `roll:10`, `containment:10` |
+| Generated HDF5 | 50 |
+| Validation OK | 50 |
+| Rejected | 0 |
+| Suitable for warmup | 50 |
+| target_visible_ratio avg/min/max | 1.0 / 1.0 / 1.0 |
+| max invisible frames avg/max | 0.0 / 0 |
+| camera_path_length avg/min/max | 0.3682 / 0.1005 / 0.8888 |
+| LingBot conversion | 50/50 |
+| target.mp4 probe | 50/50 |
+| use_action=false | 50/50 |
+| dummy action zero norm | 50/50 |
+
+Key local deliverables:
+
+- validation report: `local_assets/data/physion/generated_v2/reports/validation_template_diverse_50.md`
+- converted LingBot samples: `local_assets/data/physion/generated_v2/lingbot_cam_inputs_template_diverse_50/`
+- video gallery: `local_assets/reports/tdw_video_deliverables/video_gallery.html`
+
+No 200/1k generation was run. The next TDW step is a user-approved 200-sample pilot only if this 50-sample validation is accepted. DPO signal remains a separate no-go gate, and real training remains disallowed.

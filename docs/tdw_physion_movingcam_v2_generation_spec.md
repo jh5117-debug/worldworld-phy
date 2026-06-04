@@ -224,3 +224,31 @@ Validated status:
 - template-diverse 10: passed;
 - LingBot conversion: passed;
 - 50-sample remains approval-gated.
+
+## Template-Diverse 50-Sample Validation Status
+
+The user approved one GPU0-bound `DISPLAY=:8` template-diverse 50-sample validation run. The v2 profile and filtering rules behaved as intended.
+
+Planned distribution:
+
+- `drop:15`
+- `collision:15`
+- `roll:10`
+- `containment:10`
+
+Actual validated status:
+
+- generated HDF5: 50;
+- validation OK: 50;
+- rejected: 0;
+- template distribution matched the plan;
+- RGB/depth/ID/camera/object state completeness: 50/50;
+- target visible ratio: 1.0 for all samples;
+- max invisible frames: 0 for all samples;
+- camera path length avg/min/max: 0.3682 / 0.1005 / 0.8888;
+- LingBot cam-only conversion: 50/50;
+- `target.mp4` probe: 50/50;
+- `use_action=false`: 50/50;
+- dummy action norm: 0.0 for every sample.
+
+The 50-sample validation supports the `warmup_mild` profile as a candidate source for later LingBot-Fast camera warmup. It does not authorize automatic 200/1k generation or any training. The next stage is a separate 200-sample pilot approval, or a decision to pause data generation and return to the DPO signal gate.

@@ -314,3 +314,39 @@ Template-diverse 10 distribution:
 - containment: 2
 
 Next allowed data step is a user-approved 50-sample validation on `DISPLAY=:8` or after configuring a GPU6/7 TDW display. Do not run 200/1k+ without separate staged validation and explicit approval.
+
+## Template-Diverse 50-Sample Validation Result
+
+The staged TDW / Physion-style generation plan has now passed the 50-sample validation gate under explicit user approval for GPU0-bound `DISPLAY=:8`.
+
+| Stage | Status |
+|---|---|
+| 1 sample | passed |
+| drop-only 10 | passed, but not sufficient for template coverage |
+| non-drop 3 | passed |
+| template-diverse 10 | passed |
+| template-diverse 50 | passed |
+| 200 pilot | approval required |
+| 1k+ | not allowed |
+
+50-sample metrics:
+
+- planned distribution: `drop:15`, `collision:15`, `roll:10`, `containment:10`;
+- generated HDF5: 50;
+- validation OK: 50;
+- rejected: 0;
+- suitable_for_warmup: 50;
+- target_visible_ratio: 1.0 for every sample;
+- max invisible frames: 0 for every sample;
+- LingBot cam-only conversion: 50/50;
+- `target.mp4` probe: 50/50;
+- `use_action=false`: 50/50;
+- dummy action norm: 0.0 for every sample.
+
+Storage observed for the 50-sample gate:
+
+- raw HDF5 directory: about 4.0 GB;
+- converted LingBot cam-only directory: about 9.1 GB;
+- contact sheets: about 6.4 MB.
+
+The next allowed data step is not automatic. A 200-sample pilot requires user approval because it would again use GPU0-bound `DISPLAY=:8`, and the estimated storage is roughly 16 GB raw HDF5 plus 36 GB converted LingBot inputs. Full 1k+ generation remains blocked until staged validation and explicit approval.
