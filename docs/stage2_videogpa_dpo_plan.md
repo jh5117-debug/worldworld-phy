@@ -557,3 +557,33 @@ DPO side:
 | real DPO training | no |
 
 The observed `1e-5` steps were finite and had no NaN/Inf, but the multi-LR gate did not pass.
+
+## 2026-06-04 Non-Drop Template Retry + DPO Signal Retry
+
+TDW data side:
+
+| Gate | Status |
+|---|---|
+| drop-only 10-sample smoke | passed |
+| template-diverse plan | passed |
+| non-drop command dry-run | passed |
+| non-drop actual validation | failed: no HDF5 |
+| template-diverse 10 retry | skipped |
+| 50-sample validation | no-go |
+
+The previous drop-only-args blocker is fixed: `collision`, `roll`, and `containment` no longer receive `--drop`, `--ymin`, `--ymax`, or `--dscale`. The new exact blocker is that the wrapper omitted upstream `--run 1`, so TDW returned successfully without writing HDF5. The wrapper now includes `--run 1`, but actual generation needs fresh user approval before rerun.
+
+DPO side:
+
+| Gate | Status |
+|---|---|
+| short `dpo_signal_sensitivity_fast` retry | incomplete |
+| usable two-LR summary | no |
+| 5-pair tiny overfit | no-go |
+| real DPO training | no-go |
+
+Next allowed actions:
+
+1. request approval to rerun fixed non-drop 3-sample smoke, then template-diverse 10 only if non-drop validates;
+2. make DPO signal runner faster or test a stronger LoRA target/scope;
+3. keep 5-pair, 10-pair, VideoGPA `03_train.py`, and real DPO training disabled.

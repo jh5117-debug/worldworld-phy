@@ -260,3 +260,18 @@ Large-scale generation status:
 | 50 | no-go |
 | 200 | no-go |
 | 1k+ | no-go |
+
+## 2026-06-04 Non-Drop Template Retry Update
+
+The non-drop retry narrowed the TDW blocker:
+
+| Check | Result |
+|---|---|
+| non-drop command dry-run | passed; no drop-only args on non-drop templates |
+| non-drop actual command returns | 3/3 returned 0 |
+| non-drop HDF5 validation | 0/3, no HDF5 written |
+| exact blocker | missing upstream `--run 1` |
+| wrapper status | fixed to pass `--run 1` |
+| template-diverse 10 retry | skipped pending fresh approval |
+
+Large-scale generation remains blocked. The next staged generation step is not 50; it is a rerun of the fixed non-drop 3-sample smoke. Only after that and a template-diverse 10-sample retry pass should 50-sample validation be considered.

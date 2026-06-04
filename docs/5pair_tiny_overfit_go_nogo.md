@@ -35,3 +35,10 @@ Do not run 5-pair in this turn. First fix one of:
 - stronger camera-control LoRA target/scope;
 - fixed-noise diagnostic with larger but still safe LR/scope.
 
+## 2026-06-04 Retry Update
+
+Decision remains **no-go**.
+
+The short retry used GPU6/7, `learning_rates=1e-5 1e-4`, and `steps_per_lr=3`, but it did not write usable per-LR metrics in the safe runtime window. At least two LR settings did not complete, no recommended LR was established, and there is still no clear signal beyond the previous near-zero baseline.
+
+Do not run 5-pair until the signal runner produces a complete summary with at least two finite LR settings and a clear Delta_policy/preference-logit movement.

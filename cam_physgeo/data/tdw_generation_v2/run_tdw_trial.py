@@ -124,6 +124,7 @@ def _single_trial_command(config: dict, root: Path, output_subdir: str, trial: d
         "--camera_aim_offset_z", "0.0",
         "--write_passes", "_img,_id,_depth",
         "--random", "0",
+        "--run", "1",
         "--num_distractors", "0",
         "--num_occluders", "0",
         "--room", "box",

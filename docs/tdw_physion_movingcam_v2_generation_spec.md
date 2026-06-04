@@ -172,3 +172,20 @@ Rule:
 - common mild camera arguments may still be shared.
 
 The wrapper now implements this rule. The next actual template-diverse 10-sample smoke should use the same manifest but the fixed command builder.
+
+## 2026-06-04 Execution Flag Requirement
+
+The upstream runner must receive:
+
+```text
+--run 1
+```
+
+Without this flag, `tdw_physion_multi_template_moving_camera.py` can exit successfully without writing HDF5, because actual generation is guarded by `if bool(args.run)`.
+
+v2 wrapper requirements:
+
+- all actual TDW commands must include `--run 1`;
+- dry-run command reports must explicitly show whether `--run 1` would be passed;
+- validation must treat command return code `0` without HDF5 as a failed generation, not as accepted data;
+- template-diverse 10 cannot run until non-drop actual HDF5 validation passes.

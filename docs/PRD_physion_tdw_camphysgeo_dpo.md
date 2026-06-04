@@ -277,3 +277,36 @@ Next decisions:
 1. approve one more GPU0 template-diverse 10-sample smoke after the args fix, or configure a GPU6/7 TDW display;
 2. fix DPO signal runner speed/scope before any 5-pair;
 3. do not run 50/200/1k TDW or real DPO training yet.
+
+## 2026-06-04 Non-Drop Template Retry Update
+
+The non-drop command dry-run confirmed that `collision`, `roll`, and `containment` no longer receive drop-only arguments (`--drop`, `--ymin`, `--ymax`, `--dscale`). This fixes the previous parser-level blocker.
+
+The approved non-drop actual smoke then returned success at the command level for:
+
+| Template | Count |
+|---|---:|
+| collision | 1 |
+| roll | 1 |
+| containment | 1 |
+
+However, HDF5 validation found `0/3` generated files. The exact blocker is that the wrapper did not pass the upstream execution flag `--run 1`; the upstream TDW runner exits cleanly without writing data unless that flag is set.
+
+Current fix:
+
+- `run_tdw_trial.py` now adds `--run 1` to every upstream generation command;
+- drop-only args remain restricted to `template == "drop"`;
+- no template-diverse 10 retry was run after this fix, because the approval for actual TDW generation had already been consumed.
+
+Current TDW data gate:
+
+| Gate | Status |
+|---|---|
+| drop-only 10-sample | passed |
+| template-diverse plan | passed |
+| non-drop command dry-run | passed |
+| non-drop actual validation | failed: no HDF5, `--run 1` blocker fixed |
+| template-diverse 10 retry | skipped |
+| 50/200/1k generation | no-go |
+
+DPO signal retry on GPU6/7 did not produce a usable two-LR summary, so 5-pair tiny overfit remains no-go. Real training remains disallowed.

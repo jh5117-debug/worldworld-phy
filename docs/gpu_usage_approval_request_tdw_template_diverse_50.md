@@ -45,3 +45,10 @@ Do not approve 50 until:
 3. LingBot conversion probes pass;
 4. storage/time estimate is updated from actual template-diverse results.
 
+## 2026-06-04 Non-Drop Retry Update
+
+50-sample validation is still **not ready**.
+
+The approved non-drop per-template smoke (`collision:1`, `roll:1`, `containment:1`) returned successfully at the command level, but validation found no HDF5 files. The root cause was a missing upstream execution flag: the wrapper did not pass `--run 1`, and the upstream TDW runner only writes HDF5 when `args.run` is enabled.
+
+The wrapper now adds `--run 1`, but no additional actual TDW generation was run because the approved smoke had already been consumed. Before any 50-sample approval, run the fixed non-drop 3-sample smoke again, then run and validate the template-diverse 10-sample retry.
