@@ -86,6 +86,88 @@ def _plan_output_subdir(profile_name: str, plan_path: Path, num_trials: int) -> 
     return f"{profile_name}_plan_{num_trials}samples"
 
 
+def _template_specific_args(template: str) -> list[str]:
+    if template == "drop":
+        return [
+            "--random", "0",
+            "--num_distractors", "0",
+            "--num_occluders", "0",
+            "--room", "box",
+            "--target", "cube,sphere",
+            "--tscale", "[0.25,0.65]",
+            "--drop", "cube,sphere",
+            "--ymin", "1.1",
+            "--ymax", "1.8",
+            "--dscale", "[0.15,0.45]",
+        ]
+    if template == "collision":
+        return [
+            "--tcolor", "None",
+            "--zcolor", "None",
+            "--only_use_flex_objects",
+            "--collision_axis_length", "2",
+            "--frot", "[-8,8]",
+            "--fscale", "[5.0,11.0]",
+            "--fupforce", "[0.0,0.0]",
+            "--target", "pyramid,cone,dumbbell,triangular_prism,torus",
+            "--pmass", "4",
+            "--monochrome", "1",
+            "--random", "0",
+            "--seed", "328",
+            "--no_moving_distractors",
+            "--room", "box",
+        ]
+    if template == "roll":
+        return [
+            "--tcolor", "None",
+            "--zcolor", "None",
+            "--only_use_flex_objects",
+            "--collision_axis_length", "1.7",
+            "--probe", "bowl,cone,cube,cylinder,dumbbell,pentagon,pipe,pyramid",
+            "--target", "bowl,cone,cube,cylinder,dumbbell,pentagon,pipe,pyramid,sphere",
+            "--prot", "[-180,180]",
+            "--tlift", "0.25",
+            "--fscale", "[2.,9.]",
+            "--frot", "[-3,3]",
+            "--camera_distance", "[2.3,2.5]",
+            "--monochrome", "1",
+            "--random", "0",
+            "--seed", "914",
+            "--no_moving_distractors",
+            "--room", "box",
+        ]
+    if template == "containment":
+        return [
+            "--no_moving_distractors",
+            "--fwait", "15",
+            "--random", "0",
+            "--seed", "1",
+            "--only_use_flex_objects",
+            "--tcolor=None",
+            "--zcolor=None",
+            "--middle=sphere",
+            "--mscale=0.2,0.4",
+            "--num_middle_range=1,4",
+            "--spacing_jitter=0.3",
+            "--attachment=None",
+            "--ascale=0",
+            "--base=bowl",
+            "--bscale=0.5,1.1",
+            "--bmass=2,3",
+            "--bcolor=None",
+            "--fscale=4,9",
+            "--num_distractors", "1",
+            "--distractor", "full",
+            "--distractor_categories",
+            "coffee_table,houseplant,vase,chair,dog,sofa,flowerpot,coffee_maker,stool,laptop,laptop_computer,globe,bookshelf,desktop_computer,garden_plant",
+            "--occluder", "full",
+            "--occluder_categories",
+            "coffee_table,houseplant,vase,chair,dog,sofa,flowerpot,coffee_maker,stool,laptop,laptop_computer,globe,bookshelf,desktop_computer,garden_plant",
+            "--num_occluders", "1",
+        ]
+    raise ValueError(f"Unsupported template: {template}")
+
+
 def _single_trial_command(config: dict, root: Path, output_subdir: str, trial: dict, index: int) -> list[str]:
     workspace = existing_workspace(config)
     py = workspace / ".conda_envs" / "tdw-physion" / "bin" / "python3"
@@ -96,7 +178,7 @@ def _single_trial_command(config: dict, root: Path, output_subdir: str, trial: d
     motion = str(upstream.get("motion") or trial.get("camera_motion") or "orbit")
     template = str(trial.get("template"))
     seed = int(trial.get("seed", 10000))
-    out_dir = root / "raw_hdf5" / output_subdir / _trial_dir_name(index, trial)
+    out_dir = (root / "raw_hdf5" / output_subdir / _trial_dir_name(index, trial)).resolve()
     cmd = [
         str(py), str(runner),
         "--template", template,
@@ -107,7 +189,7 @@ def _single_trial_command(config: dict, root: Path, output_subdir: str, trial: d
         "--num", "1",
         "--width", str(config.get("resolution", {}).get("width", 832)),
         "--height", str(config.get("resolution", {}).get("height", 480)),
-        "--framerate", "30",
+        "--framerate", str(config.get("framerate", 16)),
         "--seed", str(seed),
         "--max_frames", str(config.get("frames", {}).get("max_frames", 81)),
         "--camera_motion", motion,
@@ -123,21 +205,9 @@ def _single_trial_command(config: dict, root: Path, output_subdir: str, trial: d
         "--camera_aim_offset_y", "0.0",
         "--camera_aim_offset_z", "0.0",
         "--write_passes", "_img,_id,_depth",
-        "--random", "0",
         "--run", "1",
-        "--num_distractors", "0",
-        "--num_occluders", "0",
-        "--room", "box",
-        "--target", "cube,sphere",
-        "--tscale", "[0.25,0.65]",
+        *_template_specific_args(template),
     ]
-    if template == "drop":
-        cmd.extend([
-            "--drop", "cube,sphere",
-            "--ymin", "1.1",
-            "--ymax", "1.8",
-            "--dscale", "[0.15,0.45]",
-        ])
     return cmd
 
 
@@ -415,6 +485,7 @@ def main() -> None:
             final_hdf5 = out_dir / "0000.hdf5"
             temp_hdf5 = out_dir / "temp.hdf5"
             log_path = root / "logs" / f"{report_name}_trial_{idx:05d}.stdout_stderr.log"
+            out_dir.mkdir(parents=True, exist_ok=True)
             if args.no_overwrite and final_hdf5.exists():
                 trial_results.append({
                     "index": idx,

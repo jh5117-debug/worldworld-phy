@@ -340,3 +340,38 @@ Dependency decision:
 - 50/200/1k generation: no-go.
 
 Next TDW action is to inspect and fix upstream non-drop template arguments/stimulus requirements before another generation attempt. DPO signal remains a separate no-go gate.
+
+## 2026-06-04 Non-Drop Upstream Fix and Template-Diverse Pass
+
+The remaining non-drop blocker was resolved.
+
+Root cause:
+
+- v2 wrapper launched upstream TDW from the upstream Physion workspace;
+- `--dir local_assets/...` was relative;
+- non-drop HDF5 files were written under the upstream workspace, not under the project `local_assets` tree;
+- validator therefore saw return code 0 but no HDF5.
+
+Fix:
+
+- pass absolute per-trial `--dir` paths;
+- create per-trial output directories before launch;
+- keep non-drop upstream-style required args;
+- keep `--run 1`;
+- add `imageio` fallback video probing for environments without `cv2`/system `ffprobe`.
+
+Result:
+
+| Gate | Status |
+|---|---|
+| non-drop 3-sample | passed, 3/3 HDF5 validated |
+| template-diverse 10 | passed, 10/10 HDF5 validated |
+| template distribution | drop 3 / collision 3 / roll 2 / containment 2 |
+| suitable for warmup | 10/10 |
+| LingBot cam-only conversion | passed, 10/10 |
+| target.mp4 probe | passed, 10/10 |
+| action | dummy zero |
+| use_action | false |
+| 50-sample | approval request only, not run |
+
+DPO signal remains a separate no-go gate. Real training remains disallowed.

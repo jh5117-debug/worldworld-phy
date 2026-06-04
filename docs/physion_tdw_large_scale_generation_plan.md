@@ -290,3 +290,27 @@ The fixed non-drop smoke was rerun and still did not pass:
 | 50 | no-go |
 
 This blocks any larger staged generation. The next data engineering task is to determine which upstream non-drop arguments or stimulus/template settings are required to make `collision`, `roll`, and `containment` write HDF5. Do not expand to 50/200/1k until this is solved and a template-diverse 10-sample validation passes.
+
+## 2026-06-04 Non-Drop Output Path Fix and 10-Sample Pass
+
+The non-drop HDF5 blocker is solved. Root cause was relative `--dir` path resolution from the upstream Physion workspace. The wrapper now passes absolute output directories.
+
+Current staged status:
+
+| Stage | Status |
+|---|---|
+| non-drop 3-sample | passed, 3/3 |
+| template-diverse 10 | passed, 10/10 |
+| LingBot cam-only conversion | passed, 10/10 |
+| 50 validation | not run; approval required |
+| 200 pilot | no-go |
+| 1k+ full generation | no-go |
+
+Template-diverse 10 distribution:
+
+- drop: 3
+- collision: 3
+- roll: 2
+- containment: 2
+
+Next allowed data step is a user-approved 50-sample validation on `DISPLAY=:8` or after configuring a GPU6/7 TDW display. Do not run 200/1k+ without separate staged validation and explicit approval.

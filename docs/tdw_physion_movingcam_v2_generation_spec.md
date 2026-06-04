@@ -204,3 +204,23 @@ Additional v2 acceptance rule:
 Current non-drop blocker:
 
 `collision`, `roll`, and `containment` all return `0` but write no HDF5 under the current random single-sample invocation. The wrapper must either supply the required upstream template-specific parameters/stimuli or use an upstream-supported non-drop generation entry point before larger generation.
+
+## 2026-06-04 Resolved Non-Drop Output Path Rule
+
+The non-drop HDF5 blocker was traced to output path resolution, not to template inability.
+
+Specification update:
+
+- all per-trial `--dir` values passed to upstream TDW must be absolute paths;
+- wrapper execution may use upstream Physion as `cwd`, so relative project paths are forbidden for upstream `--dir`;
+- per-trial output directories must be created before subprocess launch;
+- `returncode=0` with HDF5 written outside the project output tree is still a wrapper failure;
+- manifest-specific validation files should be selected by suffix, for example `plan_warmup_mild_template_diverse_10_fix.jsonl` -> `validation_template_diverse_10_fix.json`;
+- video probe must work without system `ffprobe` by falling back to `imageio` when needed.
+
+Validated status:
+
+- non-drop 3-sample: passed;
+- template-diverse 10: passed;
+- LingBot conversion: passed;
+- 50-sample remains approval-gated.

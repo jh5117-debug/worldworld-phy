@@ -104,10 +104,18 @@ def _expected_paths_from_manifest(root: Path, manifest: Path) -> set[str]:
 def _accepted_rows_for_manifest(root: Path, manifest: Path, *, only_accepted: bool) -> tuple[list[dict[str, Any]], Path | None]:
     expected = _expected_paths_from_manifest(root, manifest)
     validation_path = None
+    suffix = manifest.stem
+    for prefix in ("plan_warmup_mild_", "plan_"):
+        if suffix.startswith(prefix):
+            suffix = suffix[len(prefix):]
+            break
+    candidates = [root / "reports" / f"validation_{suffix}.json"]
     if "template_diverse" in manifest.stem:
-        candidate = root / "reports" / "validation_template_diverse_10.json"
+        candidates.append(root / "reports" / "validation_template_diverse_10.json")
+    for candidate in candidates:
         if candidate.exists():
             validation_path = candidate
+            break
     if validation_path is None:
         rows, validation_path = _accepted_rows(root, only_accepted=only_accepted)
         return [row for row in rows if str(row.get("path")) in expected], validation_path

@@ -603,3 +603,23 @@ TDW side:
 The commands now include `--run 1` and exclude drop-only arguments for non-drop templates. The remaining blocker is upstream non-drop template generation writing no HDF5 despite successful exit. Do not run template-diverse 10 or 50 until non-drop HDF5 generation works.
 
 DPO side remains unchanged in this round: no DPO signal sweep was run, 5-pair remains no-go, and real DPO training remains no.
+
+## 2026-06-04 TDW Template-Diverse Data Gate Update
+
+TDW generation v2 data gate is now advanced past the non-drop/template-diverse smoke:
+
+| Gate | Status |
+|---|---|
+| non-drop upstream wrapper fix | passed |
+| non-drop 3-sample validation | passed, 3/3 |
+| template-diverse 10 validation | passed, 10/10 |
+| template distribution | drop 3 / collision 3 / roll 2 / containment 2 |
+| LingBot cam-only conversion | passed, 10/10 |
+| TDW 50-sample validation | not run; approval required |
+
+This does not change DPO readiness:
+
+- DPO signal-sensitivity remains no-go;
+- 5-pair tiny overfit remains no-go until DPO signal improves;
+- real DPO training remains no;
+- VideoGPA `03_train.py` remains disallowed.

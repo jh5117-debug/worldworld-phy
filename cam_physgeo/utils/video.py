@@ -20,7 +20,35 @@ def probe_video(path: str|Path|None) -> dict[str, Any]:
         st=(json.loads(pr.stdout).get('streams') or [{}])[0]
         fps=_ratio(st.get('r_frame_rate')); nf=st.get('nb_frames')
         return {'ok':pr.returncode==0,'exists':True,'path':str(p),'num_frames':int(nf) if nf and nf!='N/A' else None,'fps':fps,'width':int(st['width']) if st.get('width') else None,'height':int(st['height']) if st.get('height') else None}
-    except Exception: return base
+    except Exception: pass
+    try:
+        import imageio  # type: ignore
+        reader=imageio.get_reader(str(p))
+        meta=reader.get_meta_data() or {}
+        size=meta.get('size') or (None, None)
+        fps=meta.get('fps')
+        num_frames=None
+        try:
+            num_frames=reader.count_frames()
+        except Exception:
+            try:
+                num_frames=reader.get_length()
+                if num_frames == float('inf'):
+                    num_frames=None
+            except Exception:
+                num_frames=None
+        try:
+            first=reader.get_data(0)
+            height,width=first.shape[:2]
+        except Exception:
+            width,height=(int(size[0]) if size and size[0] else None, int(size[1]) if size and size[1] else None)
+        try:
+            reader.close()
+        except Exception:
+            pass
+        return {'ok':True,'exists':True,'path':str(p),'num_frames':int(num_frames) if num_frames not in (None, float('inf')) else None,'fps':float(fps) if fps else None,'width':int(width) if width else None,'height':int(height) if height else None}
+    except Exception:
+        return base
 
 def _ratio(v):
     try:
