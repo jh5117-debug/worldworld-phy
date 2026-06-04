@@ -240,3 +240,23 @@ Large-scale generation readiness:
 | 1k+ | no-go |
 
 Next required user decision: approve GPU0 `DISPLAY=:8` for exactly one template-diverse 10-sample smoke, or configure TDW on GPU6/7.
+
+## 2026-06-04 Template-Diverse Actual Attempt
+
+The approved GPU0 template-diverse 10-sample attempt did not pass:
+
+- planned: `drop:3`, `collision:3`, `roll:2`, `containment:2`;
+- actual command results: `drop` returned 0 for three commands, non-drop templates failed before generation;
+- validation accepted: 0/10;
+- conversion: skipped.
+
+The code has been updated so drop-specific args are only passed to `drop`. However, the approval covered exactly one 10-sample attempt, so no rerun was started.
+
+Large-scale generation status:
+
+| Scale | Status |
+|---|---|
+| fixed template-diverse 10 | pending fresh approval |
+| 50 | no-go |
+| 200 | no-go |
+| 1k+ | no-go |

@@ -1,64 +1,39 @@
 # DPO Signal Sensitivity Fast Report v2
 
-Date: 2026-06-03
+Date: 2026-06-04
 
 ## Scope
 
-This report covers the requested `dpo_signal_sensitivity_fast` gate for the current template-diverse TDW / DPO signal turn.
+This report covers the requested `dpo_signal_sensitivity_fast` gate for the template-diverse TDW / DPO signal run.
 
 No real DPO training, VideoGPA `03_train.py`, Stage1, checkpoint save, or LoRA save was run.
 
-## Intended Command
+## Execution
 
-```bash
-CUDA_VISIBLE_DEVICES=6,7 TRANSFORMERS_OFFLINE=1 HF_HUB_OFFLINE=1 \
-/home/nvme03/workspace/lingbot-world/.conda_envs/lingbot-world-v2/bin/python \
-  -m cam_physgeo.dpo.lingbot_fast_videogpa_adapter \
-  --mode dpo_signal_sensitivity_fast \
-  --config configs/cam_physgeo/videogpa_adapter.yaml \
-  --batch local_assets/outputs/smoke/lingbot_dpo_batch_dryrun \
-  --out local_assets/outputs/smoke/lingbot_dpo_signal_sensitivity_fast \
-  --limit_pairs 1 \
-  --beta 0.1 \
-  --device cuda \
-  --dtype bf16 \
-  --trainable_scope camera_control_lora_tiny \
-  --lora_rank 2 \
-  --lora_alpha 4 \
-  --target_modules blocks.39.cam_shift_layer,blocks.39.cam_scale_layer \
-  --learning_rates 1e-5 5e-5 1e-4 \
-  --steps_per_lr 5 \
-  --fixed_noise_seed 123 \
-  --fixed_timestep 579 \
-  --resample_noise_each_step false \
-  --resample_timestep_each_step false \
-  --max_grad_norm 1.0 \
-  --no_save_lora true \
-  --no_checkpoint true \
-  --reuse_model_load true \
-  --restore_after_each_lr true
-```
+The sweep was launched in `tmux` on GPU6/7 as requested:
 
-## Current Outcome
+- session: `dpo_signal_fast`;
+- log: `local_assets/outputs/smoke/lingbot_dpo_signal_sensitivity_fast/tmux_stdout_stderr.log`;
+- metrics: `local_assets/outputs/smoke/lingbot_dpo_signal_sensitivity_fast/per_lr_step_metrics.jsonl`;
+- GPU0 was not used for DPO.
 
-The signal gate remains no-go.
-
-Reasons:
-
-- Previous fast-sweep attempts did not produce a usable multi-LR summary in the safe runtime window.
-- The latest remote SSH check was unstable; the direct main worktree import also did not expose `cam_physgeo.dpo.lingbot_fast_videogpa_adapter` from that path.
-- Earlier measured default rank-2 signal remained extremely weak:
-  - default rank-2 energy movement: about `5.960e-08`;
-  - preference logit movement: about `2.831e-08`;
-  - LR `1e-4` only completed a one-step fallback previously.
+The process was stopped after a reasonable window because only `1e-5` had produced three steps and the sweep had not reached the required multi-LR evidence.
 
 ## LR Results
 
-| LR | Status | Loss Delta | Delta_policy Movement | Preference Logit Movement | Notes |
-|---:|---|---:|---:|---:|---|
-| 1e-5 | not completed this turn | n/a | n/a | n/a | previous runner runtime-blocked |
-| 5e-5 | not completed this turn | n/a | n/a | n/a | previous runner runtime-blocked |
-| 1e-4 | partial historical fallback | n/a | very weak | about `2.831e-08` | insufficient for 5-pair gate |
+| LR | Status | Steps | Loss Delta | Delta_policy Movement | Preference Logit Movement | Notes |
+|---:|---|---:|---:|---:|---:|---|
+| 1e-5 | partial | 3 | about `-5.96e-08` | about `4.92e-07` | `1.31e-07` to `1.80e-07` | finite, no NaN/Inf |
+| 5e-5 | not reached | 0 | n/a | n/a | n/a | sweep stopped before this LR |
+| 1e-4 | not reached | 0 | n/a | n/a | n/a | sweep stopped before this LR |
+
+Observed `1e-5` rows:
+
+| Step | L_DPO | Delta_policy | Delta_ref | Preference Logit | Grad Norm | NaN/Inf |
+|---:|---:|---:|---:|---:|---:|---|
+| 0 | 0.6931471229 | -0.0061963499 | -0.0061976612 | 1.311e-07 | 2.422e-05 | no |
+| 1 | 0.6931470633 | -0.0061959773 | -0.0061976612 | 1.684e-07 | 2.446e-05 | no |
+| 2 | 0.6931470633 | -0.0061958581 | -0.0061976612 | 1.803e-07 | 2.425e-05 | no |
 
 ## Safety
 
@@ -70,12 +45,17 @@ Reasons:
 | Checkpoint save | no |
 | 5-pair overfit | not run |
 | GPU0 use for DPO | no |
+| GPU used | GPU6 under `CUDA_VISIBLE_DEVICES=6,7` |
+| Peak observed memory | about 54 GiB on GPU6 |
+| Final GPU6 memory after stop | 1 MiB |
 
 ## Gate Decision
 
-`dpo_signal_sensitivity_fast`: **no-go / incomplete**.
+`dpo_signal_sensitivity_fast`: **partial / no-go**.
 
 `5-pair tiny overfit`: **no-go**.
 
-Next action is to fix the signal runner robustness and/or test a stronger camera-control LoRA scope before attempting 5-pair.
+Reason: only one LR setting produced partial metrics; the go condition requires at least two completed LR settings and a clear signal above the previous near-zero baseline.
+
+Next action is to make the runner cheaper/faster or test a stronger camera-control LoRA scope before attempting 5-pair.
 

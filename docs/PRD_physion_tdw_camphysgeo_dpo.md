@@ -246,3 +246,34 @@ Actual template-diverse generation is still pending because it would use the GPU
 - `docs/gpu_usage_approval_request_tdw_template_diverse_10.md`
 
 Until that approval is granted and the 10-sample template-diverse batch passes, 50/200/1k TDW generation remains disallowed. Real DPO training also remains disallowed.
+
+## 2026-06-04 Template-Diverse Actual + DPO Signal Update
+
+The user approved exactly one GPU0-bound `DISPLAY=:8` template-diverse 10-sample attempt.
+
+Result:
+
+- planned distribution: `drop:3`, `collision:3`, `roll:2`, `containment:2`;
+- `drop`: 3 commands returned 0;
+- `collision/roll/containment`: 7 commands failed with upstream argument parsing errors;
+- validation accepted count: 0;
+- LingBot conversion: skipped;
+- video deliverables: no new template-diverse videos added.
+
+Exact TDW blocker:
+
+The plan-mode runner passed drop-specific args to non-drop templates. This has been fixed in code by applying those args only when `template == "drop"`. Because the approval was for exactly one 10-sample attempt, no second actual run was started.
+
+DPO signal:
+
+- `dpo_signal_sensitivity_fast` was launched in `tmux` on GPU6/7;
+- it produced three finite `1e-5` steps;
+- it did not complete at least two LR settings;
+- signal gate remains no-go;
+- 5-pair tiny overfit remains no-go.
+
+Next decisions:
+
+1. approve one more GPU0 template-diverse 10-sample smoke after the args fix, or configure a GPU6/7 TDW display;
+2. fix DPO signal runner speed/scope before any 5-pair;
+3. do not run 50/200/1k TDW or real DPO training yet.

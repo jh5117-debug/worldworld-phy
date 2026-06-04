@@ -531,3 +531,29 @@ DPO side:
 | real DPO training | no |
 
 Next allowed DPO action remains signal/scope debugging only. Do not run 5-pair, 10-pair, or real DPO training until the signal gate passes.
+
+## 2026-06-04 Template-Diverse Actual + DPO Signal Run
+
+TDW data side:
+
+| Gate | Status |
+|---|---|
+| template-diverse plan | passed |
+| template-diverse actual 10-sample | failed |
+| template-diverse validation | 0 accepted |
+| template-diverse LingBot conversion | skipped |
+| 50-sample validation | no-go |
+
+The actual run failed because non-drop templates received drop-only upstream arguments. The wrapper now only appends those arguments for `template == "drop"`. A second actual run requires fresh user approval.
+
+DPO side:
+
+| Gate | Status |
+|---|---|
+| `dpo_signal_sensitivity_fast` | partial |
+| LR settings completed | only partial `1e-5`, 3 steps |
+| signal gate | no-go |
+| 5-pair tiny overfit | no-go |
+| real DPO training | no |
+
+The observed `1e-5` steps were finite and had no NaN/Inf, but the multi-LR gate did not pass.

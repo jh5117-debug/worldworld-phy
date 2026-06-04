@@ -96,3 +96,18 @@ Configure or provide a GPU6/7 TDW display, then run the same command without GPU
 
 Approve GPU0 `DISPLAY=:8` for exactly this 10-sample template-diverse smoke before any 50-sample validation.
 
+## 2026-06-04 Update After First Approved Attempt
+
+The first approved template-diverse 10-sample attempt was executed and failed before producing accepted template-diverse samples:
+
+- `drop`: 3 commands returned 0;
+- `collision/roll/containment`: 7 commands failed with return code 2;
+- validation accepted count: 0.
+
+The exact blocker was fixed in code: drop-only arguments are now only passed when `template == "drop"`.
+
+Fresh approval is required before rerunning, because the previous approval covered exactly one 10-sample attempt.
+
+Recommended next approval wording:
+
+> I approve one additional GPU0-bound `DISPLAY=:8` 10-sample template-diverse `warmup_mild` smoke using the fixed template-specific command builder. Do not run 50 automatically.

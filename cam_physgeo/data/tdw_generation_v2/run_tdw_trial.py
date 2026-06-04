@@ -127,13 +127,16 @@ def _single_trial_command(config: dict, root: Path, output_subdir: str, trial: d
         "--num_distractors", "0",
         "--num_occluders", "0",
         "--room", "box",
-        "--drop", "cube,sphere",
         "--target", "cube,sphere",
-        "--ymin", "1.1",
-        "--ymax", "1.8",
-        "--dscale", "[0.15,0.45]",
         "--tscale", "[0.25,0.65]",
     ]
+    if template == "drop":
+        cmd.extend([
+            "--drop", "cube,sphere",
+            "--ymin", "1.1",
+            "--ymax", "1.8",
+            "--dscale", "[0.15,0.45]",
+        ])
     return cmd
 
 

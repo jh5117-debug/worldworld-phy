@@ -160,3 +160,15 @@ bash scripts/31_run_tdw_generation_v2_smoke.sh \
 ```
 
 This command must not be run unless the user approves GPU0 `DISPLAY=:8` for this specific template-diverse 10-sample smoke, or a GPU6/7 TDW display is available.
+
+## 2026-06-04 Template-Specific Args Rule
+
+The first approved template-diverse actual run showed that command-line arguments must be template-specific.
+
+Rule:
+
+- `drop` may receive `--drop`, `--ymin`, `--ymax`, and `--dscale`;
+- `collision`, `roll`, and `containment` must not receive those drop-only arguments;
+- common mild camera arguments may still be shared.
+
+The wrapper now implements this rule. The next actual template-diverse 10-sample smoke should use the same manifest but the fixed command builder.

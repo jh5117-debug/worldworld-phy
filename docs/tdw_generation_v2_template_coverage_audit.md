@@ -73,3 +73,22 @@ python tdw_physion_multi_template_moving_camera.py \
 
 The template coverage fix passed local dry-run validation. Actual TDW generation was not run because template-diverse 10 samples would require the GPU0-bound `DISPLAY=:8`, and this prompt did not grant that new GPU0 approval.
 
+## 2026-06-04 Approved Actual Run Finding
+
+The user later approved exactly one GPU0-bound template-diverse 10-sample attempt. The actual run exposed a second, more precise blocker:
+
+- `drop`: 3 commands returned 0;
+- `collision`: 3 commands failed with return code 2;
+- `roll`: 2 commands failed with return code 2;
+- `containment`: 2 commands failed with return code 2.
+
+The non-drop failures were caused by passing drop-specific arguments to every template:
+
+- `--drop`
+- `--ymin`
+- `--ymax`
+- `--dscale`
+
+These arguments are only valid for the drop template in the upstream parser. The wrapper has now been updated so they are only appended when `template == "drop"`.
+
+No second actual GPU0 run was started in this turn because the approval covered exactly one 10-sample attempt.

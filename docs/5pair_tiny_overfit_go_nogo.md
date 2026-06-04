@@ -1,6 +1,6 @@
 # 5-Pair Tiny Overfit Go / No-Go
 
-Date: 2026-06-03
+Date: 2026-06-04
 
 ## Decision
 
@@ -10,11 +10,11 @@ No-go.
 
 | Condition | Status |
 |---|---|
-| At least 2 LR settings completed | not met |
-| Finite losses | not newly verified |
-| No NaN/Inf | not newly verified |
-| No OOM | not newly verified |
-| Delta_policy movement clearly above `5.960e-08` baseline | not met |
+| At least 2 LR settings completed | not met; only `1e-5` partial |
+| Finite losses | met for 3 observed `1e-5` steps |
+| No NaN/Inf | met for 3 observed `1e-5` steps |
+| No OOM | met, but runtime/memory still high |
+| Delta_policy movement clearly above `5.960e-08` baseline | weak; about `4.92e-07` over 3 steps, not enough without multi-LR confirmation |
 | Recommended LR exists | not met |
 | Base/reference unchanged | previously passed, not enough alone |
 | LoRA influence valid | previously passed, but signal remains weak |
@@ -23,13 +23,15 @@ No-go.
 
 The DPO engineering chain is already validated up through 1-pair LoRA backward, one optimizer step, and a 5-step mini-loop. The missing gate is not plumbing; it is signal strength.
 
-Because the fast LR sweep did not produce a usable multi-LR summary and the previous measured movement was near numerical floor, running 5-pair would not be an informative smoke test yet.
+This run produced only three `1e-5` steps before it became too slow to keep running. Losses and gradients were finite, but the sweep did not reach the required multi-LR evidence.
+
+Running 5-pair now would not be an informative smoke test.
 
 ## Next Action
 
 Do not run 5-pair in this turn. First fix one of:
 
-- robust `dpo_signal_sensitivity_fast` execution with clear per-LR summaries;
+- faster `dpo_signal_sensitivity_fast` execution with clear per-LR summaries;
 - stronger camera-control LoRA target/scope;
 - fixed-noise diagnostic with larger but still safe LR/scope.
 
