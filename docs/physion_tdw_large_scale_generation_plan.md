@@ -350,3 +350,26 @@ Storage observed for the 50-sample gate:
 - contact sheets: about 6.4 MB.
 
 The next allowed data step is not automatic. A 200-sample pilot requires user approval because it would again use GPU0-bound `DISPLAY=:8`, and the estimated storage is roughly 16 GB raw HDF5 plus 36 GB converted LingBot inputs. Full 1k+ generation remains blocked until staged validation and explicit approval.
+
+## Visible-Motion Quality Gate Update
+
+The template-diverse 50-sample stage is now reclassified:
+
+- pipeline validation: passed;
+- final warmup data quality: not passed;
+- reason: camera motion is too weak to clearly test camera-conditioned world modeling.
+
+Do not run 200 on the old `warmup_mild` profile. The next data stage should use:
+
+`warmup_visible_motion`
+
+Staged plan for visible-motion data:
+
+1. 10-sample visible-motion smoke after GPU6/7 TDW display setup.
+2. 50-sample visible-motion validation only after the 10-sample smoke is visually and quantitatively accepted.
+3. 200-sample visible-motion pilot only after user approval.
+4. 1k+ only after staged validation and explicit approval.
+
+Current blocker:
+
+No GPU6/7 TDW display is available. The only verified TDW display is GPU0-bound `DISPLAY=:8`; GPU0 is forbidden for the visible-motion run.

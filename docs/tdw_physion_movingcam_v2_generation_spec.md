@@ -252,3 +252,48 @@ Actual validated status:
 - dummy action norm: 0.0 for every sample.
 
 The 50-sample validation supports the `warmup_mild` profile as a candidate source for later LingBot-Fast camera warmup. It does not authorize automatic 200/1k generation or any training. The next stage is a separate 200-sample pilot approval, or a decision to pause data generation and return to the DPO signal gate.
+
+## Warmup Visible-Motion Profile
+
+Manual review showed `warmup_mild` is too static for the main camera-conditioned warmup split. A stronger non-stress profile has been added:
+
+`warmup_visible_motion`
+
+Allowed variants:
+
+- `orbit_left_24`
+- `orbit_right_24`
+- `orbit_left_28`
+- `orbit_right_28`
+- `strafe_left_050`
+- `strafe_right_050`
+- `dolly_in_025`
+- `dolly_out_025`
+
+This profile remains separate from `stress_reobserve`. It bans lookaway, offscreen, reobserve, relative-yaw-180, occluder, and extreme motions.
+
+Visible-motion acceptance thresholds:
+
+- `target_visible_ratio >= 0.75`
+- `max_invisible_frames <= 8`
+- `camera_path_length >= 0.45`
+- `camera_path_length <= 1.50`
+- `background_motion_proxy >= 0.012`
+- `video_motion_proxy >= 0.015`
+
+Validator outputs:
+
+- `too_static`
+- `too_extreme`
+- `suitable_for_visible_motion`
+
+Dry-run status:
+
+- 10-sample plan passed;
+- template distribution is `drop:3`, `collision:3`, `roll:2`, `containment:2`;
+- stress/reobserve `bad_count=0`.
+
+Actual status:
+
+- not run, because no GPU6/7 TDW display is available;
+- GPU0-bound `DISPLAY=:8` was not used.

@@ -412,3 +412,36 @@ Key local deliverables:
 - video gallery: `local_assets/reports/tdw_video_deliverables/video_gallery.html`
 
 No 200/1k generation was run. The next TDW step is a user-approved 200-sample pilot only if this 50-sample validation is accepted. DPO signal remains a separate no-go gate, and real training remains disallowed.
+
+## Visible-Motion Reassessment Update
+
+Manual review of the 50-sample `warmup_mild` videos showed that the camera motion is too weak for final camera-conditioned warmup data.
+
+Updated interpretation:
+
+| Dataset | Status |
+|---|---|
+| template-diverse 50 | pipeline validation passed |
+| template-diverse 50 | not final warmup main data |
+| reason | camera motion too weak / visually close to static I2V |
+
+New profile added:
+
+`warmup_visible_motion`
+
+It uses stronger but non-stress variants:
+
+- `orbit_left_24`, `orbit_right_24`
+- `orbit_left_28`, `orbit_right_28`
+- `strafe_left_050`, `strafe_right_050`
+- `dolly_in_025`, `dolly_out_025`
+
+The validator now adds camera/background motion checks and marks samples as:
+
+- `too_static`
+- `too_extreme`
+- `suitable_for_visible_motion`
+
+Visible-motion 10-sample plan dry-run passed with `bad_count=0`, but actual generation was not run because no GPU6/7 TDW display is available. The only verified TDW display is GPU0-bound `DISPLAY=:8`, and this turn forbids GPU0-5.
+
+Next required action: configure a GPU6/7 TDW display, then run the 10-sample `warmup_visible_motion` smoke.

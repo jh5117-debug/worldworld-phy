@@ -4,6 +4,7 @@ import argparse
 import io
 import json
 import math
+import statistics
 from pathlib import Path
 from typing import Any
 
@@ -77,6 +78,97 @@ def _camera_motion_stats(positions: list[list[float]]) -> dict[str, Any]:
     }
 
 
+def _angle_deg(vec: list[float]) -> float:
+    if len(vec) < 3:
+        return 0.0
+    return float(math.degrees(math.atan2(vec[0], vec[2])))
+
+
+def _unwrap_degrees(values: list[float]) -> list[float]:
+    if not values:
+        return []
+    out = [float(values[0])]
+    for value in values[1:]:
+        prev = out[-1]
+        delta = float(value) - prev
+        while delta > 180.0:
+            value -= 360.0
+            delta = float(value) - prev
+        while delta < -180.0:
+            value += 360.0
+            delta = float(value) - prev
+        out.append(float(value))
+    return out
+
+
+def _yaw_stats(positions: list[list[float]], aims: list[list[float]]) -> dict[str, Any]:
+    if np is None or len(positions) < 2 or len(aims) != len(positions):
+        return {"yaw_change_proxy": None, "yaw_path_proxy": None}
+    yaws = []
+    for pos, aim in zip(positions, aims):
+        direction = [float(aim[i]) - float(pos[i]) for i in range(3)]
+        yaws.append(_angle_deg(direction))
+    unwrapped = _unwrap_degrees(yaws)
+    if len(unwrapped) < 2:
+        return {"yaw_change_proxy": None, "yaw_path_proxy": None}
+    diffs = [abs(unwrapped[i + 1] - unwrapped[i]) for i in range(len(unwrapped) - 1)]
+    return {
+        "yaw_change_proxy": float(abs(unwrapped[-1] - unwrapped[0])),
+        "yaw_path_proxy": float(sum(diffs)),
+    }
+
+
+def _image_to_gray_array(img) -> Any:
+    if np is None:
+        return None
+    arr = np.asarray(img.convert("L"), dtype="float32") / 255.0
+    if arr.ndim != 2:
+        return None
+    # Downsample by slicing to keep validation light.
+    return arr[::8, ::8]
+
+
+def _background_band(arr: Any) -> Any:
+    if np is None or arr is None or arr.ndim != 2:
+        return arr
+    h, w = arr.shape
+    top = arr[: max(1, h // 2), :]
+    left = arr[:, : max(1, w // 6)]
+    right = arr[:, max(0, w - max(1, w // 6)) :]
+    return np.concatenate([top.reshape(-1), left.reshape(-1), right.reshape(-1)])
+
+
+def _rgb_motion_stats_from_images(images: list[Any]) -> dict[str, Any]:
+    if np is None or len(images) < 2:
+        return {
+            "video_motion_proxy": None,
+            "background_motion_proxy": None,
+            "parallax_proxy": None,
+        }
+    grays = [_image_to_gray_array(img) for img in images]
+    grays = [g for g in grays if g is not None]
+    if len(grays) < 2:
+        return {
+            "video_motion_proxy": None,
+            "background_motion_proxy": None,
+            "parallax_proxy": None,
+        }
+    all_diffs = []
+    bg_diffs = []
+    for a, b in zip(grays, grays[1:]):
+        all_diffs.append(float(np.mean(np.abs(b - a))))
+        bg_a = _background_band(a)
+        bg_b = _background_band(b)
+        bg_diffs.append(float(np.mean(np.abs(bg_b - bg_a))))
+    video_motion = float(statistics.mean(all_diffs)) if all_diffs else None
+    background_motion = float(statistics.mean(bg_diffs)) if bg_diffs else None
+    return {
+        "video_motion_proxy": video_motion,
+        "background_motion_proxy": background_motion,
+        "parallax_proxy": background_motion,
+    }
+
+
 def _decode_image_dataset(ds: Any):
     if Image is None or np is None:
         return None
@@ -88,6 +180,55 @@ def _decode_image_dataset(ds: Any):
         return Image.open(io.BytesIO(raw)).convert("RGB")
     except Exception:
         return None
+
+
+VISIBLE_MOTION_THRESHOLDS = {
+    "target_visible_ratio_min": 0.75,
+    "max_invisible_frames": 8,
+    "min_camera_path_length": 0.45,
+    "max_camera_path_length": 1.50,
+    "min_background_motion_proxy": 0.012,
+    "min_video_motion_proxy": 0.015,
+}
+
+
+def _classify_motion(info: dict[str, Any], profile: str | None) -> dict[str, Any]:
+    if profile != "warmup_visible_motion":
+        return {
+            "too_static": False,
+            "too_extreme": False,
+            "suitable_for_visible_motion": None,
+            "motion_rejection_reasons": [],
+        }
+    t = VISIBLE_MOTION_THRESHOLDS
+    reasons: list[str] = []
+    extreme: list[str] = []
+    camera_path = info.get("camera_path_length")
+    bg_motion = info.get("background_motion_proxy")
+    video_motion = info.get("video_motion_proxy")
+    visible_ratio = info.get("target_visible_ratio")
+    max_invisible = info.get("target_disappeared_consecutive_max")
+    if camera_path is None or float(camera_path) < t["min_camera_path_length"]:
+        reasons.append("camera_path_too_short")
+    if bg_motion is not None and float(bg_motion) < t["min_background_motion_proxy"]:
+        reasons.append("background_motion_too_low")
+    if video_motion is not None and float(video_motion) < t["min_video_motion_proxy"]:
+        reasons.append("video_motion_too_low")
+    if camera_path is not None and float(camera_path) > t["max_camera_path_length"]:
+        extreme.append("camera_path_too_long")
+    if visible_ratio is not None and float(visible_ratio) < t["target_visible_ratio_min"]:
+        extreme.append("low_target_visible_ratio")
+    if max_invisible is not None and int(max_invisible) > t["max_invisible_frames"]:
+        extreme.append("target_invisible_too_long")
+    too_static = bool(reasons)
+    too_extreme = bool(extreme)
+    return {
+        "too_static": too_static,
+        "too_extreme": too_extreme,
+        "suitable_for_visible_motion": not too_static and not too_extreme,
+        "motion_rejection_reasons": reasons + extreme,
+        "visible_motion_thresholds": dict(t),
+    }
 
 
 def make_contact_sheet(path: Path, out_dir: Path, *, max_frames: int = 12) -> str | None:
@@ -131,7 +272,7 @@ def make_contact_sheet(path: Path, out_dir: Path, *, max_frames: int = 12) -> st
         return None
 
 
-def validate_hdf5(path: Path) -> dict[str, Any]:
+def validate_hdf5(path: Path, *, profile: str | None = None) -> dict[str, Any]:
     info: dict[str, Any] = {"path": str(path), "exists": path.exists(), "bytes": path.stat().st_size if path.exists() else 0}
     if h5py is None:
         info.update({"status": "blocked", "error": "h5py unavailable"})
@@ -148,6 +289,9 @@ def validate_hdf5(path: Path) -> dict[str, Any]:
             label_counts = {"camera_pose": 0, "camera_position": 0, "camera_aim": 0}
             target_visible: list[bool] = []
             camera_positions: list[list[float]] = []
+            camera_aims: list[list[float]] = []
+            sampled_images: list[Any] = []
+            sample_stride = max(1, len(frame_keys) // 12) if frame_keys else 1
             for frame in frame_keys:
                 labels = f.get(f"frames/{frame}/labels")
                 if labels is not None:
@@ -162,12 +306,29 @@ def validate_hdf5(path: Path) -> dict[str, Any]:
                         vec = _vector(labels["camera_position"])
                         if vec and len(vec) >= 3:
                             camera_positions.append(vec[:3])
+                    if "camera_aim" in labels:
+                        vec = _vector(labels["camera_aim"])
+                        if vec and len(vec) >= 3:
+                            camera_aims.append(vec[:3])
+                if len(sampled_images) < 12:
+                    try:
+                        frame_num = int(str(frame))
+                    except Exception:
+                        frame_num = len(sampled_images) * sample_stride
+                    if frame_num % sample_stride == 0 or frame == frame_keys[-1]:
+                        ds = f.get(f"frames/{frame}/images/_img")
+                        if ds is not None:
+                            img = _decode_image_dataset(ds)
+                            if img is not None:
+                                sampled_images.append(img)
             target_visible_ratio = None
             target_disappeared_consecutive_max = None
             if target_visible:
                 target_visible_ratio = float(sum(target_visible) / len(target_visible))
                 target_disappeared_consecutive_max = _max_consecutive_false(target_visible)
             camera_stats = _camera_motion_stats(camera_positions)
+            yaw_stats = _yaw_stats(camera_positions, camera_aims)
+            rgb_motion_stats = _rgb_motion_stats_from_images(sampled_images)
             info.update({
                 "status": "ok",
                 "frame_count": len(frame_keys),
@@ -184,7 +345,10 @@ def validate_hdf5(path: Path) -> dict[str, Any]:
                 "target_area_ratio_avg": None,
                 "target_disappeared_consecutive_max": target_disappeared_consecutive_max,
                 **camera_stats,
+                **yaw_stats,
+                **rgb_motion_stats,
             })
+            info.update(_classify_motion(info, profile))
     except Exception as exc:
         info.update({"status": "error", "error": repr(exc)})
     return info
@@ -222,12 +386,13 @@ def main() -> None:
     parser.add_argument("--manifest", type=Path, default=None)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--make_contact_sheet", action="store_true")
+    parser.add_argument("--profile", default=None)
     args = parser.parse_args()
     if args.manifest:
         hdf5_paths = _paths_from_manifest(args.root, args.manifest)
     else:
         hdf5_paths = sorted(args.root.rglob("*.hdf5")) + sorted(args.root.rglob("*.h5"))
-    rows = [validate_hdf5(p) for p in hdf5_paths]
+    rows = [validate_hdf5(p, profile=args.profile) for p in hdf5_paths]
     contact_dir = args.out.parent / "contact_sheets"
     contact_index: list[dict[str, str]] = []
     if args.make_contact_sheet:
@@ -250,6 +415,10 @@ def main() -> None:
         and (r.get("target_visible_ratio") is None or float(r.get("target_visible_ratio")) >= 0.75)
         and (r.get("target_disappeared_consecutive_max") is None or int(r.get("target_disappeared_consecutive_max")) <= 20)
     ]
+    visible_motion_ok = [
+        r for r in ok
+        if r.get("suitable_for_visible_motion") is True
+    ]
     args.out.parent.mkdir(parents=True, exist_ok=True)
     lines = [
         "# TDW Generation v2 Validation Report",
@@ -258,13 +427,14 @@ def main() -> None:
         f"Generated HDF5 count: {len(rows)}",
         f"Validation ok count: {len(ok)}",
         f"Suitable for warmup count: {len(suitable)}",
+        f"Suitable for visible motion count: {len(visible_motion_ok)}",
         "",
-        "| path | status | frames | rgb | depth | id | camera_pose | projection/camera_matrix | object_state | visible_ratio | max_invisible | camera_path | contact_sheet |",
-        "|---|---|---:|---|---|---|---|---|---|---:|---:|---:|---|",
+        "| path | status | frames | rgb | depth | id | camera_pose | projection/camera_matrix | object_state | visible_ratio | max_invisible | camera_path | bg_motion | too_static | too_extreme | visible_motion | contact_sheet |",
+        "|---|---|---:|---|---|---|---|---|---|---:|---:|---:|---:|---|---|---|---|",
     ]
     for r in rows[:200]:
         lines.append(
-            f"| `{r.get('path')}` | {r.get('status')} | {r.get('frame_count', '')} | {r.get('has_rgb', '')} | {r.get('has_depth', '')} | {r.get('has_id', '')} | {r.get('has_camera_pose', '')} | {r.get('has_projection_or_camera_matrix', '')} | {r.get('has_object_state', '')} | {r.get('target_visible_ratio', '')} | {r.get('target_disappeared_consecutive_max', '')} | {r.get('camera_path_length', '')} | `{r.get('contact_sheet_path', '')}` |"
+            f"| `{r.get('path')}` | {r.get('status')} | {r.get('frame_count', '')} | {r.get('has_rgb', '')} | {r.get('has_depth', '')} | {r.get('has_id', '')} | {r.get('has_camera_pose', '')} | {r.get('has_projection_or_camera_matrix', '')} | {r.get('has_object_state', '')} | {r.get('target_visible_ratio', '')} | {r.get('target_disappeared_consecutive_max', '')} | {r.get('camera_path_length', '')} | {r.get('background_motion_proxy', '')} | {r.get('too_static', '')} | {r.get('too_extreme', '')} | {r.get('suitable_for_visible_motion', '')} | `{r.get('contact_sheet_path', '')}` |"
         )
     if not rows:
         lines += ["", "No generated HDF5 files were found. This is a blocker for actual validation, not a fake success."]
@@ -277,7 +447,13 @@ def main() -> None:
     args.out.write_text("\n".join(lines) + "\n", encoding="utf-8")
     json_out = args.out.with_suffix(".json")
     json_out.write_text(json.dumps({"rows": rows, "contact_sheets": contact_index}, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(json.dumps({"out": str(args.out), "hdf5_count": len(rows), "ok_count": len(ok), "suitable_for_warmup": len(suitable)}, indent=2))
+    print(json.dumps({
+        "out": str(args.out),
+        "hdf5_count": len(rows),
+        "ok_count": len(ok),
+        "suitable_for_warmup": len(suitable),
+        "suitable_for_visible_motion": len(visible_motion_ok),
+    }, indent=2))
 
 
 if __name__ == "__main__":

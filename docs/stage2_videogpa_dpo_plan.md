@@ -647,3 +647,26 @@ DPO status is unchanged:
 - VideoGPA `03_train.py` remains disallowed.
 
 The data gate is now ready for a user-approved 200-sample TDW pilot, but that does not replace the DPO signal gate. Before any 5-pair or real DPO work, the fixed-noise signal sweep still needs a clear nonzero policy movement and a go/no-go report.
+
+## Visible-Motion Data Gate Update
+
+The previous TDW 50-sample gate should now be interpreted as a pipeline validation pass, not a final warmup-data-quality pass.
+
+Reason:
+
+- camera motion in `warmup_mild` is visually too weak;
+- the batch is too close to ordinary I2V generation;
+- it does not sufficiently stress whether LingBot follows poses/intrinsics.
+
+New data gate:
+
+`warmup_visible_motion`
+
+The profile and validator have been added, but actual 10-sample generation is blocked until a GPU6/7 TDW display exists. GPU0-bound `DISPLAY=:8` is forbidden for this turn and was not used.
+
+DPO status remains unchanged:
+
+- no DPO training;
+- no 5-pair;
+- no VideoGPA `03_train.py`;
+- signal-sensitivity remains a separate no-go gate.

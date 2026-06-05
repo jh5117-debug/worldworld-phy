@@ -86,6 +86,82 @@ camera_sets:
         radius: 0.10
         strafe: 0.0
         require_reobserve: false
+  warmup_visible_motion:
+    purpose: Visibly moving but non-stress camera motions for camera-conditioned warmup.
+    allowed_variants:
+      - orbit_left_24
+      - orbit_right_24
+      - orbit_left_28
+      - orbit_right_28
+      - strafe_left_050
+      - strafe_right_050
+      - dolly_in_025
+      - dolly_out_025
+    banned_keywords:
+      - lookaway
+      - offscreen
+      - relative_yaw_180
+      - relative_lookaway
+      - reobserve
+      - occluder
+      - extreme
+    upstream_mapping:
+      orbit_left_24:
+        motion: orbit
+        orbit: -24.0
+        height: 0.04
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_right_24:
+        motion: orbit
+        orbit: 24.0
+        height: 0.04
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_left_28:
+        motion: orbit
+        orbit: -28.0
+        height: 0.05
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_right_28:
+        motion: orbit
+        orbit: 28.0
+        height: 0.05
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      strafe_left_050:
+        motion: strafe
+        orbit: 0.0
+        height: 0.04
+        radius: 0.0
+        strafe: -0.50
+        require_reobserve: false
+      strafe_right_050:
+        motion: strafe
+        orbit: 0.0
+        height: 0.04
+        radius: 0.0
+        strafe: 0.50
+        require_reobserve: false
+      dolly_in_025:
+        motion: orbit
+        orbit: 0.0
+        height: 0.03
+        radius: -0.25
+        strafe: 0.0
+        require_reobserve: false
+      dolly_out_025:
+        motion: orbit
+        orbit: 0.0
+        height: 0.03
+        radius: 0.25
+        strafe: 0.0
+        require_reobserve: false
 profiles:
   warmup_mild:
     purpose: LingBot-Fast camera-conditioned warmup with smooth camera motion and visible target.
@@ -184,3 +260,65 @@ profiles:
     filters:
       foreground_motion: minimal
       target_visible_ratio_min: 0.85
+  warmup_visible_motion:
+    purpose: LingBot-Fast camera-conditioned warmup with visually obvious but non-stress camera motion.
+    templates: [drop, collision, roll, containment]
+    camera_set: warmup_visible_motion
+    camera_variants:
+      - name: orbit_left_24
+        motion: orbit
+        yaw_degrees: -24
+        translation: 0.0
+        height_delta: 0.04
+        stress: false
+      - name: orbit_right_24
+        motion: orbit
+        yaw_degrees: 24
+        translation: 0.0
+        height_delta: 0.04
+        stress: false
+      - name: orbit_left_28
+        motion: orbit
+        yaw_degrees: -28
+        translation: 0.0
+        height_delta: 0.05
+        stress: false
+      - name: orbit_right_28
+        motion: orbit
+        yaw_degrees: 28
+        translation: 0.0
+        height_delta: 0.05
+        stress: false
+      - name: strafe_left_050
+        motion: strafe
+        yaw_degrees: 0
+        translation: -0.50
+        height_delta: 0.04
+        stress: false
+      - name: strafe_right_050
+        motion: strafe
+        yaw_degrees: 0
+        translation: 0.50
+        height_delta: 0.04
+        stress: false
+      - name: dolly_in_025
+        motion: dolly_in
+        yaw_degrees: 0
+        translation: -0.25
+        height_delta: 0.03
+        stress: false
+      - name: dolly_out_025
+        motion: dolly_out
+        yaw_degrees: 0
+        translation: 0.25
+        height_delta: 0.03
+        stress: false
+    filters:
+      target_visible_ratio_min: 0.75
+      target_area_ratio_min: 0.002
+      max_disappeared_consecutive_frames: 8
+      min_camera_path_length: 0.45
+      max_camera_path_length: 1.50
+      min_background_motion_proxy: 0.012
+      min_video_motion_proxy: 0.015
+      reject_extreme_reobserve: true
