@@ -698,8 +698,11 @@ Data-side update:
 
 - `warmup_visible_motion_v2` profile added;
 - v2 plan dry-run passed locally;
-- v2 actual generation not launched because remote SSH timed out during code sync;
-- no v2 HDF5 / MP4 / NPY generated;
+- v2 actual generation later passed 10 / 10 on approved GPU0-bound `DISPLAY=:8`;
+- v2 visible-motion acceptance passed 10 / 10;
+- v2 LingBot cam-only conversion passed 10 / 10;
 - no 50 / 200 / 1k run.
 
 DPO remains no-go until both the data gate and signal gate are ready.
+
+The data gate is now ready to ask for a 50-sample `warmup_visible_motion_v2` validation, but this does not change the DPO gate. No DPO training, 5-pair tiny overfit, or VideoGPA `03_train` should run until the signal gate is separately resolved and approved.

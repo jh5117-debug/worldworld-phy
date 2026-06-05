@@ -5,6 +5,10 @@ import json
 from pathlib import Path
 
 
+def _is_visible_motion_profile(profile: str | None) -> bool:
+    return str(profile or "").startswith("warmup_visible_motion")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Filter generated TDW v2 samples using validation JSON.")
     parser.add_argument("--validation_json", type=Path, required=True)
@@ -21,7 +25,7 @@ def main() -> None:
             if not row.get(key): reasons.append(f"missing_{key}")
         if row.get("target_visible_ratio") is not None and row["target_visible_ratio"] < 0.75:
             reasons.append("low_target_visible_ratio")
-        if args.profile == "warmup_visible_motion":
+        if _is_visible_motion_profile(args.profile):
             if row.get("too_static") is True:
                 reasons.append("too_static")
             if row.get("too_extreme") is True:

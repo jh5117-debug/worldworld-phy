@@ -35,6 +35,8 @@ python -m cam_physgeo.data.tdw_generation_v2.plan_trials \
 
 ## Gate
 
-The local plan dry-run passed all template-aware constraints.
+The local and remote plan dry-runs passed all template-aware constraints.
 
-Remote execution remains pending until SSH control-plane stability allows syncing the profile and running the approved GPU0 `DISPLAY=:8` smoke.
+Remote actual execution was completed in the follow-up run on approved GPU0-bound `DISPLAY=:8`. The resulting v2 10-sample batch validated 10/10 and is documented in:
+
+`docs/tdw_generation_v2_visible_motion_v2_10_actual_report.md`

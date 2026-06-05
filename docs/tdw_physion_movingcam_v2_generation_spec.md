@@ -347,3 +347,20 @@ v2 planned mapping:
 | containment | `orbit_left_18`, `orbit_right_18`, `orbit_left_20`, `orbit_right_20`, `strafe_left_050`, `strafe_right_050` |
 
 The validator thresholds remain unchanged. v2 actual validation is still required before requesting any 50-sample run.
+
+## 2026-06-06 warmup_visible_motion_v2 Actual Result
+
+The v2 actual 10-sample smoke has passed with the unchanged visible-motion thresholds.
+
+Observed metrics:
+
+- generated HDF5: 10 / 10;
+- validation OK: 10 / 10;
+- suitable for visible motion: 10 / 10;
+- target visible ratio: 1.0 for every sample;
+- camera path length min/avg/max: 0.5016 / 0.9790 / 1.3831;
+- background motion proxy min/avg/max: 0.0120 / 0.0204 / 0.0295;
+- `too_static`: 0;
+- `too_extreme`: 0.
+
+This confirms the template-aware camera mapping should be used for the next visible-motion validation stage. A 50-sample run still requires explicit user approval and must not be followed by 200 / 1k automatically.

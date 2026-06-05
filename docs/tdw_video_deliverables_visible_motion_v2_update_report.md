@@ -1,28 +1,26 @@
 # TDW Video Deliverables Visible-Motion v2 Update Report
 
-Date: 2026-06-05
+Updated shared deliverables:
 
-## Status
+- `local_assets/reports/tdw_video_deliverables/video_index.md`
+- `local_assets/reports/tdw_video_deliverables/video_gallery.html`
 
-Not updated with v2 samples.
+Added section:
 
-## Reason
+`TDW v2 warmup_visible_motion_v2 10-sample smoke`
 
-No `warmup_visible_motion_v2` actual samples were generated because the remote SSH control plane timed out while syncing code to the TDW helper worktree.
+Each accepted sample records:
 
-## Existing Deliverables
+- template
+- camera variant
+- HDF5 path
+- target video path
+- contact sheet path
+- camera path length
+- background motion proxy
+- visible ratio
+- `too_static` / `too_extreme`
+- `suitable_for_visible_motion`
 
-The existing `warmup_visible_motion` v1 GPU0 smoke deliverables remain available:
+The deliverables live under `local_assets` and were not committed to Git.
 
-```text
-local_assets/reports/tdw_video_deliverables/video_index.md
-local_assets/reports/tdw_video_deliverables/video_gallery.html
-```
-
-## Next Step
-
-After v2 actual generation, validation, and conversion succeed, add a new section:
-
-```text
-TDW v2 warmup_visible_motion_v2 10-sample smoke
-```

@@ -1,38 +1,38 @@
-# TDW Generation v2 Visible-Motion v2 10-Sample Conversion Report
+# TDW Generation v2 Visible-Motion v2 Conversion Report
 
-Date: 2026-06-05
+Input validation report:
 
-## Status
+`local_assets/data/physion/generated_v2/reports/validation_warmup_visible_motion_v2_10.json`
 
-Not run.
+Output:
 
-## Reason
+`local_assets/data/physion/generated_v2/lingbot_cam_inputs_visible_motion_v2_10/`
 
-The v2 actual generation did not run because remote SSH became unavailable while syncing code to the TDW helper worktree.
+Conversion result:
 
-No v2 accepted samples exist yet, so there was nothing to convert.
+- Accepted samples: 10
+- Converted samples: 10
+- Conversion errors: 0
+- `target.mp4` probe: enabled and passed by the converter
+- `use_action=false`: enabled
+- Dummy `action.npy`: enabled
 
-## Next Step
+Required files per sample:
 
-After v2 actual generation and validation complete, convert only samples with:
+- `image.jpg`
+- `target.mp4`
+- `poses.npy`
+- `intrinsics.npy`
+- `prompt.txt`
+- `metadata.json`
+- `action.npy`
 
-```text
-suitable_for_visible_motion=true
-```
+Representative converted samples:
 
-using:
+- `local_assets/data/physion/generated_v2/lingbot_cam_inputs_visible_motion_v2_10/tdw_v2_00000_drop_orbit_left_24_seed22000_0000/`
+- `local_assets/data/physion/generated_v2/lingbot_cam_inputs_visible_motion_v2_10/tdw_v2_00003_collision_strafe_left_050_seed22003_0000/`
+- `local_assets/data/physion/generated_v2/lingbot_cam_inputs_visible_motion_v2_10/tdw_v2_00006_roll_strafe_left_050_seed22006_0000/`
+- `local_assets/data/physion/generated_v2/lingbot_cam_inputs_visible_motion_v2_10/tdw_v2_00008_containment_orbit_left_18_seed22008_0000/`
 
-```bash
-python -m cam_physgeo.data.tdw_generation_v2.convert_generated_to_lingbot \
-  --root local_assets/data/physion/generated_v2 \
-  --manifest local_assets/data/physion/generated_v2/manifests/plan_warmup_visible_motion_v2_10.jsonl \
-  --out local_assets/data/physion/generated_v2/lingbot_cam_inputs_visible_motion_v2_10 \
-  --only_accepted true \
-  --num_frames 81 \
-  --fps 16 \
-  --size 480x832 \
-  --use_action false \
-  --make_dummy_action true \
-  --force_rewrite_video true \
-  --probe_video true
-```
+No real action conditioning was used. `action.npy` is a dummy fallback and metadata records `use_action=false`.
+

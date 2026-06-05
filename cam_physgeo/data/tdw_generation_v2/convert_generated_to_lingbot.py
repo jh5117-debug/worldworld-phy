@@ -153,7 +153,13 @@ def _sample_from_validation_row(row: dict[str, Any]) -> dict[str, Any]:
     sample_id = f"tdw_v2_{trial_name}_{hdf5_path.stem}"
     template = _template_from_dir(trial_name)
     camera_variant = _camera_variant_from_dir(trial_name)
-    camera_profile = "warmup_visible_motion" if row.get("suitable_for_visible_motion") is not None or "warmup_visible_motion" in str(hdf5_path) else "warmup_mild"
+    camera_profile = "warmup_mild"
+    for candidate in ("warmup_visible_motion_v2", "warmup_visible_motion"):
+        if candidate in str(hdf5_path):
+            camera_profile = candidate
+            break
+    if camera_profile == "warmup_mild" and row.get("suitable_for_visible_motion") is not None:
+        camera_profile = "warmup_visible_motion"
     return {
         "sample_id": sample_id,
         "source": "tdw_generated_v2",

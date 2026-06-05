@@ -410,3 +410,18 @@ Local v2 plan dry-run passed:
 - `containment:2`
 
 Remote actual v2 generation did not launch because SSH to the TDW server repeatedly timed out/reset during code sync. Do not run 50 until v2 actual 10-sample validation passes the acceptance gate.
+
+## 2026-06-06 Visible-Motion v2 Actual Gate Update
+
+`warmup_visible_motion_v2` actual smoke has now passed.
+
+Summary:
+
+- generated HDF5: 10 / 10;
+- validation OK: 10 / 10;
+- suitable for visible motion: 10 / 10;
+- converted to LingBot cam-only: 10 / 10;
+- per-template accepted: drop 3, collision 3, roll 2, containment 2;
+- no `too_static` or `too_extreme` samples.
+
+The next staged data step is a 50-sample `warmup_visible_motion_v2` validation, but only after explicit user approval. The expected 50 distribution is `drop:15, collision:15, roll:10, containment:10`. Do not run 200 / 1k until the 50-sample stage is reviewed and approved.

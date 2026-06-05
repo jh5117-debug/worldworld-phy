@@ -491,3 +491,22 @@ The profile assigns camera variants by template:
 The v2 local plan dry-run passed with `drop:3, collision:3, roll:2, containment:2` and no stress/reobserve variants. Actual v2 generation was not launched because remote SSH repeatedly timed out while syncing code to the TDW helper worktree. No v2 HDF5 or MP4 was generated in this step.
 
 50-sample readiness remains no until v2 actual smoke passes with at least 8/10 accepted and at least one accepted sample per template.
+
+## 2026-06-06 Update: warmup_visible_motion_v2 actual smoke passed
+
+The template-aware `warmup_visible_motion_v2` 10-sample actual smoke has now run on explicitly approved GPU0-bound `DISPLAY=:8`.
+
+Results:
+
+| Gate | Result |
+|---|---|
+| HDF5 generation | 10 / 10 |
+| HDF5/key validation | 10 / 10 |
+| Suitable for warmup | 10 / 10 |
+| Suitable for visible motion | 10 / 10 |
+| Rejected | 0 / 10 |
+| LingBot cam-only conversion | 10 / 10 |
+
+The v2 profile fixes the v1 template-specific failures: roll no longer receives dolly variants, containment no longer receives orbit 24 / 28, and all templates have accepted samples.
+
+This makes `warmup_visible_motion_v2` ready for a user-approved 50-sample validation request. It does not approve 50 / 200 / 1k automatically, and it does not approve DPO or any training.

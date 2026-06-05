@@ -192,8 +192,12 @@ VISIBLE_MOTION_THRESHOLDS = {
 }
 
 
+def _is_visible_motion_profile(profile: str | None) -> bool:
+    return str(profile or "").startswith("warmup_visible_motion")
+
+
 def _classify_motion(info: dict[str, Any], profile: str | None) -> dict[str, Any]:
-    if profile != "warmup_visible_motion":
+    if not _is_visible_motion_profile(profile):
         return {
             "too_static": False,
             "too_extreme": False,

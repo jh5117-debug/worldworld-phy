@@ -66,21 +66,29 @@ Planned rows:
 
 ## v2 Actual
 
-Not run.
+Completed in the follow-up run.
 
-The remote SSH control plane repeatedly timed out or reset while syncing code/config to the TDW helper worktree. No v2 actual TDW command was launched, and no v2 HDF5 / MP4 / NPY was generated.
+The remote helper worktree was created from `origin/physion-tdw-visible-motion-v2`, then the approved GPU0-bound `DISPLAY=:8` route was used for exactly one v2 10-sample smoke.
+
+Results:
+
+- generated HDF5: 10/10;
+- validation OK: 10/10;
+- suitable for visible motion: 10/10;
+- rejected: 0/10;
+- LingBot cam-only conversion: 10/10.
+
+The full run report is:
+
+`docs/final_report_tdw_visible_motion_v2_run.md`
 
 ## 50 Readiness
 
-No.
+Yes, with explicit user approval required.
 
-The v2 10-sample actual smoke must run and achieve:
+The v2 10-sample actual smoke achieved acceptance 10/10 and included accepted samples from every template. A 50-sample approval request has been written:
 
-- acceptance >= 8 / 10;
-- at least one accepted sample per template;
-- no systematic `too_static` or `too_extreme` failure.
-
-Only then should a 50-sample approval request be written.
+`docs/gpu_usage_approval_request_visible_motion_v2_50.md`
 
 ## Safety
 
@@ -95,9 +103,4 @@ Only then should a 50-sample approval request be written.
 
 ## Next Action
 
-When SSH is stable, continue from:
-
-1. sync the v2 code/config to the remote helper worktree;
-2. run the v2 10-sample plan on the remote;
-3. run the approved GPU0 `DISPLAY=:8` v2 10-sample smoke;
-4. validate and convert only accepted samples.
+Ask the user before running a 50-sample `warmup_visible_motion_v2` validation. Do not run 200 / 1k or any training stage without a separate approval.
