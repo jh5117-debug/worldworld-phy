@@ -445,3 +445,24 @@ The validator now adds camera/background motion checks and marks samples as:
 Visible-motion 10-sample plan dry-run passed with `bad_count=0`, but actual generation was not run because no GPU6/7 TDW display is available. The only verified TDW display is GPU0-bound `DISPLAY=:8`, and this turn forbids GPU0-5.
 
 Next required action: configure a GPU6/7 TDW display, then run the 10-sample `warmup_visible_motion` smoke.
+
+## GPU6/7 Display Setup Attempt
+
+The follow-up GPU6/7 display audit found:
+
+- GPU6 and GPU7 are idle;
+- GPU6 PCI bus id: `00000000:CA:00.0`;
+- GPU7 PCI bus id: `00000000:DA:00.0`;
+- the only verified TDW Xorg display is still `DISPLAY=:8`;
+- `DISPLAY=:8` is bound to GPU0 via `/etc/X11/tdw-xorg-gpu0.conf`;
+- no `/etc/X11/*gpu6*` or `/etc/X11/*gpu7*` config exists;
+- passwordless sudo is unavailable.
+
+Therefore no actual visible-motion generation was run. GPU0 was not used.
+
+Required admin setup:
+
+- create a GPU6 or GPU7 TDW Xorg display, preferably `DISPLAY=:16` for GPU6;
+- use GPU6 Xorg BusID `PCI:202:0:0`;
+- validate with `xdpyinfo`, `ps -ef`, and `nvidia-smi`;
+- rerun 1-sample `warmup_visible_motion` before any 10-sample smoke.

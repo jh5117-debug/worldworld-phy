@@ -46,3 +46,14 @@ Stress/reobserve keyword check:
 - `bad_count = 0`
 
 Actual generation was not run because no GPU6/7 TDW display is currently available.
+
+## v2 Recheck
+
+The plan was rechecked for the GPU6/7 display setup turn and still passes:
+
+- rows: 10
+- template distribution: `drop:3`, `collision:3`, `roll:2`, `containment:2`
+- camera variants: `orbit_left_24`, `orbit_right_24`, `orbit_left_28`, `orbit_right_28`, `strafe_left_050`, `strafe_right_050`, `dolly_in_025`, `dolly_out_025`
+- stress/reobserve `bad_count=0`
+
+Actual generation remains blocked until a GPU6/7 TDW display exists.

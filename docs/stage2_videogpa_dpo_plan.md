@@ -670,3 +670,14 @@ DPO status remains unchanged:
 - no 5-pair;
 - no VideoGPA `03_train.py`;
 - signal-sensitivity remains a separate no-go gate.
+
+## GPU6/7 Display Blocker For Visible-Motion Data
+
+The visible-motion data gate remains blocked at infrastructure level:
+
+- no GPU6/7 TDW Xorg display exists;
+- `DISPLAY=:8` is GPU0-bound and forbidden;
+- sudo is required to create/start `DISPLAY=:16` on GPU6;
+- passwordless sudo is unavailable.
+
+No visible-motion actual samples were generated. This keeps downstream DPO/warmup decisions unchanged.

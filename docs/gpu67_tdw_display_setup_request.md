@@ -20,6 +20,27 @@ But this display is bound to GPU0:
 
 The current user instruction forbids GPU0-5 for this task, so actual generation cannot run.
 
+Additional audit result:
+
+```text
+sudo: a password is required
+sudo_not_available
+```
+
+So Codex cannot create `/etc/X11/tdw-xorg-gpu6.conf` or start `Xorg :16` in this run.
+
+GPU6 PCI bus id:
+
+```text
+00000000:CA:00.0
+```
+
+Xorg BusID form:
+
+```text
+PCI:202:0:0
+```
+
 ## Needed Setup
 
 An administrator or user with sufficient permissions should create a TDW Xorg display on GPU6 or GPU7.
@@ -36,7 +57,7 @@ sudo nvidia-xconfig \
   --allow-empty-initial-configuration \
   --use-display-device=None \
   --virtual=1280x720 \
-  --busid <GPU6_OR_GPU7_BUS_ID> \
+  --busid PCI:202:0:0 \
   --output-xconfig=/etc/X11/tdw-xorg-gpu6.conf
 
 sudo Xorg :16 \
@@ -46,6 +67,47 @@ sudo Xorg :16 \
 ```
 
 The exact `BusID` must be taken from `nvidia-smi -q` or `nvidia-xconfig --query-gpu-info`.
+
+Minimal manual config content, matching the existing GPU0 pattern:
+
+```text
+Section "ServerFlags"
+    Option "AutoAddGPU" "False"
+    Option "AutoBindGPU" "False"
+EndSection
+
+Section "ServerLayout"
+    Identifier "TDWHeadlessGPU6"
+    Screen 0 "Screen0" 0 0
+EndSection
+
+Section "Device"
+    Identifier "GPU6"
+    Driver "nvidia"
+    VendorName "NVIDIA Corporation"
+    BusID "PCI:202:0:0"
+    Option "AllowEmptyInitialConfiguration" "True"
+EndSection
+
+Section "Screen"
+    Identifier "Screen0"
+    Device "GPU6"
+    DefaultDepth 24
+    Option "AllowEmptyInitialConfiguration" "True"
+    SubSection "Display"
+        Depth 24
+        Virtual 1280 720
+    EndSubSection
+EndSection
+```
+
+Validation after setup:
+
+```bash
+DISPLAY=:16 xdpyinfo >/tmp/tdw_xdpyinfo_16.txt 2>&1
+ps -ef | grep "Xorg :16" | grep -v grep
+nvidia-smi --query-gpu=index,pci.bus_id,memory.used,memory.total,utilization.gpu --format=csv
+```
 
 ## Command To Run After Setup
 

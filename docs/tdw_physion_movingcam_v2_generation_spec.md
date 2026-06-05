@@ -297,3 +297,17 @@ Actual status:
 
 - not run, because no GPU6/7 TDW display is available;
 - GPU0-bound `DISPLAY=:8` was not used.
+
+## GPU6/7 Display Requirement
+
+`warmup_visible_motion` actual generation must not use `DISPLAY=:8` unless it is re-bound to GPU6/7, which it currently is not.
+
+Current state:
+
+- `DISPLAY=:8` -> GPU0;
+- GPU6 PCI bus id -> `00000000:CA:00.0`;
+- GPU6 Xorg BusID -> `PCI:202:0:0`;
+- no GPU6/7 Xorg config exists;
+- passwordless sudo unavailable.
+
+Until a GPU6/7 display exists, only plan dry-runs and validator work are allowed.

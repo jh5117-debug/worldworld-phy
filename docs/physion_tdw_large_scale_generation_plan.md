@@ -373,3 +373,16 @@ Staged plan for visible-motion data:
 Current blocker:
 
 No GPU6/7 TDW display is available. The only verified TDW display is GPU0-bound `DISPLAY=:8`; GPU0 is forbidden for the visible-motion run.
+
+## GPU6/7 Display Setup Attempt
+
+The GPU6/7 TDW display setup could not be completed from Codex:
+
+- GPU6 bus id: `00000000:CA:00.0`;
+- GPU6 Xorg BusID: `PCI:202:0:0`;
+- passwordless sudo: unavailable;
+- `/etc/X11/tdw-xorg-gpu6.conf`: not created;
+- `Xorg :16`: not started;
+- actual generation: not run.
+
+Large-scale generation remains blocked. The next TDW action is infrastructure setup, not data scaling.

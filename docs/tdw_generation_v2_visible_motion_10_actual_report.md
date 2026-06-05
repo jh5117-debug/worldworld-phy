@@ -22,6 +22,8 @@ It is bound to GPU0 via:
 
 This turn explicitly forbids GPU0-5 and requires GPU6/7 only. No GPU6/7 TDW display was found.
 
+The 1-sample visible-motion actual smoke was also not run, so the 10-sample gate remains blocked by dependency.
+
 ## Generated Count
 
 - generated HDF5: 0

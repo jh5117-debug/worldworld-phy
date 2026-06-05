@@ -11,3 +11,5 @@ Not run.
 No actual `warmup_visible_motion` HDF5 samples were generated because no GPU6/7 TDW display is available.
 
 Conversion remains blocked until visible-motion actual generation succeeds.
+
+The 1-sample and 10-sample actual gates both remain unrun.
