@@ -68,6 +68,8 @@ def _accepted_rows(root: Path, *, only_accepted: bool) -> tuple[list[dict[str, A
             and (visible is None or float(visible) >= 0.75)
             and (max_invisible is None or int(max_invisible) <= 20)
         )
+        if row.get("suitable_for_visible_motion") is not None:
+            accepted = accepted and row.get("suitable_for_visible_motion") is True
         if only_accepted and not accepted:
             continue
         row = dict(row)
@@ -135,6 +137,8 @@ def _accepted_rows_for_manifest(root: Path, manifest: Path, *, only_accepted: bo
             and (visible is None or float(visible) >= 0.75)
             and (max_invisible is None or int(max_invisible) <= 20)
         )
+        if row.get("suitable_for_visible_motion") is not None:
+            accepted = accepted and row.get("suitable_for_visible_motion") is True
         if only_accepted and not accepted:
             continue
         row = dict(row)
@@ -149,13 +153,14 @@ def _sample_from_validation_row(row: dict[str, Any]) -> dict[str, Any]:
     sample_id = f"tdw_v2_{trial_name}_{hdf5_path.stem}"
     template = _template_from_dir(trial_name)
     camera_variant = _camera_variant_from_dir(trial_name)
+    camera_profile = "warmup_visible_motion" if row.get("suitable_for_visible_motion") is not None or "warmup_visible_motion" in str(hdf5_path) else "warmup_mild"
     return {
         "sample_id": sample_id,
         "source": "tdw_generated_v2",
         "hdf5_path": str(hdf5_path),
         "template": template,
         "camera_variant": camera_variant,
-        "camera_profile": "warmup_mild",
+        "camera_profile": camera_profile,
         "has_depth": bool(row.get("has_depth")),
         "has_id_mask": bool(row.get("has_id")),
         "has_camera_pose": bool(row.get("has_camera_pose")),
@@ -165,7 +170,7 @@ def _sample_from_validation_row(row: dict[str, Any]) -> dict[str, Any]:
         "target_disappeared_consecutive_max": row.get("target_disappeared_consecutive_max"),
         "camera_path_length": row.get("camera_path_length"),
         "contact_sheet_path": row.get("contact_sheet_path"),
-        "prompt_path": "generated://tdw_v2_warmup_mild",
+        "prompt_path": f"generated://tdw_v2_{camera_profile}",
     }
 
 

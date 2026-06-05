@@ -445,3 +445,30 @@ The validator now adds camera/background motion checks and marks samples as:
 Visible-motion 10-sample plan dry-run passed with `bad_count=0`, but actual generation was not run because no GPU6/7 TDW display is available. The only verified TDW display is GPU0-bound `DISPLAY=:8`, and this turn forbids GPU0-5.
 
 Next required action: configure a GPU6/7 TDW display, then run the 10-sample `warmup_visible_motion` smoke.
+## 2026-06-05 Update: warmup_visible_motion GPU0 smoke
+
+The prior template-diverse 50-sample `warmup_mild` run remains a pipeline validation pass, but manual review found the camera motion too weak for final camera-conditioned warmup data. It should not be treated as final warmup main data.
+
+The user explicitly approved GPU0-bound `DISPLAY=:8` for a limited `warmup_visible_motion` smoke:
+
+- one sample first;
+- ten samples only if the one-sample gate passed;
+- no 50 / 200 / 1k;
+- no training, DPO, VideoGPA `03_train`, Stage1, rollout, or reward calibration.
+
+Results:
+
+| Gate | Result |
+|---|---|
+| 1-sample actual | passed |
+| 1-sample suitable_for_visible_motion | true |
+| 10-sample HDF5 generation | 10 / 10 |
+| 10-sample HDF5/key validation | 10 / 10 |
+| Suitable for warmup | 10 / 10 |
+| Suitable for visible motion | 5 / 10 |
+| Converted to LingBot cam-only | 5 / 5 accepted samples |
+| target.mp4 probe | 5 / 5 converted samples |
+
+Accepted visible-motion samples are the drop orbit 24/28 clips and collision strafe 0.50 clips. Rejected samples exposed useful tuning signals: dolly 0.25 remains too static, while containment orbit 24 and one collision orbit 28 exceeded the current camera-path threshold.
+
+Conclusion: `warmup_visible_motion` is directionally correct, but the profile needs one more tuning pass before a 50-sample validation request.

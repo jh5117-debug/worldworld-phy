@@ -670,3 +670,22 @@ DPO status remains unchanged:
 - no 5-pair;
 - no VideoGPA `03_train.py`;
 - signal-sensitivity remains a separate no-go gate.
+## 2026-06-05 TDW visible-motion data gate status
+
+No DPO training was run.
+
+TDW data gate update:
+
+- `warmup_mild` template-diverse 50 remains pipeline-valid but too static for final warmup main data.
+- `warmup_visible_motion` 1-sample passed.
+- `warmup_visible_motion` 10-sample generated 10 / 10 HDF5.
+- Visible-motion quality accepted 5 / 10 samples.
+- Only the 5 `suitable_for_visible_motion=true` samples were converted to LingBot cam-only inputs.
+
+DPO remains gated separately:
+
+- signal-sensitivity remains no-go from prior reports;
+- 5-pair tiny overfit remains no-go;
+- real DPO training remains no.
+
+Next DPO step should wait until the signal runner is fixed and the visible-motion data profile is tuned.

@@ -297,3 +297,28 @@ Actual status:
 
 - not run, because no GPU6/7 TDW display is available;
 - GPU0-bound `DISPLAY=:8` was not used.
+## 2026-06-05 warmup_visible_motion GPU0 Smoke Notes
+
+`warmup_visible_motion` was tested with explicit user approval on GPU0-bound `DISPLAY=:8`.
+
+Observed result:
+
+- one-sample smoke passed;
+- 10 / 10 generated HDF5 and passed key/visibility validation;
+- 5 / 10 passed the visible-motion quality gate;
+- 2 / 10 were too static (`dolly_in_025`, `dolly_out_025`);
+- 3 / 10 were too extreme by camera-path threshold (one `collision_orbit_right_28`, two containment orbit samples).
+
+Spec implication:
+
+- visible-motion validation must be treated as a quality gate distinct from HDF5/key completeness;
+- `suitable_for_visible_motion=true` is required for accepted warmup candidates;
+- conversion with `--only_accepted true` must not convert samples rejected as `too_static` or `too_extreme`;
+- before a 50-sample visible-motion run, revise the profile or per-template camera mapping.
+
+Recommended next profile revision:
+
+- keep `orbit_left/right_24` for drop-like scenes;
+- keep `strafe_left/right_050` when target framing remains acceptable;
+- remove or increase dolly beyond 0.25 only after a separate one-sample test;
+- reduce containment orbit strength or add a per-template camera-path threshold after visual review.

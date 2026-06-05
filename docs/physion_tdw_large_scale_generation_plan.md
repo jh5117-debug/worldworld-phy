@@ -373,3 +373,22 @@ Staged plan for visible-motion data:
 Current blocker:
 
 No GPU6/7 TDW display is available. The only verified TDW display is GPU0-bound `DISPLAY=:8`; GPU0 is forbidden for the visible-motion run.
+## 2026-06-05 Visible-Motion GPU0 Smoke Update
+
+The old template-diverse 50-sample `warmup_mild` data is pipeline-valid but visually too static. Do not expand it directly to 200 / 1k as final warmup data.
+
+The user approved GPU0-bound `DISPLAY=:8` for only a 1 -> 10 `warmup_visible_motion` smoke. Results:
+
+- 1-sample visible-motion gate passed.
+- 10 / 10 HDF5 generated.
+- 10 / 10 passed HDF5/key/visibility validation.
+- 5 / 10 passed `suitable_for_visible_motion`.
+- 5 / 10 were converted to LingBot cam-only inputs.
+- No 50 / 200 / 1k was run.
+
+Do not request or run a 50-sample visible-motion validation until the profile is tuned:
+
+- keep orbit 24/28 and strafe 0.50 candidates that show visible parallax;
+- remove or strengthen dolly 0.25 because it remained too static;
+- tune containment separately because orbit 24 produced too-large camera path under the current threshold;
+- rerun a 10-sample smoke after tuning before asking for 50.
