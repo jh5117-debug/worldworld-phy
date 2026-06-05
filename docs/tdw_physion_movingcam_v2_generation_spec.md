@@ -322,3 +322,28 @@ Recommended next profile revision:
 - keep `strafe_left/right_050` when target framing remains acceptable;
 - remove or increase dolly beyond 0.25 only after a separate one-sample test;
 - reduce containment orbit strength or add a per-template camera-path threshold after visual review.
+
+## 2026-06-05 warmup_visible_motion_v2 Spec Addendum
+
+`warmup_visible_motion_v2` introduces template-aware camera selection through:
+
+```text
+template_camera_variants
+```
+
+This is required because a single global camera cycle caused systematic v1 failures:
+
+- roll received dolly variants that were too static;
+- containment received orbit 24 variants that were too extreme;
+- collision received orbit 28, which exceeded the path threshold.
+
+v2 planned mapping:
+
+| Template | Camera variants |
+|---|---|
+| drop | `orbit_left_24`, `orbit_right_24`, `orbit_left_28`, `orbit_right_28` |
+| collision | `strafe_left_050`, `strafe_right_050`, `orbit_left_24`, `orbit_right_24` |
+| roll | `strafe_left_050`, `strafe_right_050`, `orbit_left_24`, `orbit_right_24` |
+| containment | `orbit_left_18`, `orbit_right_18`, `orbit_left_20`, `orbit_right_20`, `strafe_left_050`, `strafe_right_050` |
+
+The validator thresholds remain unchanged. v2 actual validation is still required before requesting any 50-sample run.

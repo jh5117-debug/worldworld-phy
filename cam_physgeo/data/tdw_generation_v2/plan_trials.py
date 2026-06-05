@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .generation_config import get_profile, load_config, upstream_camera_mapping, validate_profile_camera_set
+from .generation_config import get_profile, load_config, upstream_camera_mapping, validate_profile_camera_set, variant_name
 
 
 def parse_template_counts(raw: str | None) -> dict[str, int]:
@@ -48,18 +48,27 @@ def build_trials(config_path: Path, profile_name: str, templates: list[str], num
     validate_profile_camera_set(config, profile)
     templates = templates or profile.templates
     variants = profile.camera_variants
+    variant_by_name = {variant_name(variant): variant for variant in variants}
     upstream_variants = {row["name"]: row for row in upstream_camera_mapping(config, profile)}
-    if not variants:
+    if not upstream_variants:
         raise ValueError(f"Profile {profile_name} has no camera_variants")
     seed_start = int(config.get("seed_start", 20000))
     trials = []
     template_sequence = build_template_sequence(templates, num_trials, template_counts)
+    template_seen: dict[str, int] = {template: 0 for template in templates}
     for idx in range(num_trials):
         template = template_sequence[idx]
-        variant = variants[idx % len(variants)]
+        template_variant_names = profile.template_camera_variants.get(template, [])
+        if template_variant_names:
+            local_idx = template_seen.get(template, 0)
+            camera_variant_name = template_variant_names[local_idx % len(template_variant_names)]
+            template_seen[template] = local_idx + 1
+        else:
+            variant = variants[idx % len(variants)]
+            camera_variant_name = str(variant["name"])
+        variant = variant_by_name.get(camera_variant_name, {"name": camera_variant_name})
         seed = seed_start + idx
-        trial_id = f"tdw_v2_{profile_name}_{template}_{variant['name']}_seed{seed}"
-        camera_variant_name = str(variant["name"])
+        trial_id = f"tdw_v2_{profile_name}_{template}_{camera_variant_name}_seed{seed}"
         upstream_variant = dict(upstream_variants[camera_variant_name])
         trials.append({
             "trial_id": trial_id,

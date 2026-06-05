@@ -472,3 +472,22 @@ Results:
 Accepted visible-motion samples are the drop orbit 24/28 clips and collision strafe 0.50 clips. Rejected samples exposed useful tuning signals: dolly 0.25 remains too static, while containment orbit 24 and one collision orbit 28 exceeded the current camera-path threshold.
 
 Conclusion: `warmup_visible_motion` is directionally correct, but the profile needs one more tuning pass before a 50-sample validation request.
+
+## 2026-06-05 Update: warmup_visible_motion_v2 profile
+
+Based on the 5/10 v1 acceptance result, a template-aware profile was added:
+
+```text
+warmup_visible_motion_v2
+```
+
+The profile assigns camera variants by template:
+
+- drop: orbit 24/28;
+- collision: strafe 0.50 and orbit 24, avoiding orbit 28;
+- roll: strafe/orbit, avoiding dolly 0.25;
+- containment: orbit 18/20 and strafe, avoiding orbit 24/28.
+
+The v2 local plan dry-run passed with `drop:3, collision:3, roll:2, containment:2` and no stress/reobserve variants. Actual v2 generation was not launched because remote SSH repeatedly timed out while syncing code to the TDW helper worktree. No v2 HDF5 or MP4 was generated in this step.
+
+50-sample readiness remains no until v2 actual smoke passes with at least 8/10 accepted and at least one accepted sample per template.

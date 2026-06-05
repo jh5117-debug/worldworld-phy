@@ -89,6 +89,10 @@ camera_sets:
   warmup_visible_motion:
     purpose: Visibly moving but non-stress camera motions for camera-conditioned warmup.
     allowed_variants:
+      - orbit_left_18
+      - orbit_right_18
+      - orbit_left_20
+      - orbit_right_20
       - orbit_left_24
       - orbit_right_24
       - orbit_left_28
@@ -106,6 +110,34 @@ camera_sets:
       - occluder
       - extreme
     upstream_mapping:
+      orbit_left_18:
+        motion: orbit
+        orbit: -18.0
+        height: 0.035
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_right_18:
+        motion: orbit
+        orbit: 18.0
+        height: 0.035
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_left_20:
+        motion: orbit
+        orbit: -20.0
+        height: 0.035
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_right_20:
+        motion: orbit
+        orbit: 20.0
+        height: 0.035
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
       orbit_left_24:
         motion: orbit
         orbit: -24.0
@@ -313,6 +345,103 @@ profiles:
         translation: 0.25
         height_delta: 0.03
         stress: false
+    filters:
+      target_visible_ratio_min: 0.75
+      target_area_ratio_min: 0.002
+      max_disappeared_consecutive_frames: 8
+      min_camera_path_length: 0.45
+      max_camera_path_length: 1.50
+      min_background_motion_proxy: 0.012
+      min_video_motion_proxy: 0.015
+      reject_extreme_reobserve: true
+  warmup_visible_motion_v2:
+    purpose: Template-aware camera-conditioned warmup with visible but non-stress motion.
+    templates: [drop, collision, roll, containment]
+    camera_set: warmup_visible_motion
+    camera_variants:
+      - name: orbit_left_18
+        motion: orbit
+        yaw_degrees: -18
+        translation: 0.0
+        height_delta: 0.035
+        stress: false
+      - name: orbit_right_18
+        motion: orbit
+        yaw_degrees: 18
+        translation: 0.0
+        height_delta: 0.035
+        stress: false
+      - name: orbit_left_20
+        motion: orbit
+        yaw_degrees: -20
+        translation: 0.0
+        height_delta: 0.035
+        stress: false
+      - name: orbit_right_20
+        motion: orbit
+        yaw_degrees: 20
+        translation: 0.0
+        height_delta: 0.035
+        stress: false
+      - name: orbit_left_24
+        motion: orbit
+        yaw_degrees: -24
+        translation: 0.0
+        height_delta: 0.04
+        stress: false
+      - name: orbit_right_24
+        motion: orbit
+        yaw_degrees: 24
+        translation: 0.0
+        height_delta: 0.04
+        stress: false
+      - name: orbit_left_28
+        motion: orbit
+        yaw_degrees: -28
+        translation: 0.0
+        height_delta: 0.05
+        stress: false
+      - name: orbit_right_28
+        motion: orbit
+        yaw_degrees: 28
+        translation: 0.0
+        height_delta: 0.05
+        stress: false
+      - name: strafe_left_050
+        motion: strafe
+        yaw_degrees: 0
+        translation: -0.50
+        height_delta: 0.04
+        stress: false
+      - name: strafe_right_050
+        motion: strafe
+        yaw_degrees: 0
+        translation: 0.50
+        height_delta: 0.04
+        stress: false
+    template_camera_variants:
+      drop:
+        - orbit_left_24
+        - orbit_right_24
+        - orbit_left_28
+        - orbit_right_28
+      collision:
+        - strafe_left_050
+        - strafe_right_050
+        - orbit_left_24
+        - orbit_right_24
+      roll:
+        - strafe_left_050
+        - strafe_right_050
+        - orbit_left_24
+        - orbit_right_24
+      containment:
+        - orbit_left_18
+        - orbit_right_18
+        - orbit_left_20
+        - orbit_right_20
+        - strafe_left_050
+        - strafe_right_050
     filters:
       target_visible_ratio_min: 0.75
       target_area_ratio_min: 0.002

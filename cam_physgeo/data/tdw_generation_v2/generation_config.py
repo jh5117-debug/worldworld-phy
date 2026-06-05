@@ -17,6 +17,7 @@ class GenerationProfile:
     purpose: str
     camera_set: str | None
     camera_variants: list[dict[str, Any]]
+    template_camera_variants: dict[str, list[str]]
     filters: dict[str, Any]
     templates: list[str]
     output: dict[str, Any]
@@ -51,6 +52,7 @@ def get_profile(config: dict[str, Any], profile: str) -> GenerationProfile:
         purpose=str(raw.get("purpose", "")),
         camera_set=raw.get("camera_set"),
         camera_variants=list(raw.get("camera_variants", [])),
+        template_camera_variants={str(k): [str(x) for x in v] for k, v in dict(raw.get("template_camera_variants", {})).items()},
         filters=dict(raw.get("filters", {})),
         templates=list(raw.get("templates", config.get("default_templates", []))),
         output=dict(raw.get("output", config.get("output", {}))),
@@ -73,6 +75,19 @@ def variant_name(variant: dict[str, Any]) -> str:
     return str(variant.get("name", ""))
 
 
+def profile_camera_variant_names(profile: GenerationProfile) -> list[str]:
+    names: list[str] = []
+    for variant in profile.camera_variants:
+        name = variant_name(variant)
+        if name and name not in names:
+            names.append(name)
+    for template_variants in profile.template_camera_variants.values():
+        for name in template_variants:
+            if name and name not in names:
+                names.append(name)
+    return names
+
+
 def validate_profile_camera_set(config: dict[str, Any], profile: GenerationProfile) -> None:
     """Ensure profile variants are explicitly allowed and contain no stress keywords."""
     if not profile.camera_set:
@@ -80,9 +95,10 @@ def validate_profile_camera_set(config: dict[str, Any], profile: GenerationProfi
     cset = camera_set_config(config, profile.camera_set)
     allowed = {str(v) for v in cset.get("allowed_variants", [])}
     banned = [str(v).lower() for v in cset.get("banned_keywords", [])]
-    for variant in profile.camera_variants:
-        name = variant_name(variant)
-        text = f"{name} {variant.get('motion', '')}".lower()
+    variant_motion = {variant_name(v): str(v.get("motion", "")) for v in profile.camera_variants}
+    mapping = cset.get("upstream_mapping", {}) if cset else {}
+    for name in profile_camera_variant_names(profile):
+        text = f"{name} {variant_motion.get(name, mapping.get(name, {}).get('motion', ''))}".lower()
         if allowed and name not in allowed:
             raise ValueError(
                 f"Profile {profile.name!r} camera_set {profile.camera_set!r} "
@@ -101,9 +117,10 @@ def upstream_camera_mapping(config: dict[str, Any], profile: GenerationProfile) 
     validate_profile_camera_set(config, profile)
     cset = camera_set_config(config, profile.camera_set)
     mapping = cset.get("upstream_mapping", {}) if cset else {}
+    variant_by_name = {variant_name(variant): variant for variant in profile.camera_variants}
     out: list[dict[str, Any]] = []
-    for variant in profile.camera_variants:
-        name = variant_name(variant)
+    for name in profile_camera_variant_names(profile):
+        variant = variant_by_name.get(name, {"name": name})
         raw = dict(mapping.get(name, {}))
         if not raw:
             raw = {

@@ -689,3 +689,17 @@ DPO remains gated separately:
 - real DPO training remains no.
 
 Next DPO step should wait until the signal runner is fixed and the visible-motion data profile is tuned.
+
+## 2026-06-05 TDW visible-motion v2 gate status
+
+No DPO training was run.
+
+Data-side update:
+
+- `warmup_visible_motion_v2` profile added;
+- v2 plan dry-run passed locally;
+- v2 actual generation not launched because remote SSH timed out during code sync;
+- no v2 HDF5 / MP4 / NPY generated;
+- no 50 / 200 / 1k run.
+
+DPO remains no-go until both the data gate and signal gate are ready.

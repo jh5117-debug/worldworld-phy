@@ -392,3 +392,21 @@ Do not request or run a 50-sample visible-motion validation until the profile is
 - remove or strengthen dolly 0.25 because it remained too static;
 - tune containment separately because orbit 24 produced too-large camera path under the current threshold;
 - rerun a 10-sample smoke after tuning before asking for 50.
+
+## 2026-06-05 Visible-Motion v2 Profile Update
+
+`warmup_visible_motion_v2` was added to make camera motion template-aware:
+
+- drop keeps orbit 24/28;
+- collision uses strafe 0.50 and orbit 24, avoiding orbit 28;
+- roll uses strafe/orbit, avoiding dolly;
+- containment uses orbit 18/20 and strafe, avoiding orbit 24/28.
+
+Local v2 plan dry-run passed:
+
+- `drop:3`
+- `collision:3`
+- `roll:2`
+- `containment:2`
+
+Remote actual v2 generation did not launch because SSH to the TDW server repeatedly timed out/reset during code sync. Do not run 50 until v2 actual 10-sample validation passes the acceptance gate.
