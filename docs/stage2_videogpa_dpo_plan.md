@@ -758,3 +758,14 @@ DPO remains gated separately:
 - VideoGPA `03_train.py` remains disallowed.
 
 The data gate is not ready for 200 from this v3 revision. Tune the TDW camera profile first, then rerun a small smoke. No training or DPO should start from this dataset state.
+
+### Human-review update
+
+The user manually reviewed the v3 50 videos and confirmed that all 50 are usable. The data-side status is therefore updated to:
+
+- v3 human review accepted: `50 / 50`;
+- all-50 LingBot cam-only conversion: `50 / 50`;
+- old generated_v2 waste assets cleaned up;
+- a v3 200-sample pilot can be requested, but not run without explicit approval.
+
+DPO remains unchanged: signal-sensitivity and 5-pair are still separate no-go gates, and no DPO training is approved.

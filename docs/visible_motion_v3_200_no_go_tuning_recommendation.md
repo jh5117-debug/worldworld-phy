@@ -1,4 +1,10 @@
-# visible-motion v3 200-sample no-go and tuning recommendation
+# visible-motion v3 200-sample readiness update
+
+Update: the user manually reviewed the v3 50 videos and confirmed that all 50 are usable. The numeric no-go below is therefore superseded as a hard blocker. Keep it as diagnostic context only.
+
+A 200-sample pilot may be requested based on human review, but it still requires explicit user approval and must not run automatically.
+
+## Original numeric gate note
 
 Do not run 200.
 

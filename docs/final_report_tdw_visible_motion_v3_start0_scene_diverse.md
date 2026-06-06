@@ -25,8 +25,9 @@
 
 ## Motion and acceptance
 
-- Accepted for visible-motion v3: 28 / 50.
-- Rejected: 22 / 50.
+- Numeric validator accepted for visible-motion v3: 28 / 50.
+- Numeric validator rejected: 22 / 50.
+- Human review accepted: 50 / 50.
 - Too static: 22.
 - Too extreme: 0.
 - Delayed camera motion: 22.
@@ -44,7 +45,7 @@ Accepted per template:
 - roll: 4 / 10
 - containment: 6 / 10
 
-The main failure is strafe: every `strafe_left/right_055` and `strafe_left/right_065` sample was rejected as too static / delayed under the stricter v3 early-motion gate. Orbit variants are the only accepted cameras in this run.
+The strict numeric validator rejected every `strafe_left/right_055` and `strafe_left/right_065` sample as too static / delayed. The user manually reviewed the videos afterward and confirmed that all 50 clips are usable. Treat the numeric early-motion flag as a diagnostic warning for this batch, not a hard rejection.
 
 ## Human review
 
@@ -56,24 +57,24 @@ Gallery:
 
 `local_assets/reports/human_review/tdw_visible_motion_v3_start0_scene_diverse_50/video_gallery.html`
 
-The pack is useful for diagnosis and human review. It is not ready as final warmup main data.
+The pack is useful for review and downstream preparation. Based on human review, this v3 50-sample set can be used.
 
 ## Conversion
 
-- Converted accepted samples: 28 / 28.
+- Converted human-accepted samples: 50 / 50.
 - target.mp4 probe completed through the conversion runner.
 - `metadata.json` uses `use_action=false`.
 - `action.npy` is dummy fallback.
 
-Conversion root:
+Final conversion root:
 
-`local_assets/data/physion/generated_v3/lingbot_cam_inputs_visible_motion_v3_start0_scene_diverse_50/`
+`local_assets/data/physion/generated_v3/lingbot_cam_inputs_visible_motion_v3_start0_scene_diverse_50_human_accepted_all/`
 
 ## 200 readiness
 
-No-go.
+Ready for an approval request, not automatic execution.
 
-The agreed 200-readiness target was not met: accepted count is 28 / 50, below the required 40 / 50, and delayed camera motion is 22, above the allowed 5. Do not run 200 or 1k from this profile revision.
+The strict numeric validator did not meet the previous automatic 200-readiness thresholds, but human review accepted the full 50-sample set. A 200-sample pilot can be requested based on human review, but it still requires explicit user approval. Do not run 200 or 1k automatically.
 
 ## Safety
 
@@ -86,9 +87,8 @@ The agreed 200-readiness target was not met: accepted count is 28 / 50, below th
 
 ## Next action
 
-Tune v3 before another scale-up:
+Next step:
 
+- write or use a GPU approval request before any 200-sample pilot;
 - keep scene-diverse seeds and start0 motion;
-- strengthen strafe values or remove strafe from the review profile;
-- run a small smoke first;
-- only ask for another 50 after the small smoke accepts the revised strafe/alternative camera set.
+- keep the numeric early-motion diagnostics visible in reports, but do not hard-reject this human-accepted 50-sample set.

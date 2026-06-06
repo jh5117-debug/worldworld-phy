@@ -485,3 +485,16 @@ Per-template accepted:
 - containment: `6 / 10`.
 
 The run is not ready for 200. Scene diversity is fixed, but strafe variants at `0.55` and `0.65` fail the current early-motion and total-path gates. The next step is a smaller tuning smoke with stronger strafe, or an orbit-only review profile if camera-mode diversity is less important than acceptance. No 200 / 1k run is approved.
+
+### Human-review update
+
+The user manually reviewed the v3 50 videos and confirmed that all 50 are usable. The prior numeric no-go is now retained as diagnostic context only.
+
+Operational status:
+
+- human review accepted: `50 / 50`;
+- all-50 LingBot cam-only conversion completed: `50 / 50`;
+- `use_action=false` and dummy `action.npy` remain enforced;
+- old `generated_v2` raw/conversion assets were deleted, reducing `generated_v2` from about `37G` to `254M`.
+
+The next stage can be a 200-sample v3 pilot only after explicit user approval. The 200 pilot should continue using `generated_v3` and must not cascade into 1k+.

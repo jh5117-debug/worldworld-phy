@@ -563,3 +563,16 @@ The approved v3 50-sample review run completed:
 | LingBot conversion | 28 / 28 accepted samples |
 
 The v3 run fixed scene diversity but did not meet the 200-readiness target because all strafe variants were rejected as too static / delayed. The next data task is to tune strafe strength or remove strafe from the review profile and rerun a smaller smoke. No 200 / 1k generation, training, DPO, VideoGPA `03_train`, Stage1, rollout, or reward calibration is approved.
+
+### Human-review override
+
+After reviewing the rendered v3 videos, the user confirmed that all 50 videos are usable. For this batch, the numeric `too_static` / `delayed_camera_motion` flags are diagnostic warnings rather than hard rejects.
+
+Updated status:
+
+- human review acceptance: `50 / 50`;
+- LingBot cam-only conversion: `50 / 50`;
+- final conversion root: `local_assets/data/physion/generated_v3/lingbot_cam_inputs_visible_motion_v3_start0_scene_diverse_50_human_accepted_all/`;
+- old generated_v2 waste assets were removed to reduce storage pressure.
+
+The next possible data step is a user-approved v3 200-sample pilot. This is not automatic approval to run 200 / 1k, and it does not affect the separate DPO no-go state.

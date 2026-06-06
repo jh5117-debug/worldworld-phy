@@ -419,3 +419,14 @@ Spec implication:
 - `generated_v3` review data must not be promoted to main warmup data unless the human-review and early-motion gates pass;
 - the next profile revision should either strengthen strafe or remove strafe from the accepted candidate camera set;
 - no 200 / 1k generation should run from this v3 revision.
+
+### Human-review acceptance note
+
+The user subsequently reviewed the v3 videos and accepted all 50 as usable. This means the strict early-motion numeric rejection is not a hard data exclusion for this batch.
+
+Spec implication:
+
+- keep `too_static` and `delayed_camera_motion` in reports as diagnostics;
+- allow human review to promote a sample when HDF5/key/visibility/scene-diversity gates pass;
+- for this v3 50 set, all 50 samples are human-accepted and converted;
+- future 200-sample runs still require explicit approval.

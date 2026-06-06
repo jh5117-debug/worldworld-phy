@@ -9,9 +9,9 @@
 | Experiment folder | `local_assets/experiments/tdw_visible_motion_v3_start0_scene_diverse_50/` |
 | Manifest | `local_assets/data/physion/generated_v3/manifests/plan_warmup_visible_motion_v3_start0_scene_diverse_50.jsonl` |
 | Validation report | `local_assets/data/physion/generated_v3/reports/validation_warmup_visible_motion_v3_start0_scene_diverse_50.md` |
-| LingBot conversion root | `local_assets/data/physion/generated_v3/lingbot_cam_inputs_visible_motion_v3_start0_scene_diverse_50/` |
+| LingBot conversion root | `local_assets/data/physion/generated_v3/lingbot_cam_inputs_visible_motion_v3_start0_scene_diverse_50_human_accepted_all/` |
 | Human review pack | `local_assets/reports/human_review/tdw_visible_motion_v3_start0_scene_diverse_50/` |
-| Status | generated 50/50; validation OK 50/50; accepted 28/50; converted 28/28 accepted; not ready for 200 |
-| Next action | tune v3 profile, especially strafe early-motion/path thresholds or stronger strafe values, then rerun a smaller smoke before another 50 |
+| Status | generated 50/50; validation OK 50/50; human review accepted 50/50; converted 50/50 |
+| Next action | request explicit approval before any 200-sample v3 pilot |
 
 No generated assets in `local_assets` are committed to Git.
