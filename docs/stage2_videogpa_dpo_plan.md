@@ -706,3 +706,31 @@ Data-side update:
 DPO remains no-go until both the data gate and signal gate are ready.
 
 The data gate is now ready to ask for a 50-sample `warmup_visible_motion_v2` validation, but this does not change the DPO gate. No DPO training, 5-pair tiny overfit, or VideoGPA `03_train` should run until the signal gate is separately resolved and approved.
+
+## 2026-06-06 TDW visible-motion v2 50-sample data gate status
+
+No DPO training was run.
+
+Data-side update:
+
+- `warmup_mild` 50 remains pipeline-valid but too weak for final camera-conditioned warmup data.
+- `warmup_visible_motion_v2` 10-sample smoke passed 10 / 10.
+- `warmup_visible_motion_v2` 50-sample validation passed 50 / 50.
+- Per-template accepted counts: drop 15, collision 15, roll 10, containment 10.
+- LingBot cam-only conversion passed 50 / 50 with `use_action=false` and dummy zero `action.npy`.
+
+Motion-quality summary:
+
+- camera path length min/avg/max: `0.5016 / 1.0778 / 1.4814`;
+- background motion proxy min/avg/max: `0.0121 / 0.0211 / 0.0332`;
+- `too_static`: `0 / 50`;
+- `too_extreme`: `0 / 50`.
+
+DPO remains gated separately:
+
+- signal-sensitivity remains no-go from prior reports;
+- 5-pair tiny overfit remains no-go;
+- real DPO training remains no;
+- VideoGPA `03_train.py` remains disallowed.
+
+The data gate is ready for a user-approved 200-sample visible-motion pilot. It does not authorize DPO training or any 200 / 1k generation automatically.

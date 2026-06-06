@@ -425,3 +425,36 @@ Summary:
 - no `too_static` or `too_extreme` samples.
 
 The next staged data step is a 50-sample `warmup_visible_motion_v2` validation, but only after explicit user approval. The expected 50 distribution is `drop:15, collision:15, roll:10, containment:10`. Do not run 200 / 1k until the 50-sample stage is reviewed and approved.
+
+## 2026-06-06 Visible-Motion v2 50-Sample Validation Update
+
+The explicitly approved `warmup_visible_motion_v2` 50-sample validation has completed on GPU0-bound `DISPLAY=:8`.
+
+Summary:
+
+- planned distribution: `drop:15`, `collision:15`, `roll:10`, `containment:10`;
+- generated HDF5: `50 / 50`;
+- validation OK: `50 / 50`;
+- suitable for visible motion: `50 / 50`;
+- rejected: `0 / 50`;
+- LingBot cam-only conversion: `50 / 50`;
+- target visible ratio: `1.0` for all samples;
+- camera path length min/avg/max: `0.5016 / 1.0778 / 1.4814`;
+- background motion proxy min/avg/max: `0.0121 / 0.0211 / 0.0332`.
+
+The raw HDF5 footprint for the 50-sample batch is about `4.31 GB`; the converted LingBot cam-only footprint is about `9.75 GB`.
+
+Recommended next staged data step:
+
+1. Ask the user to approve a 200-sample `warmup_visible_motion_v2` pilot.
+2. Keep the same template-aware camera mapping unless manual video review finds a template-specific issue.
+3. Do not run 1k+ until the 200-sample pilot is validated and explicitly approved.
+
+Estimated 200-sample resource envelope based on this run:
+
+- raw HDF5: about `17.2 GB`;
+- converted LingBot cam-only inputs: about `39.0 GB`;
+- runtime on GPU0-bound `DISPLAY=:8`: about `7 hours`;
+- command must use the same `--profile warmup_visible_motion_v2` and a `drop:60,collision:60,roll:40,containment:40` plan.
+
+No 200 / 1k generation is currently approved.

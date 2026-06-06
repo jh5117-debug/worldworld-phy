@@ -510,3 +510,30 @@ Results:
 The v2 profile fixes the v1 template-specific failures: roll no longer receives dolly variants, containment no longer receives orbit 24 / 28, and all templates have accepted samples.
 
 This makes `warmup_visible_motion_v2` ready for a user-approved 50-sample validation request. It does not approve 50 / 200 / 1k automatically, and it does not approve DPO or any training.
+
+## 2026-06-06 Update: warmup_visible_motion_v2 50-sample validation passed
+
+The user explicitly approved GPU0-bound `DISPLAY=:8` for exactly one `warmup_visible_motion_v2` 50-sample validation run. No 200 / 1k generation, DPO, VideoGPA `03_train`, Stage1, rollout, reward calibration, LoRA save, or checkpoint save was approved or run.
+
+Results:
+
+| Gate | Result |
+|---|---|
+| Planned distribution | drop 15, collision 15, roll 10, containment 10 |
+| HDF5 generation | 50 / 50 |
+| HDF5/key validation | 50 / 50 |
+| Suitable for warmup | 50 / 50 |
+| Suitable for visible motion | 50 / 50 |
+| Rejected | 0 / 50 |
+| Too static | 0 / 50 |
+| Too extreme | 0 / 50 |
+| LingBot cam-only conversion | 50 / 50 |
+
+Motion-quality summary:
+
+- camera path length min/avg/max: `0.5016 / 1.0778 / 1.4814`;
+- background motion proxy min/avg/max: `0.0121 / 0.0211 / 0.0332`;
+- target visible ratio: `1.0` for every sample;
+- max invisible frames: `0` for every sample.
+
+Conclusion: the data-side visible-motion gate is ready for a user-approved 200-sample pilot request. This does not authorize 200 / 1k generation automatically, and it does not unblock DPO training; the DPO signal gate remains separate.

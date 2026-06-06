@@ -364,3 +364,28 @@ Observed metrics:
 - `too_extreme`: 0.
 
 This confirms the template-aware camera mapping should be used for the next visible-motion validation stage. A 50-sample run still requires explicit user approval and must not be followed by 200 / 1k automatically.
+
+## 2026-06-06 warmup_visible_motion_v2 50-Sample Result
+
+The explicitly approved `warmup_visible_motion_v2` 50-sample validation completed successfully.
+
+Observed result:
+
+- planned distribution: `drop:15`, `collision:15`, `roll:10`, `containment:10`;
+- generated HDF5: `50 / 50`;
+- validation OK: `50 / 50`;
+- suitable for visible motion: `50 / 50`;
+- rejected: `0 / 50`;
+- `too_static`: `0`;
+- `too_extreme`: `0`;
+- target visible ratio: `1.0` for every sample;
+- max invisible frames: `0` for every sample;
+- camera path length min/avg/max: `0.5016 / 1.0778 / 1.4814`;
+- background motion proxy min/avg/max: `0.0121 / 0.0211 / 0.0332`.
+
+Spec implication:
+
+- `warmup_visible_motion_v2` should replace `warmup_mild` as the candidate camera-conditioned warmup data profile.
+- The old `warmup_mild` 50-sample run remains useful as a pipeline validation set, but not as final warmup main data.
+- Accepted visible-motion samples must satisfy both HDF5/key/visibility validation and the visible-motion quality flags.
+- A 200-sample pilot is the next data-scale step, but it requires explicit user approval and must not cascade into 1k+ generation automatically.
