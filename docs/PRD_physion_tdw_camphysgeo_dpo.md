@@ -537,3 +537,29 @@ Motion-quality summary:
 - max invisible frames: `0` for every sample.
 
 Conclusion: the data-side visible-motion gate is ready for a user-approved 200-sample pilot request. This does not authorize 200 / 1k generation automatically, and it does not unblock DPO training; the DPO signal gate remains separate.
+
+## 2026-06-06 Update: warmup_visible_motion_v3 human-review review set
+
+Human review of the v2 50-sample set found that passing the numeric validator was not sufficient: the clips still looked too similar, camera motion was not visually strong enough, and some motion was not clear from frame 0. v2 is therefore retained as a pipeline validation set, not final camera-conditioned warmup main data.
+
+`warmup_visible_motion_v3_start0_scene_diverse` was added to address this:
+
+- camera motion starts at frame 0 and spans the clip;
+- camera values are stronger than v2;
+- scene diversity is measured with scene hashes;
+- validation includes early-motion and delayed-camera-motion flags.
+
+The approved v3 50-sample review run completed:
+
+| Gate | Result |
+|---|---|
+| HDF5 generation | 50 / 50 |
+| HDF5/key validation | 50 / 50 |
+| Unique scene hashes | 50 / 50 |
+| Accepted for visible-motion v3 | 28 / 50 |
+| Rejected | 22 / 50 |
+| Delayed camera motion | 22 / 50 |
+| Too static | 22 / 50 |
+| LingBot conversion | 28 / 28 accepted samples |
+
+The v3 run fixed scene diversity but did not meet the 200-readiness target because all strafe variants were rejected as too static / delayed. The next data task is to tune strafe strength or remove strafe from the review profile and rerun a smaller smoke. No 200 / 1k generation, training, DPO, VideoGPA `03_train`, Stage1, rollout, or reward calibration is approved.

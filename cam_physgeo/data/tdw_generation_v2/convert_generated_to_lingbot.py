@@ -70,6 +70,10 @@ def _accepted_rows(root: Path, *, only_accepted: bool) -> tuple[list[dict[str, A
         )
         if row.get("suitable_for_visible_motion") is not None:
             accepted = accepted and row.get("suitable_for_visible_motion") is True
+        if row.get("delayed_camera_motion") is True:
+            accepted = False
+        if row.get("duplicate_scene_hash") is True:
+            accepted = False
         if only_accepted and not accepted:
             continue
         row = dict(row)
@@ -139,6 +143,10 @@ def _accepted_rows_for_manifest(root: Path, manifest: Path, *, only_accepted: bo
         )
         if row.get("suitable_for_visible_motion") is not None:
             accepted = accepted and row.get("suitable_for_visible_motion") is True
+        if row.get("delayed_camera_motion") is True:
+            accepted = False
+        if row.get("duplicate_scene_hash") is True:
+            accepted = False
         if only_accepted and not accepted:
             continue
         row = dict(row)
@@ -150,11 +158,16 @@ def _accepted_rows_for_manifest(root: Path, manifest: Path, *, only_accepted: bo
 def _sample_from_validation_row(row: dict[str, Any]) -> dict[str, Any]:
     hdf5_path = Path(str(row["path"]))
     trial_name = hdf5_path.parent.name
-    sample_id = f"tdw_v2_{trial_name}_{hdf5_path.stem}"
+    sample_prefix = "tdw_v3" if "generated_v3" in str(hdf5_path) else "tdw_v2"
+    sample_id = f"{sample_prefix}_{trial_name}_{hdf5_path.stem}"
     template = _template_from_dir(trial_name)
     camera_variant = _camera_variant_from_dir(trial_name)
     camera_profile = "warmup_mild"
-    for candidate in ("warmup_visible_motion_v2", "warmup_visible_motion"):
+    for candidate in (
+        "warmup_visible_motion_v3_start0_scene_diverse",
+        "warmup_visible_motion_v2",
+        "warmup_visible_motion",
+    ):
         if candidate in str(hdf5_path):
             camera_profile = candidate
             break

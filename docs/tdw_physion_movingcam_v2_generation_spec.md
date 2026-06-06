@@ -389,3 +389,33 @@ Spec implication:
 - The old `warmup_mild` 50-sample run remains useful as a pipeline validation set, but not as final warmup main data.
 - Accepted visible-motion samples must satisfy both HDF5/key/visibility validation and the visible-motion quality flags.
 - A 200-sample pilot is the next data-scale step, but it requires explicit user approval and must not cascade into 1k+ generation automatically.
+
+## 2026-06-06 Spec Addendum: v3 start0 scene diversity and human-review gate
+
+Human review can override a numeric pipeline pass. The v2 50-sample set remains pipeline-valid, but it is not final warmup main data because humans judged the motion and scene diversity insufficient.
+
+`warmup_visible_motion_v3_start0_scene_diverse` adds:
+
+- `camera_motion_start=0`;
+- full-clip motion through frame 80;
+- stronger template-aware camera values;
+- no dolly variants;
+- per-trial scene seeds;
+- scene hash validation;
+- early-motion metrics and `delayed_camera_motion`.
+
+The v3 50-sample review result:
+
+- HDF5/key validation: `50 / 50`;
+- unique scene hashes: `50 / 50`;
+- accepted for visible-motion v3: `28 / 50`;
+- rejected: `22 / 50`;
+- all rejected samples were strafe variants flagged as `too_static` and `delayed_camera_motion`;
+- orbit variants passed without `too_extreme`.
+
+Spec implication:
+
+- `suitable_for_visible_motion_v3=true` is required before conversion/use as warmup data;
+- `generated_v3` review data must not be promoted to main warmup data unless the human-review and early-motion gates pass;
+- the next profile revision should either strengthen strafe or remove strafe from the accepted candidate camera set;
+- no 200 / 1k generation should run from this v3 revision.

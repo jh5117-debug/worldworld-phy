@@ -734,3 +734,27 @@ DPO remains gated separately:
 - VideoGPA `03_train.py` remains disallowed.
 
 The data gate is ready for a user-approved 200-sample visible-motion pilot. It does not authorize DPO training or any 200 / 1k generation automatically.
+
+## 2026-06-06 TDW visible-motion v3 review status
+
+No DPO training was run.
+
+Data-side update:
+
+- manual review rejected the v2 50-sample set as final warmup data despite numeric validation pass;
+- `warmup_visible_motion_v3_start0_scene_diverse` was added and tested as a 50-sample review set;
+- generated HDF5: `50 / 50`;
+- validation OK: `50 / 50`;
+- unique scene hashes: `50 / 50`;
+- accepted for visible-motion v3: `28 / 50`;
+- converted accepted samples: `28 / 28`;
+- rejected samples: `22 / 50`, all caused by strafe variants failing `too_static` / `delayed_camera_motion`.
+
+DPO remains gated separately:
+
+- signal-sensitivity remains no-go from prior reports;
+- 5-pair tiny overfit remains no-go;
+- real DPO training remains no;
+- VideoGPA `03_train.py` remains disallowed.
+
+The data gate is not ready for 200 from this v3 revision. Tune the TDW camera profile first, then rerun a small smoke. No training or DPO should start from this dataset state.

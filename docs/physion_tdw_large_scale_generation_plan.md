@@ -458,3 +458,30 @@ Estimated 200-sample resource envelope based on this run:
 - command must use the same `--profile warmup_visible_motion_v2` and a `drop:60,collision:60,roll:40,containment:40` plan.
 
 No 200 / 1k generation is currently approved.
+
+## 2026-06-06 Visible-Motion v3 Start0 Scene-Diverse Review
+
+Manual review invalidated the previous v2 50-sample set as final warmup main data despite its numeric pass. The failure was qualitative: low perceived scene diversity, weak visible camera motion, and insufficiently clear frame-0 camera motion.
+
+The new `warmup_visible_motion_v3_start0_scene_diverse` profile was tested on an explicitly approved 50-sample review set using `generated_v3`.
+
+Summary:
+
+- generated HDF5: `50 / 50`;
+- validation OK: `50 / 50`;
+- unique scene hashes: `50 / 50`;
+- accepted for visible-motion v3: `28 / 50`;
+- rejected: `22 / 50`;
+- too static: `22 / 50`;
+- delayed camera motion: `22 / 50`;
+- too extreme: `0 / 50`;
+- converted accepted LingBot cam-only samples: `28 / 28`.
+
+Per-template accepted:
+
+- drop: `11 / 15`;
+- collision: `7 / 15`;
+- roll: `4 / 10`;
+- containment: `6 / 10`.
+
+The run is not ready for 200. Scene diversity is fixed, but strafe variants at `0.55` and `0.65` fail the current early-motion and total-path gates. The next step is a smaller tuning smoke with stronger strafe, or an orbit-only review profile if camera-mode diversity is less important than acceptance. No 200 / 1k run is approved.

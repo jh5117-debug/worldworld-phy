@@ -24,6 +24,9 @@ def main() -> None:
             f"Visible-motion suitable: {sum(1 for r in validation_rows if r.get('suitable_for_visible_motion') is True)} / {len(validation_rows)}",
             f"Too static: {sum(1 for r in validation_rows if r.get('too_static') is True)}",
             f"Too extreme: {sum(1 for r in validation_rows if r.get('too_extreme') is True)}",
+            f"Delayed camera motion: {sum(1 for r in validation_rows if r.get('delayed_camera_motion') is True)}",
+            f"Duplicate scene hash: {sum(1 for r in validation_rows if r.get('duplicate_scene_hash') is True)}",
+            f"Unique scene hash: {len({str(r.get('scene_hash')) for r in validation_rows if r.get('scene_hash')})}",
             "",
         ]
     if not images:

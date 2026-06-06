@@ -194,6 +194,147 @@ camera_sets:
         radius: 0.25
         strafe: 0.0
         require_reobserve: false
+  warmup_visible_motion_v3_start0_scene_diverse:
+    purpose: Start-frame visible camera motion with stronger non-stress motion and scene diversity.
+    allowed_variants:
+      - orbit_left_20
+      - orbit_right_20
+      - orbit_left_22
+      - orbit_right_22
+      - orbit_left_26
+      - orbit_right_26
+      - orbit_left_28
+      - orbit_right_28
+      - orbit_left_32
+      - orbit_right_32
+      - orbit_left_36
+      - orbit_right_36
+      - strafe_left_055
+      - strafe_right_055
+      - strafe_left_065
+      - strafe_right_065
+    banned_keywords:
+      - lookaway
+      - offscreen
+      - relative_yaw_180
+      - relative_lookaway
+      - reobserve
+      - occluder
+      - extreme
+      - dolly
+    upstream_mapping:
+      orbit_left_20:
+        motion: orbit
+        orbit: -20.0
+        height: 0.04
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_right_20:
+        motion: orbit
+        orbit: 20.0
+        height: 0.04
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_left_22:
+        motion: orbit
+        orbit: -22.0
+        height: 0.045
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_right_22:
+        motion: orbit
+        orbit: 22.0
+        height: 0.045
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_left_26:
+        motion: orbit
+        orbit: -26.0
+        height: 0.05
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_right_26:
+        motion: orbit
+        orbit: 26.0
+        height: 0.05
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_left_28:
+        motion: orbit
+        orbit: -28.0
+        height: 0.055
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_right_28:
+        motion: orbit
+        orbit: 28.0
+        height: 0.055
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_left_32:
+        motion: orbit
+        orbit: -32.0
+        height: 0.06
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_right_32:
+        motion: orbit
+        orbit: 32.0
+        height: 0.06
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_left_36:
+        motion: orbit
+        orbit: -36.0
+        height: 0.06
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      orbit_right_36:
+        motion: orbit
+        orbit: 36.0
+        height: 0.06
+        radius: 0.0
+        strafe: 0.0
+        require_reobserve: false
+      strafe_left_055:
+        motion: strafe
+        orbit: 0.0
+        height: 0.045
+        radius: 0.0
+        strafe: -0.55
+        require_reobserve: false
+      strafe_right_055:
+        motion: strafe
+        orbit: 0.0
+        height: 0.045
+        radius: 0.0
+        strafe: 0.55
+        require_reobserve: false
+      strafe_left_065:
+        motion: strafe
+        orbit: 0.0
+        height: 0.05
+        radius: 0.0
+        strafe: -0.65
+        require_reobserve: false
+      strafe_right_065:
+        motion: strafe
+        orbit: 0.0
+        height: 0.05
+        radius: 0.0
+        strafe: 0.65
+        require_reobserve: false
 profiles:
   warmup_mild:
     purpose: LingBot-Fast camera-conditioned warmup with smooth camera motion and visible target.
@@ -450,4 +591,146 @@ profiles:
       max_camera_path_length: 1.50
       min_background_motion_proxy: 0.012
       min_video_motion_proxy: 0.015
+      reject_extreme_reobserve: true
+  warmup_visible_motion_v3_start0_scene_diverse:
+    purpose: Human-review camera-conditioned warmup candidate with start-frame camera motion and scene diversity.
+    templates: [drop, collision, roll, containment]
+    camera_set: warmup_visible_motion_v3_start0_scene_diverse
+    camera_variants:
+      - name: orbit_left_20
+        motion: orbit
+        yaw_degrees: -20
+        translation: 0.0
+        height_delta: 0.04
+        stress: false
+      - name: orbit_right_20
+        motion: orbit
+        yaw_degrees: 20
+        translation: 0.0
+        height_delta: 0.04
+        stress: false
+      - name: orbit_left_22
+        motion: orbit
+        yaw_degrees: -22
+        translation: 0.0
+        height_delta: 0.045
+        stress: false
+      - name: orbit_right_22
+        motion: orbit
+        yaw_degrees: 22
+        translation: 0.0
+        height_delta: 0.045
+        stress: false
+      - name: orbit_left_26
+        motion: orbit
+        yaw_degrees: -26
+        translation: 0.0
+        height_delta: 0.05
+        stress: false
+      - name: orbit_right_26
+        motion: orbit
+        yaw_degrees: 26
+        translation: 0.0
+        height_delta: 0.05
+        stress: false
+      - name: orbit_left_28
+        motion: orbit
+        yaw_degrees: -28
+        translation: 0.0
+        height_delta: 0.055
+        stress: false
+      - name: orbit_right_28
+        motion: orbit
+        yaw_degrees: 28
+        translation: 0.0
+        height_delta: 0.055
+        stress: false
+      - name: orbit_left_32
+        motion: orbit
+        yaw_degrees: -32
+        translation: 0.0
+        height_delta: 0.06
+        stress: false
+      - name: orbit_right_32
+        motion: orbit
+        yaw_degrees: 32
+        translation: 0.0
+        height_delta: 0.06
+        stress: false
+      - name: orbit_left_36
+        motion: orbit
+        yaw_degrees: -36
+        translation: 0.0
+        height_delta: 0.06
+        stress: false
+      - name: orbit_right_36
+        motion: orbit
+        yaw_degrees: 36
+        translation: 0.0
+        height_delta: 0.06
+        stress: false
+      - name: strafe_left_055
+        motion: strafe
+        yaw_degrees: 0
+        translation: -0.55
+        height_delta: 0.045
+        stress: false
+      - name: strafe_right_055
+        motion: strafe
+        yaw_degrees: 0
+        translation: 0.55
+        height_delta: 0.045
+        stress: false
+      - name: strafe_left_065
+        motion: strafe
+        yaw_degrees: 0
+        translation: -0.65
+        height_delta: 0.05
+        stress: false
+      - name: strafe_right_065
+        motion: strafe
+        yaw_degrees: 0
+        translation: 0.65
+        height_delta: 0.05
+        stress: false
+    template_camera_variants:
+      drop:
+        - orbit_left_32
+        - orbit_right_32
+        - orbit_left_36
+        - orbit_right_36
+        - strafe_left_065
+        - strafe_right_065
+      collision:
+        - strafe_left_065
+        - strafe_right_065
+        - orbit_left_28
+        - orbit_right_28
+      roll:
+        - strafe_left_065
+        - strafe_right_065
+        - orbit_left_26
+        - orbit_right_26
+      containment:
+        - strafe_left_055
+        - strafe_right_055
+        - orbit_left_20
+        - orbit_right_20
+        - orbit_left_22
+        - orbit_right_22
+    filters:
+      target_visible_ratio_min: 0.70
+      target_area_ratio_min: 0.002
+      max_disappeared_consecutive_frames: 8
+      min_camera_path_length: 0.75
+      max_camera_path_length: 1.80
+      min_background_motion_proxy: 0.018
+      min_video_motion_proxy: 0.020
+      camera_motion_start: 0
+      camera_motion_end: 80
+      min_camera_path_length_first_8_frames: 0.08
+      min_camera_path_length_first_16_frames: 0.16
+      min_background_motion_proxy_first_8_frames: 0.006
+      unique_scene_hash_min_count: 40
+      duplicate_scene_hash_max_count: 3
       reject_extreme_reobserve: true

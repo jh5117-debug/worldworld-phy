@@ -113,7 +113,6 @@ def _template_specific_args(template: str) -> list[str]:
             "--pmass", "4",
             "--monochrome", "1",
             "--random", "0",
-            "--seed", "328",
             "--no_moving_distractors",
             "--room", "box",
         ]
@@ -132,7 +131,6 @@ def _template_specific_args(template: str) -> list[str]:
             "--camera_distance", "[2.3,2.5]",
             "--monochrome", "1",
             "--random", "0",
-            "--seed", "914",
             "--no_moving_distractors",
             "--room", "box",
         ]
@@ -141,7 +139,6 @@ def _template_specific_args(template: str) -> list[str]:
             "--no_moving_distractors",
             "--fwait", "15",
             "--random", "0",
-            "--seed", "1",
             "--only_use_flex_objects",
             "--tcolor=None",
             "--zcolor=None",
@@ -177,7 +174,11 @@ def _single_trial_command(config: dict, root: Path, output_subdir: str, trial: d
     upstream = dict(trial.get("upstream_camera_variant") or {})
     motion = str(upstream.get("motion") or trial.get("camera_motion") or "orbit")
     template = str(trial.get("template"))
-    seed = int(trial.get("seed", 10000))
+    seed = int(trial.get("scene_seed", trial.get("seed", 10000)))
+    filters = dict(trial.get("filters") or {})
+    max_frames = int(config.get("frames", {}).get("max_frames", 81))
+    motion_start = int(trial.get("camera_motion_start") if trial.get("camera_motion_start") is not None else filters.get("camera_motion_start", 24))
+    motion_end = int(trial.get("camera_motion_end") if trial.get("camera_motion_end") is not None else filters.get("camera_motion_end", min(57, max_frames - 1)))
     out_dir = (root / "raw_hdf5" / output_subdir / _trial_dir_name(index, trial)).resolve()
     cmd = [
         str(py), str(runner),
@@ -191,10 +192,10 @@ def _single_trial_command(config: dict, root: Path, output_subdir: str, trial: d
         "--height", str(config.get("resolution", {}).get("height", 480)),
         "--framerate", str(config.get("framerate", 16)),
         "--seed", str(seed),
-        "--max_frames", str(config.get("frames", {}).get("max_frames", 81)),
+        "--max_frames", str(max_frames),
         "--camera_motion", motion,
-        "--camera_motion_start", "24",
-        "--camera_motion_end", "57",
+        "--camera_motion_start", str(motion_start),
+        "--camera_motion_end", str(motion_end),
         "--camera_orbit_degrees", str(float(upstream.get("orbit", 0.0))),
         "--camera_height_delta", str(float(upstream.get("height", 0.0))),
         "--camera_radius_delta", str(float(upstream.get("radius", 0.0))),

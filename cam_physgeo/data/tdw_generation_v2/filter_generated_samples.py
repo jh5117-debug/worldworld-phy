@@ -30,6 +30,10 @@ def main() -> None:
                 reasons.append("too_static")
             if row.get("too_extreme") is True:
                 reasons.append("too_extreme")
+            if row.get("delayed_camera_motion") is True:
+                reasons.append("delayed_camera_motion")
+            if row.get("duplicate_scene_hash") is True:
+                reasons.append("duplicate_scene_hash")
             if row.get("suitable_for_visible_motion") is not True:
                 reasons.append("not_suitable_for_visible_motion")
         target = kept if not reasons else rejected
