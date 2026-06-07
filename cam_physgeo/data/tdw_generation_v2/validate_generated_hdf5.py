@@ -298,6 +298,20 @@ VISIBLE_MOTION_V3_THRESHOLDS = {
     "max_first_motion_frame": 2,
 }
 
+VISIBLE_MOTION_V4_THRESHOLDS = {
+    "target_visible_ratio_min": 0.70,
+    "max_invisible_frames": 8,
+    "min_camera_path_length": 0.85,
+    "max_camera_path_length": 2.10,
+    "min_background_motion_proxy": 0.022,
+    "min_video_motion_proxy": 0.022,
+    "min_camera_path_length_first_8_frames": 0.085,
+    "min_camera_path_length_first_16_frames": 0.17,
+    "min_background_motion_proxy_first_8_frames": 0.007,
+    "max_first_motion_frame": 2,
+}
+
+
 
 def _is_visible_motion_profile(profile: str | None) -> bool:
     return str(profile or "").startswith("warmup_visible_motion")
@@ -307,7 +321,17 @@ def _is_visible_motion_v3_profile(profile: str | None) -> bool:
     return str(profile or "") == "warmup_visible_motion_v3_start0_scene_diverse"
 
 
+def _is_visible_motion_v4_profile(profile: str | None) -> bool:
+    return str(profile or "") == "warmup_visible_motion_v4_stronger_start0_review"
+
+
+def _is_start0_visible_motion_profile(profile: str | None) -> bool:
+    return _is_visible_motion_v3_profile(profile) or _is_visible_motion_v4_profile(profile)
+
+
 def _thresholds_for_profile(profile: str | None) -> dict[str, Any]:
+    if _is_visible_motion_v4_profile(profile):
+        return dict(VISIBLE_MOTION_V4_THRESHOLDS)
     if _is_visible_motion_v3_profile(profile):
         return dict(VISIBLE_MOTION_V3_THRESHOLDS)
     return dict(VISIBLE_MOTION_THRESHOLDS)
@@ -320,6 +344,7 @@ def _classify_motion(info: dict[str, Any], profile: str | None) -> dict[str, Any
             "too_extreme": False,
             "delayed_camera_motion": False,
             "suitable_for_visible_motion_v3": None,
+            "suitable_for_visible_motion_v4": None,
             "suitable_for_visible_motion": None,
             "motion_rejection_reasons": [],
         }
@@ -344,7 +369,7 @@ def _classify_motion(info: dict[str, Any], profile: str | None) -> dict[str, Any
         extreme.append("low_target_visible_ratio")
     if max_invisible is not None and int(max_invisible) > t["max_invisible_frames"]:
         extreme.append("target_invisible_too_long")
-    if _is_visible_motion_v3_profile(profile):
+    if _is_start0_visible_motion_profile(profile):
         first_motion_frame = info.get("first_motion_frame")
         path_first8 = info.get("camera_path_length_first_8_frames")
         path_first16 = info.get("camera_path_length_first_16_frames")
@@ -367,6 +392,7 @@ def _classify_motion(info: dict[str, Any], profile: str | None) -> dict[str, Any
         "delayed_camera_motion": delayed_camera_motion,
         "suitable_for_visible_motion": suitable,
         "suitable_for_visible_motion_v3": suitable if _is_visible_motion_v3_profile(profile) else None,
+        "suitable_for_visible_motion_v4": suitable if _is_visible_motion_v4_profile(profile) else None,
         "motion_rejection_reasons": reasons + extreme + delayed,
         "visible_motion_thresholds": dict(t),
     }
@@ -591,13 +617,14 @@ def _apply_scene_diversity(rows: list[dict[str, Any]], profile: str | None) -> N
         row["duplicate_scene_hash"] = duplicate
         row["scene_duplicate"] = duplicate
         row["scene_hash_count"] = counts.get(str(scene_hash), 0) if scene_hash else None
-        if duplicate and _is_visible_motion_v3_profile(profile):
+        if duplicate and _is_start0_visible_motion_profile(profile):
             reasons = list(row.get("motion_rejection_reasons") or [])
             if "duplicate_scene_hash" not in reasons:
                 reasons.append("duplicate_scene_hash")
             row["motion_rejection_reasons"] = reasons
             row["suitable_for_visible_motion"] = False
             row["suitable_for_visible_motion_v3"] = False
+            row["suitable_for_visible_motion_v4"] = False
 
 
 def main() -> None:

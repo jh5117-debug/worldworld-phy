@@ -603,3 +603,19 @@ Numeric diagnostics remain visible:
 - `too_extreme`: 0 / 200.
 
 The 200 pilot is ready for human review. It does not approve 1k+ generation, training, DPO, VideoGPA `03_train`, Stage1, rollout, reward calibration, LoRA save, or checkpoint save.
+
+## 2026-06-07 Visible-Motion v4 Stronger Start0 Smoke
+
+After human review noted that v3 was usable but still visually slow, a small stronger-motion smoke profile was added: `warmup_visible_motion_v4_stronger_start0_review`.
+
+Result:
+
+- generated HDF5: `16 / 16`;
+- validation OK: `16 / 16`;
+- suitable for visible motion: `16 / 16`;
+- too_static / too_extreme / delayed camera motion: `0 / 0 / 0`;
+- camera path min/avg/max: `0.9017 / 1.4567 / 1.9758`;
+- first-8-frame path min/avg/max: `0.0902 / 0.1457 / 0.1976`;
+- LingBot cam-only conversion: `16 / 16`.
+
+The next decision is human review of the v4 gallery, then explicit approval for a v4 50-sample review set if the motion is visually preferable. This does not approve 50/200/1k, training, DPO, VideoGPA `03_train`, Stage1, rollout, reward calibration, LoRA save, or checkpoint save.

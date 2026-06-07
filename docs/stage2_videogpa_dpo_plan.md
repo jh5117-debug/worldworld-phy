@@ -785,3 +785,17 @@ The TDW data-side 200 pilot completed:
 - dummy `action.npy`: `200 / 200`.
 
 The data is ready for human review and possible warmup indexing after review. DPO remains gated separately; signal-sensitivity and 5-pair are still no-go unless explicitly revisited.
+
+## 2026-06-07 TDW v4 stronger smoke status
+
+No DPO training was run.
+
+A stronger visible-motion TDW smoke was generated for data review:
+
+- profile: `warmup_visible_motion_v4_stronger_start0_review`;
+- generated / validated / converted: `16 / 16 / 16`;
+- suitable visible motion: `16 / 16`;
+- too_static / too_extreme / delayed: `0 / 0 / 0`;
+- `use_action=false` and dummy `action.npy` remain in the converted LingBot cam-only inputs.
+
+This is data-side preparation only. DPO signal-sensitivity and 5-pair tiny overfit remain separate gates and were not run in this step.

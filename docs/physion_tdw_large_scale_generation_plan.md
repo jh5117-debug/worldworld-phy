@@ -519,3 +519,18 @@ The pilot is ready for human review at:
 `local_assets/reports/human_review/tdw_visible_motion_v3_start0_scene_diverse_200/video_gallery.html`
 
 Next scale step, if human review passes, is 1k-scale generation only after explicit approval. Do not run 1k automatically.
+
+## 2026-06-07 Visible-Motion v4 Stronger Start0 Smoke
+
+The v3 200 pilot remains usable, but the user identified residual weak/slow camera motion. A stronger review smoke was run before any additional scale-up.
+
+- profile: `warmup_visible_motion_v4_stronger_start0_review`;
+- sample count: `16`;
+- distribution: `drop:4, collision:4, roll:4, containment:4`;
+- generated / validated / converted: `16 / 16 / 16`;
+- suitable visible motion: `16 / 16`;
+- too_static / too_extreme / delayed: `0 / 0 / 0`;
+- camera path min/avg/max: `0.9017 / 1.4567 / 1.9758`;
+- first-8-frame path min/avg/max: `0.0902 / 0.1457 / 0.1976`.
+
+Recommended next scale step is a v4 50-sample review set only after human approval. Do not jump directly to 200 or 1k from this smoke.

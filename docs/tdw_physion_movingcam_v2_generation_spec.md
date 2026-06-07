@@ -449,3 +449,18 @@ Numeric early-motion diagnostics are retained:
 - `too_extreme`: `0 / 200`.
 
 The numeric diagnostics should be reviewed alongside the video gallery. They should not silently block the human-accepted v3 profile, but they should remain visible before any 1k-scale request.
+
+## 2026-06-07 Spec Note: v4 stronger start0 smoke
+
+`warmup_visible_motion_v4_stronger_start0_review` was added as a stronger visible-motion review profile.
+
+Changes versus v3:
+
+- keeps camera motion start at frame 0;
+- increases drop orbit to `36/40` degrees;
+- uses stronger non-drop orbit: collision `32`, roll `30`, containment `22`;
+- replaces weak strafe `0.55/0.65` with strafe `0.90` probes;
+- keeps dolly disabled;
+- tightens the minimum total camera path to `0.85` and first-8-frame path to `0.085`.
+
+The 16-sample smoke passed numerically: `16 / 16` suitable, `0` too_static, `0` too_extreme, `0` delayed. Human review should decide whether v4 should replace v3 for the next 50-sample review.
