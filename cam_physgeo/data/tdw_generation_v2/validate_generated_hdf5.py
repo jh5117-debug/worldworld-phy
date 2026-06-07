@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import io
 import json
 import math
@@ -66,15 +67,34 @@ def _vector(ds: Any) -> list[float] | None:
 
 def _camera_motion_stats(positions: list[list[float]]) -> dict[str, Any]:
     if np is None or len(positions) < 2:
-        return {"camera_translation_total": None, "camera_path_length": None, "camera_step_max": None}
+        return {
+            "camera_translation_total": None,
+            "camera_path_length": None,
+            "camera_path_length_total": None,
+            "camera_path_length_first_8_frames": None,
+            "camera_path_length_first_16_frames": None,
+            "camera_step_max": None,
+            "first_motion_frame": None,
+        }
     arr = np.asarray(positions, dtype="float64")
     deltas = arr[1:] - arr[:-1]
     steps = np.linalg.norm(deltas, axis=1)
     total = float(np.linalg.norm(arr[-1] - arr[0]))
+    first_motion_frame = None
+    for idx, step in enumerate(steps):
+        if float(step) > 1e-4:
+            first_motion_frame = idx
+            break
+    path_total = float(steps.sum())
     return {
         "camera_translation_total": total,
-        "camera_path_length": float(steps.sum()),
+        "translation_magnitude_total": total,
+        "camera_path_length": path_total,
+        "camera_path_length_total": path_total,
+        "camera_path_length_first_8_frames": float(steps[:8].sum()) if steps.size else 0.0,
+        "camera_path_length_first_16_frames": float(steps[:16].sum()) if steps.size else 0.0,
         "camera_step_max": float(steps.max()) if steps.size else 0.0,
+        "first_motion_frame": first_motion_frame,
     }
 
 
@@ -169,6 +189,80 @@ def _rgb_motion_stats_from_images(images: list[Any]) -> dict[str, Any]:
     }
 
 
+def _hash_text(text: str) -> str:
+    return hashlib.sha1(text.encode("utf-8", errors="ignore")).hexdigest()[:16]
+
+
+def _array_hash(arr: Any) -> str | None:
+    if np is None or arr is None:
+        return None
+    try:
+        small = np.asarray(arr)
+        if small.size == 0:
+            return None
+        if small.ndim >= 2:
+            small = small[:: max(1, small.shape[0] // 32), :: max(1, small.shape[1] // 32)]
+        return hashlib.sha1(np.ascontiguousarray(small).tobytes()).hexdigest()[:16]
+    except Exception:
+        return None
+
+
+def _image_phash(img: Any) -> str | None:
+    if np is None or img is None:
+        return None
+    try:
+        gray = img.convert("L").resize((8, 8))
+        arr = np.asarray(gray, dtype="float32")
+        bits = arr > float(arr.mean())
+        value = 0
+        for bit in bits.reshape(-1):
+            value = (value << 1) | int(bool(bit))
+        return f"{value:016x}"
+    except Exception:
+        return None
+
+
+def _id_mask_summary(ds: Any) -> dict[str, Any]:
+    if np is None or ds is None:
+        return {"id_mask_hash": None, "id_mask_unique_ids": None, "id_mask_unique_count": None}
+    try:
+        arr = np.asarray(ds[()])
+        unique = np.unique(arr)
+        ids = [int(x) for x in unique[:128].tolist()]
+        return {
+            "id_mask_hash": _array_hash(arr),
+            "id_mask_unique_ids": ids,
+            "id_mask_unique_count": int(len(unique)),
+        }
+    except Exception:
+        return {"id_mask_hash": None, "id_mask_unique_ids": None, "id_mask_unique_count": None}
+
+
+def _object_state_hash(h5: Any, keys: set[str]) -> str | None:
+    if np is None:
+        return None
+    digest = hashlib.sha1()
+    matched = 0
+    for key in sorted(keys):
+        low = key.lower()
+        if not any(token in low for token in ("object", "transform", "rigid")):
+            continue
+        obj = h5.get(key)
+        if obj is None or not hasattr(obj, "__getitem__"):
+            continue
+        try:
+            arr = np.asarray(obj[()])
+        except Exception:
+            continue
+        digest.update(key.encode("utf-8", errors="ignore"))
+        digest.update(str(arr.shape).encode("utf-8"))
+        digest.update(np.ascontiguousarray(arr.reshape(-1)[:256]).tobytes())
+        matched += 1
+        if matched >= 64:
+            break
+    return digest.hexdigest()[:16] if matched else None
+
+
 def _decode_image_dataset(ds: Any):
     if Image is None or np is None:
         return None
@@ -191,18 +285,73 @@ VISIBLE_MOTION_THRESHOLDS = {
     "min_video_motion_proxy": 0.015,
 }
 
+VISIBLE_MOTION_V3_THRESHOLDS = {
+    "target_visible_ratio_min": 0.70,
+    "max_invisible_frames": 8,
+    "min_camera_path_length": 0.75,
+    "max_camera_path_length": 1.80,
+    "min_background_motion_proxy": 0.018,
+    "min_video_motion_proxy": 0.020,
+    "min_camera_path_length_first_8_frames": 0.08,
+    "min_camera_path_length_first_16_frames": 0.16,
+    "min_background_motion_proxy_first_8_frames": 0.006,
+    "max_first_motion_frame": 2,
+}
+
+VISIBLE_MOTION_V4_THRESHOLDS = {
+    "target_visible_ratio_min": 0.70,
+    "max_invisible_frames": 8,
+    "min_camera_path_length": 0.85,
+    "max_camera_path_length": 2.10,
+    "min_background_motion_proxy": 0.022,
+    "min_video_motion_proxy": 0.022,
+    "min_camera_path_length_first_8_frames": 0.085,
+    "min_camera_path_length_first_16_frames": 0.17,
+    "min_background_motion_proxy_first_8_frames": 0.007,
+    "max_first_motion_frame": 2,
+}
+
+
+
+def _is_visible_motion_profile(profile: str | None) -> bool:
+    return str(profile or "").startswith("warmup_visible_motion")
+
+
+def _is_visible_motion_v3_profile(profile: str | None) -> bool:
+    return str(profile or "") == "warmup_visible_motion_v3_start0_scene_diverse"
+
+
+def _is_visible_motion_v4_profile(profile: str | None) -> bool:
+    return str(profile or "") == "warmup_visible_motion_v4_stronger_start0_review"
+
+
+def _is_start0_visible_motion_profile(profile: str | None) -> bool:
+    return _is_visible_motion_v3_profile(profile) or _is_visible_motion_v4_profile(profile)
+
+
+def _thresholds_for_profile(profile: str | None) -> dict[str, Any]:
+    if _is_visible_motion_v4_profile(profile):
+        return dict(VISIBLE_MOTION_V4_THRESHOLDS)
+    if _is_visible_motion_v3_profile(profile):
+        return dict(VISIBLE_MOTION_V3_THRESHOLDS)
+    return dict(VISIBLE_MOTION_THRESHOLDS)
+
 
 def _classify_motion(info: dict[str, Any], profile: str | None) -> dict[str, Any]:
-    if profile != "warmup_visible_motion":
+    if not _is_visible_motion_profile(profile):
         return {
             "too_static": False,
             "too_extreme": False,
+            "delayed_camera_motion": False,
+            "suitable_for_visible_motion_v3": None,
+            "suitable_for_visible_motion_v4": None,
             "suitable_for_visible_motion": None,
             "motion_rejection_reasons": [],
         }
-    t = VISIBLE_MOTION_THRESHOLDS
+    t = _thresholds_for_profile(profile)
     reasons: list[str] = []
     extreme: list[str] = []
+    delayed: list[str] = []
     camera_path = info.get("camera_path_length")
     bg_motion = info.get("background_motion_proxy")
     video_motion = info.get("video_motion_proxy")
@@ -220,13 +369,31 @@ def _classify_motion(info: dict[str, Any], profile: str | None) -> dict[str, Any
         extreme.append("low_target_visible_ratio")
     if max_invisible is not None and int(max_invisible) > t["max_invisible_frames"]:
         extreme.append("target_invisible_too_long")
+    if _is_start0_visible_motion_profile(profile):
+        first_motion_frame = info.get("first_motion_frame")
+        path_first8 = info.get("camera_path_length_first_8_frames")
+        path_first16 = info.get("camera_path_length_first_16_frames")
+        bg_first8 = info.get("background_motion_proxy_first_8_frames")
+        if first_motion_frame is None or int(first_motion_frame) > int(t["max_first_motion_frame"]):
+            delayed.append("first_motion_frame_too_late")
+        if path_first8 is None or float(path_first8) < t["min_camera_path_length_first_8_frames"]:
+            delayed.append("camera_path_first_8_too_low")
+        if path_first16 is None or float(path_first16) < t["min_camera_path_length_first_16_frames"]:
+            delayed.append("camera_path_first_16_too_low")
+        if bg_first8 is not None and float(bg_first8) < t["min_background_motion_proxy_first_8_frames"]:
+            delayed.append("background_motion_first_8_too_low")
     too_static = bool(reasons)
     too_extreme = bool(extreme)
+    delayed_camera_motion = bool(delayed)
+    suitable = not too_static and not too_extreme and not delayed_camera_motion
     return {
         "too_static": too_static,
         "too_extreme": too_extreme,
-        "suitable_for_visible_motion": not too_static and not too_extreme,
-        "motion_rejection_reasons": reasons + extreme,
+        "delayed_camera_motion": delayed_camera_motion,
+        "suitable_for_visible_motion": suitable,
+        "suitable_for_visible_motion_v3": suitable if _is_visible_motion_v3_profile(profile) else None,
+        "suitable_for_visible_motion_v4": suitable if _is_visible_motion_v4_profile(profile) else None,
+        "motion_rejection_reasons": reasons + extreme + delayed,
         "visible_motion_thresholds": dict(t),
     }
 
@@ -291,8 +458,15 @@ def validate_hdf5(path: Path, *, profile: str | None = None) -> dict[str, Any]:
             camera_positions: list[list[float]] = []
             camera_aims: list[list[float]] = []
             sampled_images: list[Any] = []
+            early_images: list[Any] = []
+            first_frame_phash = None
+            first_id_summary = {"id_mask_hash": None, "id_mask_unique_ids": None, "id_mask_unique_count": None}
             sample_stride = max(1, len(frame_keys) // 12) if frame_keys else 1
             for frame in frame_keys:
+                try:
+                    frame_num = int(str(frame))
+                except Exception:
+                    frame_num = len(sampled_images) * sample_stride
                 labels = f.get(f"frames/{frame}/labels")
                 if labels is not None:
                     for k in label_counts:
@@ -310,17 +484,21 @@ def validate_hdf5(path: Path, *, profile: str | None = None) -> dict[str, Any]:
                         vec = _vector(labels["camera_aim"])
                         if vec and len(vec) >= 3:
                             camera_aims.append(vec[:3])
-                if len(sampled_images) < 12:
-                    try:
-                        frame_num = int(str(frame))
-                    except Exception:
-                        frame_num = len(sampled_images) * sample_stride
-                    if frame_num % sample_stride == 0 or frame == frame_keys[-1]:
-                        ds = f.get(f"frames/{frame}/images/_img")
-                        if ds is not None:
-                            img = _decode_image_dataset(ds)
-                            if img is not None:
+                need_early = frame_num <= 16
+                need_sample = len(sampled_images) < 12 and (frame_num % sample_stride == 0 or frame == frame_keys[-1])
+                if need_early or need_sample:
+                    ds = f.get(f"frames/{frame}/images/_img")
+                    if ds is not None:
+                        img = _decode_image_dataset(ds)
+                        if img is not None:
+                            if first_frame_phash is None:
+                                first_frame_phash = _image_phash(img)
+                            if need_early:
+                                early_images.append(img)
+                            if need_sample:
                                 sampled_images.append(img)
+                if frame == frame_keys[0]:
+                    first_id_summary = _id_mask_summary(f.get(f"frames/{frame}/images/_id"))
             target_visible_ratio = None
             target_disappeared_consecutive_max = None
             if target_visible:
@@ -329,6 +507,9 @@ def validate_hdf5(path: Path, *, profile: str | None = None) -> dict[str, Any]:
             camera_stats = _camera_motion_stats(camera_positions)
             yaw_stats = _yaw_stats(camera_positions, camera_aims)
             rgb_motion_stats = _rgb_motion_stats_from_images(sampled_images)
+            early8_stats = _rgb_motion_stats_from_images(early_images[:9])
+            early16_stats = _rgb_motion_stats_from_images(early_images[:17])
+            object_state_hash = _object_state_hash(f, keys)
             info.update({
                 "status": "ok",
                 "frame_count": len(frame_keys),
@@ -347,6 +528,15 @@ def validate_hdf5(path: Path, *, profile: str | None = None) -> dict[str, Any]:
                 **camera_stats,
                 **yaw_stats,
                 **rgb_motion_stats,
+                "video_motion_proxy_first_8_frames": early8_stats.get("video_motion_proxy"),
+                "background_motion_proxy_first_8_frames": early8_stats.get("background_motion_proxy"),
+                "parallax_proxy_first_8_frames": early8_stats.get("parallax_proxy"),
+                "video_motion_proxy_first_16_frames": early16_stats.get("video_motion_proxy"),
+                "background_motion_proxy_first_16_frames": early16_stats.get("background_motion_proxy"),
+                "parallax_proxy_first_16_frames": early16_stats.get("parallax_proxy"),
+                "first_frame_phash": first_frame_phash,
+                **first_id_summary,
+                "object_state_summary_hash": object_state_hash,
             })
             info.update(_classify_motion(info, profile))
     except Exception as exc:
@@ -380,6 +570,63 @@ def _paths_from_manifest(root: Path, manifest: Path) -> list[Path]:
     return paths
 
 
+def _load_manifest_rows(manifest: Path | None) -> list[dict[str, Any]]:
+    if manifest is None:
+        return []
+    return [json.loads(line) for line in manifest.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def _apply_manifest_context(rows: list[dict[str, Any]], manifest_rows: list[dict[str, Any]]) -> None:
+    for row, plan in zip(rows, manifest_rows):
+        row["template"] = plan.get("template")
+        row["camera_variant"] = plan.get("camera_variant")
+        row["seed"] = plan.get("seed")
+        row["trial_seed"] = plan.get("trial_seed")
+        row["scene_seed"] = plan.get("scene_seed")
+        row["source_config_path"] = plan.get("source_config_path")
+        row["source_config_id"] = plan.get("source_config_id")
+        row["camera_motion_start"] = plan.get("camera_motion_start")
+        row["camera_motion_end"] = plan.get("camera_motion_end")
+        row["prompt_hash"] = _hash_text(f"{plan.get('profile')}|{plan.get('template')}")
+
+
+def _scene_hash(row: dict[str, Any]) -> str | None:
+    parts = [
+        str(row.get("template") or ""),
+        str(row.get("source_config_path") or ""),
+        str(row.get("first_frame_phash") or ""),
+        str(row.get("id_mask_hash") or ""),
+        str(row.get("object_state_summary_hash") or ""),
+    ]
+    if not any(parts[2:]):
+        return None
+    return _hash_text("|".join(parts))
+
+
+def _apply_scene_diversity(rows: list[dict[str, Any]], profile: str | None) -> None:
+    for row in rows:
+        row["scene_hash"] = _scene_hash(row)
+    counts: dict[str, int] = {}
+    for row in rows:
+        scene_hash = row.get("scene_hash")
+        if scene_hash:
+            counts[str(scene_hash)] = counts.get(str(scene_hash), 0) + 1
+    for row in rows:
+        scene_hash = row.get("scene_hash")
+        duplicate = bool(scene_hash and counts.get(str(scene_hash), 0) > 1)
+        row["duplicate_scene_hash"] = duplicate
+        row["scene_duplicate"] = duplicate
+        row["scene_hash_count"] = counts.get(str(scene_hash), 0) if scene_hash else None
+        if duplicate and _is_start0_visible_motion_profile(profile):
+            reasons = list(row.get("motion_rejection_reasons") or [])
+            if "duplicate_scene_hash" not in reasons:
+                reasons.append("duplicate_scene_hash")
+            row["motion_rejection_reasons"] = reasons
+            row["suitable_for_visible_motion"] = False
+            row["suitable_for_visible_motion_v3"] = False
+            row["suitable_for_visible_motion_v4"] = False
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate generated TDW/Physion-style HDF5 files.")
     parser.add_argument("--root", type=Path, required=True)
@@ -388,11 +635,15 @@ def main() -> None:
     parser.add_argument("--make_contact_sheet", action="store_true")
     parser.add_argument("--profile", default=None)
     args = parser.parse_args()
+    manifest_rows = _load_manifest_rows(args.manifest)
     if args.manifest:
         hdf5_paths = _paths_from_manifest(args.root, args.manifest)
     else:
         hdf5_paths = sorted(args.root.rglob("*.hdf5")) + sorted(args.root.rglob("*.h5"))
     rows = [validate_hdf5(p, profile=args.profile) for p in hdf5_paths]
+    if manifest_rows:
+        _apply_manifest_context(rows, manifest_rows)
+    _apply_scene_diversity(rows, args.profile)
     contact_dir = args.out.parent / "contact_sheets"
     contact_index: list[dict[str, str]] = []
     if args.make_contact_sheet:
@@ -419,6 +670,9 @@ def main() -> None:
         r for r in ok
         if r.get("suitable_for_visible_motion") is True
     ]
+    delayed_count = sum(1 for r in rows if r.get("delayed_camera_motion") is True)
+    duplicate_scene_count = sum(1 for r in rows if r.get("duplicate_scene_hash") is True)
+    unique_scene_hash_count = len({str(r.get("scene_hash")) for r in rows if r.get("scene_hash")})
     args.out.parent.mkdir(parents=True, exist_ok=True)
     lines = [
         "# TDW Generation v2 Validation Report",
@@ -428,13 +682,16 @@ def main() -> None:
         f"Validation ok count: {len(ok)}",
         f"Suitable for warmup count: {len(suitable)}",
         f"Suitable for visible motion count: {len(visible_motion_ok)}",
+        f"Delayed camera motion count: {delayed_count}",
+        f"Unique scene hash count: {unique_scene_hash_count}",
+        f"Duplicate scene hash count: {duplicate_scene_count}",
         "",
-        "| path | status | frames | rgb | depth | id | camera_pose | projection/camera_matrix | object_state | visible_ratio | max_invisible | camera_path | bg_motion | too_static | too_extreme | visible_motion | contact_sheet |",
-        "|---|---|---:|---|---|---|---|---|---|---:|---:|---:|---:|---|---|---|---|",
+        "| path | status | template | camera | frames | rgb | depth | id | camera_pose | projection/camera_matrix | object_state | visible_ratio | max_invisible | camera_path | path_first8 | bg_motion | bg_first8 | delayed | scene_dup | too_static | too_extreme | visible_motion | contact_sheet |",
+        "|---|---|---|---|---:|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---|---|---|---|---|",
     ]
     for r in rows[:200]:
         lines.append(
-            f"| `{r.get('path')}` | {r.get('status')} | {r.get('frame_count', '')} | {r.get('has_rgb', '')} | {r.get('has_depth', '')} | {r.get('has_id', '')} | {r.get('has_camera_pose', '')} | {r.get('has_projection_or_camera_matrix', '')} | {r.get('has_object_state', '')} | {r.get('target_visible_ratio', '')} | {r.get('target_disappeared_consecutive_max', '')} | {r.get('camera_path_length', '')} | {r.get('background_motion_proxy', '')} | {r.get('too_static', '')} | {r.get('too_extreme', '')} | {r.get('suitable_for_visible_motion', '')} | `{r.get('contact_sheet_path', '')}` |"
+            f"| `{r.get('path')}` | {r.get('status')} | {r.get('template', '')} | {r.get('camera_variant', '')} | {r.get('frame_count', '')} | {r.get('has_rgb', '')} | {r.get('has_depth', '')} | {r.get('has_id', '')} | {r.get('has_camera_pose', '')} | {r.get('has_projection_or_camera_matrix', '')} | {r.get('has_object_state', '')} | {r.get('target_visible_ratio', '')} | {r.get('target_disappeared_consecutive_max', '')} | {r.get('camera_path_length', '')} | {r.get('camera_path_length_first_8_frames', '')} | {r.get('background_motion_proxy', '')} | {r.get('background_motion_proxy_first_8_frames', '')} | {r.get('delayed_camera_motion', '')} | {r.get('duplicate_scene_hash', '')} | {r.get('too_static', '')} | {r.get('too_extreme', '')} | {r.get('suitable_for_visible_motion', '')} | `{r.get('contact_sheet_path', '')}` |"
         )
     if not rows:
         lines += ["", "No generated HDF5 files were found. This is a blocker for actual validation, not a fake success."]
@@ -453,6 +710,9 @@ def main() -> None:
         "ok_count": len(ok),
         "suitable_for_warmup": len(suitable),
         "suitable_for_visible_motion": len(visible_motion_ok),
+        "delayed_camera_motion": delayed_count,
+        "unique_scene_hash_count": unique_scene_hash_count,
+        "duplicate_scene_hash": duplicate_scene_count,
     }, indent=2))
 
 

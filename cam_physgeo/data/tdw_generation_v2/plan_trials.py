@@ -7,6 +7,12 @@ from pathlib import Path
 from .generation_config import get_profile, load_config, upstream_camera_mapping, validate_profile_camera_set, variant_name
 
 
+def _bool_arg(value: str | bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in {"1", "true", "yes", "y"}
+
+
 def parse_template_counts(raw: str | None) -> dict[str, int]:
     if not raw:
         return {}
@@ -42,7 +48,16 @@ def build_template_sequence(templates: list[str], num_trials: int, template_coun
     return [templates[idx % len(templates)] for idx in range(num_trials)]
 
 
-def build_trials(config_path: Path, profile_name: str, templates: list[str], num_trials: int, template_counts: dict[str, int] | None = None) -> list[dict]:
+def build_trials(
+    config_path: Path,
+    profile_name: str,
+    templates: list[str],
+    num_trials: int,
+    template_counts: dict[str, int] | None = None,
+    *,
+    diverse_scene_seeds: bool = False,
+    unique_source_configs: bool = False,
+) -> list[dict]:
     config = load_config(config_path)
     profile = get_profile(config, profile_name)
     validate_profile_camera_set(config, profile)
@@ -70,6 +85,10 @@ def build_trials(config_path: Path, profile_name: str, templates: list[str], num
         seed = seed_start + idx
         trial_id = f"tdw_v2_{profile_name}_{template}_{camera_variant_name}_seed{seed}"
         upstream_variant = dict(upstream_variants[camera_variant_name])
+        filters = dict(profile.filters)
+        scene_seed = seed if diverse_scene_seeds else seed_start + template_seen.get(template, 0)
+        motion_start = filters.get("camera_motion_start", filters.get("motion_start"))
+        motion_end = filters.get("camera_motion_end", filters.get("motion_end"))
         trials.append({
             "trial_id": trial_id,
             "profile": profile_name,
@@ -85,8 +104,19 @@ def build_trials(config_path: Path, profile_name: str, templates: list[str], num
                 "height_delta": variant.get("height_delta"),
                 "stress": bool(variant.get("stress", False)),
             },
+            "camera_motion_start": motion_start,
+            "camera_motion_end": motion_end,
             "upstream_camera_variant": upstream_variant,
-            "filters": profile.filters,
+            "filters": filters,
+            "trial_seed": seed,
+            "scene_seed": scene_seed,
+            "source_config_path": None,
+            "source_config_id": f"{template}_scene_seed{scene_seed}",
+            "scene_diversity": {
+                "diverse_scene_seeds": bool(diverse_scene_seeds),
+                "unique_source_configs": bool(unique_source_configs),
+                "method": "seed-diverse Physion upstream template generation; source_config_path unavailable in current runner",
+            },
             "status": "planned",
             "notes": "Physion-style TDW simulated moving-camera plan; not real-world data.",
         })
@@ -102,10 +132,20 @@ def main() -> None:
     parser.add_argument("--num_trials", type=int, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--diverse_scene_seeds", type=_bool_arg, default=False)
+    parser.add_argument("--unique_source_configs", type=_bool_arg, default=False)
     args = parser.parse_args()
 
     template_counts = parse_template_counts(args.template_counts)
-    trials = build_trials(args.config, args.profile, args.templates, args.num_trials, template_counts)
+    trials = build_trials(
+        args.config,
+        args.profile,
+        args.templates,
+        args.num_trials,
+        template_counts,
+        diverse_scene_seeds=bool(args.diverse_scene_seeds),
+        unique_source_configs=bool(args.unique_source_configs),
+    )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8") as f:
         for row in trials:
@@ -118,6 +158,8 @@ def main() -> None:
         "template_distribution": {name: sum(1 for t in trials if t["template"] == name) for name in sorted(set(t["template"] for t in trials))},
         "camera_set": trials[0].get("camera_set") if trials else None,
         "camera_variants": sorted(set(str(t["camera_variant"]) for t in trials)),
+        "diverse_scene_seeds": bool(args.diverse_scene_seeds),
+        "unique_source_configs": bool(args.unique_source_configs),
         "out": str(args.out),
         "dry_run": bool(args.dry_run),
     }

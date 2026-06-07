@@ -491,3 +491,11 @@ The profile assigns camera variants by template:
 The v2 local plan dry-run passed with `drop:3, collision:3, roll:2, containment:2` and no stress/reobserve variants. Actual v2 generation was not launched because remote SSH repeatedly timed out while syncing code to the TDW helper worktree. No v2 HDF5 or MP4 was generated in this step.
 
 50-sample readiness remains no until v2 actual smoke passes with at least 8/10 accepted and at least one accepted sample per template.
+
+## 2026-06-07 visible-motion v4 stronger start0 smoke
+
+- v3 200 is usable but still visually slow for some camera-conditioned review goals.
+- Added `warmup_visible_motion_v4_stronger_start0_review` as a stronger, start0, orbit-dominant small review profile.
+- Ran 16-sample smoke only: 16/16 generated, 16/16 suitable_for_visible_motion, 0 too_static, 0 too_extreme, 0 delayed.
+- Converted 16/16 to LingBot cam-only with `use_action=false` and dummy action.
+- Next decision: human-review v4 gallery, then approve v4 50 if visually acceptable. No training, DPO, 50/200/1k expansion was run in this step.

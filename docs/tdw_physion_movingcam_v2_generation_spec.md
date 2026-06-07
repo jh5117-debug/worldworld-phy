@@ -347,3 +347,11 @@ v2 planned mapping:
 | containment | `orbit_left_18`, `orbit_right_18`, `orbit_left_20`, `orbit_right_20`, `strafe_left_050`, `strafe_right_050` |
 
 The validator thresholds remain unchanged. v2 actual validation is still required before requesting any 50-sample run.
+
+## 2026-06-07 visible-motion v4 stronger start0 smoke
+
+- v3 200 is usable but still visually slow for some camera-conditioned review goals.
+- Added `warmup_visible_motion_v4_stronger_start0_review` as a stronger, start0, orbit-dominant small review profile.
+- Ran 16-sample smoke only: 16/16 generated, 16/16 suitable_for_visible_motion, 0 too_static, 0 too_extreme, 0 delayed.
+- Converted 16/16 to LingBot cam-only with `use_action=false` and dummy action.
+- Next decision: human-review v4 gallery, then approve v4 50 if visually acceptable. No training, DPO, 50/200/1k expansion was run in this step.
