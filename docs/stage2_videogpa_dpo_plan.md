@@ -769,3 +769,19 @@ The user manually reviewed the v3 50 videos and confirmed that all 50 are usable
 - a v3 200-sample pilot can be requested, but not run without explicit approval.
 
 DPO remains unchanged: signal-sensitivity and 5-pair are still separate no-go gates, and no DPO training is approved.
+
+## 2026-06-07 TDW v3 200 pilot status
+
+No DPO training was run.
+
+The TDW data-side 200 pilot completed:
+
+- profile: `warmup_visible_motion_v3_start0_scene_diverse`;
+- HDF5 generation: `200 / 200`;
+- validation OK: `200 / 200`;
+- scene diversity: `200 / 200` unique scene hashes;
+- LingBot cam-only conversion: `200 / 200`;
+- `use_action=false`: `200 / 200`;
+- dummy `action.npy`: `200 / 200`.
+
+The data is ready for human review and possible warmup indexing after review. DPO remains gated separately; signal-sensitivity and 5-pair are still no-go unless explicitly revisited.

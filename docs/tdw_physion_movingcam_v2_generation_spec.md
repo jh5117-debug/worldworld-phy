@@ -430,3 +430,22 @@ Spec implication:
 - allow human review to promote a sample when HDF5/key/visibility/scene-diversity gates pass;
 - for this v3 50 set, all 50 samples are human-accepted and converted;
 - future 200-sample runs still require explicit approval.
+
+## 2026-06-07 Spec Note: v3 200 pilot result
+
+The approved v3 200 pilot completed with:
+
+- HDF5/key validation: `200 / 200`;
+- unique scene hashes: `200 / 200`;
+- target visibility: `1.0` for all samples;
+- max invisible frames: `0`;
+- conversion: `200 / 200`;
+- `use_action=false` and dummy `action.npy` for all converted samples.
+
+Numeric early-motion diagnostics are retained:
+
+- numeric `suitable_for_visible_motion_v3`: `116 / 200`;
+- `too_static` / `delayed_camera_motion`: `84 / 200`;
+- `too_extreme`: `0 / 200`.
+
+The numeric diagnostics should be reviewed alongside the video gallery. They should not silently block the human-accepted v3 profile, but they should remain visible before any 1k-scale request.

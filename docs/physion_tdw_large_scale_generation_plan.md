@@ -498,3 +498,24 @@ Operational status:
 - old `generated_v2` raw/conversion assets were deleted, reducing `generated_v2` from about `37G` to `254M`.
 
 The next stage can be a 200-sample v3 pilot only after explicit user approval. The 200 pilot should continue using `generated_v3` and must not cascade into 1k+.
+
+## 2026-06-07 Visible-Motion v3 200-Sample Pilot
+
+The user requested the `warmup_visible_motion_v3_start0_scene_diverse` 200-sample pilot. The run completed on GPU0-bound `DISPLAY=:8`.
+
+Summary:
+
+- generated HDF5: `200 / 200`;
+- validation OK: `200 / 200`;
+- unique scene hashes: `200 / 200`;
+- duplicate scene hashes: `0`;
+- LingBot cam-only conversion: `200 / 200`;
+- target.mp4 files: `200 / 200`;
+- raw HDF5 footprint: about `17G`;
+- converted cam-only footprint: about `37G`.
+
+The pilot is ready for human review at:
+
+`local_assets/reports/human_review/tdw_visible_motion_v3_start0_scene_diverse_200/video_gallery.html`
+
+Next scale step, if human review passes, is 1k-scale generation only after explicit approval. Do not run 1k automatically.

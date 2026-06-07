@@ -576,3 +576,30 @@ Updated status:
 - old generated_v2 waste assets were removed to reduce storage pressure.
 
 The next possible data step is a user-approved v3 200-sample pilot. This is not automatic approval to run 200 / 1k, and it does not affect the separate DPO no-go state.
+
+## 2026-06-07 Update: warmup_visible_motion_v3 200-sample pilot
+
+The user requested the v3 200-sample pilot. It ran on GPU0-bound `DISPLAY=:8`.
+
+Results:
+
+| Gate | Result |
+|---|---|
+| HDF5 generation | 200 / 200 |
+| HDF5/key validation | 200 / 200 |
+| Suitable for warmup | 200 / 200 |
+| Unique scene hashes | 200 / 200 |
+| Duplicate scene hashes | 0 |
+| target_visible_ratio | 1.0 for all samples |
+| max invisible frames | 0 |
+| LingBot cam-only conversion | 200 / 200 |
+| `use_action=false` | 200 / 200 |
+
+Numeric diagnostics remain visible:
+
+- numeric `suitable_for_visible_motion_v3`: 116 / 200;
+- `delayed_camera_motion`: 84 / 200;
+- `too_static`: 84 / 200;
+- `too_extreme`: 0 / 200.
+
+The 200 pilot is ready for human review. It does not approve 1k+ generation, training, DPO, VideoGPA `03_train`, Stage1, rollout, reward calibration, LoRA save, or checkpoint save.
