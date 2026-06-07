@@ -164,6 +164,7 @@ def _sample_from_validation_row(row: dict[str, Any]) -> dict[str, Any]:
     camera_variant = _camera_variant_from_dir(trial_name)
     camera_profile = "warmup_mild"
     for candidate in (
+        "warmup_visible_motion_v5_aggressive_2x_demo",
         "warmup_visible_motion_v4_stronger_start0_review",
         "warmup_visible_motion_v3_start0_scene_diverse",
         "warmup_visible_motion_v2",

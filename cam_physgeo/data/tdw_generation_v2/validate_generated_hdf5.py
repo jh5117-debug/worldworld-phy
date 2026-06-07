@@ -312,6 +312,20 @@ VISIBLE_MOTION_V4_THRESHOLDS = {
 }
 
 
+VISIBLE_MOTION_V5_THRESHOLDS = {
+    "target_visible_ratio_min": 0.55,
+    "max_invisible_frames": 16,
+    "min_camera_path_length": 1.70,
+    "max_camera_path_length": 4.20,
+    "min_background_motion_proxy": 0.044,
+    "min_video_motion_proxy": 0.044,
+    "min_camera_path_length_first_8_frames": 0.17,
+    "min_camera_path_length_first_16_frames": 0.34,
+    "min_background_motion_proxy_first_8_frames": 0.014,
+    "max_first_motion_frame": 2,
+}
+
+
 
 def _is_visible_motion_profile(profile: str | None) -> bool:
     return str(profile or "").startswith("warmup_visible_motion")
@@ -325,11 +339,17 @@ def _is_visible_motion_v4_profile(profile: str | None) -> bool:
     return str(profile or "") == "warmup_visible_motion_v4_stronger_start0_review"
 
 
+def _is_visible_motion_v5_profile(profile: str | None) -> bool:
+    return str(profile or "") == "warmup_visible_motion_v5_aggressive_2x_demo"
+
+
 def _is_start0_visible_motion_profile(profile: str | None) -> bool:
-    return _is_visible_motion_v3_profile(profile) or _is_visible_motion_v4_profile(profile)
+    return _is_visible_motion_v3_profile(profile) or _is_visible_motion_v4_profile(profile) or _is_visible_motion_v5_profile(profile)
 
 
 def _thresholds_for_profile(profile: str | None) -> dict[str, Any]:
+    if _is_visible_motion_v5_profile(profile):
+        return dict(VISIBLE_MOTION_V5_THRESHOLDS)
     if _is_visible_motion_v4_profile(profile):
         return dict(VISIBLE_MOTION_V4_THRESHOLDS)
     if _is_visible_motion_v3_profile(profile):
@@ -345,6 +365,7 @@ def _classify_motion(info: dict[str, Any], profile: str | None) -> dict[str, Any
             "delayed_camera_motion": False,
             "suitable_for_visible_motion_v3": None,
             "suitable_for_visible_motion_v4": None,
+            "suitable_for_visible_motion_v5": None,
             "suitable_for_visible_motion": None,
             "motion_rejection_reasons": [],
         }
@@ -393,6 +414,7 @@ def _classify_motion(info: dict[str, Any], profile: str | None) -> dict[str, Any
         "suitable_for_visible_motion": suitable,
         "suitable_for_visible_motion_v3": suitable if _is_visible_motion_v3_profile(profile) else None,
         "suitable_for_visible_motion_v4": suitable if _is_visible_motion_v4_profile(profile) else None,
+        "suitable_for_visible_motion_v5": suitable if _is_visible_motion_v5_profile(profile) else None,
         "motion_rejection_reasons": reasons + extreme + delayed,
         "visible_motion_thresholds": dict(t),
     }
@@ -625,6 +647,7 @@ def _apply_scene_diversity(rows: list[dict[str, Any]], profile: str | None) -> N
             row["suitable_for_visible_motion"] = False
             row["suitable_for_visible_motion_v3"] = False
             row["suitable_for_visible_motion_v4"] = False
+            row["suitable_for_visible_motion_v5"] = False
 
 
 def main() -> None:
