@@ -73,6 +73,185 @@ def _load_jsonl(path: str | Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in p.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
+def _split_csv(value: str | None) -> list[str]:
+    return [part.strip() for part in str(value or "").split(",") if part.strip()]
+
+
+def _infer_template_camera(row: dict[str, Any]) -> tuple[str, str]:
+    template = str(row.get("template") or "")
+    camera = str(row.get("camera_variant") or "")
+    sample_id = str(row.get("sample_id") or Path(str(row.get("sample_dir") or "")).name)
+    templates = ["containment", "collision", "drop", "roll"]
+    if not template:
+        for candidate in templates:
+            if f"_{candidate}_" in f"_{sample_id}_":
+                template = candidate
+                break
+    if not camera and template and f"_{template}_" in sample_id:
+        tail = sample_id.split(f"_{template}_", 1)[1]
+        camera = tail.split("_seed", 1)[0]
+    return template or "unknown_template", camera or "unknown_camera"
+
+
+def _balance_value(row: dict[str, Any], key: str) -> str:
+    if key == "template":
+        return _infer_template_camera(row)[0]
+    if key == "camera_variant":
+        return _infer_template_camera(row)[1]
+    return str(row.get(key) or "unknown")
+
+
+def _row_balance_key(row: dict[str, Any], keys: list[str]) -> tuple[str, ...]:
+    return tuple(_balance_value(row, key) for key in keys)
+
+
+def _coverage_summary(rows: list[dict[str, Any]], *, limit: int | None = None) -> dict[str, Any]:
+    from collections import Counter
+
+    selected = rows[:limit] if limit is not None else rows
+    templates = []
+    cameras = []
+    sample_ids = []
+    for row in selected:
+        template, camera = _infer_template_camera(row)
+        templates.append(template)
+        cameras.append(camera)
+        sample_ids.append(str(row.get("sample_id") or Path(str(row.get("sample_dir") or "")).name))
+    return {
+        "count": len(selected),
+        "template_distribution": dict(Counter(templates)),
+        "camera_distribution": dict(Counter(cameras)),
+        "unique_templates": sorted(set(templates)),
+        "unique_camera_variants": sorted(set(cameras)),
+        "duplicate_sample_count": len(sample_ids) - len(set(sample_ids)),
+        "sample_ids": sample_ids,
+    }
+
+
+def _make_sample_plan(
+    rows: list[dict[str, Any]],
+    *,
+    max_steps: int,
+    sampler: str,
+    balance_keys: list[str],
+    shuffle_seed: int,
+    sample_without_replacement: bool,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    from collections import defaultdict
+
+    if not rows:
+        raise RuntimeError("empty rows for sampler")
+    rng = random.Random(int(shuffle_seed))
+    sampler = str(sampler or "sequential")
+    max_steps = int(max_steps)
+    if sampler == "sequential":
+        plan = [rows[i % len(rows)] for i in range(max_steps)]
+    elif sampler == "shuffle":
+        pool = list(rows)
+        rng.shuffle(pool)
+        if sample_without_replacement and max_steps <= len(pool):
+            plan = pool[:max_steps]
+        else:
+            plan = []
+            while len(plan) < max_steps:
+                cycle = list(rows)
+                rng.shuffle(cycle)
+                plan.extend(cycle)
+            plan = plan[:max_steps]
+    elif sampler == "balanced":
+        keys = balance_keys or ["template", "camera_variant"]
+        grouped: dict[str, dict[tuple[str, ...], list[dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
+        for row in rows:
+            template, _camera = _infer_template_camera(row)
+            grouped[template][_row_balance_key(row, keys)].append(row)
+        template_order = [template for template in ["drop", "collision", "roll", "containment"] if template in grouped]
+        template_order += sorted(template for template in grouped if template not in template_order)
+        if not template_order:
+            raise RuntimeError("balanced sampler found no template groups")
+        group_order: dict[str, list[tuple[str, ...]]] = {}
+        group_indices: dict[str, int] = {}
+        row_indices: dict[tuple[str, tuple[str, ...]], int] = {}
+        for template in template_order:
+            groups = sorted(grouped[template])
+            rng.shuffle(groups)
+            group_order[template] = groups
+            group_indices[template] = 0
+            for group in groups:
+                rng.shuffle(grouped[template][group])
+                row_indices[(template, group)] = 0
+        plan = []
+        used_ids: set[str] = set()
+        attempts = 0
+        while len(plan) < max_steps:
+            template = template_order[len(plan) % len(template_order)]
+            groups = group_order[template]
+            chosen = None
+            for offset in range(len(groups)):
+                group = groups[(group_indices[template] + offset) % len(groups)]
+                candidates = grouped[template][group]
+                idx_key = (template, group)
+                idx = row_indices[idx_key]
+                if idx < len(candidates):
+                    candidate = candidates[idx]
+                    candidate_id = str(candidate.get("sample_id") or Path(str(candidate.get("sample_dir") or "")).name)
+                    if not sample_without_replacement or candidate_id not in used_ids:
+                        chosen = candidate
+                        row_indices[idx_key] = idx + 1
+                        group_indices[template] = (group_indices[template] + offset + 1) % len(groups)
+                        break
+                    row_indices[idx_key] = idx + 1
+            if chosen is None:
+                if sample_without_replacement and len(used_ids) >= len(rows):
+                    sample_without_replacement = False
+                for template_reset in template_order:
+                    for group in group_order[template_reset]:
+                        row_indices[(template_reset, group)] = 0
+                        rng.shuffle(grouped[template_reset][group])
+                attempts += 1
+                if attempts > 3 and not plan:
+                    raise RuntimeError("balanced sampler could not select any rows")
+                continue
+            used_ids.add(str(chosen.get("sample_id") or Path(str(chosen.get("sample_dir") or "")).name))
+            plan.append(chosen)
+    else:
+        raise ValueError(f"unsupported sampler: {sampler}")
+    summary = {
+        "sampler": sampler,
+        "balance_keys": balance_keys,
+        "shuffle_seed": int(shuffle_seed),
+        "sample_without_replacement": bool(sample_without_replacement),
+        "source_count": len(rows),
+        "planned_count": len(plan),
+        "first_20": _coverage_summary(plan, limit=min(20, len(plan))),
+        "first_60": _coverage_summary(plan, limit=min(60, len(plan))),
+        "all_steps": _coverage_summary(plan),
+    }
+    return plan, summary
+
+
+def _write_sample_plan(out_dir: Path, plan: list[dict[str, Any]], summary: dict[str, Any]) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    plan_path = out_dir / "sample_plan.jsonl"
+    with plan_path.open("w", encoding="utf-8") as handle:
+        for idx, row in enumerate(plan, start=1):
+            template, camera = _infer_template_camera(row)
+            handle.write(
+                json.dumps(
+                    {
+                        "step": idx,
+                        "sample_id": row.get("sample_id") or Path(str(row.get("sample_dir") or "")).name,
+                        "template": template,
+                        "camera_variant": camera,
+                        "sample_dir": row.get("sample_dir"),
+                        "target_video_path": row.get("target_video_path"),
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
+    (out_dir / "sampler_summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
 def _torch_dtype(name: str):
     from cam_physgeo.dpo.lingbot_fast_videogpa_adapter import _torch_dtype as adapter_dtype
 
@@ -577,6 +756,51 @@ def true_forward_loss_dryrun(args: argparse.Namespace) -> int:
         return 2
 
 
+def sampler_dryrun(args: argparse.Namespace) -> int:
+    payload = _base_payload(args)
+    out_dir = Path(args.out)
+    try:
+        rows = _load_jsonl(args.train_manifest)
+        plan, sampler_summary = _make_sample_plan(
+            rows,
+            max_steps=int(args.max_steps),
+            sampler=args.sampler,
+            balance_keys=_split_csv(args.balance_keys),
+            shuffle_seed=int(args.shuffle_seed),
+            sample_without_replacement=_bool_arg(args.sample_without_replacement),
+        )
+        _write_sample_plan(out_dir, plan, sampler_summary)
+        first20 = sampler_summary["first_20"]
+        first60 = sampler_summary["first_60"]
+        pass_criteria = {
+            "first20_at_least_3_templates": len(first20["unique_templates"]) >= 3,
+            "first60_all_4_templates": len(first60["unique_templates"]) >= 4,
+            "first60_at_least_4_camera_variants": len(first60["unique_camera_variants"]) >= 4,
+            "no_excessive_duplicates": int(first60["duplicate_sample_count"]) == 0,
+        }
+        success = all(pass_criteria.values())
+        payload.update(
+            {
+                "status": "passed_sampler_dryrun" if success else "failed_sampler_dryrun",
+                "success": success,
+                "train_manifest": args.train_manifest,
+                "max_steps": int(args.max_steps),
+                "sampler_summary": sampler_summary,
+                "pass_criteria": pass_criteria,
+                "sample_plan_path": str(out_dir / "sample_plan.jsonl"),
+                "sampler_summary_path": str(out_dir / "sampler_summary.json"),
+            }
+        )
+        _write_report(out_dir, "sampler_dryrun_report", payload)
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 0 if success else 2
+    except Exception as exc:
+        payload.update({"status": "failed_sampler_dryrun", "reason": repr(exc)})
+        _write_report(out_dir, "sampler_dryrun_report", payload)
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 2
+
+
 def staged_warmup_pilot(args: argparse.Namespace) -> int:
     from cam_physgeo.dpo.lingbot_fast_videogpa_adapter import LingBotFastVideoGPAAdapter
     from cam_physgeo.dpo.lora_utils import count_lora_parameters, freeze_non_lora_parameters, inject_lora_into_modules, list_lora_parameters
@@ -589,7 +813,8 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
     metrics_dir = out_dir / "metrics"
     train_metrics_path = metrics_dir / "train_metrics.jsonl"
     val_metrics_path = metrics_dir / "val_metrics.jsonl"
-    summary_path = out_dir / "reports" / "stageA_summary.json"
+    report_name = "stageA_balanced_summary" if args.sampler == "balanced" else "stageA_summary"
+    summary_path = out_dir / "reports" / f"{report_name}.json"
     out_dir.mkdir(parents=True, exist_ok=True)
     for path in [train_metrics_path, val_metrics_path]:
         if path.exists():
@@ -598,20 +823,40 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
         payload.update({"status": "failed_not_real_model_load", "reason": "--require_real_model_load must be true"})
         _write_report(out_dir, name, payload)
         return 2
+    save_adapter_checkpoint = _bool_arg(args.save_adapter_checkpoint)
+    save_metrics_only = _bool_arg(args.save_metrics_only)
     safety_flags = {
         "no_dpo": _bool_arg(args.no_dpo),
         "no_rollout": _bool_arg(args.no_rollout),
         "no_reward_calibration": _bool_arg(args.no_reward_calibration),
         "no_checkpoint": _bool_arg(args.no_checkpoint),
+        "no_full_model_checkpoint": _bool_arg(args.no_full_model_checkpoint),
         "no_optimizer_state_save": _bool_arg(args.no_optimizer_state_save),
-        "save_metrics_only": _bool_arg(args.save_metrics_only),
+        "save_metrics_only": save_metrics_only,
+        "save_adapter_checkpoint": save_adapter_checkpoint,
     }
-    if not all(safety_flags.values()):
+    required_true = {
+        "no_dpo": safety_flags["no_dpo"],
+        "no_rollout": safety_flags["no_rollout"],
+        "no_reward_calibration": safety_flags["no_reward_calibration"],
+        "no_checkpoint": safety_flags["no_checkpoint"],
+        "no_full_model_checkpoint": safety_flags["no_full_model_checkpoint"],
+        "no_optimizer_state_save": safety_flags["no_optimizer_state_save"],
+    }
+    if not all(required_true.values()):
         payload.update({"status": "failed_safety_flags", "reason": f"Stage A requires all safety flags true: {safety_flags}"})
+        _write_report(out_dir, name, payload)
+        return 2
+    if not save_metrics_only and not save_adapter_checkpoint:
+        payload.update({"status": "failed_safety_flags", "reason": "save_metrics_only may be false only when save_adapter_checkpoint=true"})
         _write_report(out_dir, name, payload)
         return 2
     if int(args.max_steps) > 100:
         payload.update({"status": "failed_max_steps", "reason": "Stage A pilot is capped at max_steps <= 100"})
+        _write_report(out_dir, name, payload)
+        return 2
+    if save_adapter_checkpoint and int(args.max_steps) > 60:
+        payload.update({"status": "failed_max_steps", "reason": "adapter-saving balanced Stage A pilot is capped at max_steps <= 60"})
         _write_report(out_dir, name, payload)
         return 2
     if int(args.batch_size) != 1:
@@ -630,6 +875,15 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
             raise RuntimeError("empty train manifest")
         if not val_rows:
             raise RuntimeError("empty val manifest")
+        sample_plan, sampler_summary = _make_sample_plan(
+            train_rows,
+            max_steps=int(args.max_steps),
+            sampler=args.sampler,
+            balance_keys=_split_csv(args.balance_keys),
+            shuffle_seed=int(args.shuffle_seed),
+            sample_without_replacement=_bool_arg(args.sample_without_replacement),
+        )
+        _write_sample_plan(out_dir / "sampler_dryrun", sample_plan, sampler_summary)
         adapter = LingBotFastVideoGPAAdapter(args.config)
         policy = adapter.load_policy_model(device=args.device, dtype=args.dtype, dry_run=False)
         pipe = policy.pop("object")
@@ -672,6 +926,7 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
             "stage": "A_high_noise_global_camera",
             "train_manifest": args.train_manifest,
             "val_manifest": args.val_manifest,
+            "sampler": sampler_summary,
             "max_steps": int(args.max_steps),
             "val_every": int(args.val_every),
             "batch_size": int(args.batch_size),
@@ -704,7 +959,9 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
             },
             "safety_flags": safety_flags,
             "no_checkpoint_saved": True,
-            "no_lora_saved": True,
+            "no_full_model_checkpoint_saved": True,
+            "no_lora_saved": not save_adapter_checkpoint,
+            "adapter_checkpoint_requested": save_adapter_checkpoint,
             "no_optimizer_state_saved": True,
             "no_rollout": True,
             "no_dpo": True,
@@ -781,7 +1038,7 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
 
         for step in range(1, int(args.max_steps) + 1):
             step_start = time.time()
-            row = train_rows[(step - 1) % len(train_rows)]
+            row = sample_plan[(step - 1) % len(sample_plan)]
             optimizer.zero_grad(set_to_none=True)
             loss, metric = compute_sample_loss(row, step=step, enable_grad=True, split="train")
             if not torch.isfinite(loss.detach()):
@@ -835,6 +1092,63 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
                 _cleanup_cuda()
         lora_after = adapter._diff_full_snapshot(model, lora_before)
         base_after = adapter._diff_param_samples(model, base_before)
+        checkpoint_info: dict[str, Any] = {"requested": save_adapter_checkpoint, "saved": False}
+        if save_adapter_checkpoint and stop_reason is None and steps_completed >= 20:
+            checkpoint_root = out_dir / "checkpoint" / str(args.adapter_checkpoint_name)
+            checkpoint_root.mkdir(parents=True, exist_ok=True)
+            existing = [
+                path
+                for pattern in ("*.pt", "*.pth", "*.safetensors", "*.ckpt", "optimizer*")
+                for path in checkpoint_root.glob(pattern)
+            ]
+            if existing:
+                raise RuntimeError(f"refuse to write adapter checkpoint because checkpoint dir is not empty: {[str(p) for p in existing]}")
+            state_dict = {}
+            for name in trainable["selected_names"]:
+                tensor = param_map[name].detach().cpu().float()
+                if "lora_" not in name:
+                    raise RuntimeError(f"refuse to save non-LoRA parameter in adapter checkpoint: {name}")
+                state_dict[name] = tensor
+            checkpoint_payload = {
+                "format": "cam_physgeo_runtime_lora_adapter_v1",
+                "trainable_scope": args.trainable_scope,
+                "target_modules": resolved["target_modules"],
+                "lora_rank": int(args.lora_rank),
+                "lora_alpha": float(args.lora_alpha),
+                "selected_names": trainable["selected_names"],
+                "state_dict": state_dict,
+                "base_model": "LingBot-Fast WanModelFast",
+                "no_optimizer_state": True,
+                "no_full_model_weights": True,
+            }
+            checkpoint_path = checkpoint_root / "adapter_state.pt"
+            torch.save(checkpoint_payload, checkpoint_path)
+            checkpoint_size = int(checkpoint_path.stat().st_size)
+            checkpoint_info = {
+                "requested": True,
+                "saved": True,
+                "path": str(checkpoint_path),
+                "root": str(checkpoint_root),
+                "size_bytes": checkpoint_size,
+                "size_mb": round(checkpoint_size / (1024 * 1024), 4),
+                "param_names": list(state_dict),
+                "param_count": int(sum(tensor.numel() for tensor in state_dict.values())),
+                "contains_only_lora": all("lora_" in name for name in state_dict),
+                "contains_optimizer_state": False,
+                "contains_full_model": False,
+            }
+            if checkpoint_size > 50 * 1024 * 1024:
+                raise RuntimeError(f"adapter checkpoint too large: {checkpoint_size} bytes")
+        first20 = sampler_summary["first_20"]
+        all_steps = sampler_summary["all_steps"]
+        balanced_coverage_pass = (
+            args.sampler != "balanced"
+            or (
+                len(first20["unique_templates"]) >= 3
+                and len(all_steps["unique_templates"]) >= 4
+                and len(all_steps["unique_camera_variants"]) >= 4
+            )
+        )
         success = bool(
             steps_completed >= 20
             and train_losses
@@ -843,6 +1157,8 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
             and max(grad_norms or [0.0]) > 0.0
             and lora_after.get("params_changed_count", 0) > 0
             and base_after.get("params_changed_count", 0) == 0
+            and balanced_coverage_pass
+            and (not save_adapter_checkpoint or checkpoint_info.get("saved") is True)
             and stop_reason is None
         )
         summary.update(
@@ -864,6 +1180,8 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
                 "sigma_mean": sum(sigmas) / len(sigmas) if sigmas else None,
                 "lora_diff_after": lora_after,
                 "base_diff_after": base_after,
+                "checkpoint": checkpoint_info,
+                "balanced_coverage_pass": balanced_coverage_pass,
                 "frozen_params_unchanged": base_after.get("params_changed_count", 0) == 0,
                 "trainable_params_received_gradients": max(grad_norms or [0.0]) > 0.0,
                 "elapsed_sec": time.time() - start,
@@ -921,7 +1239,11 @@ def placeholder_forward_loss_dryrun(args: argparse.Namespace) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", default="forward_loss_dryrun", choices=["forward_loss_dryrun", "component_load_smoke", "true_forward_loss_dryrun", "staged_warmup_pilot"])
+    parser.add_argument(
+        "--mode",
+        default="forward_loss_dryrun",
+        choices=["forward_loss_dryrun", "component_load_smoke", "true_forward_loss_dryrun", "sampler_dryrun", "staged_warmup_pilot"],
+    )
     parser.add_argument("--model_type", default="fast")
     parser.add_argument("--config", required=True)
     parser.add_argument("--train_manifest", default="")
@@ -931,6 +1253,12 @@ def main() -> int:
     parser.add_argument("--num_batches", type=int, default=1)
     parser.add_argument("--max_steps", type=int, default=1)
     parser.add_argument("--val_every", type=int, default=25)
+    parser.add_argument("--sampler", default="sequential", choices=["sequential", "shuffle", "balanced"])
+    parser.add_argument("--balance_keys", default="template,camera_variant")
+    parser.add_argument("--shuffle_seed", type=int, default=42)
+    parser.add_argument("--sample_without_replacement", default="true")
+    parser.add_argument("--log_sample_ids", default="false")
+    parser.add_argument("--log_template_camera_stats", default="false")
     parser.add_argument("--num_frames", type=int, default=8)
     parser.add_argument("--resolution", default="480x832")
     parser.add_argument("--dtype", default="bf16")
@@ -955,13 +1283,17 @@ def main() -> int:
     parser.add_argument("--no_backward", default="true")
     parser.add_argument("--no_optimizer", default="true")
     parser.add_argument("--no_checkpoint", default="true")
+    parser.add_argument("--save_adapter_checkpoint", default="false")
+    parser.add_argument("--adapter_checkpoint_name", default="stageA_camera_lora_final")
+    parser.add_argument("--no_full_model_checkpoint", default="true")
     parser.add_argument("--no_optimizer_state_save", default="true")
     parser.add_argument("--save_metrics_only", default="true")
     parser.add_argument("--local_files_only", default="true")
     parser.add_argument("--timeout", type=int, default=0)
     args = parser.parse_args()
 
-    if args.device == "cuda" and not os.environ.get("CUDA_VISIBLE_DEVICES"):
+    gpu_modes = {"component_load_smoke", "true_forward_loss_dryrun", "staged_warmup_pilot"}
+    if args.mode in gpu_modes and args.device == "cuda" and not os.environ.get("CUDA_VISIBLE_DEVICES"):
         payload = _base_payload(args)
         payload.update({"status": "blocked", "reason": "CUDA_VISIBLE_DEVICES is not set; refuse to run GPU smoke without explicit GPU restriction."})
         _write_report(Path(args.out), "warmup_smoke_blocked_report", payload)
@@ -977,6 +1309,14 @@ def main() -> int:
             print(json.dumps(payload, indent=2, ensure_ascii=False))
             return 2
         return true_forward_loss_dryrun(args)
+    if args.mode == "sampler_dryrun":
+        if not args.train_manifest:
+            payload = _base_payload(args)
+            payload.update({"status": "blocked", "reason": "--train_manifest is required for sampler_dryrun"})
+            _write_report(Path(args.out), "sampler_dryrun_report", payload)
+            print(json.dumps(payload, indent=2, ensure_ascii=False))
+            return 2
+        return sampler_dryrun(args)
     if args.mode == "staged_warmup_pilot":
         if not args.train_manifest or not args.val_manifest:
             payload = _base_payload(args)

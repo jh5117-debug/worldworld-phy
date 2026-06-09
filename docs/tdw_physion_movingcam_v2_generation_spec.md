@@ -508,3 +508,29 @@ The TDW v5 aggressive 2x 200 dataset has now passed a minimal LingBot-Fast Stage
 - no checkpoint, LoRA, optimizer state, rollout, reward calibration, DPO, or new TDW generation was produced.
 
 This validates the model-side warmup path, not the data-generation profile. The next warmup run should shuffle or balance templates because the first 20 train rows used in this pilot were all `collision + orbit_right_64`.
+
+## 2026-06-09 Spec Note: Balanced Stage A Warmup Pilot
+
+The TDW v5 aggressive 2x 200 dataset remains the current human-approved camera-conditioned warmup dataset. No new TDW data was generated in this gate.
+
+Balanced Stage A high-noise warmup passed:
+
+- balanced sampler over `template,camera_variant`;
+- `60 / 60` train steps;
+- train templates: `drop:15`, `collision:15`, `roll:15`, `containment:15`;
+- diagnostic timestep / sigma: `799 / 0.799`;
+- latent shape: `[16, 2, 60, 104]`;
+- camera/control shape: `[1, 384, 2, 60, 104]`;
+- dummy action norm: `0.0`;
+- train losses finite;
+- val losses finite;
+- LoRA trainable params: `40,960`;
+- sampled frozen base parameters unchanged.
+
+The run saved exactly one adapter-only checkpoint:
+
+`local_assets/experiments/exp_tdw_v5_200_stageA_balanced_warmup/checkpoint/stageA_balanced_camera_lora_final/adapter_state.pt`
+
+Size: `166,809` bytes. No full model weights or optimizer state were saved.
+
+The next review should be a tiny approved rollout smoke, one sample per template, comparing base LingBot-Fast against the Stage A adapter. DPO and reward pair selection remain later gates.

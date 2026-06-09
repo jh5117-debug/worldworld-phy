@@ -878,3 +878,38 @@ Next allowed actions require explicit user approval:
 3. Pause and inspect metrics.
 
 DPO remains later. Do not run reward calibration, winner/loser pair selection, VideoGPA `03_train`, or DPO training from this gate alone.
+
+## 2026-06-09 Balanced Stage A Warmup Pilot Update
+
+No DPO training was run.
+
+The previous Stage A pilot was a minimal stability pass but had an unbalanced first-20 sample window (`collision + orbit_right_64` only). The balanced Stage A rerun fixes that issue.
+
+Balanced Stage A result:
+
+- sampler: `balanced`;
+- balance keys: `template,camera_variant`;
+- steps: `60`;
+- first 20 templates: `drop:5`, `collision:5`, `roll:5`, `containment:5`;
+- full 60 templates: `drop:15`, `collision:15`, `roll:15`, `containment:15`;
+- camera variants in full run: `orbit_left_72`, `strafe_left_180`, `orbit_right_60`, `orbit_left_44`, `orbit_right_64`;
+- train loss range: `0.033201` to `0.067220`;
+- val losses: `0.037449`, `0.046542`, `0.057670`;
+- timestep / sigma: `799 / 0.799`;
+- trainable scope: `camera_control_lora_tiny`;
+- trainable params: `40,960`;
+- LoRA tensors changed: `4`;
+- sampled frozen base tensors changed: `0`;
+- no NaN/Inf or OOM.
+
+Checkpoint status:
+
+- one tiny adapter-only checkpoint was saved;
+- path: `local_assets/experiments/exp_tdw_v5_200_stageA_balanced_warmup/checkpoint/stageA_balanced_camera_lora_final/adapter_state.pt`;
+- size: `166,809` bytes;
+- no full model checkpoint;
+- no optimizer state.
+
+Important note: validation sampling is still sequential and the three val probes were `collision + orbit_right_64`. This is sufficient for this train-sampler gate but future Stage B and rollout evaluation should use balanced validation / one-per-template rollout selection.
+
+Next allowed action requires explicit user approval: tiny rollout smoke using the saved adapter. DPO, reward calibration, winner/loser pair selection, and VideoGPA `03_train` remain blocked.

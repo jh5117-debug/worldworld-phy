@@ -578,3 +578,25 @@ The current TDW v5 aggressive 2x 200 dataset remains the main human-approved war
 - no checkpoint, LoRA, optimizer state, rollout, reward calibration, TDW generation, or DPO was run.
 
 The Stage A stability gate passed, but the first 20 split rows were all `collision + orbit_right_64`. The next compute gate should use a shuffled or template-balanced sampler before drawing conclusions about full dataset behavior. No additional TDW 200/1k generation is authorized by this result.
+
+## 2026-06-09 Balanced Stage A Warmup Gate
+
+No new TDW data was generated.
+
+The TDW v5 aggressive 2x 200 dataset remains the active human-approved warmup candidate. The balanced Stage A high-noise warmup pilot now passes:
+
+- steps: `60`;
+- train template coverage: `drop:15`, `collision:15`, `roll:15`, `containment:15`;
+- camera variants covered: 5;
+- train loss finite, range `0.033201` to `0.067220`;
+- val losses finite: `0.037449`, `0.046542`, `0.057670`;
+- LoRA trainable params: `40,960`;
+- LoRA tensors changed: `4`;
+- sampled frozen base tensors changed: `0`;
+- no NaN/Inf or OOM.
+
+One adapter-only checkpoint was saved for later approved rollout inspection:
+
+`local_assets/experiments/exp_tdw_v5_200_stageA_balanced_warmup/checkpoint/stageA_balanced_camera_lora_final/adapter_state.pt`
+
+This is not a data-generation approval. Do not run more TDW generation, Stage B, rollout, reward calibration, or DPO without explicit approval.

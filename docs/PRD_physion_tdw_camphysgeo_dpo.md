@@ -695,3 +695,40 @@ Safety:
 Limitation: the current split order made the first 20 training rows all `collision + orbit_right_64`. This proves the real high-noise warmup path is stable, but it is not a template-balanced training conclusion. The next pilot should use a shuffled or balanced sampler.
 
 Next user decision: approve Stage B mixed/low-noise pilot, approve a checkpoint-saving Stage A rerun for rollout, or pause and inspect metrics. DPO remains later, after warmup behavior and reward-based pair selection are ready.
+
+## 2026-06-09 Update: Balanced Stage A Warmup Pilot Passed
+
+The previous Stage A result was a minimal stability pass but not a balanced data-distribution pass because its first 20 rows were all `collision + orbit_right_64`.
+
+A balanced Stage A high-noise/global-camera pilot has now passed:
+
+- sampler: balanced by `template,camera_variant`;
+- steps completed: `60`;
+- first 20 templates: `drop:5`, `collision:5`, `roll:5`, `containment:5`;
+- full 60 templates: `drop:15`, `collision:15`, `roll:15`, `containment:15`;
+- train loss first / last / min / max: `0.065782 / 0.053271 / 0.033201 / 0.067220`;
+- val losses at steps 20 / 40 / 60: `0.037449 / 0.046542 / 0.057670`;
+- timestep: diagnostic high-noise, `799`;
+- sigma: `0.799`;
+- trainable params: `40,960`;
+- LoRA tensors changed: `4`;
+- sampled frozen base tensors changed: `0`;
+- no NaN/Inf or OOM.
+
+Exactly one tiny adapter-only checkpoint was saved:
+
+`local_assets/experiments/exp_tdw_v5_200_stageA_balanced_warmup/checkpoint/stageA_balanced_camera_lora_final/adapter_state.pt`
+
+Size: `166,809` bytes. It contains only LoRA tensors and no full model weights or optimizer state.
+
+Safety status:
+
+- no DPO;
+- no VideoGPA `03_train`;
+- no Stage1;
+- no rollout;
+- no reward calibration;
+- no new TDW generation;
+- no full model checkpoint.
+
+Next user decision: approve a tiny rollout smoke comparing base LingBot-Fast versus the balanced Stage A adapter on one sample per template. Stage B and DPO remain later gates.

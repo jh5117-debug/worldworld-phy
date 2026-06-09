@@ -4,19 +4,30 @@ Date: 2026-06-09
 
 ## Current Gate
 
-Stage A high-noise/global-camera warmup pilot passed:
+The original Stage A high-noise/global-camera warmup pilot passed as a stability smoke, but its first 20 rows were all `collision + orbit_right_64`.
 
-- steps completed: 20
-- train loss finite: yes
-- val loss finite: yes
-- trainable scope: `camera_control_lora_tiny`
-- trainable parameters: 40,960
-- LoRA tensors changed: 4
-- sampled base tensors changed: 0
-- no checkpoint / LoRA / optimizer state saved
-- no DPO / rollout / reward calibration
+The balanced Stage A rerun now also passes:
 
-Important limitation: the 20-step run consumed the first 20 rows in the train split order, which were all `collision + orbit_right_64`. The next pilot should shuffle or balance samples.
+- steps completed: `60`;
+- train sampler: balanced by `template,camera_variant`;
+- first 20 templates: `drop:5`, `collision:5`, `roll:5`, `containment:5`;
+- full 60 templates: `drop:15`, `collision:15`, `roll:15`, `containment:15`;
+- train loss finite: yes;
+- val loss finite: yes;
+- trainable scope: `camera_control_lora_tiny`;
+- trainable parameters: `40,960`;
+- LoRA tensors changed: `4`;
+- sampled base tensors changed: `0`;
+- one tiny adapter checkpoint saved;
+- no full model checkpoint;
+- no optimizer state;
+- no DPO / rollout / reward calibration.
+
+Adapter checkpoint:
+
+`local_assets/experiments/exp_tdw_v5_200_stageA_balanced_warmup/checkpoint/stageA_balanced_camera_lora_final/adapter_state.pt`
+
+Size: `166,809` bytes.
 
 ## Option 1: Stage B Mixed / Low-Noise Detail Pilot
 
@@ -37,15 +48,23 @@ Proposed settings:
 - no rollout
 - no reward calibration
 
-## Option 2: Rerun Stage A With Checkpoint/LoRA Save Enabled
+## Option 2: Tiny Rollout From Balanced Stage A Adapter
 
-Purpose: produce a tiny saved adapter so a later approved rollout can inspect whether camera response changed.
+Purpose: inspect whether the balanced Stage A adapter changes camera response and background stability.
 
-This requires explicit approval because the current safety policy forbids saving LoRA/checkpoint files.
+Proposed settings:
 
-## Option 3: Tiny Rollout From Stage A
+- GPU: GPU7 first, fallback GPU6/7 if needed;
+- samples: 4 total, one per template;
+- compare base LingBot-Fast vs Stage A balanced adapter;
+- output videos only;
+- no DPO;
+- no reward calibration;
+- no training.
 
-Not possible from the completed run because no checkpoint or LoRA was saved. This option requires rerunning a short Stage A pilot with approved adapter saving first.
+## Option 3: Stage B Mixed / Low-Noise Detail Pilot After Rollout
+
+Only consider this if the rollout smoke shows useful camera-conditioned behavior.
 
 ## Option 4: Pause and Inspect Metrics
 
@@ -53,4 +72,4 @@ The current metrics-only gate is enough to say the path is trainable and stable,
 
 ## Required Approval
 
-Please explicitly approve one next action before any further training, checkpoint save, rollout, reward calibration, or DPO work.
+Please explicitly approve one next action before any further training, rollout, reward calibration, or DPO work.
