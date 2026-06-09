@@ -619,3 +619,17 @@ Result:
 - LingBot cam-only conversion: `16 / 16`.
 
 The next decision is human review of the v4 gallery, then explicit approval for a v4 50-sample review set if the motion is visually preferable. This does not approve 50/200/1k, training, DPO, VideoGPA `03_train`, Stage1, rollout, reward calibration, LoRA save, or checkpoint save.
+## 2026-06-09 TDW v5 200 Warmup Gate Update
+
+The human-approved TDW v5 aggressive 2x 200 dataset is now the current main candidate for camera-conditioned LingBot-Fast warmup.
+
+- Manifest gate: passed, 200 / 200 samples.
+- Data integrity audit: passed, 200 / 200 valid.
+- Video probe: passed, 200 / 200.
+- Split: train 160, val 20, test 20, with no scene-hash overlap.
+- Dataloader smoke: passed with image/video/camera/action tensors and `use_action=false`.
+- Forward-loss dry-run: partial only. A placeholder no-model-load no-backward/no-optimizer GPU7 tensor path passed, but a real LingBot-Fast/VAE/T5 model-load forward-loss smoke has not run yet.
+
+No training, DPO, VideoGPA `03_train`, Stage1, rollout, reward calibration, checkpoint, or LoRA save was run. DPO remains a later gate after warmup and reward/pair selection.
+
+Next required user decision: approve a real LingBot-Fast model-load forward-loss smoke on a free GPU7 or GPU6/7 window. Only after that passes should a 100 to 200 step warmup pilot be requested.

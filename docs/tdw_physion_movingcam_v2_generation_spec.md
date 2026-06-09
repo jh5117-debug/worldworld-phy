@@ -464,3 +464,15 @@ Changes versus v3:
 - tightens the minimum total camera path to `0.85` and first-8-frame path to `0.085`.
 
 The 16-sample smoke passed numerically: `16 / 16` suitable, `0` too_static, `0` too_extreme, `0` delayed. Human review should decide whether v4 should replace v3 for the next 50-sample review.
+## 2026-06-09 TDW v5 200 Dataset Promotion Note
+
+The v5 aggressive 2x 200 dataset is human-approved as the current main camera-conditioned warmup candidate.
+
+Promotion status:
+
+- generated/conversion path: passed previously;
+- manifest/audit/split: passed on 2026-06-09;
+- LingBot dataloader smoke: passed;
+- model-load forward-loss: not yet passed, only placeholder no-model-load tensor smoke passed.
+
+This dataset is ready for a real LingBot-Fast model-load forward-loss smoke. It is not yet approved for training, Stage1, DPO, rollout, reward calibration, or checkpoint creation.

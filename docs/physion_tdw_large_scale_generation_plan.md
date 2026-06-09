@@ -534,3 +534,16 @@ The v3 200 pilot remains usable, but the user identified residual weak/slow came
 - first-8-frame path min/avg/max: `0.0902 / 0.1457 / 0.1976`.
 
 Recommended next scale step is a v4 50-sample review set only after human approval. Do not jump directly to 200 or 1k from this smoke.
+## 2026-06-09 TDW v5 200 Warmup Gate
+
+The user manually approved the `warmup_visible_motion_v5_aggressive_2x` 200-sample dataset as visually suitable. It is now the main warmup candidate, replacing earlier numerically-valid but visually weak warmup sets.
+
+Current gate result:
+
+- LingBot manifest: 200 samples.
+- Integrity audit: 200 / 200 valid.
+- Split: train 160, val 20, test 20.
+- Dataloader smoke: passed.
+- Forward-loss dry-run: only a placeholder no-model-load path passed; real LingBot-Fast model-load forward-loss remains a required pre-training gate.
+
+No new TDW generation should run until the warmup data path is validated through a real model-load smoke and, if approved, a small warmup pilot. Do not run DPO, 200/1k expansion, reward calibration, or rollout as part of this gate.

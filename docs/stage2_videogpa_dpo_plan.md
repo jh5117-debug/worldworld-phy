@@ -799,3 +799,14 @@ A stronger visible-motion TDW smoke was generated for data review:
 - `use_action=false` and dummy `action.npy` remain in the converted LingBot cam-only inputs.
 
 This is data-side preparation only. DPO signal-sensitivity and 5-pair tiny overfit remain separate gates and were not run in this step.
+## 2026-06-09 Pre-DPO Warmup Dataset Gate
+
+TDW v5 aggressive 2x 200 is now registered as the current human-approved warmup candidate, but this remains pre-DPO.
+
+- Dataset manifest/audit/split: passed.
+- LingBot dataloader smoke: passed.
+- Full LingBot-Fast model-load forward-loss: not yet passed.
+- Placeholder no-model-load forward smoke: passed on GPU7 with no backward, no optimizer, and no checkpoint.
+- `dpo_diag`: `not_applicable_pre_dpo`.
+
+DPO training remains disallowed. Future DPO work should only resume after a warmup pilot produces usable camera-conditioned behavior and after reward-based winner/loser pair selection is rebuilt for the accepted TDW data.

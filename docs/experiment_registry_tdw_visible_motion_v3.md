@@ -15,3 +15,18 @@
 | Next action | request explicit approval before any 200-sample v3 pilot |
 
 No generated assets in `local_assets` are committed to Git.
+## exp_tdw_v5_200_lingbot_warmup_gate
+
+| Field | Value |
+|---|---|
+| Experiment name | `exp_tdw_v5_200_lingbot_warmup_gate` |
+| Date | 2026-06-09 |
+| Dataset | `tdw_v5_aggressive_2x_200` |
+| Experiment folder | `local_assets/experiments/exp_tdw_v5_200_lingbot_warmup_gate/` |
+| LingBot root | `local_assets/data/physion/generated_v3/lingbot_cam_inputs_visible_motion_v5_aggressive_2x_200_human_approved_all/` |
+| Manifest | `local_assets/data/physion/generated_v3/manifests/tdw_v5_200_lingbot_manifest.jsonl` |
+| Split root | `local_assets/data/physion/generated_v3/manifests/tdw_v5_200_splits/` |
+| Audit report | `local_assets/experiments/exp_tdw_v5_200_lingbot_warmup_gate/audit/audit_report.json` |
+| Status | Manifest/audit/split/dataloader passed; real model-load forward-loss pending |
+| DPO diag | `not_applicable_pre_dpo` |
+| Next action | Approve real LingBot-Fast model-load forward-loss smoke before warmup pilot |
