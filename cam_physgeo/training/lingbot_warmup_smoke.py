@@ -247,6 +247,11 @@ def _choose_timestep(mode: str, *, num_train_timesteps: int, high_noise_timestep
         return [("diagnostic_high_noise_quantile", high, "scheduler_0.80_quantile_or_user_value")]
     if mode == "low_noise":
         return [("diagnostic_low_noise_quantile", low, "scheduler_0.20_quantile_or_user_value")]
+    if mode == "mixed":
+        return [
+            ("diagnostic_high_noise_quantile", high, "scheduler_0.80_quantile_or_user_value"),
+            ("random", random_t, "random_uniform_timestep"),
+        ]
     if mode == "both":
         return [
             ("diagnostic_high_noise_quantile", high, "scheduler_0.80_quantile_or_user_value"),
@@ -265,6 +270,70 @@ def _cleanup_cuda() -> None:
     except Exception:
         pass
     gc.collect()
+
+
+def _append_jsonl(path: Path, row: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
+def _module_trainable_summary(model: Any) -> dict[str, Any]:
+    total = 0
+    trainable = 0
+    base_trainable = 0
+    lora_trainable = 0
+    for name, param in model.named_parameters():
+        n = int(param.numel())
+        total += n
+        if param.requires_grad:
+            trainable += n
+            if "lora_" in name:
+                lora_trainable += n
+            else:
+                base_trainable += n
+    return {
+        "param_count": total,
+        "trainable_param_count": trainable,
+        "lora_trainable_param_count": lora_trainable,
+        "base_trainable_param_count": base_trainable,
+    }
+
+
+def _grad_status(params: list[Any]) -> dict[str, Any]:
+    import torch  # type: ignore
+
+    with_grad = 0
+    nonzero_grad = 0
+    any_nan = False
+    any_inf = False
+    for param in params:
+        if param.grad is None:
+            continue
+        with_grad += 1
+        grad = param.grad.detach().float()
+        if grad.numel() and bool((grad.abs() > 0).any().item()):
+            nonzero_grad += 1
+        if grad.numel():
+            any_nan = any_nan or bool(torch.isnan(grad).any().item())
+            any_inf = any_inf or bool(torch.isinf(grad).any().item())
+    return {
+        "params_with_grad": with_grad,
+        "params_with_nonzero_grad": nonzero_grad,
+        "any_nan_grad": any_nan,
+        "any_inf_grad": any_inf,
+    }
+
+
+def _total_grad_norm(params: list[Any]) -> float:
+    import torch  # type: ignore
+
+    total = torch.zeros((), dtype=torch.float32)
+    for param in params:
+        if param.grad is None:
+            continue
+        total = total + param.grad.detach().float().pow(2).sum().cpu()
+    return float(torch.sqrt(total).item())
 
 
 def _base_payload(args: argparse.Namespace) -> dict[str, Any]:
@@ -508,6 +577,334 @@ def true_forward_loss_dryrun(args: argparse.Namespace) -> int:
         return 2
 
 
+def staged_warmup_pilot(args: argparse.Namespace) -> int:
+    from cam_physgeo.dpo.lingbot_fast_videogpa_adapter import LingBotFastVideoGPAAdapter
+    from cam_physgeo.dpo.lora_utils import count_lora_parameters, freeze_non_lora_parameters, inject_lora_into_modules, list_lora_parameters
+
+    import torch  # type: ignore
+
+    payload = _base_payload(args)
+    out_dir = Path(args.out)
+    name = "stageA_warmup_pilot_summary"
+    metrics_dir = out_dir / "metrics"
+    train_metrics_path = metrics_dir / "train_metrics.jsonl"
+    val_metrics_path = metrics_dir / "val_metrics.jsonl"
+    summary_path = out_dir / "reports" / "stageA_summary.json"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for path in [train_metrics_path, val_metrics_path]:
+        if path.exists():
+            path.unlink()
+    if not _bool_arg(args.require_real_model_load):
+        payload.update({"status": "failed_not_real_model_load", "reason": "--require_real_model_load must be true"})
+        _write_report(out_dir, name, payload)
+        return 2
+    safety_flags = {
+        "no_dpo": _bool_arg(args.no_dpo),
+        "no_rollout": _bool_arg(args.no_rollout),
+        "no_reward_calibration": _bool_arg(args.no_reward_calibration),
+        "no_checkpoint": _bool_arg(args.no_checkpoint),
+        "no_optimizer_state_save": _bool_arg(args.no_optimizer_state_save),
+        "save_metrics_only": _bool_arg(args.save_metrics_only),
+    }
+    if not all(safety_flags.values()):
+        payload.update({"status": "failed_safety_flags", "reason": f"Stage A requires all safety flags true: {safety_flags}"})
+        _write_report(out_dir, name, payload)
+        return 2
+    if int(args.max_steps) > 100:
+        payload.update({"status": "failed_max_steps", "reason": "Stage A pilot is capped at max_steps <= 100"})
+        _write_report(out_dir, name, payload)
+        return 2
+    if int(args.batch_size) != 1:
+        payload.update({"status": "failed_batch_size", "reason": "Stage A pilot requires batch_size=1"})
+        _write_report(out_dir, name, payload)
+        return 2
+    if str(args.trainable_scope) != "camera_control_lora_tiny":
+        payload.update({"status": "failed_trainable_scope", "reason": "Only camera_control_lora_tiny is enabled for this no-checkpoint pilot"})
+        _write_report(out_dir, name, payload)
+        return 2
+    try:
+        start = time.time()
+        train_rows = _load_jsonl(args.train_manifest)
+        val_rows = _load_jsonl(args.val_manifest) if args.val_manifest else []
+        if not train_rows:
+            raise RuntimeError("empty train manifest")
+        if not val_rows:
+            raise RuntimeError("empty val manifest")
+        adapter = LingBotFastVideoGPAAdapter(args.config)
+        policy = adapter.load_policy_model(device=args.device, dtype=args.dtype, dry_run=False)
+        pipe = policy.pop("object")
+        vae_result = adapter.load_vae(device=args.device, dtype=args.dtype, dry_run=False)
+        vae = vae_result.pop("object", None)
+        if not vae_result.get("success") or vae is None:
+            raise RuntimeError(f"VAE load failed: {vae_result}")
+        setattr(pipe, "vae", vae)
+        model = getattr(pipe, "model", None)
+        if model is None:
+            raise RuntimeError("policy pipeline has no .model")
+        model.eval()
+        resolved = adapter._resolve_lora_targets(
+            model,
+            target_modules=args.target_modules,
+            lora_scope=args.trainable_scope,
+            rank=int(args.lora_rank),
+            max_lora_params=int(args.max_trainable_params),
+        )
+        injections = inject_lora_into_modules(model, resolved["target_modules"], rank=int(args.lora_rank), alpha=float(args.lora_alpha))
+        freeze_non_lora_parameters(model)
+        trainable = adapter._select_trainable_params(model, scope=args.trainable_scope, max_trainable_params=int(args.max_trainable_params))
+        if trainable["trainable_param_count"] <= 0:
+            raise RuntimeError(f"no trainable LoRA parameters selected for scope={args.trainable_scope}")
+        param_map = dict(model.named_parameters())
+        optimizer_params = [param_map[name] for name in trainable["selected_names"] if name in param_map]
+        if len(optimizer_params) != len(trainable["selected_names"]):
+            raise RuntimeError("optimizer param name mismatch after LoRA injection")
+        if not all("lora_" in name for name in trainable["selected_names"]):
+            raise RuntimeError(f"non-LoRA parameters selected: {trainable['selected_names']}")
+        base_names = adapter._sample_base_param_names(model, preferred_targets=resolved["target_modules"], limit=12)
+        base_before = adapter._snapshot_param_samples(model, base_names)
+        lora_before = adapter._snapshot_selected_params(model, trainable["selected_names"])
+        optimizer = torch.optim.AdamW(optimizer_params, lr=float(args.learning_rate))
+        num_train_timesteps = int(getattr(pipe, "num_train_timesteps", 1000) or 1000)
+        component = _component_inspection(pipe, adapter)
+        summary: dict[str, Any] = {
+            "status": "running",
+            "mode": "staged_warmup_pilot",
+            "stage": "A_high_noise_global_camera",
+            "train_manifest": args.train_manifest,
+            "val_manifest": args.val_manifest,
+            "max_steps": int(args.max_steps),
+            "val_every": int(args.val_every),
+            "batch_size": int(args.batch_size),
+            "num_frames": int(args.num_frames),
+            "resolution": args.resolution,
+            "timestep_mode": args.timestep_mode,
+            "trainable_scope_requested": args.trainable_scope,
+            "learning_rate": float(args.learning_rate),
+            "max_grad_norm": float(args.max_grad_norm),
+            "policy": policy,
+            "vae": vae_result,
+            "component_inspection": component,
+            "lora": {
+                "target_modules": resolved["target_modules"],
+                "target_selection": resolved.get("target_selection"),
+                "rank": int(args.lora_rank),
+                "alpha": float(args.lora_alpha),
+                "injections": [inj.__dict__ for inj in injections],
+                "lora_param_count": count_lora_parameters(model),
+                "lora_params": list_lora_parameters(model)[:50],
+            },
+            "trainable_scope": trainable,
+            "module_trainable_summary": _module_trainable_summary(model),
+            "optimizer_param_groups": {
+                "group_count": len(optimizer.param_groups),
+                "param_count": len(optimizer_params),
+                "optimizer_class": type(optimizer).__name__,
+                "learning_rate": float(optimizer.param_groups[0]["lr"]),
+                "contains_only_lora": True,
+            },
+            "safety_flags": safety_flags,
+            "no_checkpoint_saved": True,
+            "no_lora_saved": True,
+            "no_optimizer_state_saved": True,
+            "no_rollout": True,
+            "no_dpo": True,
+            "train_metrics_path": str(train_metrics_path),
+            "val_metrics_path": str(val_metrics_path),
+        }
+        train_losses: list[float] = []
+        grad_norms: list[float] = []
+        sigmas: list[float] = []
+        val_losses: list[float] = []
+        steps_completed = 0
+        stop_reason = None
+        val_every = max(1, int(args.val_every))
+
+        def compute_sample_loss(row: dict[str, Any], *, step: int, enable_grad: bool, split: str):
+            pair = _sample_to_pair(row)
+            latent, latent_info = _load_video_latent(
+                row["target_video_path"],
+                vae=vae,
+                num_frames=int(args.num_frames),
+                resolution=args.resolution,
+                dtype=args.dtype,
+                device=args.device,
+            )
+            cond_dir = out_dir / ("train_logs" if split == "train" else "val_logs") / f"{split}_step_{step:05d}"
+            forward_condition = adapter._build_forward_condition(
+                pair=pair,
+                pipe=pipe,
+                latent_shape=list(latent.shape),
+                out_dir=cond_dir,
+                num_frames=int(args.num_frames),
+                resolution=args.resolution,
+                device=args.device,
+                dtype=args.dtype,
+            )
+            band = _choose_timestep(
+                args.timestep_mode,
+                num_train_timesteps=num_train_timesteps,
+                high_noise_timestep=args.high_noise_timestep,
+                low_noise_timestep=args.low_noise_timestep,
+            )[0]
+            band_name, timestep_value, band_source = band
+            noise = torch.randn_like(latent)
+            timestep = torch.full((1,), int(timestep_value), device=_torch_device(args.device), dtype=torch.long)
+            pred, target, target_info = adapter._model_forward_once(
+                pipe=pipe,
+                x0=latent,
+                noise=noise,
+                timestep=timestep,
+                forward_condition=forward_condition,
+                enable_grad=enable_grad,
+            )
+            loss = torch.nn.functional.mse_loss(pred.float(), target.float())
+            sigma = float((target_info.get("sigma") or [float(timestep_value) / float(num_train_timesteps)])[0])
+            metric = {
+                "step": int(step),
+                "split": split,
+                "sample_id": row.get("sample_id"),
+                "template": row.get("template"),
+                "camera_variant": row.get("camera_variant"),
+                "band": band_name,
+                "band_source": band_source,
+                "timestep": int(timestep_value),
+                "sigma": sigma,
+                "loss": float(loss.detach().cpu().item()),
+                "loss_finite": bool(torch.isfinite(loss.detach()).cpu().item()),
+                "latent_shape": list(latent.shape),
+                "control_shape": (forward_condition.get("summary") or {}).get("control_summary", {}).get("shape"),
+                "dummy_action_norm": (forward_condition.get("summary") or {}).get("dummy_action_norm"),
+                "use_action": False,
+            }
+            del latent, noise, timestep, pred, target, forward_condition
+            return loss, metric
+
+        for step in range(1, int(args.max_steps) + 1):
+            step_start = time.time()
+            row = train_rows[(step - 1) % len(train_rows)]
+            optimizer.zero_grad(set_to_none=True)
+            loss, metric = compute_sample_loss(row, step=step, enable_grad=True, split="train")
+            if not torch.isfinite(loss.detach()):
+                stop_reason = f"non_finite_train_loss_step_{step}"
+                metric["stop_reason"] = stop_reason
+                _append_jsonl(train_metrics_path, metric)
+                break
+            loss.backward()
+            grad_before = _total_grad_norm(optimizer_params)
+            clip_returned_norm = None
+            if float(args.max_grad_norm) > 0:
+                clip_returned_norm = float(torch.nn.utils.clip_grad_norm_(optimizer_params, float(args.max_grad_norm)).item())
+            grad_after = _total_grad_norm(optimizer_params)
+            grad_state = _grad_status(optimizer_params)
+            if grad_state["any_nan_grad"] or grad_state["any_inf_grad"]:
+                stop_reason = f"non_finite_grad_step_{step}"
+                metric["stop_reason"] = stop_reason
+                _append_jsonl(train_metrics_path, metric)
+                break
+            optimizer.step()
+            steps_completed = step
+            loss_value = float(metric["loss"])
+            train_losses.append(loss_value)
+            grad_norms.append(float(grad_after))
+            sigmas.append(float(metric["sigma"]))
+            metric.update(
+                {
+                    "grad_norm_before_clip": float(grad_before),
+                    "clip_returned_norm": clip_returned_norm,
+                    "grad_norm_after_clip": float(grad_after),
+                    "params_with_grad": grad_state["params_with_grad"],
+                    "params_with_nonzero_grad": grad_state["params_with_nonzero_grad"],
+                    "elapsed_sec": time.time() - step_start,
+                }
+            )
+            _append_jsonl(train_metrics_path, metric)
+            del loss
+            optimizer.zero_grad(set_to_none=True)
+            _cleanup_cuda()
+            if step % val_every == 0 or step == int(args.max_steps):
+                with torch.no_grad():
+                    val_row = val_rows[(step // val_every - 1) % len(val_rows)]
+                    val_loss, val_metric = compute_sample_loss(val_row, step=step, enable_grad=False, split="val")
+                    val_metric["elapsed_sec"] = time.time() - step_start
+                    _append_jsonl(val_metrics_path, val_metric)
+                    val_losses.append(float(val_metric["loss"]))
+                    if not bool(val_metric["loss_finite"]):
+                        stop_reason = f"non_finite_val_loss_step_{step}"
+                        break
+                    del val_loss
+                _cleanup_cuda()
+        lora_after = adapter._diff_full_snapshot(model, lora_before)
+        base_after = adapter._diff_param_samples(model, base_before)
+        success = bool(
+            steps_completed >= 20
+            and train_losses
+            and all(torch.isfinite(torch.tensor(train_losses)).tolist())
+            and (not val_losses or all(torch.isfinite(torch.tensor(val_losses)).tolist()))
+            and max(grad_norms or [0.0]) > 0.0
+            and lora_after.get("params_changed_count", 0) > 0
+            and base_after.get("params_changed_count", 0) == 0
+            and stop_reason is None
+        )
+        summary.update(
+            {
+                "status": "passed_stageA_warmup_pilot" if success else "failed_stageA_warmup_pilot",
+                "success": success,
+                "stop_reason": stop_reason,
+                "steps_completed": int(steps_completed),
+                "train_loss_first": train_losses[0] if train_losses else None,
+                "train_loss_last": train_losses[-1] if train_losses else None,
+                "train_loss_min": min(train_losses) if train_losses else None,
+                "train_loss_max": max(train_losses) if train_losses else None,
+                "val_losses": val_losses,
+                "grad_norm_first": grad_norms[0] if grad_norms else None,
+                "grad_norm_last": grad_norms[-1] if grad_norms else None,
+                "grad_norm_max": max(grad_norms) if grad_norms else None,
+                "sigma_min": min(sigmas) if sigmas else None,
+                "sigma_max": max(sigmas) if sigmas else None,
+                "sigma_mean": sum(sigmas) / len(sigmas) if sigmas else None,
+                "lora_diff_after": lora_after,
+                "base_diff_after": base_after,
+                "frozen_params_unchanged": base_after.get("params_changed_count", 0) == 0,
+                "trainable_params_received_gradients": max(grad_norms or [0.0]) > 0.0,
+                "elapsed_sec": time.time() - start,
+                "gpu_snapshot_after": _gpu_snapshot(),
+            }
+        )
+        optimizer.zero_grad(set_to_none=True)
+        del optimizer, pipe, vae, model
+        _cleanup_cuda()
+        summary["gpu_snapshot_after_cleanup"] = _gpu_snapshot()
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+        summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+        _write_report(out_dir, name, summary)
+        print(json.dumps(summary, indent=2, ensure_ascii=False))
+        return 0 if success else 2
+    except RuntimeError as exc:
+        _cleanup_cuda()
+        is_oom = "out of memory" in repr(exc).lower() or "cuda" in repr(exc).lower() and "memory" in repr(exc).lower()
+        payload.update(
+            {
+                "status": "failed_oom" if is_oom else "failed_stageA_warmup_pilot",
+                "reason": repr(exc),
+                "oom": bool(is_oom),
+                "gpu_snapshot_after": _gpu_snapshot(),
+            }
+        )
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+        summary_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+        _write_report(out_dir, name, payload)
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 2
+    except Exception as exc:
+        _cleanup_cuda()
+        payload.update({"status": "failed_stageA_warmup_pilot", "reason": repr(exc), "gpu_snapshot_after": _gpu_snapshot()})
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+        summary_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+        _write_report(out_dir, name, payload)
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 2
+
+
 def placeholder_forward_loss_dryrun(args: argparse.Namespace) -> int:
     payload = _base_payload(args)
     payload.update(
@@ -524,27 +921,42 @@ def placeholder_forward_loss_dryrun(args: argparse.Namespace) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", default="forward_loss_dryrun", choices=["forward_loss_dryrun", "component_load_smoke", "true_forward_loss_dryrun"])
+    parser.add_argument("--mode", default="forward_loss_dryrun", choices=["forward_loss_dryrun", "component_load_smoke", "true_forward_loss_dryrun", "staged_warmup_pilot"])
     parser.add_argument("--model_type", default="fast")
     parser.add_argument("--config", required=True)
     parser.add_argument("--train_manifest", default="")
+    parser.add_argument("--val_manifest", default="")
     parser.add_argument("--out", required=True)
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--num_batches", type=int, default=1)
+    parser.add_argument("--max_steps", type=int, default=1)
+    parser.add_argument("--val_every", type=int, default=25)
     parser.add_argument("--num_frames", type=int, default=8)
     parser.add_argument("--resolution", default="480x832")
     parser.add_argument("--dtype", default="bf16")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--use_action", default="false")
-    parser.add_argument("--timestep_mode", default="random", choices=["random", "high_noise", "low_noise", "both"])
+    parser.add_argument("--timestep_mode", default="random", choices=["random", "high_noise", "low_noise", "mixed", "both"])
     parser.add_argument("--num_timestep_bands", type=int, default=3)
     parser.add_argument("--high_noise_timestep", type=int, default=None)
     parser.add_argument("--low_noise_timestep", type=int, default=None)
     parser.add_argument("--log_expert_route", default="false")
     parser.add_argument("--require_real_model_load", default="false")
+    parser.add_argument("--trainable_scope", default="camera_control_lora_tiny")
+    parser.add_argument("--learning_rate", type=float, default=1e-5)
+    parser.add_argument("--max_grad_norm", type=float, default=1.0)
+    parser.add_argument("--lora_rank", type=int, default=2)
+    parser.add_argument("--lora_alpha", type=float, default=4.0)
+    parser.add_argument("--target_modules", default="auto")
+    parser.add_argument("--max_trainable_params", type=int, default=1_000_000)
+    parser.add_argument("--no_dpo", default="true")
+    parser.add_argument("--no_rollout", default="true")
+    parser.add_argument("--no_reward_calibration", default="true")
     parser.add_argument("--no_backward", default="true")
     parser.add_argument("--no_optimizer", default="true")
     parser.add_argument("--no_checkpoint", default="true")
+    parser.add_argument("--no_optimizer_state_save", default="true")
+    parser.add_argument("--save_metrics_only", default="true")
     parser.add_argument("--local_files_only", default="true")
     parser.add_argument("--timeout", type=int, default=0)
     args = parser.parse_args()
@@ -565,6 +977,14 @@ def main() -> int:
             print(json.dumps(payload, indent=2, ensure_ascii=False))
             return 2
         return true_forward_loss_dryrun(args)
+    if args.mode == "staged_warmup_pilot":
+        if not args.train_manifest or not args.val_manifest:
+            payload = _base_payload(args)
+            payload.update({"status": "blocked", "reason": "--train_manifest and --val_manifest are required for staged_warmup_pilot"})
+            _write_report(Path(args.out), "stageA_warmup_pilot_summary", payload)
+            print(json.dumps(payload, indent=2, ensure_ascii=False))
+            return 2
+        return staged_warmup_pilot(args)
     return placeholder_forward_loss_dryrun(args)
 
 

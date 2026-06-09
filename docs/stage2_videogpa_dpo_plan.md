@@ -845,3 +845,36 @@ Next step is not DPO. The next allowed action, only after explicit user approval
 2. Stage B: mixed/low-noise detail refinement only if Stage A is stable.
 
 DPO remains gated until after warmup and reward-based winner/loser pair selection. `dpo_diag` for this experiment is `not_applicable_pre_dpo`.
+
+## 2026-06-09 Stage A Warmup Pilot Update
+
+No DPO training was run.
+
+The TDW v5 200 human-approved warmup candidate passed a small Stage A high-noise/global-camera warmup pilot:
+
+- mode: `staged_warmup_pilot`;
+- model: real LingBot-Fast runtime (`WanI2VFast` / `WanModelFast`);
+- VAE: `Wan2_1_VAE`;
+- scheduler: `FlowUniPCMultistepScheduler`;
+- diagnostic timestep: 799, sigma 0.799;
+- trainable scope: runtime `camera_control_lora_tiny`;
+- trainable params: 40,960;
+- LoRA targets: `blocks.39.cam_shift_layer`, `blocks.39.cam_scale_layer`;
+- steps: 20;
+- train loss: finite, min 0.030702, max 0.062314;
+- val losses: 0.033537 and 0.034270;
+- LoRA tensors changed: 4;
+- sampled base tensors changed: 0;
+- no checkpoint, LoRA, or optimizer state was saved.
+
+The first 100-step attempt was stopped after 3 steps because measured step time would likely exceed the timeout before writing a complete summary. The completed 20-step run satisfies the Stage A stability gate minimum.
+
+Important limitation: the first 20 rows in the current train split were all `collision + orbit_right_64`. This pilot proves stability of the real warmup path, but not balanced template behavior. Future Stage A/B pilots should shuffle or balance the sampler.
+
+Next allowed actions require explicit user approval:
+
+1. Stage B mixed/low-noise pilot with shuffled/balanced sampler.
+2. Rerun Stage A with approved LoRA/checkpoint save if rollout inspection is needed.
+3. Pause and inspect metrics.
+
+DPO remains later. Do not run reward calibration, winner/loser pair selection, VideoGPA `03_train`, or DPO training from this gate alone.

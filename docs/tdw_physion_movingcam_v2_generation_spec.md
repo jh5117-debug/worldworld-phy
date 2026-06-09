@@ -491,3 +491,20 @@ Spec implications:
 - no DPO or reward pair generation should start before a small warmup pilot is approved and evaluated.
 
 The true forward smoke used one sample with latent shape `[16, 2, 60, 104]` and camera control shape `[1, 384, 2, 60, 104]`; all logged losses were finite.
+
+## 2026-06-09 Stage A Warmup Pilot Note
+
+The TDW v5 aggressive 2x 200 dataset has now passed a minimal LingBot-Fast Stage A high-noise warmup pilot:
+
+- `staged_warmup_pilot` completed 20 steps;
+- train losses were finite, 0.030702 to 0.062314;
+- validation forward losses were finite, 0.033537 and 0.034270;
+- latent shape remained `[16, 2, 60, 104]`;
+- camera/control shape remained `[1, 384, 2, 60, 104]`;
+- dummy action norm was `0.0`;
+- runtime LoRA trainable params: 40,960;
+- LoRA targets: `blocks.39.cam_shift_layer`, `blocks.39.cam_scale_layer`;
+- sampled base parameters were unchanged;
+- no checkpoint, LoRA, optimizer state, rollout, reward calibration, DPO, or new TDW generation was produced.
+
+This validates the model-side warmup path, not the data-generation profile. The next warmup run should shuffle or balance templates because the first 20 train rows used in this pilot were all `collision + orbit_right_64`.

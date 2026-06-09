@@ -660,3 +660,38 @@ Forward-loss summary:
 No training, DPO, VideoGPA `03_train`, Stage1, rollout, reward calibration, checkpoint, optimizer state, or LoRA save was run.
 
 Next user decision: approve or reject a staged Stage A high-noise/global-camera warmup pilot on GPU7 or GPU6/7. DPO remains a later gate after warmup and reward-based pair selection.
+
+## 2026-06-09 Update: Stage A High-Noise Warmup Pilot Passed
+
+The user-approved Stage A LingBot-Fast warmup pilot was run on the TDW v5 aggressive 2x 200 human-approved dataset.
+
+Result:
+
+- mode: `staged_warmup_pilot`;
+- GPU: GPU7 only; GPU0 was not used;
+- timestep mode: diagnostic high-noise, timestep 799, sigma 0.799;
+- model stack: `WanI2VFast` / `WanModelFast` / `Wan2_1_VAE`;
+- trainable scope: runtime `camera_control_lora_tiny`;
+- LoRA targets: `blocks.39.cam_shift_layer`, `blocks.39.cam_scale_layer`;
+- trainable params: 40,960;
+- steps completed: 20;
+- train loss: finite, 0.030702 to 0.062314;
+- val losses: 0.033537 and 0.034270, both finite;
+- LoRA tensors changed: 4;
+- sampled frozen base tensors changed: 0;
+- no NaN/Inf or OOM.
+
+Safety:
+
+- no DPO training;
+- no VideoGPA `03_train`;
+- no Stage1;
+- no rollout;
+- no reward calibration;
+- no checkpoint save;
+- no LoRA save;
+- no optimizer state save.
+
+Limitation: the current split order made the first 20 training rows all `collision + orbit_right_64`. This proves the real high-noise warmup path is stable, but it is not a template-balanced training conclusion. The next pilot should use a shuffled or balanced sampler.
+
+Next user decision: approve Stage B mixed/low-noise pilot, approve a checkpoint-saving Stage A rerun for rollout, or pause and inspect metrics. DPO remains later, after warmup behavior and reward-based pair selection are ready.

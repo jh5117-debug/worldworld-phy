@@ -561,3 +561,20 @@ The TDW v5 aggressive 2x 200 data remains the current human-approved warmup cand
 - true forward-loss: passed across diagnostic high-noise, diagnostic low-noise, and random timestep bands.
 
 This does not approve more TDW generation. The next data generation step is blocked until a warmup pilot demonstrates that the current v5 set is useful for camera-conditioned behavior. The next compute decision is a staged warmup pilot approval request, not a 200/1k TDW generation request.
+
+## 2026-06-09 Stage A Warmup Pilot Result
+
+The current TDW v5 aggressive 2x 200 dataset remains the main human-approved warmup candidate. A small Stage A LingBot-Fast warmup pilot was run against this dataset:
+
+- GPU: GPU7;
+- steps: 20;
+- timestep band: diagnostic high-noise, timestep 799 / sigma 0.799;
+- trainable scope: runtime `camera_control_lora_tiny`;
+- trainable params: 40,960;
+- train loss range: 0.030702 to 0.062314;
+- val losses: 0.033537 and 0.034270;
+- LoRA tensors changed: 4;
+- sampled frozen base tensors changed: 0;
+- no checkpoint, LoRA, optimizer state, rollout, reward calibration, TDW generation, or DPO was run.
+
+The Stage A stability gate passed, but the first 20 split rows were all `collision + orbit_right_64`. The next compute gate should use a shuffled or template-balanced sampler before drawing conclusions about full dataset behavior. No additional TDW 200/1k generation is authorized by this result.
