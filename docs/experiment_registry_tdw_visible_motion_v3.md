@@ -30,3 +30,19 @@ No generated assets in `local_assets` are committed to Git.
 | Status | Manifest/audit/split/dataloader passed; real model-load forward-loss pending |
 | DPO diag | `not_applicable_pre_dpo` |
 | Next action | Approve real LingBot-Fast model-load forward-loss smoke before warmup pilot |
+
+## exp_tdw_v5_200_true_forward_loss_gate
+
+| Field | Value |
+|---|---|
+| Experiment name | `exp_tdw_v5_200_true_forward_loss_gate` |
+| Date | 2026-06-09 |
+| Dataset | `tdw_v5_aggressive_2x_200` human-approved |
+| Experiment folder | `local_assets/experiments/exp_tdw_v5_200_true_forward_loss_gate/` |
+| LingBot root | `local_assets/data/physion/generated_v3/lingbot_cam_inputs_visible_motion_v5_aggressive_2x_200_human_approved_all/` |
+| Manifest | `local_assets/data/physion/generated_v3/manifests/tdw_v5_200_lingbot_manifest.jsonl` |
+| Split root | `local_assets/data/physion/generated_v3/manifests/tdw_v5_200_splits/` |
+| Component load | passed: `WanI2VFast`, `WanModelFast`, `Wan2_1_VAE`, `T5TokenizerFast` |
+| True forward-loss | passed with finite high-noise / low-noise / random diagnostic losses |
+| DPO diag | `not_applicable_pre_dpo` |
+| Next action | request explicit approval for Stage A high-noise/global-camera warmup pilot |

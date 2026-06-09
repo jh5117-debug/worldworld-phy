@@ -476,3 +476,18 @@ Promotion status:
 - model-load forward-loss: not yet passed, only placeholder no-model-load tensor smoke passed.
 
 This dataset is ready for a real LingBot-Fast model-load forward-loss smoke. It is not yet approved for training, Stage1, DPO, rollout, reward calibration, or checkpoint creation.
+
+## 2026-06-09 Spec Note: v5 Data Passed True Forward-Loss Gate
+
+The v5 aggressive 2x 200 dataset passed the true model-load forward-loss smoke.
+
+Spec implications:
+
+- v5 remains the active warmup dataset candidate;
+- `use_action=false` and dummy zero `action.npy` remain required;
+- camera conditioning must continue through poses/intrinsics-derived Plücker/control tensors;
+- future warmup reports must log timestep, sigma, and noise band;
+- if exact Fast expert routing is unavailable, high/low labels must be marked as diagnostic scheduler quantiles;
+- no DPO or reward pair generation should start before a small warmup pilot is approved and evaluated.
+
+The true forward smoke used one sample with latent shape `[16, 2, 60, 104]` and camera control shape `[1, 384, 2, 60, 104]`; all logged losses were finite.

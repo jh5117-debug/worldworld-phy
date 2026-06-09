@@ -633,3 +633,30 @@ The human-approved TDW v5 aggressive 2x 200 dataset is now the current main cand
 No training, DPO, VideoGPA `03_train`, Stage1, rollout, reward calibration, checkpoint, or LoRA save was run. DPO remains a later gate after warmup and reward/pair selection.
 
 Next required user decision: approve a real LingBot-Fast model-load forward-loss smoke on a free GPU7 or GPU6/7 window. Only after that passes should a 100 to 200 step warmup pilot be requested.
+
+## 2026-06-09 Update: True LingBot-Fast Forward-Loss Gate Passed
+
+The placeholder no-model-load warmup smoke has been replaced by a true LingBot-Fast component-load and forward-loss dry-run.
+
+Current gate status:
+
+- Dataset: TDW v5 aggressive 2x 200, human-approved.
+- Manifest/audit/split: passed.
+- Dataloader smoke: passed.
+- Component load: passed with `WanI2VFast`, `WanModelFast`, `Wan2_1_VAE`, `T5TokenizerFast`, and `FlowUniPCMultistepScheduler`.
+- Train timesteps: `1000`.
+- LingBot Base checkpoint exposes high-noise / low-noise branches.
+- LingBot-Fast runtime does not expose explicit expert routing in this smoke, so timestep-band losses are logged as scheduler-quantile diagnostics.
+- True forward-loss: passed with finite losses at diagnostic high-noise, diagnostic low-noise, and random timesteps.
+
+Forward-loss summary:
+
+| Band | Timestep | Sigma | Loss |
+|---|---:|---:|---:|
+| diagnostic high-noise | 799 | 0.7990 | 0.046257 |
+| diagnostic low-noise | 200 | 0.2000 | 0.895799 |
+| random | 412 | 0.4120 | 0.437084 |
+
+No training, DPO, VideoGPA `03_train`, Stage1, rollout, reward calibration, checkpoint, optimizer state, or LoRA save was run.
+
+Next user decision: approve or reject a staged Stage A high-noise/global-camera warmup pilot on GPU7 or GPU6/7. DPO remains a later gate after warmup and reward-based pair selection.

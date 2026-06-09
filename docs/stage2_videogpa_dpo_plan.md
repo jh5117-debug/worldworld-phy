@@ -810,3 +810,38 @@ TDW v5 aggressive 2x 200 is now registered as the current human-approved warmup 
 - `dpo_diag`: `not_applicable_pre_dpo`.
 
 DPO training remains disallowed. Future DPO work should only resume after a warmup pilot produces usable camera-conditioned behavior and after reward-based winner/loser pair selection is rebuilt for the accepted TDW data.
+
+## 2026-06-09 True LingBot-Fast Forward-Loss / MoE-Aware Gate
+
+No DPO training was run.
+
+The TDW v5 200 warmup candidate has now passed the real model-load forward-loss gate:
+
+- real component load: `WanI2VFast` / `WanModelFast` / `Wan2_1_VAE` / `T5TokenizerFast`;
+- scheduler: `FlowUniPCMultistepScheduler`;
+- `num_train_timesteps`: `1000`;
+- camera condition tensor: `[1, 384, 2, 60, 104]`;
+- target video latent: `[16, 2, 60, 104]`;
+- flow target: `noise - x0`;
+- no backward, no optimizer, no checkpoint.
+
+MoE/timestep conclusion:
+
+- LingBot Base has high-noise / low-noise checkpoint branches;
+- LingBot-Fast loaded in this runtime does not expose explicit expert routing;
+- high/low losses are therefore scheduler-quantile diagnostics, not exact expert-boundary measurements.
+
+Forward-loss result:
+
+| Band | Timestep | Sigma | Loss | Finite |
+|---|---:|---:|---:|---|
+| diagnostic high-noise | 799 | 0.7990 | 0.046257 | yes |
+| diagnostic low-noise | 200 | 0.2000 | 0.895799 | yes |
+| random | 412 | 0.4120 | 0.437084 | yes |
+
+Next step is not DPO. The next allowed action, only after explicit user approval, is a staged warmup pilot:
+
+1. Stage A: high-noise/global-camera, max 100 steps, batch size 1, camera adapter/LoRA only.
+2. Stage B: mixed/low-noise detail refinement only if Stage A is stable.
+
+DPO remains gated until after warmup and reward-based winner/loser pair selection. `dpo_diag` for this experiment is `not_applicable_pre_dpo`.

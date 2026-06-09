@@ -547,3 +547,17 @@ Current gate result:
 - Forward-loss dry-run: only a placeholder no-model-load path passed; real LingBot-Fast model-load forward-loss remains a required pre-training gate.
 
 No new TDW generation should run until the warmup data path is validated through a real model-load smoke and, if approved, a small warmup pilot. Do not run DPO, 200/1k expansion, reward calibration, or rollout as part of this gate.
+
+## 2026-06-09 True Forward-Loss Gate Result
+
+No new TDW data was generated.
+
+The TDW v5 aggressive 2x 200 data remains the current human-approved warmup candidate. The real LingBot-Fast forward-loss gate now passes:
+
+- manifest: `200`;
+- split: `160 / 20 / 20`;
+- dataloader smoke: passed;
+- component load: passed;
+- true forward-loss: passed across diagnostic high-noise, diagnostic low-noise, and random timestep bands.
+
+This does not approve more TDW generation. The next data generation step is blocked until a warmup pilot demonstrates that the current v5 set is useful for camera-conditioned behavior. The next compute decision is a staged warmup pilot approval request, not a 200/1k TDW generation request.
