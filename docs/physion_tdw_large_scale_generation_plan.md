@@ -626,3 +626,31 @@ The bounded 4-condition base-vs-Stage-A-adapter rollout smoke is complete:
 No new TDW data was generated. No reward scoring, pair construction, DPO, VideoGPA `03_train`, Stage1, or training was run.
 
 The next scale-up decision is not more TDW generation yet. First inspect the 4-condition gallery, then approve reward scoring on these videos or a 12-condition rollout.
+
+## 2026-06-10 Reward Gate Before Further Scale-Up
+
+No new TDW data was generated.
+
+The existing 4-condition base-vs-Stage-A-adapter rollout was scored with reward v5:
+
+- GT avg confidence-weighted reward: `0.492143`;
+- Base avg confidence-weighted reward: `0.294709`;
+- Stage A adapter avg confidence-weighted reward: `0.295647`;
+- Adapter > Base count: `2/4`;
+- GT > generated count: `4/4` for both Base and Stage A adapter.
+
+The reward direction is plausible at a coarse level because clean GT ranks above generated videos, but the pair gate failed:
+
+- generated reward confidence avg is only `0.463235`;
+- generated real-backend confidence avg is only `0.411765`;
+- `R_reobs` is missing;
+- several generated reward components are fallback-heavy;
+- adapter/base margins are near zero.
+
+No winner/loser pairs were built, and this is not a DPO-ready pool. The next scale-up decision should not be larger TDW generation. The recommended choices are:
+
+1. human inspect the 4-condition rollout;
+2. debug reward confidence / missing reobserve backend;
+3. explicitly approve a 12-condition rollout+reward pass if more coverage is needed.
+
+DPO, reward calibration, VideoGPA `03_train`, Stage1, and further TDW generation remain blocked.

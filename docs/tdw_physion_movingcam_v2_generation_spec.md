@@ -553,3 +553,24 @@ The v5 aggressive 2x 200 dataset has now been used for a small approved rollout 
 - gallery: `local_assets/reports/human_review/tdw_v5_stageA_4condition_base_vs_adapter/video_gallery.html`.
 
 The adapter runtime import path was fixed by passing the project root into the generated LingBot runtime subprocess. No TDW generation, reward scoring, pair construction, DPO, VideoGPA `03_train`, Stage1, or training was performed.
+
+## 2026-06-10 Reward Scoring Note for 4-Condition Rollout
+
+Reward v5 scoring has now been run on the existing 4-condition GT/Base/Stage-A-adapter rollout. No new TDW generation, rollout, training, DPO, VideoGPA `03_train`, Stage1, or reward calibration was performed.
+
+Scores:
+
+- GT avg: `0.492143`;
+- Base avg: `0.294709`;
+- Stage A adapter avg: `0.295647`;
+- Adapter > Base: `2/4`;
+- GT > generated: `4/4`.
+
+Pair construction is blocked because backend confidence is below the required threshold:
+
+- generated reward confidence avg: `0.463235`;
+- generated real-backend confidence avg: `0.411765`;
+- `R_reobs` missing;
+- generated reward components fallback-heavy.
+
+Spec implication: TDW v5 remains the active warmup dataset, but the current 4-condition reward output is diagnostic only. It must not be used for DPO until reward confidence and pair margins improve.

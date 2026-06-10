@@ -93,6 +93,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--include_gt_vs_generated", default="true")
     ap.add_argument("--include_adapter_vs_base", default="true")
     ap.add_argument("--use_action", default="false")
+    ap.add_argument("--dry_run", default="false")
     args = ap.parse_args(argv)
 
     out_dir = Path(args.out)

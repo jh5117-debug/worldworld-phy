@@ -942,3 +942,32 @@ The bounded base-vs-Stage-A-adapter rollout smoke has passed:
 The first adapter attempt exposed a real runtime import bug: the generated LingBot runtime script did not include the project root in `sys.path`, so adapter LoRA injection could not import `cam_physgeo.dpo.lora_utils`. This is fixed in `run_inference.py` by passing `WORLD_MODEL_PHYS_ROOT` into the subprocess.
 
 Reward scoring, reward-pair construction, DPO, rollout expansion, VideoGPA `03_train`, and Stage1 remain gated. The next decision should be human review first, then either reward scoring on these 4 conditions or a 12-condition rollout.
+
+## 2026-06-10 4-Condition Reward / Pair Gate Update
+
+No DPO training was run.
+
+Reward v5 was run on the existing 4-condition rollout only; no new rollout, TDW generation, VideoGPA `03_train`, Stage1, reward calibration, or training was performed.
+
+Reward results:
+
+- rows scored: `12` (`GT:4`, `base:4`, `Stage A adapter:4`);
+- GT avg: `0.492143`;
+- Base avg: `0.294709`;
+- Stage A adapter avg: `0.295647`;
+- Adapter > Base: `2/4`, with very small margins;
+- GT > Base and GT > Adapter: `4/4`.
+
+Pair gate result: failed for DPO pair construction.
+
+Reasons:
+
+- generated reward confidence avg: `0.463235 < 0.5`;
+- generated real-backend confidence avg: `0.411765 < 0.5`;
+- `R_reobs` is unavailable for all rows;
+- generated `phys`, `quality`, and `freeze` remain fallback-heavy;
+- adapter/base margins are too small for robust preference labels.
+
+No reward pairs were constructed. `dpo_diag` is now `reward_scored_pair_construction_blocked`, not DPO-ready.
+
+Next allowed actions require explicit approval: human review, reward backend/debug work, or a 12-condition rollout+reward pass. DPO training remains blocked until reward confidence, margins, and pair coverage pass.

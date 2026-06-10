@@ -768,3 +768,28 @@ Result:
 An initial adapter-load attempt failed because the generated runtime script could not import `cam_physgeo.dpo.lora_utils`. `run_inference.py` now passes `WORLD_MODEL_PHYS_ROOT` and inserts the project root into runtime `sys.path`; the adapter-only rerun then passed.
 
 No reward scoring, pair construction, DPO, VideoGPA `03_train`, Stage1, new TDW generation, or training was run. The next decision is human review, then approval for reward scoring on these 4 conditions or a 12-condition rollout.
+
+## 2026-06-10 Update: 4-Condition Reward Scoring / Pair Gate
+
+The existing 4-condition GT/Base/Stage-A-adapter rollout was scored with reward v5. No new rollout or TDW generation was run.
+
+Reward summary:
+
+- GT average confidence-weighted reward: `0.492143`;
+- Base average confidence-weighted reward: `0.294709`;
+- Stage A adapter average confidence-weighted reward: `0.295647`;
+- Adapter > Base: `2/4`;
+- Adapter > GT: `0/4`;
+- Base > GT: `0/4`.
+
+The GT > generated sanity check passed, but pair construction did not pass:
+
+- generated reward confidence avg: `0.463235`, below the `0.5` pair gate;
+- generated real-backend confidence avg: `0.411765`, below the `0.5` pair gate;
+- `R_reobs` is missing for all rows;
+- generated `phys`, `quality`, and `freeze` components remain fallback-heavy;
+- adapter-vs-base margins are near zero.
+
+Decision: no winner/loser pairs were built, and DPO remains blocked. `dpo_diag` status is `reward_scored_pair_construction_blocked`.
+
+Next user decision: inspect the 4-condition gallery, debug reward confidence / missing reobserve backend, or explicitly approve a 12-condition rollout+reward pass. Do not run DPO, VideoGPA `03_train`, Stage1, reward calibration, or more TDW generation from this gate alone.
