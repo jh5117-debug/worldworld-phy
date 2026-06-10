@@ -732,3 +732,16 @@ Safety status:
 - no full model checkpoint.
 
 Next user decision: approve a tiny rollout smoke comparing base LingBot-Fast versus the balanced Stage A adapter on one sample per template. Stage B and DPO remain later gates.
+## 2026-06-10 TDW v5 Scale-Up / Warmup / Reward Pair Gate
+
+The current main warmup candidate remains the human-approved TDW v5 aggressive 2x 200 dataset. Scale-up was not run in this pass because TDW/Unity still needs a confirmed Xorg display; only GPU0-bound `DISPLAY=:8` had been confirmed previously, and this task did not approve GPU0 TDW generation.
+
+The balanced Stage A adapter remains the active warmup checkpoint. A longer 300-step Stage A warmup was not run because the prior 60-step run took about 9028 seconds, making the longer run likely to exceed the 12-hour approval threshold.
+
+This pass added the missing base-vs-adapter rollout plumbing:
+
+- LingBot-Fast inference can now load the saved Stage A runtime LoRA adapter.
+- A balanced rollout wrapper can compare base vs Stage A adapter conditions.
+- Reward scoring and reward-pair wrappers now stop DPO pair construction unless reward margin and backend confidence pass.
+
+No DPO, VideoGPA `03_train`, Stage1, TDW generation, rollout, reward calibration, or full checkpoint was run. The next recommended user decision is a bounded 4-condition base-vs-Stage-A-adapter rollout smoke.

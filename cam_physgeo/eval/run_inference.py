@@ -296,6 +296,7 @@ def main():
     ap.add_argument("--local_files_only", action="store_true")
     ap.add_argument("--debug_camera_condition", action="store_true")
     ap.add_argument("--condition_debug_out", default="")
+    ap.add_argument("--adapter_checkpoint", default="")
     args = ap.parse_args()
     if args.local_files_only:
         os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
@@ -334,6 +335,50 @@ def main():
         convert_model_dtype=False,
     )
     mark("pipeline_init_done")
+    if args.adapter_checkpoint:
+        mark("adapter_load_start", adapter_checkpoint=args.adapter_checkpoint)
+        try:
+            from cam_physgeo.dpo.lora_utils import inject_lora_into_modules
+
+            payload = torch.load(args.adapter_checkpoint, map_location="cpu")
+            if not isinstance(payload, dict) or payload.get("format") != "cam_physgeo_runtime_lora_adapter_v1":
+                raise RuntimeError(f"unsupported adapter checkpoint format: {type(payload)!r}")
+            target_modules = list(payload.get("target_modules") or [])
+            if not target_modules:
+                raise RuntimeError("adapter checkpoint missing target_modules")
+            model = getattr(pipe, "model", None)
+            if model is None:
+                raise RuntimeError("WanI2VFast pipeline has no .model for LoRA injection")
+            inject_lora_into_modules(
+                model,
+                target_modules,
+                rank=int(payload.get("lora_rank") or 2),
+                alpha=float(payload.get("lora_alpha") or 4.0),
+            )
+            state_dict = payload.get("state_dict") or {}
+            param_map = dict(model.named_parameters())
+            missing = []
+            loaded = []
+            for name, tensor in state_dict.items():
+                param = param_map.get(name)
+                if param is None:
+                    missing.append(name)
+                    continue
+                param.data.copy_(tensor.to(device=param.device, dtype=param.dtype))
+                param.requires_grad_(False)
+                loaded.append(name)
+            if missing:
+                raise RuntimeError(f"adapter checkpoint parameters missing after injection: {missing}")
+            mark(
+                "adapter_load_done",
+                format=payload.get("format"),
+                target_modules=target_modules,
+                loaded_param_count=len(loaded),
+                loaded_params=loaded,
+            )
+        except Exception as exc:
+            mark("adapter_load_failed", error=repr(exc))
+            raise
     runtime_condition_debug = {}
     if args.debug_camera_condition:
         mark("camera_condition_debug_start")
@@ -421,6 +466,7 @@ def run_one_sample(
     save_condition_summary: bool = False,
     assert_camera_used: bool = False,
     fail_if_camera_unused: bool = False,
+    adapter_checkpoint: str = "",
 ) -> dict[str, Any]:
     run_one_sample.timeout_sec = timeout_sec
     sample = sample_payload(sample_dir)
@@ -509,6 +555,8 @@ def run_one_sample(
         cmd.append("--local_files_only")
     if debug_camera_condition or save_condition_summary:
         cmd.extend(["--debug_camera_condition", "--condition_debug_out", str(runtime_condition_debug_path)])
+    if adapter_checkpoint:
+        cmd.extend(["--adapter_checkpoint", str(adapter_checkpoint)])
     log_path = sample_out / "inference_log.txt"
     start = time.time()
     proc_env = os.environ.copy()
@@ -577,6 +625,7 @@ def run_one_sample(
         "probe_only": probe_only,
         "local_files_only": local_files_only,
         "debug_camera_condition": debug_camera_condition,
+        "adapter_checkpoint": str(adapter_checkpoint) if adapter_checkpoint else "",
         "condition_debug": final_condition_debug if (debug_camera_condition or save_condition_summary) else None,
         "camera_condition_passed_to_pipeline": camera_used,
     })
@@ -621,6 +670,7 @@ def main(argv=None) -> int:
     ap.add_argument("--save-condition-summary", action="store_true")
     ap.add_argument("--assert-camera-used", action="store_true")
     ap.add_argument("--fail-if-camera-unused", action="store_true")
+    ap.add_argument("--adapter_checkpoint", default="")
     args = ap.parse_args(argv)
     cfg = load_yaml(args.config) if args.config else {}
     paths_cfg = load_yaml("configs/cam_physgeo/paths.yaml")
@@ -713,6 +763,7 @@ def main(argv=None) -> int:
             save_condition_summary=args.save_condition_summary,
             assert_camera_used=args.assert_camera_used,
             fail_if_camera_unused=args.fail_if_camera_unused,
+            adapter_checkpoint=args.adapter_checkpoint,
         ))
     payload["results"] = results
     payload["ok_count"] = sum(1 for r in results if r.get("ok"))

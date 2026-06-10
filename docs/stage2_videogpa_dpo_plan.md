@@ -913,3 +913,17 @@ Checkpoint status:
 Important note: validation sampling is still sequential and the three val probes were `collision + orbit_right_64`. This is sufficient for this train-sampler gate but future Stage B and rollout evaluation should use balanced validation / one-per-template rollout selection.
 
 Next allowed action requires explicit user approval: tiny rollout smoke using the saved adapter. DPO, reward calibration, winner/loser pair selection, and VideoGPA `03_train` remain blocked.
+## 2026-06-10 Scale-Up / Warmup / Reward-Pair Gate Update
+
+TDW v5 aggressive 2x 200 is still the active camera-visible warmup dataset. Additional TDW scale-up is deferred until either GPU0 `DISPLAY=:8` is explicitly approved for TDW or a GPU4-7 TDW display is configured.
+
+The existing balanced Stage A high-noise adapter checkpoint remains the next rollout candidate. A longer Stage A run is estimated to exceed 12 hours based on the 60-step runtime, so it requires explicit approval before execution.
+
+New code now supports:
+
+- loading the Stage A adapter into LingBot-Fast inference;
+- selecting balanced rollout conditions from the TDW v5 manifest;
+- scoring GT/base/adapter rollouts with reward v5 confidence reporting;
+- constructing reward pairs only when confidence and margin pass.
+
+DPO remains blocked. The next gate is a small base-vs-adapter rollout smoke, then reward scoring, then pair diagnostics.

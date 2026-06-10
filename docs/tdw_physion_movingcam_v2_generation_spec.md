@@ -534,3 +534,10 @@ The run saved exactly one adapter-only checkpoint:
 Size: `166,809` bytes. No full model weights or optimizer state were saved.
 
 The next review should be a tiny approved rollout smoke, one sample per template, comparing base LingBot-Fast against the Stage A adapter. DPO and reward pair selection remain later gates.
+## 2026-06-10 v5 Data / Rollout Gate
+
+The v5 aggressive 2x 200 human-approved dataset is the current main warmup candidate. It should not be superseded by larger generation until rollout and reward gates show that the model benefits from the Stage A camera adapter.
+
+No TDW scale-up was run in this pass because a GPU4-7 TDW display was not confirmed and GPU0 TDW generation was not approved. The next TDW generation decision is explicit: approve GPU0 `DISPLAY=:8`, configure GPU4-7 display, or defer scale-up.
+
+The code now supports using the balanced Stage A adapter checkpoint for LingBot-Fast rollout comparison. Reward-pair construction remains downstream of rollout and reward confidence.

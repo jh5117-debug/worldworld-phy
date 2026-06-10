@@ -600,3 +600,15 @@ One adapter-only checkpoint was saved for later approved rollout inspection:
 `local_assets/experiments/exp_tdw_v5_200_stageA_balanced_warmup/checkpoint/stageA_balanced_camera_lora_final/adapter_state.pt`
 
 This is not a data-generation approval. Do not run more TDW generation, Stage B, rollout, reward calibration, or DPO without explicit approval.
+## 2026-06-10 TDW v5 Scale-Up Status
+
+The v5 aggressive 2x 200 dataset remains the selected warmup dataset. It is human-approved and already has manifest, split, integrity, dataloader, true forward-loss, and balanced Stage A warmup gates.
+
+No new TDW generation was run in this pass. TDW generation still requires a confirmed Xorg display. GPU4-7 are acceptable for PyTorch work, but do not by themselves provide TDW/Unity display binding. A separate approval is required for GPU0 `DISPLAY=:8` TDW generation or for setting up a GPU4-7 display.
+
+Recommended order:
+
+1. Run a bounded base-vs-Stage-A-adapter rollout smoke.
+2. Score reward confidence on the rollout videos.
+3. Build reward pairs only if confidence and margin pass.
+4. Only then decide whether to expand TDW data beyond 200.
