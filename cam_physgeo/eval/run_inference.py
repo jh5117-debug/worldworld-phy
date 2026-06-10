@@ -303,6 +303,9 @@ def main():
         os.environ.setdefault("HF_HUB_OFFLINE", "1")
         os.environ.setdefault("HF_DATASETS_OFFLINE", "1")
     os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+    project_root = os.environ.get("WORLD_MODEL_PHYS_ROOT") or os.getcwd()
+    if project_root:
+        sys.path.insert(0, project_root)
     sys.path.insert(0, args.lingbot_code)
     mark("import_torch_start")
     import torch
@@ -561,6 +564,7 @@ def run_one_sample(
     start = time.time()
     proc_env = os.environ.copy()
     proc_env["PYTHONUNBUFFERED"] = "1"
+    proc_env.setdefault("WORLD_MODEL_PHYS_ROOT", str(Path.cwd()))
     if local_files_only:
         proc_env.setdefault("TRANSFORMERS_OFFLINE", "1")
         proc_env.setdefault("HF_HUB_OFFLINE", "1")

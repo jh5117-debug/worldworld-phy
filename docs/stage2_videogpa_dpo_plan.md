@@ -927,3 +927,18 @@ New code now supports:
 - constructing reward pairs only when confidence and margin pass.
 
 DPO remains blocked. The next gate is a small base-vs-adapter rollout smoke, then reward scoring, then pair diagnostics.
+
+## 2026-06-10 4-Condition Rollout Smoke Update
+
+The bounded base-vs-Stage-A-adapter rollout smoke has passed:
+
+- 4 conditions, one per template;
+- base rollout: 4/4;
+- Stage A adapter rollout: 4/4;
+- adapter checkpoint load confirmed in runtime logs;
+- GT/base/adapter video probe: 12/12;
+- review gallery: `local_assets/reports/human_review/tdw_v5_stageA_4condition_base_vs_adapter/video_gallery.html`.
+
+The first adapter attempt exposed a real runtime import bug: the generated LingBot runtime script did not include the project root in `sys.path`, so adapter LoRA injection could not import `cam_physgeo.dpo.lora_utils`. This is fixed in `run_inference.py` by passing `WORLD_MODEL_PHYS_ROOT` into the subprocess.
+
+Reward scoring, reward-pair construction, DPO, rollout expansion, VideoGPA `03_train`, and Stage1 remain gated. The next decision should be human review first, then either reward scoring on these 4 conditions or a 12-condition rollout.

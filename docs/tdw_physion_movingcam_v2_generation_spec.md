@@ -541,3 +541,15 @@ The v5 aggressive 2x 200 human-approved dataset is the current main warmup candi
 No TDW scale-up was run in this pass because a GPU4-7 TDW display was not confirmed and GPU0 TDW generation was not approved. The next TDW generation decision is explicit: approve GPU0 `DISPLAY=:8`, configure GPU4-7 display, or defer scale-up.
 
 The code now supports using the balanced Stage A adapter checkpoint for LingBot-Fast rollout comparison. Reward-pair construction remains downstream of rollout and reward confidence.
+
+## 2026-06-10 4-Condition Base vs Adapter Rollout Note
+
+The v5 aggressive 2x 200 dataset has now been used for a small approved rollout comparison:
+
+- one condition per template;
+- base videos: 4/4;
+- Stage A adapter videos: 4/4;
+- GT/base/adapter probe: 12/12;
+- gallery: `local_assets/reports/human_review/tdw_v5_stageA_4condition_base_vs_adapter/video_gallery.html`.
+
+The adapter runtime import path was fixed by passing the project root into the generated LingBot runtime subprocess. No TDW generation, reward scoring, pair construction, DPO, VideoGPA `03_train`, Stage1, or training was performed.

@@ -745,3 +745,26 @@ This pass added the missing base-vs-adapter rollout plumbing:
 - Reward scoring and reward-pair wrappers now stop DPO pair construction unless reward margin and backend confidence pass.
 
 No DPO, VideoGPA `03_train`, Stage1, TDW generation, rollout, reward calibration, or full checkpoint was run. The next recommended user decision is a bounded 4-condition base-vs-Stage-A-adapter rollout smoke.
+
+## 2026-06-10 Update: 4-Condition Base vs Stage A Adapter Rollout Smoke
+
+The user-approved 4-condition rollout smoke has now run.
+
+Conditions:
+
+- drop: `tdw_v3_00000_drop_orbit_left_72_seed22000_0000`;
+- collision: `tdw_v3_00093_collision_strafe_left_180_seed22093_0000`;
+- roll: `tdw_v3_00145_roll_orbit_right_60_seed22145_0000`;
+- containment: `tdw_v3_00161_containment_orbit_left_44_seed22161_0000`.
+
+Result:
+
+- Base LingBot-Fast videos: 4/4.
+- Stage A adapter videos: 4/4.
+- Adapter checkpoint loaded: yes.
+- Video probe: 12/12 for GT/base/adapter.
+- Human review gallery: `local_assets/reports/human_review/tdw_v5_stageA_4condition_base_vs_adapter/video_gallery.html`.
+
+An initial adapter-load attempt failed because the generated runtime script could not import `cam_physgeo.dpo.lora_utils`. `run_inference.py` now passes `WORLD_MODEL_PHYS_ROOT` and inserts the project root into runtime `sys.path`; the adapter-only rerun then passed.
+
+No reward scoring, pair construction, DPO, VideoGPA `03_train`, Stage1, new TDW generation, or training was run. The next decision is human review, then approval for reward scoring on these 4 conditions or a 12-condition rollout.

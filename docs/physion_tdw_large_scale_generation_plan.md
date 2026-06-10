@@ -612,3 +612,17 @@ Recommended order:
 2. Score reward confidence on the rollout videos.
 3. Build reward pairs only if confidence and margin pass.
 4. Only then decide whether to expand TDW data beyond 200.
+
+## 2026-06-10 Rollout Smoke Status
+
+The bounded 4-condition base-vs-Stage-A-adapter rollout smoke is complete:
+
+- drop / collision / roll / containment each have one condition;
+- base videos: 4/4;
+- Stage A adapter videos: 4/4;
+- video probe: 12/12 across GT/base/adapter;
+- human review gallery: `local_assets/reports/human_review/tdw_v5_stageA_4condition_base_vs_adapter/video_gallery.html`.
+
+No new TDW data was generated. No reward scoring, pair construction, DPO, VideoGPA `03_train`, Stage1, or training was run.
+
+The next scale-up decision is not more TDW generation yet. First inspect the 4-condition gallery, then approve reward scoring on these videos or a 12-condition rollout.

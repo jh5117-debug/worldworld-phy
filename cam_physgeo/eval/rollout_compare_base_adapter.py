@@ -25,7 +25,7 @@ def _bool_arg(value: str | bool | None) -> bool:
 
 
 def _row_id(row: dict[str, Any]) -> str:
-    return str(row.get("sample_id") or Path(str(row.get("sample_dir") or "")).name)
+    return str(row.get("condition_id") or row.get("sample_id") or Path(str(row.get("sample_dir") or "")).name)
 
 
 def _link_or_copy(src: str | Path, dst: Path) -> str:
@@ -107,7 +107,8 @@ def _summarize_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="configs/cam_physgeo/eval.yaml")
-    ap.add_argument("--manifest", required=True)
+    ap.add_argument("--manifest", default="")
+    ap.add_argument("--condition_manifest", default="")
     ap.add_argument("--adapter_checkpoint", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--num_conditions", type=int, default=12)
@@ -124,23 +125,33 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--local_files_only", default="true")
     ap.add_argument("--lingbot_env", default="")
     ap.add_argument("--timeout_sec", type=int, default=1200)
+    ap.add_argument("--timeout_per_video", type=int, default=0)
+    ap.add_argument("--stop_on_first_adapter_load_failure", default="false")
     ap.add_argument("--dry_run", default="false")
     args = ap.parse_args(argv)
 
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
-    rows = list(read_jsonl(args.manifest))
-    selected = _select_conditions(rows, args.templates, int(args.num_conditions), int(args.seed))
+    if args.condition_manifest:
+        rows = list(read_jsonl(args.condition_manifest))
+        selected = rows[: int(args.num_conditions)]
+    elif args.manifest:
+        rows = list(read_jsonl(args.manifest))
+        selected = _select_conditions(rows, args.templates, int(args.num_conditions), int(args.seed))
+    else:
+        raise SystemExit("pass --condition_manifest or --manifest")
     if len(selected) < int(args.num_conditions):
-        raise SystemExit(f"selected only {len(selected)} conditions from {args.manifest}")
+        raise SystemExit(f"selected only {len(selected)} conditions")
     condition_dirs = [_condition_dir_from_manifest(row, out_dir) for row in selected]
 
     payload: dict[str, Any] = {
         "status": "planned",
         "manifest": args.manifest,
+        "condition_manifest": args.condition_manifest,
         "adapter_checkpoint": args.adapter_checkpoint,
         "out": str(out_dir),
         "selected": _summarize_rows(selected),
+        "selected_rows": selected,
         "condition_dirs": [str(path) for path in condition_dirs],
         "run_base": _bool_arg(args.run_base),
         "run_adapter": _bool_arg(args.run_adapter),
@@ -149,6 +160,8 @@ def main(argv: list[str] | None = None) -> int:
         "num_steps": int(args.num_steps),
         "resolution": args.resolution,
         "dry_run": _bool_arg(args.dry_run),
+        "timeout_per_video": int(args.timeout_per_video or args.timeout_sec),
+        "stop_on_first_adapter_load_failure": _bool_arg(args.stop_on_first_adapter_load_failure),
         "results": [],
     }
     write_json(payload, out_dir / "rollout_plan.json")
@@ -188,7 +201,7 @@ def main(argv: list[str] | None = None) -> int:
                 resolution=args.resolution,
                 save_contact_sheet=_bool_arg(args.make_contact_sheet),
                 env_path=args.lingbot_env or str(paths_cfg.get("LINGBOT_ENV") or ""),
-                timeout_sec=int(args.timeout_sec),
+                timeout_sec=int(args.timeout_per_video or args.timeout_sec),
                 local_files_only=_bool_arg(args.local_files_only),
                 debug_camera_condition=True,
                 save_condition_summary=True,
@@ -200,6 +213,34 @@ def main(argv: list[str] | None = None) -> int:
             result["condition_sample_id"] = sample_dir.name
             payload["results"].append(result)
             write_json(payload, out_dir / "rollout_summary.json")
+            if label == "stageA_adapter" and not result.get("ok") and _bool_arg(args.stop_on_first_adapter_load_failure):
+                log_tail = str(result.get("log_tail") or result.get("error") or "")
+                if "adapter_load_failed" in log_tail or "adapter_load" in log_tail:
+                    payload.update(
+                        {
+                            "status": "failed_adapter_load",
+                            "ok_count": sum(1 for row in payload["results"] if row.get("ok")),
+                            "fail_count": sum(1 for row in payload["results"] if not row.get("ok")),
+                            "failed_condition": sample_dir.name,
+                        }
+                    )
+                    write_json(payload, out_dir / "rollout_summary.json")
+                    print(json.dumps(payload, indent=2, ensure_ascii=False))
+                    return 2
+        if label == "base":
+            base_fail = sum(1 for row in payload["results"] if row.get("eval_label") == "base" and not row.get("ok"))
+            if base_fail:
+                payload.update(
+                    {
+                        "status": "blocked_adapter_due_base_failure",
+                        "ok_count": sum(1 for row in payload["results"] if row.get("ok")),
+                        "fail_count": sum(1 for row in payload["results"] if not row.get("ok")),
+                        "base_fail_count": base_fail,
+                    }
+                )
+                write_json(payload, out_dir / "rollout_summary.json")
+                print(json.dumps(payload, indent=2, ensure_ascii=False))
+                return 2
 
     ok = sum(1 for row in payload["results"] if row.get("ok"))
     fail = len(payload["results"]) - ok
