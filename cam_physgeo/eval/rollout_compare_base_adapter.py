@@ -14,6 +14,7 @@ from cam_physgeo.eval.run_inference import (
     prepare_fast_runtime_bundle,
     run_one_sample,
 )
+from cam_physgeo.eval.make_rollout_comparison_videos import build_comparison_videos
 from cam_physgeo.training.model_loading import resolve_model_paths
 from cam_physgeo.utils.io import load_yaml, read_jsonl, write_json
 
@@ -123,6 +124,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--run_base", default="true")
     ap.add_argument("--run_adapter", default="true")
     ap.add_argument("--make_contact_sheet", default="true")
+    ap.add_argument("--make_comparison_videos", default="true")
+    ap.add_argument("--comparison_panel_size", default="832x480")
     ap.add_argument("--local_files_only", default="true")
     ap.add_argument("--lingbot_env", default="")
     ap.add_argument("--timeout_sec", type=int, default=1200)
@@ -164,6 +167,8 @@ def main(argv: list[str] | None = None) -> int:
         "dry_run": _bool_arg(args.dry_run),
         "timeout_per_video": int(args.timeout_per_video or args.timeout_sec),
         "stop_on_first_adapter_load_failure": _bool_arg(args.stop_on_first_adapter_load_failure),
+        "make_comparison_videos": _bool_arg(args.make_comparison_videos),
+        "comparison_panel_size": args.comparison_panel_size,
         "results": [],
     }
     write_json(payload, out_dir / "rollout_plan.json")
@@ -248,12 +253,26 @@ def main(argv: list[str] | None = None) -> int:
 
     ok = sum(1 for row in payload["results"] if row.get("ok"))
     fail = len(payload["results"]) - ok
+    comparison_summary: dict[str, Any] | None = None
+    if _bool_arg(args.make_comparison_videos):
+        width, height = [int(x) for x in str(args.comparison_panel_size).lower().split("x", 1)]
+        comparison_variants = [("base", "Base"), ("stageA_adapter", "Stage A")]
+        if args.stageB_adapter_checkpoint:
+            comparison_variants.append(("stageB_adapter", "Stage B"))
+        comparison_summary = build_comparison_videos(
+            rollout_root=out_dir,
+            variants=comparison_variants,
+            panel_width=width,
+            panel_height=height,
+            overwrite=True,
+        )
     payload.update(
         {
             "status": "passed_rollout_compare" if fail == 0 else "failed_rollout_compare",
             "ok_count": ok,
             "fail_count": fail,
             "elapsed_sec": time.time() - start,
+            "comparison_videos": comparison_summary,
         }
     )
     write_json(payload, out_dir / "rollout_summary.json")
