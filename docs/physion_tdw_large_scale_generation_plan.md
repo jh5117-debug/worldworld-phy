@@ -654,3 +654,29 @@ No winner/loser pairs were built, and this is not a DPO-ready pool. The next sca
 3. explicitly approve a 12-condition rollout+reward pass if more coverage is needed.
 
 DPO, reward calibration, VideoGPA `03_train`, Stage1, and further TDW generation remain blocked.
+
+## 2026-06-12 Scale-Up Status
+
+TDW data scale-up to 1k was not run in this gate.
+
+Reason:
+
+- H20 GPU4-7 were available for LingBot training/rollout/reward work.
+- TDW/Unity generation still required a TDW Xorg display.
+- No GPU4-7 TDW display was found.
+- The only known TDW display path remained GPU0-bound `DISPLAY=:8`, which was not approved for 1k generation in this run.
+
+The pipeline therefore continued with the existing TDW v5 aggressive 2x 200 human-approved dataset.
+
+Result:
+
+- Stage A formal warmup passed.
+- Stage B mixed refinement passed.
+- 12-condition Base/StageA/StageB rollout passed at the video-generation level.
+- Reward-pair construction did not pass because reward backend confidence was below threshold.
+
+Next generation decision:
+
+- Do not generate more TDW solely from this gate.
+- Either configure a GPU4-7 TDW display or explicitly approve GPU0 `DISPLAY=:8` before any 1k TDW generation.
+- Reward confidence should be addressed before DPO scale-up.

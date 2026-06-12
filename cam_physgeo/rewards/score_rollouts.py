@@ -67,7 +67,7 @@ def _iter_score_inputs(rollout_root: Path) -> list[dict[str, Any]]:
         gt = condition_dir / "target.mp4"
         if gt.exists():
             rows.append(_sample_from_condition(condition_dir, candidate_video=gt, label="clean_gt", row=selected))
-        for label in ["base", "stageA_adapter"]:
+        for label in ["base", "stageA_adapter", "stageB_adapter"]:
             generated = rollout_root / label / condition_id / "generated.mp4"
             if generated.exists():
                 rows.append(_sample_from_condition(condition_dir, candidate_video=generated, label=label, row=selected))
@@ -141,6 +141,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--score_gt", default="true")
     ap.add_argument("--score_base", default="true")
     ap.add_argument("--score_adapter", default="true")
+    ap.add_argument("--score_stageB", default="true")
     ap.add_argument("--use_action", default="false")
     ap.add_argument("--local_files_only", default="true")
     ap.add_argument("--device", default="auto")
@@ -156,6 +157,8 @@ def main(argv: list[str] | None = None) -> int:
         allowed_labels.add("base")
     if _bool_arg(args.score_adapter):
         allowed_labels.add("stageA_adapter")
+    if _bool_arg(args.score_stageB):
+        allowed_labels.add("stageB_adapter")
     score_inputs = [row for row in score_inputs if str(row.get("eval_label")) in allowed_labels]
     device = _runtime_device() if str(args.device).lower() == "auto" else str(args.device)
     enriched_inputs = [
@@ -191,7 +194,7 @@ def main(argv: list[str] | None = None) -> int:
         grouped[str(row.get("condition_id"))][str(row.get("eval_label"))] = row
     for group in grouped.values():
         base = group.get("base")
-        adapter = group.get("stageA_adapter")
+        adapter = group.get("stageA_adapter") or group.get("stageB_adapter")
         if not base or not adapter:
             continue
         comparable += 1
@@ -211,6 +214,7 @@ def main(argv: list[str] | None = None) -> int:
         "label_distribution": dict(Counter(str(row.get("eval_label")) for row in scores)),
         "base_avg_reward_confidence_weighted": mean("base", "reward_total_confidence_weighted"),
         "adapter_avg_reward_confidence_weighted": mean("stageA_adapter", "reward_total_confidence_weighted"),
+        "stageB_avg_reward_confidence_weighted": mean("stageB_adapter", "reward_total_confidence_weighted"),
         "gt_avg_reward_confidence_weighted": mean("clean_gt", "reward_total_confidence_weighted"),
         "adapter_greater_than_base_count": adapter_wins,
         "adapter_base_comparable_count": comparable,

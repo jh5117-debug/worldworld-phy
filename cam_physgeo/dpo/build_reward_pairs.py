@@ -110,8 +110,9 @@ def main(argv: list[str] | None = None) -> int:
             break
         gt = group.get("clean_gt")
         base = group.get("base")
-        adapter = group.get("stageA_adapter")
-        generated = [row for row in [base, adapter] if row]
+        stage_a = group.get("stageA_adapter")
+        stage_b = group.get("stageB_adapter")
+        generated = [row for row in [base, stage_a, stage_b] if row]
         if _bool_arg(args.include_gt_vs_generated) and gt:
             for candidate in generated:
                 margin = _score(gt) - _score(candidate)
@@ -129,24 +130,35 @@ def main(argv: list[str] | None = None) -> int:
                             "confidence": conf,
                         }
                     )
-        if _bool_arg(args.include_adapter_vs_base) and base and adapter:
-            base_score = _score(base)
-            adapter_score = _score(adapter)
-            margin = abs(adapter_score - base_score)
-            conf = min(_confidence(base), _confidence(adapter))
-            if margin >= float(args.min_margin) and conf >= float(args.min_confidence):
-                winner, loser = (adapter, base) if adapter_score > base_score else (base, adapter)
-                pairs.append(_make_pair(condition_id=condition_id, winner=winner, loser=loser, pair_type="adapter_vs_base", margin=margin))
-            else:
-                rejected.append(
-                    {
-                        "condition_id": condition_id,
-                        "pair_type": "adapter_vs_base",
-                        "reason": "margin_or_confidence_below_threshold",
-                        "margin": margin,
-                        "confidence": conf,
-                    }
-                )
+        if _bool_arg(args.include_adapter_vs_base) and base:
+            for adapter in [stage_a, stage_b]:
+                if not adapter:
+                    continue
+                base_score = _score(base)
+                adapter_score = _score(adapter)
+                margin = abs(adapter_score - base_score)
+                conf = min(_confidence(base), _confidence(adapter))
+                pair_type = f"{adapter.get('eval_label')}_vs_base"
+                if margin >= float(args.min_margin) and conf >= float(args.min_confidence):
+                    winner, loser = (adapter, base) if adapter_score > base_score else (base, adapter)
+                    pairs.append(_make_pair(condition_id=condition_id, winner=winner, loser=loser, pair_type=pair_type, margin=margin))
+                else:
+                    rejected.append(
+                        {
+                            "condition_id": condition_id,
+                            "pair_type": pair_type,
+                            "reason": "margin_or_confidence_below_threshold",
+                            "margin": margin,
+                            "confidence": conf,
+                        }
+                    )
+        if len(generated) >= 2:
+            ranked = sorted(generated, key=_score, reverse=True)
+            winner, loser = ranked[0], ranked[-1]
+            margin = _score(winner) - _score(loser)
+            conf = min(_confidence(winner), _confidence(loser))
+            if winner.get("eval_label") != loser.get("eval_label") and margin >= float(args.min_margin) and conf >= float(args.min_confidence):
+                pairs.append(_make_pair(condition_id=condition_id, winner=winner, loser=loser, pair_type="top_generated_vs_bottom_generated", margin=margin))
 
     pairs = pairs[: int(args.max_pairs)]
     write_jsonl(pairs, out_dir / "dpo_pairs.jsonl")

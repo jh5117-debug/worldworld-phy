@@ -110,6 +110,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--manifest", default="")
     ap.add_argument("--condition_manifest", default="")
     ap.add_argument("--adapter_checkpoint", required=True)
+    ap.add_argument("--stageB_adapter_checkpoint", default="")
     ap.add_argument("--out", required=True)
     ap.add_argument("--num_conditions", type=int, default=12)
     ap.add_argument("--samples_per_condition", type=int, default=1)
@@ -149,6 +150,7 @@ def main(argv: list[str] | None = None) -> int:
         "manifest": args.manifest,
         "condition_manifest": args.condition_manifest,
         "adapter_checkpoint": args.adapter_checkpoint,
+        "stageB_adapter_checkpoint": args.stageB_adapter_checkpoint,
         "out": str(out_dir),
         "selected": _summarize_rows(selected),
         "selected_rows": selected,
@@ -186,6 +188,8 @@ def main(argv: list[str] | None = None) -> int:
         variants.append(("base", ""))
     if _bool_arg(args.run_adapter):
         variants.append(("stageA_adapter", args.adapter_checkpoint))
+    if args.stageB_adapter_checkpoint:
+        variants.append(("stageB_adapter", args.stageB_adapter_checkpoint))
 
     start = time.time()
     for label, ckpt in variants:

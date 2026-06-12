@@ -793,3 +793,40 @@ The GT > generated sanity check passed, but pair construction did not pass:
 Decision: no winner/loser pairs were built, and DPO remains blocked. `dpo_diag` status is `reward_scored_pair_construction_blocked`.
 
 Next user decision: inspect the 4-condition gallery, debug reward confidence / missing reobserve backend, or explicitly approve a 12-condition rollout+reward pass. Do not run DPO, VideoGPA `03_train`, Stage1, reward calibration, or more TDW generation from this gate alone.
+
+## 2026-06-12 Real-Scale Warmup / Rollout / Reward-Pair Gate
+
+The project advanced from the 60-step Stage A smoke to a larger TDW v5 200 warmup and rollout gate.
+
+Data scale-up:
+
+- TDW v5 aggressive 2x 200 remains the active warmup dataset.
+- TDW 1k generation was not run because no GPU4-7 TDW display was available; only the GPU0-bound `DISPLAY=:8` path was known.
+
+Warmup:
+
+- Stage A high-noise/global-camera warmup completed through a 206-step run plus a 100-step resume.
+- Stage B mixed high/low/random diagnostic refinement completed 200/200 steps.
+- Both stages saved adapter-only LoRA checkpoints.
+- No full model checkpoint or optimizer state was saved.
+
+Rollout:
+
+- 12 conditions were evaluated.
+- Base / Stage A / Stage B each generated 12/12 videos.
+- A rollout checkpoint-path bug was fixed by resolving adapter checkpoint directories to `adapter_state.pt`.
+
+Reward and pairs:
+
+- Reward v5 scored 48 rows: GT, Base, Stage A, Stage B.
+- GT avg confidence-weighted reward: `0.492272`.
+- Base avg: `0.298588`.
+- Stage A avg: `0.296580`.
+- Stage B avg: `0.296515`.
+- Adapter > Base count: `3/12`.
+- Generated reward confidence avg: `0.463235`.
+- Generated real-backend confidence avg: `0.411765`.
+- `trustworthy_for_pairs=false`.
+- Pair construction emitted `0` pairs and rejected `60` candidate pairs.
+
+Decision: DPO remains blocked. The next gate should improve reward backend confidence or run a focused manual/reward audit before any DPO pilot approval.

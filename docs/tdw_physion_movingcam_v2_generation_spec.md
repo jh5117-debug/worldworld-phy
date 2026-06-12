@@ -574,3 +574,27 @@ Pair construction is blocked because backend confidence is below the required th
 - generated reward components fallback-heavy.
 
 Spec implication: TDW v5 remains the active warmup dataset, but the current 4-condition reward output is diagnostic only. It must not be used for DPO until reward confidence and pair margins improve.
+
+## 2026-06-12 Moving-Camera Dataset Usage Note
+
+The TDW v5 aggressive 2x 200 set remains the current main camera-visible warmup dataset.
+
+The next gate used the existing v5 200 data rather than generating 1k new samples:
+
+- no GPU4-7 TDW display was available;
+- no GPU0 TDW 1k approval was active;
+- no new TDW data was generated.
+
+Warmup and rollout:
+
+- Stage A and Stage B adapter warmups completed.
+- Base / Stage A / Stage B generated `12/12` rollout videos each on 12 held-out conditions.
+
+Reward/pair status:
+
+- reward scoring completed;
+- reward confidence did not pass the DPO pair threshold;
+- pair count is `0`;
+- DPO is not ready.
+
+Spec implication: v5 data is usable for warmup experiments, but DPO remains gated by reward confidence and pair quality, not by TDW generation alone.

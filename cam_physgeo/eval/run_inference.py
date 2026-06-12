@@ -538,6 +538,23 @@ def run_one_sample(
             except OSError:
                 shutil.copy2(src, dst)
     launcher = python_cmd_for_env(env_path)
+    resolved_adapter_checkpoint = ""
+    if adapter_checkpoint:
+        adapter_path = Path(adapter_checkpoint)
+        if adapter_path.is_dir():
+            adapter_path = adapter_path / "adapter_state.pt"
+        resolved_adapter_checkpoint = str(adapter_path)
+        if not adapter_path.exists():
+            result.update(
+                {
+                    "ok": False,
+                    "error": f"adapter checkpoint missing: {adapter_path}",
+                    "adapter_checkpoint": str(adapter_checkpoint),
+                    "resolved_adapter_checkpoint": resolved_adapter_checkpoint,
+                }
+            )
+            write_json(result, sample_out / "inference_metadata.json")
+            return result
     cmd = [
         *launcher, str(script_path),
         "--lingbot_code", paths["lingbot_code"],
@@ -558,8 +575,8 @@ def run_one_sample(
         cmd.append("--local_files_only")
     if debug_camera_condition or save_condition_summary:
         cmd.extend(["--debug_camera_condition", "--condition_debug_out", str(runtime_condition_debug_path)])
-    if adapter_checkpoint:
-        cmd.extend(["--adapter_checkpoint", str(adapter_checkpoint)])
+    if resolved_adapter_checkpoint:
+        cmd.extend(["--adapter_checkpoint", resolved_adapter_checkpoint])
     log_path = sample_out / "inference_log.txt"
     start = time.time()
     proc_env = os.environ.copy()
@@ -630,6 +647,7 @@ def run_one_sample(
         "local_files_only": local_files_only,
         "debug_camera_condition": debug_camera_condition,
         "adapter_checkpoint": str(adapter_checkpoint) if adapter_checkpoint else "",
+        "resolved_adapter_checkpoint": resolved_adapter_checkpoint,
         "condition_debug": final_condition_debug if (debug_camera_condition or save_condition_summary) else None,
         "camera_condition_passed_to_pipeline": camera_used,
     })

@@ -6,6 +6,7 @@ import json
 import os
 import random
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -144,6 +145,9 @@ def _make_sample_plan(
     rng = random.Random(int(shuffle_seed))
     sampler = str(sampler or "sequential")
     max_steps = int(max_steps)
+    requested_without_replacement = bool(sample_without_replacement)
+    if max_steps > len(rows):
+        sample_without_replacement = False
     if sampler == "sequential":
         plan = [rows[i % len(rows)] for i in range(max_steps)]
     elif sampler == "shuffle":
@@ -219,7 +223,9 @@ def _make_sample_plan(
         "sampler": sampler,
         "balance_keys": balance_keys,
         "shuffle_seed": int(shuffle_seed),
-        "sample_without_replacement": bool(sample_without_replacement),
+        "sample_without_replacement_requested": requested_without_replacement,
+        "sample_without_replacement_effective": bool(sample_without_replacement),
+        "replacement_reason": "max_steps_exceeds_source_count" if requested_without_replacement and max_steps > len(rows) else None,
         "source_count": len(rows),
         "planned_count": len(plan),
         "first_20": _coverage_summary(plan, limit=min(20, len(plan))),
@@ -429,6 +435,7 @@ def _choose_timestep(mode: str, *, num_train_timesteps: int, high_noise_timestep
     if mode == "mixed":
         return [
             ("diagnostic_high_noise_quantile", high, "scheduler_0.80_quantile_or_user_value"),
+            ("diagnostic_low_noise_quantile", low, "scheduler_0.20_quantile_or_user_value"),
             ("random", random_t, "random_uniform_timestep"),
         ]
     if mode == "both":
@@ -802,11 +809,18 @@ def sampler_dryrun(args: argparse.Namespace) -> int:
 
 
 def staged_warmup_pilot(args: argparse.Namespace) -> int:
+    def stage_log(message: str) -> None:
+        print(f"[staged_warmup_pilot] {time.strftime('%Y-%m-%dT%H:%M:%S')} {message}", file=sys.stderr, flush=True)
+
+    stage_log("enter")
+    stage_log("import_adapter_start")
     from cam_physgeo.dpo.lingbot_fast_videogpa_adapter import LingBotFastVideoGPAAdapter
     from cam_physgeo.dpo.lora_utils import count_lora_parameters, freeze_non_lora_parameters, inject_lora_into_modules, list_lora_parameters
 
+    stage_log("import_torch_start")
     import torch  # type: ignore
 
+    stage_log("imports_done")
     payload = _base_payload(args)
     out_dir = Path(args.out)
     name = "stageA_warmup_pilot_summary"
@@ -851,12 +865,8 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
         payload.update({"status": "failed_safety_flags", "reason": "save_metrics_only may be false only when save_adapter_checkpoint=true"})
         _write_report(out_dir, name, payload)
         return 2
-    if int(args.max_steps) > 100:
-        payload.update({"status": "failed_max_steps", "reason": "Stage A pilot is capped at max_steps <= 100"})
-        _write_report(out_dir, name, payload)
-        return 2
-    if save_adapter_checkpoint and int(args.max_steps) > 60:
-        payload.update({"status": "failed_max_steps", "reason": "adapter-saving balanced Stage A pilot is capped at max_steps <= 60"})
+    if int(args.max_steps) > 1000:
+        payload.update({"status": "failed_max_steps", "reason": "staged_warmup_pilot is capped at max_steps <= 1000"})
         _write_report(out_dir, name, payload)
         return 2
     if int(args.batch_size) != 1:
@@ -869,6 +879,7 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
         return 2
     try:
         start = time.time()
+        stage_log("load_manifests_start")
         train_rows = _load_jsonl(args.train_manifest)
         val_rows = _load_jsonl(args.val_manifest) if args.val_manifest else []
         if not train_rows:
@@ -884,9 +895,22 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
             sample_without_replacement=_bool_arg(args.sample_without_replacement),
         )
         _write_sample_plan(out_dir / "sampler_dryrun", sample_plan, sampler_summary)
+        val_event_count = max(1, (int(args.max_steps) + max(1, int(args.val_every)) - 1) // max(1, int(args.val_every)))
+        val_plan, val_sampler_summary = _make_sample_plan(
+            val_rows,
+            max_steps=val_event_count,
+            sampler=args.sampler,
+            balance_keys=_split_csv(args.balance_keys),
+            shuffle_seed=int(args.shuffle_seed) + 997,
+            sample_without_replacement=_bool_arg(args.sample_without_replacement),
+        )
+        _write_sample_plan(out_dir / "val_sampler_dryrun", val_plan, val_sampler_summary)
+        stage_log("load_adapter_start")
         adapter = LingBotFastVideoGPAAdapter(args.config)
+        stage_log("load_policy_start")
         policy = adapter.load_policy_model(device=args.device, dtype=args.dtype, dry_run=False)
         pipe = policy.pop("object")
+        stage_log("load_vae_start")
         vae_result = adapter.load_vae(device=args.device, dtype=args.dtype, dry_run=False)
         vae = vae_result.pop("object", None)
         if not vae_result.get("success") or vae is None:
@@ -896,6 +920,7 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
         if model is None:
             raise RuntimeError("policy pipeline has no .model")
         model.eval()
+        stage_log("resolve_lora_start")
         resolved = adapter._resolve_lora_targets(
             model,
             target_modules=args.target_modules,
@@ -914,10 +939,42 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
             raise RuntimeError("optimizer param name mismatch after LoRA injection")
         if not all("lora_" in name for name in trainable["selected_names"]):
             raise RuntimeError(f"non-LoRA parameters selected: {trainable['selected_names']}")
+        init_adapter_info: dict[str, Any] = {"requested": bool(args.init_adapter_checkpoint), "loaded": False}
+        if args.init_adapter_checkpoint:
+            ckpt_path = Path(args.init_adapter_checkpoint)
+            if ckpt_path.is_dir():
+                ckpt_path = ckpt_path / "adapter_state.pt"
+            if not ckpt_path.exists():
+                raise RuntimeError(f"init adapter checkpoint missing: {ckpt_path}")
+            checkpoint = torch.load(ckpt_path, map_location="cpu")
+            state_dict = checkpoint.get("state_dict") if isinstance(checkpoint, dict) else None
+            if not isinstance(state_dict, dict):
+                raise RuntimeError(f"init adapter checkpoint has no state_dict: {ckpt_path}")
+            loaded_names = []
+            missing_names = []
+            for name in trainable["selected_names"]:
+                if name not in state_dict:
+                    missing_names.append(name)
+                    continue
+                tensor = state_dict[name]
+                if tuple(tensor.shape) != tuple(param_map[name].shape):
+                    raise RuntimeError(f"init adapter shape mismatch for {name}: {tuple(tensor.shape)} vs {tuple(param_map[name].shape)}")
+                param_map[name].data.copy_(tensor.to(device=param_map[name].device, dtype=param_map[name].dtype))
+                loaded_names.append(name)
+            if missing_names:
+                raise RuntimeError(f"init adapter missing selected LoRA params: {missing_names}")
+            init_adapter_info = {
+                "requested": True,
+                "loaded": True,
+                "path": str(ckpt_path),
+                "loaded_names": loaded_names,
+                "format": checkpoint.get("format") if isinstance(checkpoint, dict) else None,
+            }
         base_names = adapter._sample_base_param_names(model, preferred_targets=resolved["target_modules"], limit=12)
         base_before = adapter._snapshot_param_samples(model, base_names)
         lora_before = adapter._snapshot_selected_params(model, trainable["selected_names"])
         optimizer = torch.optim.AdamW(optimizer_params, lr=float(args.learning_rate))
+        stage_log("optimizer_ready")
         num_train_timesteps = int(getattr(pipe, "num_train_timesteps", 1000) or 1000)
         component = _component_inspection(pipe, adapter)
         summary: dict[str, Any] = {
@@ -957,6 +1014,7 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
                 "learning_rate": float(optimizer.param_groups[0]["lr"]),
                 "contains_only_lora": True,
             },
+            "init_adapter_checkpoint": init_adapter_info,
             "safety_flags": safety_flags,
             "no_checkpoint_saved": True,
             "no_full_model_checkpoint_saved": True,
@@ -975,6 +1033,58 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
         steps_completed = 0
         stop_reason = None
         val_every = max(1, int(args.val_every))
+        saved_checkpoints: list[dict[str, Any]] = []
+
+        def save_adapter_checkpoint_to(root: Path, *, step: int, is_final: bool) -> dict[str, Any]:
+            root.mkdir(parents=True, exist_ok=True)
+            existing = [
+                path
+                for pattern in ("*.pt", "*.pth", "*.safetensors", "*.ckpt", "optimizer*")
+                for path in root.glob(pattern)
+            ]
+            if existing:
+                raise RuntimeError(f"refuse to write adapter checkpoint because checkpoint dir is not empty: {[str(p) for p in existing]}")
+            state_dict = {}
+            for name in trainable["selected_names"]:
+                tensor = param_map[name].detach().cpu().float()
+                if "lora_" not in name:
+                    raise RuntimeError(f"refuse to save non-LoRA parameter in adapter checkpoint: {name}")
+                state_dict[name] = tensor
+            checkpoint_payload = {
+                "format": "cam_physgeo_runtime_lora_adapter_v1",
+                "trainable_scope": args.trainable_scope,
+                "target_modules": resolved["target_modules"],
+                "lora_rank": int(args.lora_rank),
+                "lora_alpha": float(args.lora_alpha),
+                "selected_names": trainable["selected_names"],
+                "state_dict": state_dict,
+                "base_model": "LingBot-Fast WanModelFast",
+                "step": int(step),
+                "is_final": bool(is_final),
+                "no_optimizer_state": True,
+                "no_full_model_weights": True,
+            }
+            checkpoint_path = root / "adapter_state.pt"
+            torch.save(checkpoint_payload, checkpoint_path)
+            checkpoint_size = int(checkpoint_path.stat().st_size)
+            info = {
+                "requested": True,
+                "saved": True,
+                "path": str(checkpoint_path),
+                "root": str(root),
+                "step": int(step),
+                "is_final": bool(is_final),
+                "size_bytes": checkpoint_size,
+                "size_mb": round(checkpoint_size / (1024 * 1024), 4),
+                "param_names": list(state_dict),
+                "param_count": int(sum(tensor.numel() for tensor in state_dict.values())),
+                "contains_only_lora": all("lora_" in name for name in state_dict),
+                "contains_optimizer_state": False,
+                "contains_full_model": False,
+            }
+            if checkpoint_size > 50 * 1024 * 1024:
+                raise RuntimeError(f"adapter checkpoint too large: {checkpoint_size} bytes")
+            return info
 
         def compute_sample_loss(row: dict[str, Any], *, step: int, enable_grad: bool, split: str):
             pair = _sample_to_pair(row)
@@ -997,12 +1107,13 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
                 device=args.device,
                 dtype=args.dtype,
             )
-            band = _choose_timestep(
+            bands = _choose_timestep(
                 args.timestep_mode,
                 num_train_timesteps=num_train_timesteps,
                 high_noise_timestep=args.high_noise_timestep,
                 low_noise_timestep=args.low_noise_timestep,
-            )[0]
+            )
+            band = bands[(int(step) - 1) % len(bands)]
             band_name, timestep_value, band_source = band
             noise = torch.randn_like(latent)
             timestep = torch.full((1,), int(timestep_value), device=_torch_device(args.device), dtype=torch.long)
@@ -1036,6 +1147,7 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
             del latent, noise, timestep, pred, target, forward_condition
             return loss, metric
 
+        stage_log("train_loop_start")
         for step in range(1, int(args.max_steps) + 1):
             step_start = time.time()
             row = sample_plan[(step - 1) % len(sample_plan)]
@@ -1080,7 +1192,8 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
             _cleanup_cuda()
             if step % val_every == 0 or step == int(args.max_steps):
                 with torch.no_grad():
-                    val_row = val_rows[(step // val_every - 1) % len(val_rows)]
+                    val_idx = max(0, min(len(val_plan) - 1, (step // val_every) - 1))
+                    val_row = val_plan[val_idx]
                     val_loss, val_metric = compute_sample_loss(val_row, step=step, enable_grad=False, split="val")
                     val_metric["elapsed_sec"] = time.time() - step_start
                     _append_jsonl(val_metrics_path, val_metric)
@@ -1090,55 +1203,27 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
                         break
                     del val_loss
                 _cleanup_cuda()
+            if (
+                save_adapter_checkpoint
+                and int(args.save_every) > 0
+                and step % int(args.save_every) == 0
+                and step != int(args.max_steps)
+                and stop_reason is None
+            ):
+                step_root = out_dir / "checkpoint" / f"{args.adapter_checkpoint_name}_step_{step:06d}"
+                saved_checkpoints.append(save_adapter_checkpoint_to(step_root, step=step, is_final=False))
+            if int(args.timeout) > 0 and (time.time() - start) >= int(args.timeout):
+                stop_reason = f"timeout_reached_after_step_{step}"
+                break
         lora_after = adapter._diff_full_snapshot(model, lora_before)
         base_after = adapter._diff_param_samples(model, base_before)
         checkpoint_info: dict[str, Any] = {"requested": save_adapter_checkpoint, "saved": False}
         if save_adapter_checkpoint and stop_reason is None and steps_completed >= 20:
-            checkpoint_root = out_dir / "checkpoint" / str(args.adapter_checkpoint_name)
-            checkpoint_root.mkdir(parents=True, exist_ok=True)
-            existing = [
-                path
-                for pattern in ("*.pt", "*.pth", "*.safetensors", "*.ckpt", "optimizer*")
-                for path in checkpoint_root.glob(pattern)
-            ]
-            if existing:
-                raise RuntimeError(f"refuse to write adapter checkpoint because checkpoint dir is not empty: {[str(p) for p in existing]}")
-            state_dict = {}
-            for name in trainable["selected_names"]:
-                tensor = param_map[name].detach().cpu().float()
-                if "lora_" not in name:
-                    raise RuntimeError(f"refuse to save non-LoRA parameter in adapter checkpoint: {name}")
-                state_dict[name] = tensor
-            checkpoint_payload = {
-                "format": "cam_physgeo_runtime_lora_adapter_v1",
-                "trainable_scope": args.trainable_scope,
-                "target_modules": resolved["target_modules"],
-                "lora_rank": int(args.lora_rank),
-                "lora_alpha": float(args.lora_alpha),
-                "selected_names": trainable["selected_names"],
-                "state_dict": state_dict,
-                "base_model": "LingBot-Fast WanModelFast",
-                "no_optimizer_state": True,
-                "no_full_model_weights": True,
-            }
-            checkpoint_path = checkpoint_root / "adapter_state.pt"
-            torch.save(checkpoint_payload, checkpoint_path)
-            checkpoint_size = int(checkpoint_path.stat().st_size)
-            checkpoint_info = {
-                "requested": True,
-                "saved": True,
-                "path": str(checkpoint_path),
-                "root": str(checkpoint_root),
-                "size_bytes": checkpoint_size,
-                "size_mb": round(checkpoint_size / (1024 * 1024), 4),
-                "param_names": list(state_dict),
-                "param_count": int(sum(tensor.numel() for tensor in state_dict.values())),
-                "contains_only_lora": all("lora_" in name for name in state_dict),
-                "contains_optimizer_state": False,
-                "contains_full_model": False,
-            }
-            if checkpoint_size > 50 * 1024 * 1024:
-                raise RuntimeError(f"adapter checkpoint too large: {checkpoint_size} bytes")
+            checkpoint_name = str(args.adapter_checkpoint_name)
+            final_name = checkpoint_name if checkpoint_name.endswith("_final") else f"{checkpoint_name}_final"
+            checkpoint_root = out_dir / "checkpoint" / final_name
+            checkpoint_info = save_adapter_checkpoint_to(checkpoint_root, step=steps_completed, is_final=True)
+            saved_checkpoints.append(checkpoint_info)
         first20 = sampler_summary["first_20"]
         all_steps = sampler_summary["all_steps"]
         balanced_coverage_pass = (
@@ -1181,6 +1266,7 @@ def staged_warmup_pilot(args: argparse.Namespace) -> int:
                 "lora_diff_after": lora_after,
                 "base_diff_after": base_after,
                 "checkpoint": checkpoint_info,
+                "checkpoints": saved_checkpoints,
                 "balanced_coverage_pass": balanced_coverage_pass,
                 "frozen_params_unchanged": base_after.get("params_changed_count", 0) == 0,
                 "trainable_params_received_gradients": max(grad_norms or [0.0]) > 0.0,
@@ -1285,6 +1371,8 @@ def main() -> int:
     parser.add_argument("--no_checkpoint", default="true")
     parser.add_argument("--save_adapter_checkpoint", default="false")
     parser.add_argument("--adapter_checkpoint_name", default="stageA_camera_lora_final")
+    parser.add_argument("--save_every", type=int, default=0)
+    parser.add_argument("--init_adapter_checkpoint", default="")
     parser.add_argument("--no_full_model_checkpoint", default="true")
     parser.add_argument("--no_optimizer_state_save", default="true")
     parser.add_argument("--save_metrics_only", default="true")

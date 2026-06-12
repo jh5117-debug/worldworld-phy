@@ -971,3 +971,28 @@ Reasons:
 No reward pairs were constructed. `dpo_diag` is now `reward_scored_pair_construction_blocked`, not DPO-ready.
 
 Next allowed actions require explicit approval: human review, reward backend/debug work, or a 12-condition rollout+reward pass. DPO training remains blocked until reward confidence, margins, and pair coverage pass.
+
+## 2026-06-12 Real-Scale TDW v5 Warmup Gate Update
+
+The 12-condition gate has now been run after a larger Stage A + Stage B warmup on the TDW v5 200 dataset.
+
+- Stage A high-noise/global-camera warmup: passed; final adapter saved.
+- Stage B mixed diagnostic refinement: passed; final adapter saved.
+- Rollout: Base / Stage A / Stage B generated `12/12` videos each.
+- Reward v5 scoring: completed on `48` rows.
+- Pair construction: `0` pairs ready, `60` rejected.
+
+Reward averages:
+
+- GT: `0.492272`
+- Base: `0.298588`
+- Stage A: `0.296580`
+- Stage B: `0.296515`
+
+The generated-video reward confidence remains below the DPO pair threshold:
+
+- generated reward confidence avg: `0.463235`
+- generated real-backend confidence avg: `0.411765`
+- `trustworthy_for_pairs=false`
+
+Conclusion: do not run DPO yet. Stage2 should next address reward backend confidence / missing or fallback-heavy components, or perform a focused manual audit of the 12-condition rollout outputs.
