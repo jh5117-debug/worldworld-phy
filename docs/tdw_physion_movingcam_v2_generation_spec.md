@@ -4,6 +4,19 @@
 
 Physion is TDW/ThreeDWorld simulation. v2 data should be called Physion-style TDW moving-camera simulation or Physion/TDW simulated clean GT. It is not real-world data.
 
+## 2026-06-14 v5 Aggressive 2x 1000 Dataset
+
+The current preferred warmup dataset is generated under `generated_v3`, not `generated_v2`:
+
+- Profile: `warmup_visible_motion_v5_aggressive_2x_demo`.
+- Total samples: 1000.
+- New 800 generation root: `local_assets/data/physion/generated_v3/raw_hdf5/warmup_visible_motion_v5_aggressive_2x_1k_scaleup_800samples/`.
+- Combined LingBot manifest: `local_assets/data/physion/generated_v3/manifests/tdw_v5_1000_lingbot_manifest.jsonl`.
+- Split: `local_assets/data/physion/generated_v3/manifests/tdw_v5_1000_splits/`.
+- Review pack: `local_assets/reports/human_review/tdw_visible_motion_v5_aggressive_2x_1000/`.
+
+The v5 aggressive 2x profile was selected after human review because earlier visible-motion datasets were too static or visually insufficient. Camera motion starts at frame 0, and `use_action=false` remains required.
+
 ## Output Structure
 
 `local_assets/data/physion/generated_v2/`

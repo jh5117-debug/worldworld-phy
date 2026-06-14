@@ -69,6 +69,21 @@ Completed this week:
 - 5-pair tiny overfit was skipped.
 - Real DPO training remains disallowed.
 
+## 2026-06-14 TDW v5 1000 Dataset Update
+
+The current main warmup dataset is now TDW v5 aggressive 2x 1000:
+
+- Existing human-approved 200 samples were reused.
+- 800 additional samples were generated on approved GPU0 / `DISPLAY=:8`.
+- New HDF5 validation passed: 800/800.
+- New LingBot cam-only conversion passed: 800/800.
+- Combined official manifest contains 1000 samples.
+- Combined audit passed: 1000/1000 valid, 1000/1000 target.mp4 probe.
+- Train/val/test split is 800/100/100.
+- Review pack path: `local_assets/reports/human_review/tdw_visible_motion_v5_aggressive_2x_1000/`.
+
+This was data generation only. No training, DPO, VideoGPA 03_train, Stage1, rollout, reward scoring, checkpoint, LoRA, or optimizer state was run. The next gate is LingBot-Fast camera-conditioned warmup on the 1000-sample dataset using GPU4-7. DPO remains a later gate after warmup, rollout, reward scoring, and pair diagnostics.
+
 ## 6. Key Result Tables
 
 ### Table A: Data Smoke

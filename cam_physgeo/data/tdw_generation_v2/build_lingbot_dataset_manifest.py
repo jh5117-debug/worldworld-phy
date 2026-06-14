@@ -66,8 +66,34 @@ def _action_norm(path: Path) -> float | None:
         return None
 
 
+def _iter_roots(args: argparse.Namespace) -> list[Path]:
+    roots = [Path(path) for path in (args.roots or [])]
+    if args.root:
+        roots.insert(0, Path(args.root))
+    if not roots:
+        raise ValueError("Pass --root or --roots")
+    return roots
+
+
 def build_manifest(args: argparse.Namespace) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    root = Path(args.root)
+    roots = _iter_roots(args)
+    seen_sample_ids: set[str] = set()
+    rows: list[dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
+    for root in roots:
+        root_rows, root_errors = build_manifest_for_root(args, root)
+        for row in root_rows:
+            sample_id = str(row.get("sample_id"))
+            if sample_id in seen_sample_ids:
+                row.setdefault("missing_required", []).append("duplicate_sample_id")
+                root_errors.append({"sample_id": sample_id, "missing_required": ["duplicate_sample_id"]})
+            seen_sample_ids.add(sample_id)
+            rows.append(row)
+        errors.extend(root_errors)
+    return rows, errors
+
+
+def build_manifest_for_root(args: argparse.Namespace, root: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     validation_rows = _load_validation_rows(root)
     rows: list[dict[str, Any]] = []
     errors: list[dict[str, Any]] = []
@@ -85,6 +111,7 @@ def build_manifest(args: argparse.Namespace) -> tuple[list[dict[str, Any]], list
         row = {
             "sample_id": sample_id,
             "sample_dir": str(sample_dir),
+            "source_root": str(root),
             "image_path": str(sample_dir / "image.jpg"),
             "target_video_path": str(sample_dir / "target.mp4"),
             "poses_path": str(sample_dir / "poses.npy"),
@@ -130,7 +157,8 @@ def build_manifest(args: argparse.Namespace) -> tuple[list[dict[str, Any]], list
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", required=True)
+    parser.add_argument("--root", default=None)
+    parser.add_argument("--roots", nargs="+", default=None)
     parser.add_argument("--out", required=True)
     parser.add_argument("--human_approved", default="false")
     parser.add_argument("--source_tag", default="")
@@ -148,6 +176,7 @@ def main() -> int:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
     summary = {
         "root": args.root,
+        "roots": [str(path) for path in _iter_roots(args)],
         "out": args.out,
         "count": len(rows),
         "error_count": len(errors),

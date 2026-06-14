@@ -2,6 +2,22 @@
 
 This is a plan only. No TDW or Physion generation was run in this round.
 
+## 2026-06-14 Scale-Up Result
+
+The TDW v5 aggressive 2x scale-up has now completed for the approved 1k pilot:
+
+- Existing 200 human-approved samples were kept.
+- Additional 800 samples were generated with GPU0-bound `DISPLAY=:8`.
+- Raw HDF5 new 800: `local_assets/data/physion/generated_v3/raw_hdf5/warmup_visible_motion_v5_aggressive_2x_1k_scaleup_800samples/`.
+- New 800 validation OK: 800/800.
+- New 800 LingBot conversion: 800/800.
+- Combined manifest: `local_assets/data/physion/generated_v3/manifests/tdw_v5_1000_lingbot_manifest.jsonl`.
+- Combined audit: 1000/1000 valid.
+- Split: train 800 / val 100 / test 100.
+- Human review pack: `local_assets/reports/human_review/tdw_visible_motion_v5_aggressive_2x_1000/`.
+
+No 2000/10k generation should be run without a new approval. The next recommended step is warmup on the 1000-sample split using GPU4-7, not DPO.
+
 ## Can Large Generation Happen?
 
 Yes, but only after the DPO and reward/camera gates remain stable and after a

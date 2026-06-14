@@ -567,6 +567,7 @@ def validate_hdf5(path: Path, *, profile: str | None = None) -> dict[str, Any]:
 
 
 def _trial_dir_name(index: int, trial: dict[str, Any]) -> str:
+    index = int(trial.get("sample_index", trial.get("trial_index", trial.get("index", index))))
     template = str(trial.get("template") or "unknown")
     variant = str(trial.get("camera_variant") or "unknown")
     seed = int(trial.get("seed", index))
@@ -579,13 +580,28 @@ def _manifest_output_subdir(profile: str, manifest: Path, num_trials: int) -> st
     return f"{profile}_plan_{num_trials}samples"
 
 
+def _manifest_row_output_subdir(profile: str, manifest: Path, num_trials: int, rows: list[dict[str, Any]]) -> str:
+    subdirs = {str(row.get("output_subdir") or "").strip() for row in rows if str(row.get("output_subdir") or "").strip()}
+    if len(subdirs) == 1:
+        return next(iter(subdirs))
+    if len(subdirs) > 1:
+        raise ValueError(f"Manifest contains multiple output_subdir values: {sorted(subdirs)}")
+    tags = {str(row.get("output_tag") or "").strip() for row in rows if str(row.get("output_tag") or "").strip()}
+    if len(tags) == 1:
+        return f"{profile}_{next(iter(tags))}"
+    if len(tags) > 1:
+        raise ValueError(f"Manifest contains multiple output_tag values: {sorted(tags)}")
+    return _manifest_output_subdir(profile, manifest, num_trials)
+
+
 def _paths_from_manifest(root: Path, manifest: Path) -> list[Path]:
     rows = [json.loads(line) for line in manifest.read_text(encoding="utf-8").splitlines() if line.strip()]
     profile = str(rows[0].get("profile") or "warmup_mild") if rows else "warmup_mild"
-    subdir = _manifest_output_subdir(profile, manifest, len(rows))
+    subdir = _manifest_row_output_subdir(profile, manifest, len(rows), rows)
     paths: list[Path] = []
     for idx, row in enumerate(rows):
-        trial_dir = root / "raw_hdf5" / subdir / _trial_dir_name(idx, row)
+        sample_index = int(row.get("sample_index", row.get("trial_index", row.get("index", idx))))
+        trial_dir = root / "raw_hdf5" / subdir / _trial_dir_name(sample_index, row)
         final_path = trial_dir / "0000.hdf5"
         temp_path = trial_dir / "temp.hdf5"
         paths.append(final_path if final_path.exists() else temp_path)

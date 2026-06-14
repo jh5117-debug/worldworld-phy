@@ -40,6 +40,40 @@ def _probe_video_cv2(path: Path, reason: str) -> dict[str, Any]:
         cap.release()
 
 
+def _probe_video_imageio(path: Path, reason: str) -> dict[str, Any]:
+    try:
+        import imageio.v2 as imageio  # type: ignore
+    except Exception as exc:
+        return {"exists": True, "ok": False, "error": f"{reason}; imageio_unavailable:{exc!r}"}
+    try:
+        reader = imageio.get_reader(str(path))
+        try:
+            meta = reader.get_meta_data() or {}
+            frame = reader.get_data(0)
+            height = int(frame.shape[0]) if getattr(frame, "ndim", 0) >= 2 else 0
+            width = int(frame.shape[1]) if getattr(frame, "ndim", 0) >= 2 else 0
+            fps = meta.get("fps") or meta.get("framerate")
+            try:
+                frame_count = int(reader.count_frames())
+            except Exception:
+                frame_count = int(meta.get("nframes") or 0)
+            ok = width > 0 and height > 0
+            return {
+                "exists": True,
+                "ok": ok,
+                "probe_backend": "imageio",
+                "width": width,
+                "height": height,
+                "avg_frame_rate": fps,
+                "nb_frames": frame_count,
+                "error": None if ok else f"{reason}; imageio_invalid_stream",
+            }
+        finally:
+            reader.close()
+    except Exception as exc:
+        return {"exists": True, "ok": False, "error": f"{reason}; imageio_failed:{exc!r}"}
+
+
 def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     rows = []
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -79,12 +113,18 @@ def _probe_video(path: Path) -> dict[str, Any]:
         stream = (payload.get("streams") or [{}])[0]
         return {"exists": True, "ok": True, "probe_backend": "ffprobe", **stream}
     except FileNotFoundError as exc:
-        return _probe_video_cv2(path, f"ffprobe_missing:{exc!r}")
+        fallback = _probe_video_cv2(path, f"ffprobe_missing:{exc!r}")
+        if fallback.get("ok"):
+            return fallback
+        return _probe_video_imageio(path, fallback.get("error") or f"ffprobe_missing:{exc!r}")
     except Exception as exc:
         fallback = _probe_video_cv2(path, f"ffprobe_failed:{exc!r}")
         if fallback.get("ok"):
             return fallback
-        return {"exists": True, "ok": False, "error": fallback.get("error") or repr(exc)}
+        imageio_fallback = _probe_video_imageio(path, fallback.get("error") or f"ffprobe_failed:{exc!r}")
+        if imageio_fallback.get("ok"):
+            return imageio_fallback
+        return {"exists": True, "ok": False, "error": imageio_fallback.get("error") or fallback.get("error") or repr(exc)}
 
 
 def _shape(path: str | Path) -> list[int] | None:

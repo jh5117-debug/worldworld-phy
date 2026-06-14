@@ -2,6 +2,18 @@
 
 Do not train yet. This project remains Physion-only, Fast-first, camera-conditioned, and no-action except for dummy compatibility files.
 
+## 2026-06-14 TDW v5 1000 Data Gate
+
+The data gate has moved from TDW v5 200 to TDW v5 aggressive 2x 1000:
+
+- Official manifest: `local_assets/data/physion/generated_v3/manifests/tdw_v5_1000_lingbot_manifest.jsonl`.
+- Split root: `local_assets/data/physion/generated_v3/manifests/tdw_v5_1000_splits/`.
+- Train/val/test: 800/100/100.
+- Audit: 1000/1000 valid, target.mp4 probe 1000/1000.
+- `use_action=false` remains the dataset convention with dummy zero action files.
+
+This update does not unlock DPO training by itself. The next stage is LingBot-Fast camera-conditioned warmup on the 1000 dataset, followed by controlled rollout, reward scoring, pair construction, and dpo_diag. DPO training remains disallowed until those gates pass and the user explicitly approves a DPO pilot.
+
 ## Current Gate State
 
 - Gate A: LingBot-Fast 1-sample actual inference passed.
