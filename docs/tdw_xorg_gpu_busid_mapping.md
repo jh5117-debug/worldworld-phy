@@ -1,0 +1,12 @@
+# TDW Xorg GPU BusID Mapping
+
+| GPU | PCI bus id | Xorg BusID | name |
+| --- | --- | --- | --- |
+| GPU0 | `00000000:52:00.0` | `PCI:82:0:0` | NVIDIA H20 |
+| GPU1 | `00000000:58:00.0` | `PCI:88:0:0` | NVIDIA H20 |
+| GPU2 | `00000000:60:00.0` | `PCI:96:0:0` | NVIDIA H20 |
+| GPU3 | `00000000:66:00.0` | `PCI:102:0:0` | NVIDIA H20 |
+| GPU4 | `00000000:AA:00.0` | `PCI:170:0:0` | NVIDIA H20 |
+| GPU5 | `00000000:BA:00.0` | `PCI:186:0:0` | NVIDIA H20 |
+| GPU6 | `00000000:CA:00.0` | `PCI:202:0:0` | NVIDIA H20 |
+| GPU7 | `00000000:DA:00.0` | `PCI:218:0:0` | NVIDIA H20 |

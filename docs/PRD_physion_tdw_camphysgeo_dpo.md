@@ -667,3 +667,13 @@ Next required user decision: approve a real LingBot-Fast model-load forward-loss
 - Final adapter-only checkpoint: `local_assets/experiments/exp_stageA_1000_combined_prompt_v2_warmup/checkpoint/stageA_1000_promptv2_high_noise_camera_lora_final/adapter_state.pt`.
 - No full model checkpoint, no optimizer state, no rollout, no reward scoring, no DPO training, no VideoGPA 03_train, and no Stage1 were run.
 - Next decision: approve 12-condition Base vs StageA_1000_prompt_v2 rollout smoke before reward scoring / hard-negative pair construction.
+
+
+## Update: Xorg Multidisplay And StageA1000 Visual Eval (2026-06-17)
+- NVIDIA display audit: DISPLAY=:8 is NVIDIA; :9-:13 are llvmpipe; :20-:26 unavailable. Root/sudo non-interactive access was unavailable, so GPU6 :25 setup and TDW multi-display smoke were skipped without touching :8.
+- StageA 1000 combined_prompt_v2 visual rollout completed for 12 conditions: GT 12/12, Base 12/12, StageA step200 12/12, StageA final 12/12.
+- Four-column human review videos were generated at `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_visible_motion_v2_run_work/local_assets/reports/human_review/stageA_1000_promptv2_12condition_base_step200_final`.
+- Proxy visual metrics were computed. StageA final was slightly better than Base on PMF_proxy/PSNR/SSIM/LPIPS_proxy, while Base was best on FVD_proxy.
+- No training, reward scoring, pair construction, DPO, Stage1, or large TDW generation was run.
+- Next decision: human review, then optionally approve reward v5 scoring or Stage B/larger LoRA scope. DPO remains later.
+

@@ -1,14 +1,7 @@
-# TDW Multidisplay NVIDIA Smoke 16 Report
+# TDW Multi-display NVIDIA Smoke 16 Report
 
-Status: not run.
+Status: skipped.
 
-Reason: insufficient NVIDIA displays.
+Reason: fewer than two verified NVIDIA displays are available. DISPLAY=:8 is NVIDIA, DISPLAY=:9-:13 are llvmpipe, and DISPLAY=:20-:26 are unavailable because root-side Xorg setup was blocked.
 
-- Required: at least two NVIDIA displays, ideally `:8,:20,:21,:22,:23,:24,:25,:26`.
-- Available now: only `:8` is NVIDIA.
-- `:9` to `:13` are llvmpipe and are explicitly rejected.
-- `:20` to `:26` do not exist yet.
-
-No TDW samples were generated in this phase.
-
-Next step: configure NVIDIA Xorg displays as root, verify renderer, then run 16-sample smoke.
+No TDW samples were generated in this phase. No large-scale generation was run.
