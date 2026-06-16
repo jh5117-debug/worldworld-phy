@@ -11,6 +11,7 @@ VALIDATE_EACH_CHUNK="false"
 STOP_RATE="0.10"
 NO_OVERWRITE=0
 LOG_ROOT=""
+REJECT_LLVMPIPE="false"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -23,6 +24,7 @@ while [[ $# -gt 0 ]]; do
     --validate_each_chunk) VALIDATE_EACH_CHUNK="$2"; shift 2 ;;
     --stop_on_chunk_failure_rate) STOP_RATE="$2"; shift 2 ;;
     --log_root) LOG_ROOT="$2"; shift 2 ;;
+    --reject_llvpipe) REJECT_LLVMPIPE="$2"; shift 2 ;;
     --no_overwrite) NO_OVERWRITE=1; shift ;;
     *) echo "Unknown arg: $1" >&2; exit 2 ;;
   esac
@@ -64,6 +66,26 @@ fi
 echo "manifest=$MANIFEST"
 echo "chunks=${#CHUNKS[@]} displays=${DISPLAY_ARR[*]}"
 echo "logs=$LOG_ROOT"
+
+if [[ "$REJECT_LLVMPIPE" == "true" ]]; then
+  for display in "${DISPLAY_ARR[@]}"; do
+    if ! DISPLAY="$display" xdpyinfo >"$LOG_ROOT/xdpyinfo_${display#:}.log" 2>&1; then
+      echo "display $display failed xdpyinfo" >&2
+      exit 4
+    fi
+    renderer="$(DISPLAY="$display" glxinfo -B 2>"$LOG_ROOT/glxinfo_${display#:}.err" | grep -E "OpenGL renderer|OpenGL vendor" || true)"
+    echo "=== $display renderer ===" >> "$LOG_ROOT/display_renderer.log"
+    echo "$renderer" >> "$LOG_ROOT/display_renderer.log"
+    if ! echo "$renderer" | grep -q "NVIDIA"; then
+      echo "display $display is not NVIDIA OpenGL; refusing TDW generation" >&2
+      exit 5
+    fi
+    if echo "$renderer" | grep -qi "llvmpipe"; then
+      echo "display $display is llvmpipe; refusing TDW generation" >&2
+      exit 5
+    fi
+  done
+fi
 
 ACTIVE_PIDS=()
 ACTIVE_NAMES=()

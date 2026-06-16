@@ -490,3 +490,13 @@ This dataset is ready for a real LingBot-Fast model-load forward-loss smoke. It 
 - Quality-bounded hard negative policy was added. Low-quality collapsed videos must not be used as primary DPO losers.
 - DPO training remains blocked and was not run.
 
+## 2026-06-16 NVIDIA Multidisplay / Prompt-v2 1000 Readiness Update
+
+- TDW v5 1000 dataset remains valid: 1000/1000 samples and target.mp4 probes pass; split is 800/100/100.
+- The original 1000 manifest prompt blocker is fixed for future warmup entrypoints by `tdw_v5_1000_lingbot_manifest_combined_prompt_v2.jsonl` and `tdw_v5_1000_splits_combined_prompt_v2/`.
+- Current display state still blocks multi-display TDW: only `DISPLAY=:8` is NVIDIA; `:9` to `:13` are llvmpipe; `:20` to `:26` are not configured because root batch-mode access was unavailable.
+- 16-sample NVIDIA multi-display smoke was not run. No new TDW data was generated.
+- Scale-up decision: do not jump to 5000. After NVIDIA Xorg displays pass smoke, add +1000 first and audit before expanding further.
+- Stage A on 1000 combined_prompt_v2 is prepared as an approval request only; no warmup/training was run in this task.
+- Quality-bounded hard negative policy now requires `prompt_variant: combined_v2`; DPO remains blocked.
+

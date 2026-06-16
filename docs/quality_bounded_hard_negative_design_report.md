@@ -26,3 +26,7 @@ Hard negative policy:
 ## DPO status
 
 This is a pair mining policy only. DPO training was not run.
+
+## 2026-06-16 prompt-v2 update
+
+The hard-negative policy now requires `prompt_variant: combined_v2` for prompt-aware rollout/pair mining unless a specific ablation is being run. Low-quality collapsed videos remain failure-analysis examples, not primary DPO losers.

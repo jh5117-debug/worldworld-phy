@@ -22,3 +22,5 @@ pair_policy:
   include_adapter_vs_base: true
   require_use_action_false: true
   require_camera_metadata: true
+  prompt_variant: combined_v2
+
