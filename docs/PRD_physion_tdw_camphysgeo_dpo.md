@@ -657,3 +657,13 @@ Next required user decision: approve a real LingBot-Fast model-load forward-loss
 - Stage A on 1000 combined_prompt_v2 is prepared as an approval request only; no warmup/training was run in this task.
 - Quality-bounded hard negative policy now requires `prompt_variant: combined_v2`; DPO remains blocked.
 
+
+## 2026-06-17 Update: Stage A 1000 combined_prompt_v2 Warmup
+
+- TDW v5 1000 combined_prompt_v2 is the active warmup data entry.
+- Stage A high-noise/global-camera LingBot-Fast warmup completed with fallback max_steps=300 after the initial 1000-step attempt was estimated to exceed the <=24h safety bound.
+- Train coverage was balanced: drop 75 / collision 75 / roll 75 / containment 75.
+- Validation losses were finite at steps 100, 200, and 300.
+- Final adapter-only checkpoint: `local_assets/experiments/exp_stageA_1000_combined_prompt_v2_warmup/checkpoint/stageA_1000_promptv2_high_noise_camera_lora_final/adapter_state.pt`.
+- No full model checkpoint, no optimizer state, no rollout, no reward scoring, no DPO training, no VideoGPA 03_train, and no Stage1 were run.
+- Next decision: approve 12-condition Base vs StageA_1000_prompt_v2 rollout smoke before reward scoring / hard-negative pair construction.
