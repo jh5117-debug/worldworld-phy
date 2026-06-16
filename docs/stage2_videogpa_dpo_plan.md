@@ -698,16 +698,129 @@ Data-side update:
 
 - `warmup_visible_motion_v2` profile added;
 - v2 plan dry-run passed locally;
-- v2 actual generation not launched because remote SSH timed out during code sync;
-- no v2 HDF5 / MP4 / NPY generated;
+- v2 actual generation later passed 10 / 10 on approved GPU0-bound `DISPLAY=:8`;
+- v2 visible-motion acceptance passed 10 / 10;
+- v2 LingBot cam-only conversion passed 10 / 10;
 - no 50 / 200 / 1k run.
 
 DPO remains no-go until both the data gate and signal gate are ready.
 
-## 2026-06-07 visible-motion v4 stronger start0 smoke
+The data gate is now ready to ask for a 50-sample `warmup_visible_motion_v2` validation, but this does not change the DPO gate. No DPO training, 5-pair tiny overfit, or VideoGPA `03_train` should run until the signal gate is separately resolved and approved.
 
-- v3 200 is usable but still visually slow for some camera-conditioned review goals.
-- Added `warmup_visible_motion_v4_stronger_start0_review` as a stronger, start0, orbit-dominant small review profile.
-- Ran 16-sample smoke only: 16/16 generated, 16/16 suitable_for_visible_motion, 0 too_static, 0 too_extreme, 0 delayed.
-- Converted 16/16 to LingBot cam-only with `use_action=false` and dummy action.
-- Next decision: human-review v4 gallery, then approve v4 50 if visually acceptable. No training, DPO, 50/200/1k expansion was run in this step.
+## 2026-06-06 TDW visible-motion v2 50-sample data gate status
+
+No DPO training was run.
+
+Data-side update:
+
+- `warmup_mild` 50 remains pipeline-valid but too weak for final camera-conditioned warmup data.
+- `warmup_visible_motion_v2` 10-sample smoke passed 10 / 10.
+- `warmup_visible_motion_v2` 50-sample validation passed 50 / 50.
+- Per-template accepted counts: drop 15, collision 15, roll 10, containment 10.
+- LingBot cam-only conversion passed 50 / 50 with `use_action=false` and dummy zero `action.npy`.
+
+Motion-quality summary:
+
+- camera path length min/avg/max: `0.5016 / 1.0778 / 1.4814`;
+- background motion proxy min/avg/max: `0.0121 / 0.0211 / 0.0332`;
+- `too_static`: `0 / 50`;
+- `too_extreme`: `0 / 50`.
+
+DPO remains gated separately:
+
+- signal-sensitivity remains no-go from prior reports;
+- 5-pair tiny overfit remains no-go;
+- real DPO training remains no;
+- VideoGPA `03_train.py` remains disallowed.
+
+The data gate is ready for a user-approved 200-sample visible-motion pilot. It does not authorize DPO training or any 200 / 1k generation automatically.
+
+## 2026-06-06 TDW visible-motion v3 review status
+
+No DPO training was run.
+
+Data-side update:
+
+- manual review rejected the v2 50-sample set as final warmup data despite numeric validation pass;
+- `warmup_visible_motion_v3_start0_scene_diverse` was added and tested as a 50-sample review set;
+- generated HDF5: `50 / 50`;
+- validation OK: `50 / 50`;
+- unique scene hashes: `50 / 50`;
+- accepted for visible-motion v3: `28 / 50`;
+- converted accepted samples: `28 / 28`;
+- rejected samples: `22 / 50`, all caused by strafe variants failing `too_static` / `delayed_camera_motion`.
+
+DPO remains gated separately:
+
+- signal-sensitivity remains no-go from prior reports;
+- 5-pair tiny overfit remains no-go;
+- real DPO training remains no;
+- VideoGPA `03_train.py` remains disallowed.
+
+The data gate is not ready for 200 from this v3 revision. Tune the TDW camera profile first, then rerun a small smoke. No training or DPO should start from this dataset state.
+
+### Human-review update
+
+The user manually reviewed the v3 50 videos and confirmed that all 50 are usable. The data-side status is therefore updated to:
+
+- v3 human review accepted: `50 / 50`;
+- all-50 LingBot cam-only conversion: `50 / 50`;
+- old generated_v2 waste assets cleaned up;
+- a v3 200-sample pilot can be requested, but not run without explicit approval.
+
+DPO remains unchanged: signal-sensitivity and 5-pair are still separate no-go gates, and no DPO training is approved.
+
+## 2026-06-07 TDW v3 200 pilot status
+
+No DPO training was run.
+
+The TDW data-side 200 pilot completed:
+
+- profile: `warmup_visible_motion_v3_start0_scene_diverse`;
+- HDF5 generation: `200 / 200`;
+- validation OK: `200 / 200`;
+- scene diversity: `200 / 200` unique scene hashes;
+- LingBot cam-only conversion: `200 / 200`;
+- `use_action=false`: `200 / 200`;
+- dummy `action.npy`: `200 / 200`.
+
+The data is ready for human review and possible warmup indexing after review. DPO remains gated separately; signal-sensitivity and 5-pair are still no-go unless explicitly revisited.
+
+## 2026-06-07 TDW v4 stronger smoke status
+
+No DPO training was run.
+
+A stronger visible-motion TDW smoke was generated for data review:
+
+- profile: `warmup_visible_motion_v4_stronger_start0_review`;
+- generated / validated / converted: `16 / 16 / 16`;
+- suitable visible motion: `16 / 16`;
+- too_static / too_extreme / delayed: `0 / 0 / 0`;
+- `use_action=false` and dummy `action.npy` remain in the converted LingBot cam-only inputs.
+
+This is data-side preparation only. DPO signal-sensitivity and 5-pair tiny overfit remain separate gates and were not run in this step.
+## 2026-06-09 Pre-DPO Warmup Dataset Gate
+
+TDW v5 aggressive 2x 200 is now registered as the current human-approved warmup candidate, but this remains pre-DPO.
+
+- Dataset manifest/audit/split: passed.
+- LingBot dataloader smoke: passed.
+- Full LingBot-Fast model-load forward-loss: not yet passed.
+- Placeholder no-model-load forward smoke: passed on GPU7 with no backward, no optimizer, and no checkpoint.
+- `dpo_diag`: `not_applicable_pre_dpo`.
+
+DPO training remains disallowed. Future DPO work should only resume after a warmup pilot produces usable camera-conditioned behavior and after reward-based winner/loser pair selection is rebuilt for the accepted TDW data.
+
+## 2026-06-16 Multidisplay TDW Scaleup / Prompt-v2 / Stage A Planning Update
+
+- TDW v5 1000 dataset audit: 1000/1000 valid, target.mp4 probe 1000/1000, train/val/test split exists as 800/100/100.
+- Scene diversity audit: scene_hash unique 1000/1000; first-frame phash mostly unique, with 31 duplicate phash collisions under a lightweight hash.
+- Prompt audit: official v5 1000 manifest still uses one generic prompt for all samples, so prompt quality is the current blocker.
+- `combined_prompt_v2` was generated as a safer default: template event + first-frame object consistency + short negative constraints. The old object-aware prompt is not used as default because it hallucinated extra foreground objects.
+- Multidisplay audit: only `DISPLAY=:8` is a valid NVIDIA display. `:9` to `:13` are llvmpipe and `:14/:15` are unavailable; 8-display TDW smoke was not run.
+- Root setup was not performed from the ubuntu session; no root password or credential was recorded.
+- Data scale-up beyond 1000 is blocked until NVIDIA Xorg displays `:9` to `:15` are configured and pass `glxinfo -B`.
+- Stage A on the v5 1000 dataset is planned but not run in this phase. It should use GPU4-7, high-noise diagnostic timesteps, balanced sampling, adapter-only training, and no DPO.
+- Quality-bounded hard negative policy was added. Low-quality collapsed videos must not be used as primary DPO losers.
+- DPO training remains blocked and was not run.
+

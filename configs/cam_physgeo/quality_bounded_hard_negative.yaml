@@ -1,0 +1,24 @@
+quality_floor:
+  min_R_quality: 0.55
+  min_confidence: 0.50
+  reject_black_or_corrupt: true
+  reject_severe_blur_flicker: true
+  reject_object_disappearance: true
+  reject_extra_object_hallucination_if_detectable: true
+
+hard_negative:
+  min_margin: 0.03
+  max_margin: 0.25
+  prefer_dimensions:
+    - R_cam
+    - R_bg
+    - R_fg
+    - R_phys
+    - R_reobs
+
+pair_policy:
+  exclude_low_quality_loser: true
+  include_GT_vs_generated: true
+  include_adapter_vs_base: true
+  require_use_action_false: true
+  require_camera_metadata: true

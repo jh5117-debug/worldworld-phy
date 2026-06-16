@@ -348,10 +348,145 @@ v2 planned mapping:
 
 The validator thresholds remain unchanged. v2 actual validation is still required before requesting any 50-sample run.
 
-## 2026-06-07 visible-motion v4 stronger start0 smoke
+## 2026-06-06 warmup_visible_motion_v2 Actual Result
 
-- v3 200 is usable but still visually slow for some camera-conditioned review goals.
-- Added `warmup_visible_motion_v4_stronger_start0_review` as a stronger, start0, orbit-dominant small review profile.
-- Ran 16-sample smoke only: 16/16 generated, 16/16 suitable_for_visible_motion, 0 too_static, 0 too_extreme, 0 delayed.
-- Converted 16/16 to LingBot cam-only with `use_action=false` and dummy action.
-- Next decision: human-review v4 gallery, then approve v4 50 if visually acceptable. No training, DPO, 50/200/1k expansion was run in this step.
+The v2 actual 10-sample smoke has passed with the unchanged visible-motion thresholds.
+
+Observed metrics:
+
+- generated HDF5: 10 / 10;
+- validation OK: 10 / 10;
+- suitable for visible motion: 10 / 10;
+- target visible ratio: 1.0 for every sample;
+- camera path length min/avg/max: 0.5016 / 0.9790 / 1.3831;
+- background motion proxy min/avg/max: 0.0120 / 0.0204 / 0.0295;
+- `too_static`: 0;
+- `too_extreme`: 0.
+
+This confirms the template-aware camera mapping should be used for the next visible-motion validation stage. A 50-sample run still requires explicit user approval and must not be followed by 200 / 1k automatically.
+
+## 2026-06-06 warmup_visible_motion_v2 50-Sample Result
+
+The explicitly approved `warmup_visible_motion_v2` 50-sample validation completed successfully.
+
+Observed result:
+
+- planned distribution: `drop:15`, `collision:15`, `roll:10`, `containment:10`;
+- generated HDF5: `50 / 50`;
+- validation OK: `50 / 50`;
+- suitable for visible motion: `50 / 50`;
+- rejected: `0 / 50`;
+- `too_static`: `0`;
+- `too_extreme`: `0`;
+- target visible ratio: `1.0` for every sample;
+- max invisible frames: `0` for every sample;
+- camera path length min/avg/max: `0.5016 / 1.0778 / 1.4814`;
+- background motion proxy min/avg/max: `0.0121 / 0.0211 / 0.0332`.
+
+Spec implication:
+
+- `warmup_visible_motion_v2` should replace `warmup_mild` as the candidate camera-conditioned warmup data profile.
+- The old `warmup_mild` 50-sample run remains useful as a pipeline validation set, but not as final warmup main data.
+- Accepted visible-motion samples must satisfy both HDF5/key/visibility validation and the visible-motion quality flags.
+- A 200-sample pilot is the next data-scale step, but it requires explicit user approval and must not cascade into 1k+ generation automatically.
+
+## 2026-06-06 Spec Addendum: v3 start0 scene diversity and human-review gate
+
+Human review can override a numeric pipeline pass. The v2 50-sample set remains pipeline-valid, but it is not final warmup main data because humans judged the motion and scene diversity insufficient.
+
+`warmup_visible_motion_v3_start0_scene_diverse` adds:
+
+- `camera_motion_start=0`;
+- full-clip motion through frame 80;
+- stronger template-aware camera values;
+- no dolly variants;
+- per-trial scene seeds;
+- scene hash validation;
+- early-motion metrics and `delayed_camera_motion`.
+
+The v3 50-sample review result:
+
+- HDF5/key validation: `50 / 50`;
+- unique scene hashes: `50 / 50`;
+- accepted for visible-motion v3: `28 / 50`;
+- rejected: `22 / 50`;
+- all rejected samples were strafe variants flagged as `too_static` and `delayed_camera_motion`;
+- orbit variants passed without `too_extreme`.
+
+Spec implication:
+
+- `suitable_for_visible_motion_v3=true` is required before conversion/use as warmup data;
+- `generated_v3` review data must not be promoted to main warmup data unless the human-review and early-motion gates pass;
+- the next profile revision should either strengthen strafe or remove strafe from the accepted candidate camera set;
+- no 200 / 1k generation should run from this v3 revision.
+
+### Human-review acceptance note
+
+The user subsequently reviewed the v3 videos and accepted all 50 as usable. This means the strict early-motion numeric rejection is not a hard data exclusion for this batch.
+
+Spec implication:
+
+- keep `too_static` and `delayed_camera_motion` in reports as diagnostics;
+- allow human review to promote a sample when HDF5/key/visibility/scene-diversity gates pass;
+- for this v3 50 set, all 50 samples are human-accepted and converted;
+- future 200-sample runs still require explicit approval.
+
+## 2026-06-07 Spec Note: v3 200 pilot result
+
+The approved v3 200 pilot completed with:
+
+- HDF5/key validation: `200 / 200`;
+- unique scene hashes: `200 / 200`;
+- target visibility: `1.0` for all samples;
+- max invisible frames: `0`;
+- conversion: `200 / 200`;
+- `use_action=false` and dummy `action.npy` for all converted samples.
+
+Numeric early-motion diagnostics are retained:
+
+- numeric `suitable_for_visible_motion_v3`: `116 / 200`;
+- `too_static` / `delayed_camera_motion`: `84 / 200`;
+- `too_extreme`: `0 / 200`.
+
+The numeric diagnostics should be reviewed alongside the video gallery. They should not silently block the human-accepted v3 profile, but they should remain visible before any 1k-scale request.
+
+## 2026-06-07 Spec Note: v4 stronger start0 smoke
+
+`warmup_visible_motion_v4_stronger_start0_review` was added as a stronger visible-motion review profile.
+
+Changes versus v3:
+
+- keeps camera motion start at frame 0;
+- increases drop orbit to `36/40` degrees;
+- uses stronger non-drop orbit: collision `32`, roll `30`, containment `22`;
+- replaces weak strafe `0.55/0.65` with strafe `0.90` probes;
+- keeps dolly disabled;
+- tightens the minimum total camera path to `0.85` and first-8-frame path to `0.085`.
+
+The 16-sample smoke passed numerically: `16 / 16` suitable, `0` too_static, `0` too_extreme, `0` delayed. Human review should decide whether v4 should replace v3 for the next 50-sample review.
+## 2026-06-09 TDW v5 200 Dataset Promotion Note
+
+The v5 aggressive 2x 200 dataset is human-approved as the current main camera-conditioned warmup candidate.
+
+Promotion status:
+
+- generated/conversion path: passed previously;
+- manifest/audit/split: passed on 2026-06-09;
+- LingBot dataloader smoke: passed;
+- model-load forward-loss: not yet passed, only placeholder no-model-load tensor smoke passed.
+
+This dataset is ready for a real LingBot-Fast model-load forward-loss smoke. It is not yet approved for training, Stage1, DPO, rollout, reward calibration, or checkpoint creation.
+
+## 2026-06-16 Multidisplay TDW Scaleup / Prompt-v2 / Stage A Planning Update
+
+- TDW v5 1000 dataset audit: 1000/1000 valid, target.mp4 probe 1000/1000, train/val/test split exists as 800/100/100.
+- Scene diversity audit: scene_hash unique 1000/1000; first-frame phash mostly unique, with 31 duplicate phash collisions under a lightweight hash.
+- Prompt audit: official v5 1000 manifest still uses one generic prompt for all samples, so prompt quality is the current blocker.
+- `combined_prompt_v2` was generated as a safer default: template event + first-frame object consistency + short negative constraints. The old object-aware prompt is not used as default because it hallucinated extra foreground objects.
+- Multidisplay audit: only `DISPLAY=:8` is a valid NVIDIA display. `:9` to `:13` are llvmpipe and `:14/:15` are unavailable; 8-display TDW smoke was not run.
+- Root setup was not performed from the ubuntu session; no root password or credential was recorded.
+- Data scale-up beyond 1000 is blocked until NVIDIA Xorg displays `:9` to `:15` are configured and pass `glxinfo -B`.
+- Stage A on the v5 1000 dataset is planned but not run in this phase. It should use GPU4-7, high-noise diagnostic timesteps, balanced sampling, adapter-only training, and no DPO.
+- Quality-bounded hard negative policy was added. Low-quality collapsed videos must not be used as primary DPO losers.
+- DPO training remains blocked and was not run.
+
