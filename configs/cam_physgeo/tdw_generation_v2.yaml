@@ -871,4 +871,65 @@ profiles:
       unique_scene_hash_min_count: 12
       duplicate_scene_hash_max_count: 1
       reject_extreme_reobserve: true
+  warmup_visible_motion_v5_aggressive_2x_demo:
+    purpose: Aggressive 2x visible camera motion demo for human review only; not a warmup-ready profile by default.
+    templates: [drop, collision, roll, containment]
+    camera_variants:
+      - name: orbit_left_72
+        motion: orbit
+        yaw_degrees: -72
+        translation: 0.0
+        height_delta: 0.13
+        stress: false
+      - name: orbit_right_64
+        motion: orbit
+        yaw_degrees: 64
+        translation: 0.0
+        height_delta: 0.12
+        stress: false
+      - name: strafe_left_180
+        motion: strafe
+        yaw_degrees: 0
+        translation: -1.80
+        height_delta: 0.11
+        stress: false
+      - name: orbit_right_60
+        motion: orbit
+        yaw_degrees: 60
+        translation: 0.0
+        height_delta: 0.116
+        stress: false
+      - name: orbit_left_44
+        motion: orbit
+        yaw_degrees: -44
+        translation: 0.0
+        height_delta: 0.09
+        stress: false
+    template_camera_variants:
+      drop:
+        - orbit_left_72
+      collision:
+        - orbit_right_64
+        - strafe_left_180
+      roll:
+        - orbit_right_60
+      containment:
+        - orbit_left_44
+    filters:
+      target_visible_ratio_min: 0.55
+      target_area_ratio_min: 0.001
+      max_disappeared_consecutive_frames: 16
+      min_camera_path_length: 1.70
+      max_camera_path_length: 4.20
+      min_background_motion_proxy: 0.044
+      min_video_motion_proxy: 0.044
+      camera_motion_start: 0
+      camera_motion_end: 80
+      min_camera_path_length_first_8_frames: 0.17
+      min_camera_path_length_first_16_frames: 0.34
+      min_background_motion_proxy_first_8_frames: 0.014
+      unique_scene_hash_min_count: 5
+      duplicate_scene_hash_max_count: 0
+      reject_extreme_reobserve: true
+      review_only: true
 

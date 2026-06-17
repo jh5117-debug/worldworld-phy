@@ -78,7 +78,7 @@ def _torch_device(name: str):
     import torch  # type: ignore
 
     if str(name).startswith("cuda") and torch.cuda.is_available():
-        return torch.device("cuda")
+        return torch.device(str(name))
     return torch.device("cpu")
 
 

@@ -83,6 +83,7 @@ def _accepted_rows(root: Path, *, only_accepted: bool) -> tuple[list[dict[str, A
 
 
 def _trial_dir_name(index: int, trial: dict[str, Any]) -> str:
+    index = int(trial.get("sample_index", trial.get("trial_index", trial.get("index", index))))
     template = str(trial.get("template") or "unknown")
     variant = str(trial.get("camera_variant") or "unknown")
     seed = int(trial.get("seed", index))
@@ -95,33 +96,57 @@ def _manifest_output_subdir(profile: str, manifest: Path, num_trials: int) -> st
     return f"{profile}_plan_{num_trials}samples"
 
 
+def _manifest_row_output_subdir(profile: str, manifest: Path, num_trials: int, rows: list[dict[str, Any]]) -> str:
+    subdirs = {str(row.get("output_subdir") or "").strip() for row in rows if str(row.get("output_subdir") or "").strip()}
+    if len(subdirs) == 1:
+        return next(iter(subdirs))
+    if len(subdirs) > 1:
+        raise ValueError(f"Manifest contains multiple output_subdir values: {sorted(subdirs)}")
+    tags = {str(row.get("output_tag") or "").strip() for row in rows if str(row.get("output_tag") or "").strip()}
+    if len(tags) == 1:
+        return f"{profile}_{next(iter(tags))}"
+    if len(tags) > 1:
+        raise ValueError(f"Manifest contains multiple output_tag values: {sorted(tags)}")
+    return _manifest_output_subdir(profile, manifest, num_trials)
+
+
 def _expected_paths_from_manifest(root: Path, manifest: Path) -> set[str]:
     rows = [json.loads(line) for line in manifest.read_text(encoding="utf-8").splitlines() if line.strip()]
     profile = str(rows[0].get("profile") or "warmup_mild") if rows else "warmup_mild"
-    subdir = _manifest_output_subdir(profile, manifest, len(rows))
+    subdir = _manifest_row_output_subdir(profile, manifest, len(rows), rows)
     out = set()
     for idx, row in enumerate(rows):
-        trial_dir = root / "raw_hdf5" / subdir / _trial_dir_name(idx, row)
+        sample_index = int(row.get("sample_index", row.get("trial_index", row.get("index", idx))))
+        trial_dir = root / "raw_hdf5" / subdir / _trial_dir_name(sample_index, row)
         out.add(str(trial_dir / "0000.hdf5"))
         out.add(str(trial_dir / "temp.hdf5"))
     return out
 
 
-def _accepted_rows_for_manifest(root: Path, manifest: Path, *, only_accepted: bool) -> tuple[list[dict[str, Any]], Path | None]:
+def _accepted_rows_for_manifest(
+    root: Path,
+    manifest: Path,
+    *,
+    only_accepted: bool,
+    validation_json: Path | None = None,
+) -> tuple[list[dict[str, Any]], Path | None]:
     expected = _expected_paths_from_manifest(root, manifest)
-    validation_path = None
-    suffix = manifest.stem
-    for prefix in ("plan_warmup_mild_", "plan_"):
-        if suffix.startswith(prefix):
-            suffix = suffix[len(prefix):]
-            break
-    candidates = [root / "reports" / f"validation_{suffix}.json"]
-    if "template_diverse" in manifest.stem:
-        candidates.append(root / "reports" / "validation_template_diverse_10.json")
-    for candidate in candidates:
-        if candidate.exists():
-            validation_path = candidate
-            break
+    validation_path = validation_json
+    if validation_path is not None and not validation_path.exists():
+        raise FileNotFoundError(f"--validation_json not found: {validation_path}")
+    if validation_path is None:
+        suffix = manifest.stem
+        for prefix in ("plan_warmup_mild_", "plan_"):
+            if suffix.startswith(prefix):
+                suffix = suffix[len(prefix):]
+                break
+        candidates = [root / "reports" / f"validation_{suffix}.json"]
+        if "template_diverse" in manifest.stem:
+            candidates.append(root / "reports" / "validation_template_diverse_10.json")
+        for candidate in candidates:
+            if candidate.exists():
+                validation_path = candidate
+                break
     if validation_path is None:
         rows, validation_path = _accepted_rows(root, only_accepted=only_accepted)
         return [row for row in rows if str(row.get("path")) in expected], validation_path
@@ -164,6 +189,7 @@ def _sample_from_validation_row(row: dict[str, Any]) -> dict[str, Any]:
     camera_variant = _camera_variant_from_dir(trial_name)
     camera_profile = "warmup_mild"
     for candidate in (
+        "warmup_visible_motion_v5_aggressive_2x_demo",
         "warmup_visible_motion_v4_stronger_start0_review",
         "warmup_visible_motion_v3_start0_scene_diverse",
         "warmup_visible_motion_v2",
@@ -198,6 +224,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Convert accepted generated TDW v2 samples to LingBot cam-only inputs.")
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, default=None)
+    parser.add_argument("--validation_json", type=Path, default=None)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--only_accepted", type=_bool_arg, default=True)
     parser.add_argument("--num_frames", type=int, default=81)
@@ -213,7 +240,12 @@ def main(argv=None) -> int:
     if args.use_action:
         raise SystemExit("TDW v2 cam-only conversion requires --use_action false; action.npy is dummy fallback only.")
     if args.manifest:
-        rows, validation_path = _accepted_rows_for_manifest(args.root, args.manifest, only_accepted=bool(args.only_accepted))
+        rows, validation_path = _accepted_rows_for_manifest(
+            args.root,
+            args.manifest,
+            only_accepted=bool(args.only_accepted),
+            validation_json=args.validation_json,
+        )
     else:
         rows, validation_path = _accepted_rows(args.root, only_accepted=bool(args.only_accepted))
     args.out.mkdir(parents=True, exist_ok=True)

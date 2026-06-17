@@ -73,6 +73,7 @@ def _load_plan(path: Path) -> list[dict]:
 
 
 def _trial_dir_name(index: int, trial: dict) -> str:
+    index = int(trial.get("sample_index", trial.get("trial_index", trial.get("index", index))))
     template = str(trial.get("template") or "unknown")
     variant = str(trial.get("camera_variant") or "unknown")
     seed = int(trial.get("seed", index))
@@ -84,6 +85,20 @@ def _plan_output_subdir(profile_name: str, plan_path: Path, num_trials: int) -> 
     if "template_diverse" in stem:
         return f"{profile_name}_template_diverse_{num_trials}samples"
     return f"{profile_name}_plan_{num_trials}samples"
+
+
+def _plan_row_output_subdir(profile_name: str, plan_path: Path, num_trials: int, rows: list[dict]) -> str:
+    subdirs = {str(row.get("output_subdir") or "").strip() for row in rows if str(row.get("output_subdir") or "").strip()}
+    if len(subdirs) == 1:
+        return next(iter(subdirs))
+    if len(subdirs) > 1:
+        raise ValueError(f"Plan contains multiple output_subdir values: {sorted(subdirs)}")
+    tags = {str(row.get("output_tag") or "").strip() for row in rows if str(row.get("output_tag") or "").strip()}
+    if len(tags) == 1:
+        return f"{profile_name}_{next(iter(tags))}"
+    if len(tags) > 1:
+        raise ValueError(f"Plan contains multiple output_tag values: {sorted(tags)}")
+    return _plan_output_subdir(profile_name, plan_path, num_trials)
 
 
 def _template_specific_args(template: str) -> list[str]:
@@ -179,11 +194,12 @@ def _single_trial_command(config: dict, root: Path, output_subdir: str, trial: d
     max_frames = int(config.get("frames", {}).get("max_frames", 81))
     motion_start = int(trial.get("camera_motion_start") if trial.get("camera_motion_start") is not None else filters.get("camera_motion_start", 24))
     motion_end = int(trial.get("camera_motion_end") if trial.get("camera_motion_end") is not None else filters.get("camera_motion_end", min(57, max_frames - 1)))
-    out_dir = (root / "raw_hdf5" / output_subdir / _trial_dir_name(index, trial)).resolve()
+    sample_index = int(trial.get("sample_index", trial.get("trial_index", trial.get("index", index))))
+    out_dir = (root / "raw_hdf5" / output_subdir / _trial_dir_name(sample_index, trial)).resolve()
     cmd = [
         str(py), str(runner),
         "--template", template,
-        "--port", str(1700 + index),
+        "--port", str(1700 + (sample_index % 1000)),
         "--gpu", "None",
         "--local_asset_dir", str(workspace / "assets" / "tdw_asset_bundles"),
         "--dir", str(out_dir),
@@ -440,7 +456,7 @@ def main() -> None:
     report_name = f"run_{args.profile}_{'plan_' if args.plan else ''}{effective_num_trials}"
     cmd_txt = root / "logs" / f"{report_name}.cmd.txt"
     if plan_rows is not None:
-        output_subdir = _plan_output_subdir(args.profile, args.plan, effective_num_trials)
+        output_subdir = _plan_row_output_subdir(args.profile, args.plan, effective_num_trials, plan_rows)
         plan_commands = [_single_trial_command(config, root, output_subdir, row, idx) for idx, row in enumerate(plan_rows)]
         batch_blocker = meta.get("blocked_reason")
         if isinstance(batch_blocker, str) and "upstream batch runner" in batch_blocker:
@@ -482,14 +498,16 @@ def main() -> None:
     if plan_rows is not None and plan_commands is not None and output_subdir is not None:
         trial_results = []
         for idx, (trial, trial_cmd) in enumerate(zip(plan_rows, plan_commands)):
-            out_dir = root / "raw_hdf5" / output_subdir / _trial_dir_name(idx, trial)
+            sample_index = int(trial.get("sample_index", trial.get("trial_index", trial.get("index", idx))))
+            out_dir = root / "raw_hdf5" / output_subdir / _trial_dir_name(sample_index, trial)
             final_hdf5 = out_dir / "0000.hdf5"
             temp_hdf5 = out_dir / "temp.hdf5"
-            log_path = root / "logs" / f"{report_name}_trial_{idx:05d}.stdout_stderr.log"
+            log_path = root / "logs" / f"{report_name}_trial_{sample_index:05d}.stdout_stderr.log"
             out_dir.mkdir(parents=True, exist_ok=True)
             if args.no_overwrite and final_hdf5.exists():
                 trial_results.append({
                     "index": idx,
+                    "sample_index": sample_index,
                     "template": trial.get("template"),
                     "camera_variant": trial.get("camera_variant"),
                     "seed": trial.get("seed"),
@@ -505,6 +523,7 @@ def main() -> None:
                 proc = subprocess.run(trial_cmd, stdout=log, stderr=subprocess.STDOUT, cwd=str(existing_workspace(config)), env=env)
             trial_results.append({
                 "index": idx,
+                "sample_index": sample_index,
                 "template": trial.get("template"),
                 "camera_variant": trial.get("camera_variant"),
                 "seed": trial.get("seed"),

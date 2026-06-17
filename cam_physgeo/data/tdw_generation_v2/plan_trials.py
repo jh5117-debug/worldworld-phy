@@ -55,6 +55,10 @@ def build_trials(
     num_trials: int,
     template_counts: dict[str, int] | None = None,
     *,
+    start_index: int = 0,
+    seed_start: int | None = None,
+    output_tag: str | None = None,
+    raw_output_subdir: str | None = None,
     diverse_scene_seeds: bool = False,
     unique_source_configs: bool = False,
 ) -> list[dict]:
@@ -67,11 +71,12 @@ def build_trials(
     upstream_variants = {row["name"]: row for row in upstream_camera_mapping(config, profile)}
     if not upstream_variants:
         raise ValueError(f"Profile {profile_name} has no camera_variants")
-    seed_start = int(config.get("seed_start", 20000))
+    seed_start = int(seed_start if seed_start is not None else config.get("seed_start", 20000))
     trials = []
     template_sequence = build_template_sequence(templates, num_trials, template_counts)
     template_seen: dict[str, int] = {template: 0 for template in templates}
     for idx in range(num_trials):
+        sample_index = int(start_index) + idx
         template = template_sequence[idx]
         template_variant_names = profile.template_camera_variants.get(template, [])
         if template_variant_names:
@@ -91,6 +96,10 @@ def build_trials(
         motion_end = filters.get("camera_motion_end", filters.get("motion_end"))
         trials.append({
             "trial_id": trial_id,
+            "sample_index": sample_index,
+            "trial_index": sample_index,
+            "output_tag": output_tag,
+            "output_subdir": raw_output_subdir,
             "profile": profile_name,
             "purpose": profile.purpose,
             "template": template,
@@ -130,6 +139,10 @@ def main() -> None:
     parser.add_argument("--templates", nargs="*", default=[])
     parser.add_argument("--template_counts", default=None)
     parser.add_argument("--num_trials", type=int, required=True)
+    parser.add_argument("--start_index", type=int, default=0)
+    parser.add_argument("--seed_start", type=int, default=None)
+    parser.add_argument("--output_tag", default=None)
+    parser.add_argument("--raw_output_subdir", default=None)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--diverse_scene_seeds", type=_bool_arg, default=False)
@@ -143,6 +156,10 @@ def main() -> None:
         args.templates,
         args.num_trials,
         template_counts,
+        start_index=int(args.start_index),
+        seed_start=args.seed_start,
+        output_tag=args.output_tag,
+        raw_output_subdir=args.raw_output_subdir,
         diverse_scene_seeds=bool(args.diverse_scene_seeds),
         unique_source_configs=bool(args.unique_source_configs),
     )
@@ -154,6 +171,10 @@ def main() -> None:
         "config": str(args.config),
         "profile": args.profile,
         "num_trials": len(trials),
+        "start_index": int(args.start_index),
+        "seed_start": args.seed_start,
+        "output_tag": args.output_tag,
+        "raw_output_subdir": args.raw_output_subdir,
         "templates": sorted(set(t["template"] for t in trials)),
         "template_distribution": {name: sum(1 for t in trials if t["template"] == name) for name in sorted(set(t["template"] for t in trials))},
         "camera_set": trials[0].get("camera_set") if trials else None,
