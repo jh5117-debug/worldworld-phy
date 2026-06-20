@@ -887,6 +887,11 @@ class LingBotStage1Helper:
                 alpha=getattr(self.args, "student_lora_alpha", 16),
                 dropout=getattr(self.args, "student_lora_dropout", 0.0),
                 block_start=getattr(self.args, "student_lora_block_start", 0),
+                block_end=getattr(self.args, "student_lora_block_end", None),
+                target_groups=getattr(self.args, "student_lora_target_groups", None),
+                required_groups=getattr(self.args, "student_lora_required_groups", None),
+                include_patterns=getattr(self.args, "student_lora_include_patterns", None),
+                exclude_patterns=getattr(self.args, "student_lora_exclude_patterns", None),
                 lora_chunk_size=getattr(self.args, "student_lora_chunk_size", None),
                 merge_mode=getattr(self.args, "student_lora_merge_mode", "inplace"),
             )
@@ -1910,6 +1915,90 @@ def _iter_lora_modules(model: torch.nn.Module) -> list[tuple[str, LoRALinear]]:
     return [(name, module) for name, module in model.named_modules() if isinstance(module, LoRALinear)]
 
 
+LORA_TARGET_GROUP_ALIASES: dict[str, str] = {
+    "camera": "camera_conditioning",
+    "camera_conditioning": "camera_conditioning",
+    "cam": "camera_conditioning",
+    "plucker": "camera_conditioning",
+    "self": "self_attention",
+    "self_attention": "self_attention",
+    "self_attn": "self_attention",
+    "attention": "self_attention",
+    "cross": "cross_attention",
+    "cross_attention": "cross_attention",
+    "cross_attn": "cross_attention",
+    "ffn": "ffn",
+    "feed_forward": "ffn",
+    "feedforward": "ffn",
+    "mlp": "ffn",
+}
+
+
+@dataclass(slots=True)
+class LoraTargetReport:
+    """Structured summary of the LoRA module matcher."""
+
+    selected_by_group: dict[str, list[str]]
+    selected_count: int
+    trainable_params: int
+    total_params: int
+    unclassified_linear_count: int
+    unclassified_linear_examples: list[str]
+
+
+def _normalize_lora_groups(groups: tuple[str, ...] | list[str] | str | None) -> tuple[str, ...]:
+    if groups is None or groups == "":
+        return ()
+    raw_items = groups.split(",") if isinstance(groups, str) else groups
+    out: list[str] = []
+    for item in raw_items:
+        normalized = str(item).strip().lower().replace("-", "_")
+        if not normalized:
+            continue
+        normalized = LORA_TARGET_GROUP_ALIASES.get(normalized, normalized)
+        if normalized not in {"camera_conditioning", "self_attention", "cross_attention", "ffn"}:
+            raise ValueError(f"Unsupported LoRA target group: {item!r}")
+        if normalized not in out:
+            out.append(normalized)
+    return tuple(out)
+
+
+def _lora_block_index(full_name: str) -> int | None:
+    parts = full_name.split(".")
+    if len(parts) < 2 or parts[0] != "blocks":
+        return None
+    try:
+        return int(parts[1])
+    except ValueError:
+        return None
+
+
+def classify_lora_linear_group(full_name: str) -> str | None:
+    """Classify one Wan Linear module name into the StageA v5 LoRA target group."""
+
+    parts = full_name.split(".")
+    lowered = full_name.lower()
+    if any(
+        token in parts or token in lowered
+        for token in (
+            "cam_injector_layer1",
+            "cam_injector_layer2",
+            "cam_scale_layer",
+            "cam_shift_layer",
+            "camera",
+            "plucker",
+        )
+    ):
+        return "camera_conditioning"
+    if "self_attn" in parts or ".self_attn." in lowered or ".attn1." in lowered:
+        return "self_attention"
+    if "cross_attn" in parts or ".cross_attn." in lowered or ".attn2." in lowered:
+        return "cross_attention"
+    if "ffn" in parts or ".ffn." in lowered or ".mlp." in lowered or ".feed_forward." in lowered:
+        return "ffn"
+    return None
+
+
 def apply_lora_to_wan_model(
     model: torch.nn.Module,
     *,
@@ -1919,42 +2008,75 @@ def apply_lora_to_wan_model(
     dropout: float,
     target_prefixes: tuple[str, ...] = ("blocks",),
     block_start: int = 0,
+    block_end: int | None = None,
+    target_groups: tuple[str, ...] | list[str] | str | None = None,
+    required_groups: tuple[str, ...] | list[str] | str | None = None,
+    include_patterns: tuple[str, ...] | list[str] | str | None = None,
+    exclude_patterns: tuple[str, ...] | list[str] | str | None = None,
     lora_chunk_size: int | None = None,
     merge_mode: str = "inplace",
-) -> None:
+) -> LoraTargetReport:
     """Replace selected Wan linear layers with standard LoRA adapters."""
 
     block_start = int(block_start)
     if block_start < 0:
         raise ValueError(f"LoRA block_start must be non-negative, got {block_start}")
+    if block_end is not None:
+        block_end = int(block_end)
+        if block_end < block_start:
+            raise ValueError(f"LoRA block_end={block_end} must be >= block_start={block_start}")
     if lora_chunk_size is not None and lora_chunk_size <= 0:
         lora_chunk_size = None
     merge_mode = str(merge_mode).strip().lower().replace("-", "_")
     if merge_mode not in {"inplace", "out_of_place"}:
         raise ValueError(f"LoRA merge_mode must be one of inplace, out_of_place; got {merge_mode}")
+    selected_groups = _normalize_lora_groups(target_groups) or ("self_attention", "cross_attention", "ffn")
+    required_group_set = set(_normalize_lora_groups(required_groups))
 
-    def _block_index(full_name: str) -> int | None:
-        parts = full_name.split(".")
-        if len(parts) < 2 or parts[0] != "blocks":
-            return None
-        try:
-            return int(parts[1])
-        except ValueError:
-            return None
+    def _normalize_patterns(patterns: tuple[str, ...] | list[str] | str | None) -> tuple[str, ...]:
+        if patterns is None or patterns == "":
+            return ()
+        raw_items = patterns.split(",") if isinstance(patterns, str) else patterns
+        return tuple(str(item).strip() for item in raw_items if str(item).strip())
+
+    include_patterns = _normalize_patterns(include_patterns)
+    exclude_patterns = _normalize_patterns(exclude_patterns)
 
     def _is_target_module(full_name: str) -> bool:
         if not any(full_name == prefix or full_name.startswith(f"{prefix}.") for prefix in target_prefixes):
             return False
-        index = _block_index(full_name)
-        return index is None or index >= block_start
+        index = _lora_block_index(full_name)
+        if index is not None and index < block_start:
+            return False
+        if index is not None and block_end is not None and index > block_end:
+            return False
+        if include_patterns and not any(pattern in full_name for pattern in include_patterns):
+            return False
+        if exclude_patterns and any(pattern in full_name for pattern in exclude_patterns):
+            return False
+        group = classify_lora_linear_group(full_name)
+        return group in selected_groups
 
     replaced = 0
+    selected_by_group: dict[str, list[str]] = {group: [] for group in selected_groups}
+    unclassified_linear_examples: list[str] = []
+    unclassified_linear_count = 0
     for full_name, module in list(model.named_modules()):
-        if not full_name or not _is_target_module(full_name):
+        if not full_name:
             continue
         if ".base" in full_name or ".lora_" in full_name:
             continue
         if isinstance(module, LoRALinear) or not isinstance(module, torch.nn.Linear):
+            continue
+        if any(full_name == prefix or full_name.startswith(f"{prefix}.") for prefix in target_prefixes):
+            if classify_lora_linear_group(full_name) is None:
+                unclassified_linear_count += 1
+                if len(unclassified_linear_examples) < 20:
+                    unclassified_linear_examples.append(full_name)
+        if not _is_target_module(full_name):
+            continue
+        group = classify_lora_linear_group(full_name)
+        if group is None:
             continue
         parent_name, child_name = full_name.rsplit(".", 1)
         parent = model.get_submodule(parent_name)
@@ -1967,10 +2089,19 @@ def apply_lora_to_wan_model(
             merge_mode=merge_mode,
         )
         parent._modules[child_name]._pc_lora_name = full_name
+        parent._modules[child_name]._pc_lora_group = group
+        selected_by_group.setdefault(group, []).append(full_name)
         replaced += 1
 
     if replaced == 0:
         raise RuntimeError(f"No linear layers matched LoRA targets for {model_name}")
+    missing_groups = sorted(group for group in required_group_set if not selected_by_group.get(group))
+    if missing_groups:
+        counts = {group: len(names) for group, names in selected_by_group.items()}
+        raise RuntimeError(
+            f"Required LoRA target groups missing for {model_name}: {missing_groups}; "
+            f"matched_counts={counts}"
+        )
 
     for parameter in model.parameters():
         parameter.requires_grad = False
@@ -2010,6 +2141,14 @@ def apply_lora_to_wan_model(
         "dropout": float(dropout),
         "target_prefixes": tuple(target_prefixes),
         "block_start": block_start,
+        "block_end": block_end,
+        "target_groups": tuple(selected_groups),
+        "required_groups": tuple(sorted(required_group_set)),
+        "include_patterns": tuple(include_patterns),
+        "exclude_patterns": tuple(exclude_patterns),
+        "selected_by_group": {group: tuple(names) for group, names in selected_by_group.items()},
+        "unclassified_linear_count": unclassified_linear_count,
+        "unclassified_linear_examples": tuple(unclassified_linear_examples),
         "lora_chunk_size": lora_chunk_size,
         "merge_mode": merge_mode,
         "lora_dtype": lora_dtype_text,
@@ -2023,15 +2162,27 @@ def apply_lora_to_wan_model(
         "disable_autocast": disable_autocast,
         "numeric_audit": numeric_audit,
     }
+    report = LoraTargetReport(
+        selected_by_group=selected_by_group,
+        selected_count=replaced,
+        trainable_params=trainable_params,
+        total_params=total_params,
+        unclassified_linear_count=unclassified_linear_count,
+        unclassified_linear_examples=unclassified_linear_examples,
+    )
+    model._pc_lora_target_report = report
     if _should_log_rank_zero():
+        group_counts = {group: len(names) for group, names in selected_by_group.items()}
         LOGGER.info(
-            "Applied standard LoRA to %s linear layers for %s (rank=%s, alpha=%s, dropout=%.3f, block_start=%s, lora_chunk_size=%s, merge_mode=%s, lora_dtype=%s, force_lora_fp32=%s, detach_base_out=%s, detach_input=%s, local_loss_probe=%s, clone_input=%s, clone_hidden=%s, trace_input_meta=%s, disable_autocast=%s, numeric_audit=%s, trainable=%s/%s)",
+            "Applied standard LoRA to %s linear layers for %s (groups=%s, rank=%s, alpha=%s, dropout=%.3f, block_start=%s, block_end=%s, lora_chunk_size=%s, merge_mode=%s, lora_dtype=%s, force_lora_fp32=%s, detach_base_out=%s, detach_input=%s, local_loss_probe=%s, clone_input=%s, clone_hidden=%s, trace_input_meta=%s, disable_autocast=%s, numeric_audit=%s, trainable=%s/%s, unclassified_linear_count=%s)",
             replaced,
             model_name,
+            group_counts,
             rank,
             alpha,
             dropout,
             block_start,
+            block_end if block_end is not None else "none",
             lora_chunk_size or "disabled",
             merge_mode,
             lora_dtype_text,
@@ -2046,7 +2197,9 @@ def apply_lora_to_wan_model(
             numeric_audit,
             trainable_params,
             total_params,
+            unclassified_linear_count,
         )
+    return report
 
 
 def collect_lora_local_loss(model: torch.nn.Module) -> torch.Tensor:

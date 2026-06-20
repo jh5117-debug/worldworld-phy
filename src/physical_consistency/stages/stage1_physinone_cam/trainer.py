@@ -247,21 +247,30 @@ class Stage1BranchTrainer:
             lr=self.cfg.learning_rate,
             weight_decay=self.cfg.weight_decay,
         )
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer,
-            T_max=compute_scheduler_total_steps(
-                train_dataset_len,
-                self.accelerator.num_processes,
-                self.cfg.gradient_accumulation_steps,
-                self.cfg.num_epochs,
-            ),
-            eta_min=1.0e-6,
-        )
-        self.total_optimizer_steps = compute_scheduler_total_steps(
+        planned_optimizer_steps = compute_scheduler_total_steps(
             train_dataset_len,
             self.accelerator.num_processes,
             self.cfg.gradient_accumulation_steps,
             self.cfg.num_epochs,
+        )
+        if self.cfg.max_train_optimizer_steps > 0:
+            planned_optimizer_steps = min(planned_optimizer_steps, self.cfg.max_train_optimizer_steps)
+        planned_optimizer_steps = max(planned_optimizer_steps, 1)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=planned_optimizer_steps,
+            eta_min=self.cfg.scheduler_eta_min,
+        )
+        self.total_optimizer_steps = planned_optimizer_steps
+        LOGGER.info(
+            "[Stage1][%s] Optimizer-step plan: target=%s max_train_optimizer_steps=%s min_train_optimizer_steps=%s save_every_optimizer_steps=%s grad_accum=%s num_processes=%s",
+            self.branch,
+            self.total_optimizer_steps,
+            self.cfg.max_train_optimizer_steps,
+            self.cfg.min_train_optimizer_steps,
+            self.cfg.save_every_optimizer_steps,
+            self.cfg.gradient_accumulation_steps,
+            self.accelerator.num_processes,
         )
         LOGGER.info("[Stage1][%s] Preparing model/optimizer/dataloader with accelerator", self.branch)
         self.model, self.optimizer, self.train_loader, self.scheduler = self.accelerator.prepare(
@@ -321,7 +330,20 @@ class Stage1BranchTrainer:
                                 float(self.scheduler.get_last_lr()[0]),
                                 float(metrics["sample_sigma"]),
                             )
+                        if (
+                            self.cfg.save_every_optimizer_steps > 0
+                            and self.global_step > 0
+                            and self.global_step % self.cfg.save_every_optimizer_steps == 0
+                        ):
+                            self._save_branch_checkpoint(tag=f"step_{self.global_step:06d}")
+                        if (
+                            self.cfg.max_train_optimizer_steps > 0
+                            and self.global_step >= self.cfg.max_train_optimizer_steps
+                        ):
+                            break
                 if self.cfg.max_train_micro_steps > 0 and self.micro_step >= self.cfg.max_train_micro_steps:
+                    break
+                if self.cfg.max_train_optimizer_steps > 0 and self.global_step >= self.cfg.max_train_optimizer_steps:
                     break
 
             should_save = self.cfg.save_every_n_epochs > 0 and epoch_index % self.cfg.save_every_n_epochs == 0
@@ -335,6 +357,8 @@ class Stage1BranchTrainer:
             if should_eval and checkpoint_root is not None:
                 last_eval_bundle = self._run_epoch_eval(epoch_index, checkpoint_root)
             if self.cfg.max_train_micro_steps > 0 and self.micro_step >= self.cfg.max_train_micro_steps:
+                break
+            if self.cfg.max_train_optimizer_steps > 0 and self.global_step >= self.cfg.max_train_optimizer_steps:
                 break
 
         final_branch_dir = self._save_branch_checkpoint(tag="final")
@@ -571,6 +595,40 @@ class Stage1BranchTrainer:
         if self.accelerator.is_main_process:
             unwrapped = self.accelerator.unwrap_model(self.model)
             ensure_dir(branch_dir)
+            adapter_state = {
+                key: value.detach().cpu()
+                for key, value in state_dict.items()
+                if ".lora_A.weight" in key or ".lora_B.weight" in key
+            }
+            torch.save(adapter_state, branch_dir / "adapter_state.pt")
+            lora_config = getattr(unwrapped, "_pc_lora_config", {})
+            lora_report = getattr(unwrapped, "_pc_lora_target_report", None)
+            report_payload = {}
+            if lora_report is not None:
+                report_payload = {
+                    "selected_by_group": {
+                        group: list(names) for group, names in lora_report.selected_by_group.items()
+                    },
+                    "selected_count": int(lora_report.selected_count),
+                    "trainable_params": int(lora_report.trainable_params),
+                    "total_params": int(lora_report.total_params),
+                    "unclassified_linear_count": int(lora_report.unclassified_linear_count),
+                    "unclassified_linear_examples": list(lora_report.unclassified_linear_examples),
+                }
+            write_json(
+                branch_dir / "adapter_metadata.json",
+                {
+                    "branch": self.branch,
+                    "tag": tag,
+                    "global_step": self.global_step,
+                    "micro_step": self.micro_step,
+                    "adapter_tensor_count": len(adapter_state),
+                    "lora_config": lora_config,
+                    "lora_target_report": report_payload,
+                    "adapter_only": True,
+                    "full_model_weights_file": "diffusion_pytorch_model.bin",
+                },
+            )
             torch.save(
                 export_pretrained_state_dict(unwrapped, state_dict, prefix=""),
                 branch_dir / "diffusion_pytorch_model.bin",

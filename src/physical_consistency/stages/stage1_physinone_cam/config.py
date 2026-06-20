@@ -27,6 +27,18 @@ def _coerce_bool(value: bool | str | int | None, default: bool) -> bool:
     raise ValueError(f"Cannot coerce to bool: {value!r}")
 
 
+def _coerce_str_tuple(value: object, default: tuple[str, ...] = ()) -> tuple[str, ...]:
+    """Parse a YAML list or comma-separated string into a tuple of strings."""
+
+    if value in {"", None}:
+        return tuple(default)
+    if isinstance(value, str):
+        return tuple(item.strip() for item in value.split(",") if item.strip())
+    if isinstance(value, (list, tuple, set)):
+        return tuple(str(item).strip() for item in value if str(item).strip())
+    return (str(value).strip(),) if str(value).strip() else tuple(default)
+
+
 @dataclass(slots=True)
 class VideoPhy2EvalConfig:
     """Optional official VideoPhy-2 validation hook."""
@@ -86,13 +98,32 @@ class Stage1PhysInOneConfig:
     num_workers: int = 4
     save_every_n_epochs: int = 1
     max_train_micro_steps: int = 0
+    max_train_optimizer_steps: int = 0
+    min_train_optimizer_steps: int = 0
+    save_every_optimizer_steps: int = 0
+    scheduler_eta_min: float = 1.0e-6
     student_tuning_mode: str = "lora"
     student_lora_rank: int = 16
     student_lora_alpha: int = 16
     student_lora_dropout: float = 0.0
     student_lora_block_start: int = 0
+    student_lora_block_end: int | None = None
     student_lora_chunk_size: int = 0
     student_lora_merge_mode: str = "inplace"
+    student_lora_target_groups: tuple[str, ...] = (
+        "camera_conditioning",
+        "self_attention",
+        "cross_attention",
+        "ffn",
+    )
+    student_lora_required_groups: tuple[str, ...] = (
+        "camera_conditioning",
+        "self_attention",
+        "cross_attention",
+        "ffn",
+    )
+    student_lora_include_patterns: tuple[str, ...] = ()
+    student_lora_exclude_patterns: tuple[str, ...] = ()
     student_memory_efficient_modulation: bool = True
     student_memory_efficient_checkpoint_mode: str = "full"
     student_ffn_chunk_size: int = 4096
@@ -217,13 +248,57 @@ class Stage1PhysInOneConfig:
             num_workers=int(payload.get("num_workers", 4) or 4),
             save_every_n_epochs=_override_int("save_every_n_epochs", 1),
             max_train_micro_steps=int(payload.get("max_train_micro_steps", 0) or 0),
+            max_train_optimizer_steps=_override_int(
+                "max_train_optimizer_steps",
+                int(payload.get("max_train_optimizer_steps", 0) or 0),
+            ),
+            min_train_optimizer_steps=_override_int(
+                "min_train_optimizer_steps",
+                int(payload.get("min_train_optimizer_steps", 0) or 0),
+            ),
+            save_every_optimizer_steps=_override_int(
+                "save_every_optimizer_steps",
+                int(payload.get("save_every_optimizer_steps", 0) or 0),
+            ),
+            scheduler_eta_min=float(payload.get("scheduler_eta_min", 1.0e-6) or 1.0e-6),
             student_tuning_mode=student_tuning_mode,
             student_lora_rank=int(payload.get("student_lora_rank", 16) or 16),
             student_lora_alpha=int(payload.get("student_lora_alpha", 16) or 16),
             student_lora_dropout=float(payload.get("student_lora_dropout", 0.0) or 0.0),
             student_lora_block_start=int(payload.get("student_lora_block_start", 0) or 0),
+            student_lora_block_end=(
+                int(payload["student_lora_block_end"])
+                if payload.get("student_lora_block_end", "") not in {"", None}
+                else None
+            ),
             student_lora_chunk_size=int(payload.get("student_lora_chunk_size", 0) or 0),
             student_lora_merge_mode=str(payload.get("student_lora_merge_mode", "inplace")).strip().lower(),
+            student_lora_target_groups=_coerce_str_tuple(
+                payload.get("student_lora_target_groups"),
+                (
+                    "camera_conditioning",
+                    "self_attention",
+                    "cross_attention",
+                    "ffn",
+                ),
+            ),
+            student_lora_required_groups=_coerce_str_tuple(
+                payload.get("student_lora_required_groups"),
+                (
+                    "camera_conditioning",
+                    "self_attention",
+                    "cross_attention",
+                    "ffn",
+                ),
+            ),
+            student_lora_include_patterns=_coerce_str_tuple(
+                payload.get("student_lora_include_patterns"),
+                (),
+            ),
+            student_lora_exclude_patterns=_coerce_str_tuple(
+                payload.get("student_lora_exclude_patterns"),
+                (),
+            ),
             student_memory_efficient_modulation=_coerce_bool(
                 payload.get("student_memory_efficient_modulation"),
                 True,

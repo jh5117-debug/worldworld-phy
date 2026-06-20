@@ -59,6 +59,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--height", type=int, default=None)
     parser.add_argument("--width", type=int, default=None)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=None)
+    parser.add_argument("--max_train_optimizer_steps", type=int, default=None)
+    parser.add_argument("--min_train_optimizer_steps", type=int, default=None)
+    parser.add_argument("--save_every_optimizer_steps", type=int, default=None)
     return parser.parse_args()
 
 
