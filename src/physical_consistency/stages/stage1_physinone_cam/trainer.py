@@ -334,29 +334,34 @@ class Stage1BranchTrainer:
             self.cfg.gradient_accumulation_steps,
             self.accelerator.num_processes,
         )
-        LOGGER.info("[Stage1][%s] Preparing model/optimizer/dataloader with accelerator", self.branch)
+        LOGGER.info(
+            "[Stage1][%s] Preparing model/optimizer/dataloader with accelerator; scheduler stays unwrapped",
+            self.branch,
+        )
         if raw_val_loader is not None:
             (
                 self.model,
                 self.optimizer,
                 self.train_loader,
                 self.val_loader,
-                self.scheduler,
             ) = self.accelerator.prepare(
                 self.model,
                 optimizer,
                 raw_loader,
                 raw_val_loader,
-                scheduler,
             )
         else:
-            self.model, self.optimizer, self.train_loader, self.scheduler = self.accelerator.prepare(
+            self.model, self.optimizer, self.train_loader = self.accelerator.prepare(
                 self.model,
                 optimizer,
                 raw_loader,
-                scheduler,
             )
-        LOGGER.info("[Stage1][%s] Accelerator.prepare complete", self.branch)
+            self.val_loader = None
+        self.scheduler = scheduler
+        LOGGER.info(
+            "[Stage1][%s] Accelerator.prepare complete; raw scheduler will step once per optimizer step",
+            self.branch,
+        )
         self.accelerator.wait_for_everyone()
         LOGGER.info("[Stage1][%s] Post-prepare barrier complete", self.branch)
 
@@ -428,9 +433,25 @@ class Stage1BranchTrainer:
                             and self.global_step % self.cfg.save_every_optimizer_steps == 0
                         ):
                             self._save_branch_checkpoint(tag=f"step_{self.global_step:06d}")
+                        if (
+                            self.cfg.diagnostic_stop_optimizer_steps > 0
+                            and self.global_step >= self.cfg.diagnostic_stop_optimizer_steps
+                        ):
+                            if self.accelerator.is_main_process:
+                                LOGGER.info(
+                                    "[Stage1][%s] Diagnostic stop reached at optimizer_step=%s; branch gate is not evaluated as PASS",
+                                    self.branch,
+                                    self.global_step,
+                                )
+                            break
                         if self._should_stop_branch(gate_status):
                             break
                 if self.cfg.max_train_micro_steps > 0 and self.micro_step >= self.cfg.max_train_micro_steps:
+                    break
+                if (
+                    self.cfg.diagnostic_stop_optimizer_steps > 0
+                    and self.global_step >= self.cfg.diagnostic_stop_optimizer_steps
+                ):
                     break
                 if self.global_step >= int(self.branch_limits.get("resolved_hard_max_optimizer_steps", self.total_optimizer_steps)):
                     break
@@ -446,6 +467,11 @@ class Stage1BranchTrainer:
             if should_eval and checkpoint_root is not None:
                 last_eval_bundle = self._run_epoch_eval(epoch_index, checkpoint_root)
             if self.cfg.max_train_micro_steps > 0 and self.micro_step >= self.cfg.max_train_micro_steps:
+                break
+            if (
+                self.cfg.diagnostic_stop_optimizer_steps > 0
+                and self.global_step >= self.cfg.diagnostic_stop_optimizer_steps
+            ):
                 break
             if self.global_step >= int(self.branch_limits.get("resolved_hard_max_optimizer_steps", self.total_optimizer_steps)):
                 break

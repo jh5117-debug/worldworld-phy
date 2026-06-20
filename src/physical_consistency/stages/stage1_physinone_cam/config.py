@@ -99,6 +99,7 @@ class Stage1PhysInOneConfig:
     save_every_n_epochs: int = 1
     max_train_micro_steps: int = 0
     max_train_optimizer_steps: int = 0
+    diagnostic_stop_optimizer_steps: int = 0
     min_train_optimizer_steps: int = 0
     save_every_optimizer_steps: int = 0
     scheduler_eta_min: float = 1.0e-6
@@ -263,6 +264,10 @@ class Stage1PhysInOneConfig:
             max_train_optimizer_steps=_override_int(
                 "max_train_optimizer_steps",
                 int(payload.get("max_train_optimizer_steps", 0) or 0),
+            ),
+            diagnostic_stop_optimizer_steps=_override_int(
+                "diagnostic_stop_optimizer_steps",
+                int(payload.get("diagnostic_stop_optimizer_steps", 0) or 0),
             ),
             min_train_optimizer_steps=_override_int(
                 "min_train_optimizer_steps",
