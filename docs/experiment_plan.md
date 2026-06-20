@@ -119,3 +119,65 @@ Interpretation:
 
 The run is now past model-loading and early optimizer-step smoke. It is training for real on GPU1-7, with metrics and monitor logs being written. It must remain `RUNNING_NOT_FINAL` until the low and high branches finish and the normal-loss gate evaluates the required minimum/target steps.
 <!-- STAGEA_V5_DATAFIX_TRAIN_20260621_END -->
+
+<!-- STAGEA_V5_AUDIT_ETA_20260621_START -->
+## 2026-06-21 StageA running audit and ETA
+
+Audit time on H20: `2026-06-21T06:47:57+08:00`.
+
+Current status:
+
+- Branch: `research/stageA-v5-datafix-train-20260620`
+- HEAD before this ETA doc update: `70bbf72ac85c11723aef87e302c21bfd6fedf235`
+- Formal training tmux: `stageA_v5_broad_lora_train_20260621_0125` (`alive=yes`)
+- Monitor tmux: `stageA_v5_broad_lora_monitor_20260621_0205` (`alive=yes`)
+- StageA branch currently running: `low`
+- Current optimizer step: 253 / low target 1200 / low hard max 1600
+- Latest train loss: 0.019976750016212463
+- Latest EMA20 / EMA100: 0.04283223633413844 / 0.046242957450449304
+- Latest LR: 4.857693325650949e-06
+- Latest gate state: `WAIT` with reasons `below_min_steps;spike_ratio_high`
+- Latest fixed-val step: 200.0
+- Latest fixed-val weighted loss / best: 0.04660887425499303 / 0.04660887425499303
+- Fixed-val finite: 1.0
+- TDW generated_v5 raw HDF5 count at audit: 2524
+- TDW tmux sessions preserved:
+
+```text
+tdw_v5_4000_gpu0_scaleup: 1 windows (created Wed Jun 17 13:35:09 2026)
+tdw_v5_4000_monitor: 1 windows (created Wed Jun 17 14:44:35 2026)
+```
+
+GPU isolation:
+
+```text
+0, 28 MiB, 97871 MiB, 0 %
+1, 85688 MiB, 97871 MiB, 100 %
+2, 85688 MiB, 97871 MiB, 100 %
+3, 85688 MiB, 97871 MiB, 100 %
+4, 85688 MiB, 97871 MiB, 100 %
+5, 85688 MiB, 97871 MiB, 100 %
+6, 85688 MiB, 97871 MiB, 100 %
+7, 85688 MiB, 97871 MiB, 100 %
+```
+
+Observed timing:
+
+- Empirical training speed after early warmup: ~73.5 seconds / optimizer step.
+- Low branch remaining to target: ~19.3 hours.
+- Low branch remaining to hard max if gate does not pass: ~27.5 hours.
+- High branch target duration after low completes: ~32.6 hours.
+- High branch hard-max duration if needed: ~44.9 hours.
+- Approximate time to complete low target + high target: ~52.0 hours from this audit.
+- Conservative low hard + high hard upper bound: ~72.4 hours from this audit.
+
+Interpretation:
+
+The run is healthy and still early relative to the formal loss gate. The `WAIT` state is expected because the low branch has not reached its minimum 800 optimizer steps. `spike_ratio_high` is being tracked as a gate reason, but fixed validation is finite and improved from step 100 to step 200. No StageB, DPO, reward scoring, rollout, or pair mining has been run.
+
+Current error scan:
+
+```text
+none
+```
+<!-- STAGEA_V5_AUDIT_ETA_20260621_END -->
