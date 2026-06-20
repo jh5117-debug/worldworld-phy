@@ -50,3 +50,8 @@ The trainer no longer writes full model weights. Branch checkpoints contain adap
 ## Final status
 
 Pending formal StageA low/high completion. StageB, DPO, reward, rollout, and pair mining remain not run.
+
+
+## Interim Correction (2026-06-20 19:25 CST)
+
+Current status is not final StageA completion. The initial formal run was stopped because fixed validation was missing from the trainer despite being present in config. The trainer now emits fixed validation metrics and gates on them. A 20-step single-GPU preflight passed. Formal low/high StageA still needs to be restarted and monitored to completion.

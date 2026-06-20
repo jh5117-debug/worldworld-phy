@@ -46,3 +46,30 @@ The snapshot builder now reads per-sample validation JSONL and rejects duplicate
 ## Adapter-only checkpoint policy
 
 The trainer no longer writes full model weights. Branch checkpoints contain adapter LoRA tensors plus training state for resume. The sequence runner now creates `stage1_final_adapter_bundle` with low/high adapter symlinks and an adapter manifest instead of materializing a full eval checkpoint bundle.
+
+
+## Fixed-Val Preflight Update (2026-06-20 19:25 CST)
+
+- The first formal StageA launch was stopped at low branch step 102 after audit found that `val_every_optimizer_steps` was configured but no fixed validation forward-loss path was implemented.
+- StageA training was stopped only by terminating the StageA tmux sessions/processes. TDW tmux sessions `tdw_v5_4000_gpu0_scaleup` and `tdw_v5_4000_monitor` remained alive and were not attached, killed, or modified.
+- Implemented fixed validation forward-loss in `src/physical_consistency/stages/stage1_physinone_cam/trainer.py`:
+  - fixed `metadata_val.csv` subset;
+  - center temporal window;
+  - deterministic validation noise;
+  - deterministic branch-specific timestep bins;
+  - distributed reduction across ranks;
+  - `fixed_val_metrics.jsonl` and `fixed_val_metrics.csv`;
+  - loss gate reason `fixed_val_missing` / `fixed_val_nonfinite` / `fixed_val_three_worse_than_best_10pct`.
+- Tests after patch: `compileall` passed, `pytest -q` passed (`8 passed`).
+- 2-step single-GPU fixed-val smoke passed on physical GPU7: fixed-val step 1 loss 0.031709, step 2 loss 0.031401, both finite.
+- 20-step single-GPU preflight passed on physical GPU7:
+  - steps: 20/20;
+  - fixed-val step 10: weighted 0.045526, unweighted 0.155262, finite;
+  - fixed-val step 20: weighted 0.045384, unweighted 0.155166, finite;
+  - final train loss: 0.042050;
+  - EMA20: 0.047638;
+  - EMA100: 0.061135;
+  - gradient clipping: 0 triggered in inspected rows;
+  - camera/self/cross/ffn LoRA gradients all nonzero;
+  - checkpoint files were adapter/training state only; no full model `.bin` or `.safetensors` files were found in the preflight output.
+- Result: preflight PASS. Formal StageA may be restarted only with the fixed-val trainer.

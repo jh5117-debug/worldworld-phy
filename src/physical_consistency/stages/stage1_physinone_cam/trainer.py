@@ -25,7 +25,7 @@ from accelerate.utils import (
     InitProcessGroupKwargs,
     ProjectConfiguration,
 )
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 
 from physical_consistency.common.io import ensure_dir, write_json
 from physical_consistency.common.subprocess_utils import run_command
@@ -33,6 +33,7 @@ from physical_consistency.eval.checkpoint_bundle import materialize_eval_checkpo
 from physical_consistency.trainers.stage1_components import (
     CSGODataset,
     LingBotStage1Helper,
+    TimestepSample,
     apply_gradient_checkpointing,
     compute_scheduler_total_steps,
     configure_stage1_precision_env,
@@ -152,6 +153,7 @@ class Stage1BranchTrainer:
         self.optimizer = None
         self.scheduler = None
         self.train_loader = None
+        self.val_loader = None
         self.global_step = 0
         self.micro_step = 0
         self.total_optimizer_steps = 0
@@ -164,8 +166,13 @@ class Stage1BranchTrainer:
         self.clip_history: list[bool] = []
         self.metrics_jsonl_path = self.output_dir / "metrics.jsonl"
         self.metrics_csv_path = self.output_dir / "metrics.csv"
+        self.fixed_val_jsonl_path = self.output_dir / "fixed_val_metrics.jsonl"
+        self.fixed_val_csv_path = self.output_dir / "fixed_val_metrics.csv"
         self._metrics_csv_fields: list[str] | None = None
+        self._fixed_val_csv_fields: list[str] | None = None
         self._last_lora_param_norm: float | None = None
+        self.fixed_val_history: list[float] = []
+        self.best_fixed_val_loss: float | None = None
         self.timing_enabled = _env_flag("PC_STAGE1_TIMING", False)
         self.timing_cuda_sync = _env_flag("PC_STAGE1_TIMING_CUDA_SYNC", False)
         self.timing_log_every = max(_env_int("PC_STAGE1_TIMING_EVERY", 1), 1)
@@ -218,6 +225,35 @@ class Stage1BranchTrainer:
                 temporal_window_mode=self.cfg.temporal_window_mode,
             )
         LOGGER.info("[Stage1][%s] Dataset ready with %s samples", self.branch, len(dataset))
+        raw_val_loader = None
+        if self.cfg.control_type == "cam" and self.cfg.fixed_val_sample_count > 0:
+            val_dataset = PhysInOneCamDataset(
+                self.cfg.dataset_dir,
+                split="val",
+                num_frames=self.cfg.num_frames,
+                height=self.cfg.height,
+                width=self.cfg.width,
+                repeat=1,
+                temporal_window_mode="center_window",
+            )
+            val_count = min(int(self.cfg.fixed_val_sample_count), len(val_dataset))
+            if val_count <= 0:
+                raise ValueError("fixed validation requested but metadata_val.csv has no samples")
+            val_subset = Subset(val_dataset, list(range(val_count)))
+            raw_val_loader = DataLoader(
+                val_subset,
+                batch_size=1,
+                shuffle=False,
+                num_workers=self.cfg.num_workers,
+                pin_memory=True,
+                collate_fn=lambda items: items[0],
+            )
+            LOGGER.info(
+                "[Stage1][%s] Fixed validation dataset ready with %s/%s samples (center temporal window)",
+                self.branch,
+                val_count,
+                len(val_dataset),
+            )
         LOGGER.info("[Stage1][%s] Constructing raw dataloader", self.branch)
         raw_loader = DataLoader(
             dataset,
@@ -299,12 +335,27 @@ class Stage1BranchTrainer:
             self.accelerator.num_processes,
         )
         LOGGER.info("[Stage1][%s] Preparing model/optimizer/dataloader with accelerator", self.branch)
-        self.model, self.optimizer, self.train_loader, self.scheduler = self.accelerator.prepare(
-            self.model,
-            optimizer,
-            raw_loader,
-            scheduler,
-        )
+        if raw_val_loader is not None:
+            (
+                self.model,
+                self.optimizer,
+                self.train_loader,
+                self.val_loader,
+                self.scheduler,
+            ) = self.accelerator.prepare(
+                self.model,
+                optimizer,
+                raw_loader,
+                raw_val_loader,
+                scheduler,
+            )
+        else:
+            self.model, self.optimizer, self.train_loader, self.scheduler = self.accelerator.prepare(
+                self.model,
+                optimizer,
+                raw_loader,
+                scheduler,
+            )
         LOGGER.info("[Stage1][%s] Accelerator.prepare complete", self.branch)
         self.accelerator.wait_for_everyone()
         LOGGER.info("[Stage1][%s] Post-prepare barrier complete", self.branch)
@@ -583,6 +634,13 @@ class Stage1BranchTrainer:
             metrics["gpu_memory_allocated_mb"] = float(torch.cuda.memory_allocated(self.accelerator.device) / 1024**2)
             metrics["gpu_memory_reserved_mb"] = float(torch.cuda.memory_reserved(self.accelerator.device) / 1024**2)
             metrics["gpu_memory_max_allocated_mb"] = float(torch.cuda.max_memory_allocated(self.accelerator.device) / 1024**2)
+        if (
+            self.cfg.val_every_optimizer_steps > 0
+            and self.global_step > 0
+            and self.global_step % self.cfg.val_every_optimizer_steps == 0
+        ):
+            fixed_val_metrics = self._run_fixed_validation(epoch_index)
+            metrics.update({f"fixed_val_{key}": value for key, value in fixed_val_metrics.items()})
         gate_status = self._loss_gate_status()
         metrics["loss_gate_status"] = str(gate_status["status"])
         metrics["loss_gate_reasons"] = ";".join(gate_status["reasons"])
@@ -599,6 +657,20 @@ class Stage1BranchTrainer:
         write_header = self._metrics_csv_fields != fields or not self.metrics_csv_path.exists()
         self._metrics_csv_fields = fields
         with self.metrics_csv_path.open("a", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fields)
+            if write_header:
+                writer.writeheader()
+            writer.writerow({key: row.get(key, "") for key in fields})
+
+    def _write_fixed_val_row(self, metrics: dict[str, float]) -> None:
+        row = {key: (float(value) if isinstance(value, (int, float)) else value) for key, value in metrics.items()}
+        self.fixed_val_jsonl_path.parent.mkdir(parents=True, exist_ok=True)
+        with self.fixed_val_jsonl_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+        fields = sorted(row)
+        write_header = self._fixed_val_csv_fields != fields or not self.fixed_val_csv_path.exists()
+        self._fixed_val_csv_fields = fields
+        with self.fixed_val_csv_path.open("a", encoding="utf-8", newline="") as handle:
             writer = csv.DictWriter(handle, fieldnames=fields)
             if write_header:
                 writer.writeheader()
@@ -621,6 +693,15 @@ class Stage1BranchTrainer:
                     reasons.append("spike_ratio_high")
         if self.loss_ema100 is not None and not math.isfinite(self.loss_ema100):
             reasons.append("ema100_nonfinite")
+        if self.cfg.val_every_optimizer_steps > 0 and self.global_step >= self.cfg.val_every_optimizer_steps:
+            if not self.fixed_val_history:
+                reasons.append("fixed_val_missing")
+            elif any(not math.isfinite(v) for v in self.fixed_val_history[-3:]):
+                reasons.append("fixed_val_nonfinite")
+            elif self.best_fixed_val_loss is not None and len(self.fixed_val_history) >= 3:
+                recent_val = self.fixed_val_history[-3:]
+                if all(v > self.best_fixed_val_loss * 1.10 for v in recent_val):
+                    reasons.append("fixed_val_three_worse_than_best_10pct")
         status = "PASS" if not reasons else "WAIT"
         return {"status": status, "reasons": reasons}
 
@@ -680,6 +761,253 @@ class Stage1BranchTrainer:
             noise_target_start = self._timing_start()
             timestep_sample = self.helper.sample_timestep(self.branch)
             noise = torch.randn_like(video_latent)
+            noisy_latent = (1.0 - timestep_sample.sigma) * video_latent + timestep_sample.sigma * noise
+            target = noise - video_latent
+            timings["noise_target"] = self._timing_elapsed(noise_target_start)
+
+        device_type = self.accelerator.device.type
+        if os.environ.get("PC_STAGE1_FORCE_FP32", "").strip().lower() in {"1", "true", "yes", "on"}:
+            autocast_ctx = torch.autocast(device_type=device_type, enabled=False)
+        else:
+            autocast_ctx = (
+                torch.amp.autocast(device_type=device_type, dtype=resolve_stage1_low_precision_dtype())
+                if device_type == "cuda"
+                else torch.autocast(device_type=device_type, enabled=False)
+            )
+        with autocast_ctx:
+            student_forward_start = self._timing_start()
+            pred = self.model(
+                [noisy_latent],
+                t=timestep_sample.timestep,
+                context=context,
+                seq_len=seq_len,
+                y=[y],
+                dit_cond_dict=dit_cond,
+            )[0]
+            timings["student_forward"] = self._timing_elapsed(student_forward_start)
+        loss_start = self._timing_start()
+        pred_rest = pred[:, 1:]
+        target_rest = target[:, 1:]
+        loss_unweighted = F.mse_loss(pred_rest.float(), target_rest.float())
+        loss_fm = loss_unweighted * timestep_sample.weight
+        timings["loss"] = self._timing_elapsed(loss_start)
+        timestep_value = timestep_sample.timestep
+        try:
+            timestep_float = float(timestep_value.detach().flatten()[0].item())
+        except Exception:
+            timestep_float = float(timestep_value)
+        metrics = {
+            "loss_fm": float(loss_fm.detach().item()),
+            "loss_fm_weighted": float(loss_fm.detach().item()),
+            "loss_fm_unweighted": float(loss_unweighted.detach().item()),
+            "sample_sigma": float(timestep_sample.sigma),
+            "sample_timestep": timestep_float,
+            "timestep_weight": float(timestep_sample.weight),
+        }
+        for key, value in timings.items():
+            metrics[f"timing_{key}_sec"] = float(value)
+        return loss_fm, metrics
+
+    def _run_fixed_validation(self, epoch_index: int) -> dict[str, float]:
+        if self.val_loader is None:
+            summary = {
+                "available": 0.0,
+                "sample_count": 0.0,
+                "loss_fm_weighted": float("nan"),
+                "loss_fm_unweighted": float("nan"),
+                "sample_sigma_mean": float("nan"),
+                "sample_timestep_mean": float("nan"),
+            }
+            self.fixed_val_history.append(float("nan"))
+            if self.accelerator.is_main_process:
+                self._write_fixed_val_row(
+                    {
+                        "timestamp": time.time(),
+                        "branch": self.branch,
+                        "epoch": float(epoch_index),
+                        "optimizer_step": float(self.global_step),
+                        **summary,
+                    }
+                )
+            return summary
+
+        was_training = bool(getattr(self.model, "training", False))
+        self.model.eval()
+        local_weighted = 0.0
+        local_unweighted = 0.0
+        local_sigma = 0.0
+        local_timestep = 0.0
+        local_count = 0.0
+        local_finite = 1.0
+        with torch.no_grad():
+            for local_index, batch in enumerate(self.val_loader):
+                distributed_index = int(local_index * max(self.accelerator.num_processes, 1) + self.accelerator.process_index)
+                _loss, metrics = self._forward_loss(
+                    batch,
+                    fixed_validation=True,
+                    validation_index=distributed_index,
+                )
+                weighted = float(metrics["loss_fm_weighted"])
+                unweighted = float(metrics["loss_fm_unweighted"])
+                sigma = float(metrics["sample_sigma"])
+                timestep = float(metrics["sample_timestep"])
+                if not all(math.isfinite(v) for v in (weighted, unweighted, sigma, timestep)):
+                    local_finite = 0.0
+                local_weighted += weighted
+                local_unweighted += unweighted
+                local_sigma += sigma
+                local_timestep += timestep
+                local_count += 1.0
+        if was_training:
+            self.model.train()
+        values = torch.tensor(
+            [local_weighted, local_unweighted, local_sigma, local_timestep, local_count, local_finite],
+            device=self.accelerator.device,
+            dtype=torch.float64,
+        )
+        reduced = self.accelerator.reduce(values, reduction="sum")
+        count = max(float(reduced[4].item()), 1.0)
+        finite_count = float(reduced[5].item())
+        summary = {
+            "available": 1.0,
+            "sample_count": count,
+            "loss_fm_weighted": float(reduced[0].item() / count),
+            "loss_fm_unweighted": float(reduced[1].item() / count),
+            "sample_sigma_mean": float(reduced[2].item() / count),
+            "sample_timestep_mean": float(reduced[3].item() / count),
+            "all_finite": float(finite_count >= max(self.accelerator.num_processes, 1)),
+        }
+        self.fixed_val_history.append(float(summary["loss_fm_weighted"]))
+        if math.isfinite(summary["loss_fm_weighted"]):
+            self.best_fixed_val_loss = (
+                float(summary["loss_fm_weighted"])
+                if self.best_fixed_val_loss is None
+                else min(self.best_fixed_val_loss, float(summary["loss_fm_weighted"]))
+            )
+        summary["best_loss_fm_weighted"] = float(
+            self.best_fixed_val_loss if self.best_fixed_val_loss is not None else float("nan")
+        )
+        if self.accelerator.is_main_process:
+            row = {
+                "timestamp": time.time(),
+                "branch": self.branch,
+                "epoch": float(epoch_index),
+                "optimizer_step": float(self.global_step),
+                **summary,
+            }
+            self._write_fixed_val_row(row)
+            LOGGER.info(
+                "[Stage1][%s] fixed-val step=%s samples=%s loss=%.6f unweighted=%.6f best=%.6f sigma=%.4f timestep=%.2f finite=%s",
+                self.branch,
+                self.global_step,
+                int(count),
+                float(summary["loss_fm_weighted"]),
+                float(summary["loss_fm_unweighted"]),
+                float(summary["best_loss_fm_weighted"]),
+                float(summary["sample_sigma_mean"]),
+                float(summary["sample_timestep_mean"]),
+                bool(summary["all_finite"]),
+            )
+        return summary
+
+    def _fixed_timestep_sample(self, validation_index: int) -> TimestepSample:
+        if self.branch == "high":
+            indices = self.helper.high_noise_indices
+            weights = self.helper.high_noise_weights
+        else:
+            indices = self.helper.low_noise_indices
+            weights = self.helper.low_noise_weights
+        if len(indices) <= 0:
+            return self.helper.sample_timestep(self.branch)
+        count = max(int(self.cfg.fixed_val_sample_count), 1)
+        slot = int(validation_index) % count
+        position = int(round(slot * max(len(indices) - 1, 0) / max(count - 1, 1)))
+        position = min(max(position, 0), len(indices) - 1)
+        idx = int(indices[position].item())
+        sigma = float(self.helper.sigmas[idx].item())
+        timestep = self.helper.timesteps_schedule[idx].to(self.accelerator.device).unsqueeze(0)
+        weight = float(weights[position].item())
+        return TimestepSample(
+            index=idx,
+            sigma=sigma,
+            timestep=timestep,
+            weight=weight,
+            branch=self.helper.branch_for_timestep_index(idx),
+        )
+
+    def _forward_loss(
+        self,
+        batch: dict[str, Any],
+        *,
+        fixed_validation: bool = False,
+        validation_index: int = 0,
+    ) -> tuple[torch.Tensor, dict[str, float]]:
+        timings: dict[str, float] = {}
+        batch_to_device_start = self._timing_start()
+        video = batch["video"].to(self.accelerator.device)
+        timings["batch_to_device"] = self._timing_elapsed(batch_to_device_start)
+        poses = batch["poses"]
+        actions = batch.get("actions")
+        intrinsics = batch["intrinsics"]
+        prompt = batch["prompt"]
+        height, width = int(video.shape[2]), int(video.shape[3])
+        source_height = int(batch.get("source_height", height))
+        source_width = int(batch.get("source_width", width))
+
+        with torch.no_grad():
+            encode_video_start = self._timing_start()
+            video_latent = self.helper.encode_video(video)
+            timings["encode_video"] = self._timing_elapsed(encode_video_start)
+
+            encode_text_start = self._timing_start()
+            context = self.helper.encode_text(prompt)
+            timings["encode_text"] = self._timing_elapsed(encode_text_start)
+
+            prepare_y_start = self._timing_start()
+            y = self.helper.prepare_y(video, video_latent)
+            timings["prepare_y"] = self._timing_elapsed(prepare_y_start)
+
+            lat_f, lat_h, lat_w = video_latent.shape[1], video_latent.shape[2], video_latent.shape[3]
+            seq_len = lat_f * lat_h * lat_w // (self.helper.patch_size[1] * self.helper.patch_size[2])
+            prepare_control_start = self._timing_start()
+            dit_cond = self.helper.prepare_control_signal(
+                poses,
+                actions,
+                intrinsics,
+                height,
+                width,
+                lat_f,
+                lat_h,
+                lat_w,
+                control_type=self.cfg.control_type,
+                source_height=source_height,
+                source_width=source_width,
+            )
+            timings["prepare_control_signal"] = self._timing_elapsed(prepare_control_start)
+
+            noise_target_start = self._timing_start()
+            timestep_sample = (
+                self._fixed_timestep_sample(validation_index)
+                if fixed_validation
+                else self.helper.sample_timestep(self.branch)
+            )
+            if fixed_validation:
+                generator = torch.Generator(device=video_latent.device)
+                generator.manual_seed(
+                    int(self.cfg.seed)
+                    + 1000003
+                    + int(self.global_step) * 1009
+                    + int(validation_index) * 9176
+                    + (0 if self.branch == "low" else 500000)
+                )
+                noise = torch.randn(
+                    video_latent.shape,
+                    device=video_latent.device,
+                    dtype=video_latent.dtype,
+                    generator=generator,
+                )
+            else:
+                noise = torch.randn_like(video_latent)
             noisy_latent = (1.0 - timestep_sample.sigma) * video_latent + timestep_sample.sigma * noise
             target = noise - video_latent
             timings["noise_target"] = self._timing_elapsed(noise_target_start)
@@ -822,6 +1150,7 @@ class Stage1BranchTrainer:
         self.optimizer = None
         self.scheduler = None
         self.train_loader = None
+        self.val_loader = None
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()

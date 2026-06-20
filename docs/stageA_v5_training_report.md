@@ -50,3 +50,30 @@ The trainer no longer writes full model weights. Branch checkpoints contain adap
 ## Formal run status
 
 Formal StageA launch is next after this fix commit. This document must be updated with low/high branch metrics after the tmux run reaches PASS, FAILED, or INCONCLUSIVE.
+
+## Active formal StageA run - 2026-06-20 16:20 CST
+
+- Training session: `stageA_v5_broad_lora_train_20260620_155137`.
+- Monitor session: `stageA_v5_broad_lora_monitor_20260620_155137`.
+- Dataset: partial generated_v5 snapshot `20260620_144547`, train 312 / val 36 / holdout 20.
+- GPU mapping: physical GPU1-7 only for StageA; physical GPU0 remains TDW/Xorg only.
+- Branch mode: `sequence`; current branch is low-noise.
+- Low branch schedule: min 800 / target 1200 / hard max 1600 optimizer steps.
+- High branch schedule: min 1000 / target 1600 / hard max 2200 optimizer steps.
+- Formal run start: 2026-06-20 15:51 CST.
+- Stable checkpoint: by 2026-06-20 16:18 CST, low branch reached step 12/1200, all losses finite, no NaN/Inf/OOM, all four LoRA groups had nonzero gradients, and memory was stable at about 85.7 GiB per physical GPU1-7.
+- Estimated duration: low+high is expected to exceed 24 hours at the observed 70-110 seconds per optimizer step, so this is recorded as a long-running StageA job.
+- Not run: StageB, DPO, reward, rollout, pair mining, VideoGPA 03_train.
+
+
+## Formal StageA Restart Gate (2026-06-20 19:25 CST)
+
+The first 7-GPU formal run (`stageA_v5_broad_lora_train_20260620_155137`) was intentionally stopped and is marked `aborted_invalid_missing_fixed_val`. It reached low branch step 102 with finite loss and correct GPU mapping, but the audit found that the configured fixed validation gate was not actually implemented. This run must not be treated as a formal StageA result.
+
+After the fix, a single-GPU 20-step preflight passed with fixed validation at steps 10 and 20. Formal StageA should be restarted from scratch with a new experiment name/output directory so that all reported metrics include fixed validation.
+
+Safety status before restart:
+- GPU0 was not used for StageA training.
+- TDW tmux sessions remained alive and were not modified.
+- No StageB, DPO, reward, rollout, or pair mining was run.
+- local_assets outputs remain untracked and must not be committed.
