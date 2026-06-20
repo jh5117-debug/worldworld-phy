@@ -30,7 +30,7 @@ def _coerce_bool(value: bool | str | int | None, default: bool) -> bool:
 def _coerce_str_tuple(value: object, default: tuple[str, ...] = ()) -> tuple[str, ...]:
     """Parse a YAML list or comma-separated string into a tuple of strings."""
 
-    if value in {"", None}:
+    if value is None or value == "":
         return tuple(default)
     if isinstance(value, str):
         return tuple(item.strip() for item in value.split(",") if item.strip())
@@ -102,6 +102,18 @@ class Stage1PhysInOneConfig:
     min_train_optimizer_steps: int = 0
     save_every_optimizer_steps: int = 0
     scheduler_eta_min: float = 1.0e-6
+    scheduler_warmup_fraction: float = 0.05
+    optimizer_beta1: float = 0.9
+    optimizer_beta2: float = 0.95
+    temporal_window_mode: str = "random_window"
+    val_every_optimizer_steps: int = 100
+    fixed_val_sample_count: int = 32
+    branch_step_overrides: dict[str, dict[str, int]] = field(
+        default_factory=lambda: {
+            "low": {"min_optimizer_steps": 800, "target_optimizer_steps": 1200, "hard_max_optimizer_steps": 1600},
+            "high": {"min_optimizer_steps": 1000, "target_optimizer_steps": 1600, "hard_max_optimizer_steps": 2200},
+        }
+    )
     student_tuning_mode: str = "lora"
     student_lora_rank: int = 16
     student_lora_alpha: int = 16
@@ -261,6 +273,16 @@ class Stage1PhysInOneConfig:
                 int(payload.get("save_every_optimizer_steps", 0) or 0),
             ),
             scheduler_eta_min=float(payload.get("scheduler_eta_min", 1.0e-6) or 1.0e-6),
+            scheduler_warmup_fraction=float(payload.get("scheduler_warmup_fraction", 0.05) or 0.05),
+            optimizer_beta1=float((payload.get("optimizer_betas") or [0.9, 0.95])[0] if payload.get("optimizer_betas") else payload.get("optimizer_beta1", 0.9) or 0.9),
+            optimizer_beta2=float((payload.get("optimizer_betas") or [0.9, 0.95])[1] if payload.get("optimizer_betas") else payload.get("optimizer_beta2", 0.95) or 0.95),
+            temporal_window_mode=str(payload.get("temporal_window_mode", "random_window") or "random_window"),
+            val_every_optimizer_steps=int(payload.get("val_every_optimizer_steps", 100) or 100),
+            fixed_val_sample_count=int(payload.get("fixed_val_sample_count", 32) or 32),
+            branch_step_overrides={str(k): {str(kk): int(vv) for kk, vv in dict(v).items()} for k, v in dict(payload.get("branch_step_overrides") or {}).items()} or {
+                "low": {"min_optimizer_steps": 800, "target_optimizer_steps": 1200, "hard_max_optimizer_steps": 1600},
+                "high": {"min_optimizer_steps": 1000, "target_optimizer_steps": 1600, "hard_max_optimizer_steps": 2200},
+            },
             student_tuning_mode=student_tuning_mode,
             student_lora_rank=int(payload.get("student_lora_rank", 16) or 16),
             student_lora_alpha=int(payload.get("student_lora_alpha", 16) or 16),
@@ -319,3 +341,16 @@ class Stage1PhysInOneConfig:
             distributed_timeout_hours=int(payload.get("distributed_timeout_hours", 8) or 8),
             videophy2_eval=VideoPhy2EvalConfig.from_payload(payload.get("videophy2_eval")),
         )
+    def branch_step_limits(self, branch: str) -> dict[str, int]:
+        defaults = {
+            "low": {"min_optimizer_steps": 800, "target_optimizer_steps": 1200, "hard_max_optimizer_steps": 1600},
+            "high": {"min_optimizer_steps": 1000, "target_optimizer_steps": 1600, "hard_max_optimizer_steps": 2200},
+        }
+        payload = dict(defaults.get(branch, {}))
+        payload.update(dict(self.branch_step_overrides.get(branch, {})))
+        return {
+            "min_optimizer_steps": int(payload.get("min_optimizer_steps", self.min_train_optimizer_steps or 0)),
+            "target_optimizer_steps": int(payload.get("target_optimizer_steps", self.max_train_optimizer_steps or 0)),
+            "hard_max_optimizer_steps": int(payload.get("hard_max_optimizer_steps", self.max_train_optimizer_steps or 0)),
+        }
+

@@ -18,7 +18,6 @@ except Exception:  # pragma: no cover - torch elastic is available in training e
 from physical_consistency.common.defaults import CONFIG_DIR
 from physical_consistency.common.io import write_json
 from physical_consistency.common.logging_utils import configure_logging
-from physical_consistency.eval.checkpoint_bundle import materialize_eval_checkpoint_bundle
 
 from .config import Stage1PhysInOneConfig
 from .eval import run_stage1_videophy2_eval
@@ -187,25 +186,31 @@ def main() -> None:
         companion_checkpoint_dir=low_result.final_branch_dir,
     ).run()
 
-    final_bundle = materialize_eval_checkpoint_bundle(
-        ft_ckpt_dir=high_result.final_branch_dir,
-        output_root=Path(cfg.output_dir) / "final_bundle_cache",
-        experiment_name=f"{cfg.experiment_name}_stage1_final",
-        companion_ckpt_dir=low_result.final_branch_dir,
-    )
-    final_bundle_link = Path(cfg.output_dir) / "stage1_final_bundle"
-    if _is_main_process():
-        if final_bundle_link.is_symlink() or final_bundle_link.exists():
-            final_bundle_link.unlink()
-        os.symlink(final_bundle, final_bundle_link, target_is_directory=True)
+    final_bundle = Path(cfg.output_dir) / "stage1_final_adapter_bundle"
+    final_bundle_link = final_bundle
     if cfg.videophy2_eval.enabled:
-        run_stage1_videophy2_eval(
-            cfg.videophy2_eval,
-            bundle_dir=final_bundle,
-            output_dir=cfg.output_dir,
-            experiment_name=cfg.experiment_name,
-            epoch=cfg.num_epochs,
-            branch="stage1_final",
+        raise RuntimeError("StageA broad-LoRA run is adapter-only; disable videophy2_eval before final eval.")
+    if _is_main_process():
+        final_bundle.mkdir(parents=True, exist_ok=True)
+        branch_links = {
+            "low_noise_model": Path(low_result.final_branch_dir) / "low_noise_model",
+            "high_noise_model": Path(high_result.final_branch_dir) / "high_noise_model",
+        }
+        for branch_name, source_dir in branch_links.items():
+            link_path = final_bundle / branch_name
+            if link_path.is_symlink() or link_path.exists():
+                link_path.unlink()
+            os.symlink(source_dir, link_path, target_is_directory=True)
+        write_json(
+            final_bundle / "adapter_bundle_manifest.json",
+            {
+                "experiment_name": cfg.experiment_name,
+                "adapter_only": True,
+                "full_model_saved": False,
+                "low_branch_dir": low_result.final_branch_dir,
+                "high_branch_dir": high_result.final_branch_dir,
+                "branches": {name: str(path) for name, path in branch_links.items()},
+            },
         )
 
     finished_at = _now_local()

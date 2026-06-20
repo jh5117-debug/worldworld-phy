@@ -4,9 +4,9 @@ seed: 42
 
 control_type: cam
 student_tuning_mode: lora
-student_lora_rank: 8
-student_lora_alpha: 8
-student_lora_dropout: 0.0
+student_lora_rank: 16
+student_lora_alpha: 16
+student_lora_dropout: 0.05
 student_lora_block_start: 0
 student_lora_block_end:
 student_lora_chunk_size: 0
@@ -27,17 +27,31 @@ student_lora_exclude_patterns: []
 learning_rate: 5.0e-6
 weight_decay: 0.01
 scheduler_eta_min: 5.0e-7
+scheduler_warmup_fraction: 0.05
+optimizer_betas: [0.9, 0.95]
 num_epochs: 100
 gradient_accumulation_steps: 2
-max_train_optimizer_steps: 1200
-min_train_optimizer_steps: 800
+max_train_optimizer_steps: 0
+min_train_optimizer_steps: 0
+branch_step_overrides:
+  low:
+    min_optimizer_steps: 800
+    target_optimizer_steps: 1200
+    hard_max_optimizer_steps: 1600
+  high:
+    min_optimizer_steps: 1000
+    target_optimizer_steps: 1600
+    hard_max_optimizer_steps: 2200
+val_every_optimizer_steps: 100
+fixed_val_sample_count: 32
 save_every_optimizer_steps: 200
 max_grad_norm: 1.0
 
-num_frames: 8
+num_frames: 81
 height: 480
 width: 832
-dataset_repeat: 100
+dataset_repeat: 20
+temporal_window_mode: random_window
 num_workers: 0
 save_every_n_epochs: 0
 gradient_checkpointing: true

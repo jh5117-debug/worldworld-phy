@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import csv
 import gc
+import json
 import logging
 import math
 import os
@@ -155,6 +157,15 @@ class Stage1BranchTrainer:
         self.total_optimizer_steps = 0
         self.output_dir = Path(cfg.output_dir) / f"{branch}_phase"
         ensure_dir(self.output_dir)
+        self.branch_limits = cfg.branch_step_limits(branch)
+        self.loss_ema20: float | None = None
+        self.loss_ema100: float | None = None
+        self.loss_history: list[float] = []
+        self.clip_history: list[bool] = []
+        self.metrics_jsonl_path = self.output_dir / "metrics.jsonl"
+        self.metrics_csv_path = self.output_dir / "metrics.csv"
+        self._metrics_csv_fields: list[str] | None = None
+        self._last_lora_param_norm: float | None = None
         self.timing_enabled = _env_flag("PC_STAGE1_TIMING", False)
         self.timing_cuda_sync = _env_flag("PC_STAGE1_TIMING_CUDA_SYNC", False)
         self.timing_log_every = max(_env_int("PC_STAGE1_TIMING_EVERY", 1), 1)
@@ -204,6 +215,7 @@ class Stage1BranchTrainer:
                 height=self.cfg.height,
                 width=self.cfg.width,
                 repeat=self.cfg.dataset_repeat,
+                temporal_window_mode=self.cfg.temporal_window_mode,
             )
         LOGGER.info("[Stage1][%s] Dataset ready with %s samples", self.branch, len(dataset))
         LOGGER.info("[Stage1][%s] Constructing raw dataloader", self.branch)
@@ -246,6 +258,7 @@ class Stage1BranchTrainer:
             [parameter for parameter in self.model.parameters() if parameter.requires_grad],
             lr=self.cfg.learning_rate,
             weight_decay=self.cfg.weight_decay,
+            betas=(self.cfg.optimizer_beta1, self.cfg.optimizer_beta2),
         )
         planned_optimizer_steps = compute_scheduler_total_steps(
             train_dataset_len,
@@ -253,21 +266,34 @@ class Stage1BranchTrainer:
             self.cfg.gradient_accumulation_steps,
             self.cfg.num_epochs,
         )
+        branch_target = int(self.branch_limits.get("target_optimizer_steps") or planned_optimizer_steps)
+        branch_hard_max = int(self.branch_limits.get("hard_max_optimizer_steps") or branch_target)
+        branch_min = int(self.branch_limits.get("min_optimizer_steps") or self.cfg.min_train_optimizer_steps or 0)
         if self.cfg.max_train_optimizer_steps > 0:
-            planned_optimizer_steps = min(planned_optimizer_steps, self.cfg.max_train_optimizer_steps)
-        planned_optimizer_steps = max(planned_optimizer_steps, 1)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer,
-            T_max=planned_optimizer_steps,
-            eta_min=self.cfg.scheduler_eta_min,
-        )
-        self.total_optimizer_steps = planned_optimizer_steps
+            branch_hard_max = min(branch_hard_max, self.cfg.max_train_optimizer_steps)
+            branch_target = min(branch_target, branch_hard_max)
+            if branch_min > branch_hard_max:
+                branch_min = min(int(self.cfg.min_train_optimizer_steps or 0), branch_hard_max)
+        planned_optimizer_steps = max(branch_hard_max, 1)
+        warmup_steps = max(int(planned_optimizer_steps * float(self.cfg.scheduler_warmup_fraction)), 1)
+        eta_ratio = max(float(self.cfg.scheduler_eta_min) / max(float(self.cfg.learning_rate), 1.0e-12), 0.0)
+
+        def _lr_lambda(step: int) -> float:
+            if step < warmup_steps:
+                return max(float(step + 1) / float(warmup_steps), eta_ratio)
+            progress = min(max((step - warmup_steps) / max(planned_optimizer_steps - warmup_steps, 1), 0.0), 1.0)
+            return eta_ratio + (1.0 - eta_ratio) * 0.5 * (1.0 + math.cos(math.pi * progress))
+
+        scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=_lr_lambda)
+        self.total_optimizer_steps = branch_target
+        self.branch_limits.update({"resolved_min_optimizer_steps": branch_min, "resolved_target_optimizer_steps": branch_target, "resolved_hard_max_optimizer_steps": branch_hard_max, "warmup_steps": warmup_steps})
         LOGGER.info(
-            "[Stage1][%s] Optimizer-step plan: target=%s max_train_optimizer_steps=%s min_train_optimizer_steps=%s save_every_optimizer_steps=%s grad_accum=%s num_processes=%s",
+            "[Stage1][%s] Optimizer-step plan: min=%s target=%s hard_max=%s warmup_steps=%s save_every_optimizer_steps=%s grad_accum=%s num_processes=%s",
             self.branch,
-            self.total_optimizer_steps,
-            self.cfg.max_train_optimizer_steps,
-            self.cfg.min_train_optimizer_steps,
+            branch_min,
+            branch_target,
+            branch_hard_max,
+            warmup_steps,
             self.cfg.save_every_optimizer_steps,
             self.cfg.gradient_accumulation_steps,
             self.accelerator.num_processes,
@@ -299,13 +325,20 @@ class Stage1BranchTrainer:
                     metrics["timing_backward_sec"] = self._timing_elapsed(backward_start)
 
                     if self.accelerator.sync_gradients:
+                        metrics.update(self._collect_lora_group_grad_norms())
                         clip_start = self._timing_start()
-                        self.accelerator.clip_grad_norm_(self.model.parameters(), self.cfg.max_grad_norm)
+                        grad_norm_before = self.accelerator.clip_grad_norm_(self.model.parameters(), self.cfg.max_grad_norm)
+                        metrics["grad_norm_before_clip"] = float(grad_norm_before.detach().item() if hasattr(grad_norm_before, "detach") else grad_norm_before)
+                        metrics["grad_norm_after_clip"] = float(self._total_grad_norm())
+                        metrics["clip_applied"] = float(metrics["grad_norm_before_clip"] > float(self.cfg.max_grad_norm))
                         metrics["timing_clip_grad_sec"] = self._timing_elapsed(clip_start)
 
                     optimizer_start = self._timing_start()
                     self.optimizer.step()
                     metrics["timing_optimizer_step_sec"] = self._timing_elapsed(optimizer_start)
+
+                    if self.accelerator.sync_gradients:
+                        metrics.update(self._lora_param_update_metrics())
 
                     scheduler_start = self._timing_start()
                     self.scheduler.step()
@@ -318,17 +351,25 @@ class Stage1BranchTrainer:
                     self._log_timing(epoch_index, metrics)
                     if self.accelerator.sync_gradients:
                         self.global_step += 1
+                        metrics["learning_rate"] = float(self.scheduler.get_last_lr()[0])
+                        gate_status = self._record_and_write_metrics(epoch_index, metrics)
                         if self.accelerator.is_main_process:
                             LOGGER.info(
-                                "[Stage1][%s] epoch=%s/%s step=%s/%s loss_fm=%.6f lr=%.3e sigma=%.4f",
+                                "[Stage1][%s] epoch=%s/%s step=%s/%s hard_max=%s loss=%.6f ema20=%.6f ema100=%.6f lr=%.3e sigma=%.4f grad=%.4f gate=%s reasons=%s",
                                 self.branch,
                                 epoch_index,
                                 self.cfg.num_epochs,
                                 self.global_step,
                                 self.total_optimizer_steps,
-                                float(metrics["loss_fm"]),
-                                float(self.scheduler.get_last_lr()[0]),
+                                self.branch_limits.get("resolved_hard_max_optimizer_steps"),
+                                float(metrics["loss_fm_weighted"]),
+                                float(metrics.get("loss_ema20", metrics["loss_fm_weighted"])),
+                                float(metrics.get("loss_ema100", metrics["loss_fm_weighted"])),
+                                float(metrics["learning_rate"]),
                                 float(metrics["sample_sigma"]),
+                                float(metrics.get("grad_norm_before_clip", 0.0)),
+                                gate_status.get("status"),
+                                ",".join(gate_status.get("reasons", [])),
                             )
                         if (
                             self.cfg.save_every_optimizer_steps > 0
@@ -336,14 +377,11 @@ class Stage1BranchTrainer:
                             and self.global_step % self.cfg.save_every_optimizer_steps == 0
                         ):
                             self._save_branch_checkpoint(tag=f"step_{self.global_step:06d}")
-                        if (
-                            self.cfg.max_train_optimizer_steps > 0
-                            and self.global_step >= self.cfg.max_train_optimizer_steps
-                        ):
+                        if self._should_stop_branch(gate_status):
                             break
                 if self.cfg.max_train_micro_steps > 0 and self.micro_step >= self.cfg.max_train_micro_steps:
                     break
-                if self.cfg.max_train_optimizer_steps > 0 and self.global_step >= self.cfg.max_train_optimizer_steps:
+                if self.global_step >= int(self.branch_limits.get("resolved_hard_max_optimizer_steps", self.total_optimizer_steps)):
                     break
 
             should_save = self.cfg.save_every_n_epochs > 0 and epoch_index % self.cfg.save_every_n_epochs == 0
@@ -358,25 +396,11 @@ class Stage1BranchTrainer:
                 last_eval_bundle = self._run_epoch_eval(epoch_index, checkpoint_root)
             if self.cfg.max_train_micro_steps > 0 and self.micro_step >= self.cfg.max_train_micro_steps:
                 break
-            if self.cfg.max_train_optimizer_steps > 0 and self.global_step >= self.cfg.max_train_optimizer_steps:
+            if self.global_step >= int(self.branch_limits.get("resolved_hard_max_optimizer_steps", self.total_optimizer_steps)):
                 break
 
         final_branch_dir = self._save_branch_checkpoint(tag="final")
-        if self.accelerator.is_main_process:
-            final_bundle = materialize_eval_checkpoint_bundle(
-                ft_ckpt_dir=final_branch_dir,
-                output_root=self.output_dir / "eval_bundles",
-                experiment_name=f"{self.cfg.experiment_name}_{self.branch}_final",
-                companion_ckpt_dir=self.companion_checkpoint_dir,
-            )
-        else:
-            final_bundle = (
-                self.output_dir
-                / "eval_bundles"
-                / "cache"
-                / "eval_ckpt_bundles"
-                / f"{self.cfg.experiment_name}_{self.branch}_final_non_main_placeholder"
-            )
+        final_bundle = final_branch_dir
         self.accelerator.wait_for_everyone()
         if self.cfg.videophy2_eval.enabled and self.accelerator.is_main_process:
             run_stage1_videophy2_eval(
@@ -491,6 +515,124 @@ class Stage1BranchTrainer:
             " ".join(timing_parts),
         )
 
+
+    def _total_grad_norm(self) -> float:
+        total = 0.0
+        for parameter in self.model.parameters():
+            grad = parameter.grad
+            if grad is None:
+                continue
+            value = float(grad.detach().float().norm(2).item())
+            total += value * value
+        return math.sqrt(total)
+
+    def _iter_lora_modules(self):
+        unwrapped = self.accelerator.unwrap_model(self.model)
+        for name, module in unwrapped.named_modules():
+            if hasattr(module, "lora_A") and hasattr(module, "lora_B"):
+                yield name, module, str(getattr(module, "_pc_lora_group", "unknown"))
+
+    def _collect_lora_group_grad_norms(self) -> dict[str, float]:
+        sums: dict[str, float] = {"camera_conditioning": 0.0, "self_attention": 0.0, "cross_attention": 0.0, "ffn": 0.0}
+        nonzero: dict[str, int] = {key: 0 for key in sums}
+        for _name, module, group in self._iter_lora_modules():
+            group = group if group in sums else "unknown"
+            sums.setdefault(group, 0.0)
+            nonzero.setdefault(group, 0)
+            for parameter in (module.lora_A.weight, module.lora_B.weight):
+                grad = parameter.grad
+                if grad is None:
+                    continue
+                value = float(grad.detach().float().norm(2).item())
+                sums[group] += value * value
+                if value > 0:
+                    nonzero[group] += 1
+        out: dict[str, float] = {}
+        for group, value in sums.items():
+            out[f"{group}_lora_grad_norm"] = math.sqrt(value)
+            out[f"{group}_lora_grad_nonzero_tensors"] = float(nonzero.get(group, 0))
+        return out
+
+    def _lora_param_update_metrics(self) -> dict[str, float]:
+        total = 0.0
+        for _name, module, _group in self._iter_lora_modules():
+            for parameter in (module.lora_A.weight, module.lora_B.weight):
+                value = float(parameter.detach().float().norm(2).item())
+                total += value * value
+        norm = math.sqrt(total)
+        prev = self._last_lora_param_norm
+        self._last_lora_param_norm = norm
+        return {"lora_parameter_norm": norm, "lora_update_norm": 0.0 if prev is None else abs(norm - prev)}
+
+    def _record_and_write_metrics(self, epoch_index: int, metrics: dict[str, float]) -> dict[str, object]:
+        loss = float(metrics.get("loss_fm_weighted", metrics.get("loss_fm", 0.0)))
+        self.loss_history.append(loss)
+        alpha20 = 2.0 / 21.0
+        alpha100 = 2.0 / 101.0
+        self.loss_ema20 = loss if self.loss_ema20 is None else alpha20 * loss + (1 - alpha20) * self.loss_ema20
+        self.loss_ema100 = loss if self.loss_ema100 is None else alpha100 * loss + (1 - alpha100) * self.loss_ema100
+        metrics["loss_ema20"] = float(self.loss_ema20)
+        metrics["loss_ema100"] = float(self.loss_ema100)
+        metrics["timestamp"] = time.time()
+        metrics["branch"] = self.branch
+        metrics["epoch"] = float(epoch_index)
+        metrics["micro_step"] = float(self.micro_step)
+        metrics["optimizer_step"] = float(self.global_step)
+        metrics["samples_seen"] = float(self.global_step * max(self.accelerator.num_processes, 1))
+        if torch.cuda.is_available() and self.accelerator.device.type == "cuda":
+            metrics["gpu_memory_allocated_mb"] = float(torch.cuda.memory_allocated(self.accelerator.device) / 1024**2)
+            metrics["gpu_memory_reserved_mb"] = float(torch.cuda.memory_reserved(self.accelerator.device) / 1024**2)
+            metrics["gpu_memory_max_allocated_mb"] = float(torch.cuda.max_memory_allocated(self.accelerator.device) / 1024**2)
+        gate_status = self._loss_gate_status()
+        metrics["loss_gate_status"] = str(gate_status["status"])
+        metrics["loss_gate_reasons"] = ";".join(gate_status["reasons"])
+        if self.accelerator.is_main_process:
+            self._write_metrics_row(metrics)
+        return gate_status
+
+    def _write_metrics_row(self, metrics: dict[str, float]) -> None:
+        row = {key: (float(value) if isinstance(value, (int, float)) else value) for key, value in metrics.items()}
+        self.metrics_jsonl_path.parent.mkdir(parents=True, exist_ok=True)
+        with self.metrics_jsonl_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+        fields = sorted(row)
+        write_header = self._metrics_csv_fields != fields or not self.metrics_csv_path.exists()
+        self._metrics_csv_fields = fields
+        with self.metrics_csv_path.open("a", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fields)
+            if write_header:
+                writer.writeheader()
+            writer.writerow({key: row.get(key, "") for key in fields})
+
+    def _loss_gate_status(self) -> dict[str, object]:
+        reasons: list[str] = []
+        min_steps = int(self.branch_limits.get("resolved_min_optimizer_steps", 0))
+        if self.global_step < min_steps:
+            reasons.append("below_min_steps")
+        recent = self.loss_history[-200:]
+        if any(not math.isfinite(v) for v in recent):
+            reasons.append("nonfinite_loss")
+        if len(recent) >= 20:
+            sorted_recent = sorted(recent)
+            median = sorted_recent[len(sorted_recent) // 2]
+            if median > 0:
+                spikes = sum(v > 5.0 * median for v in recent)
+                if spikes / len(recent) >= 0.01:
+                    reasons.append("spike_ratio_high")
+        if self.loss_ema100 is not None and not math.isfinite(self.loss_ema100):
+            reasons.append("ema100_nonfinite")
+        status = "PASS" if not reasons else "WAIT"
+        return {"status": status, "reasons": reasons}
+
+    def _should_stop_branch(self, gate_status: dict[str, object]) -> bool:
+        target = int(self.branch_limits.get("resolved_target_optimizer_steps", self.total_optimizer_steps))
+        hard_max = int(self.branch_limits.get("resolved_hard_max_optimizer_steps", target))
+        if self.global_step >= hard_max:
+            return True
+        if self.global_step >= target and gate_status.get("status") == "PASS":
+            return True
+        return False
+
     def training_step(self, batch: dict[str, Any]) -> tuple[torch.Tensor, dict[str, float]]:
         timings: dict[str, float] = {}
         batch_to_device_start = self._timing_start()
@@ -565,11 +707,21 @@ class Stage1BranchTrainer:
         loss_start = self._timing_start()
         pred_rest = pred[:, 1:]
         target_rest = target[:, 1:]
-        loss_fm = F.mse_loss(pred_rest.float(), target_rest.float()) * timestep_sample.weight
+        loss_unweighted = F.mse_loss(pred_rest.float(), target_rest.float())
+        loss_fm = loss_unweighted * timestep_sample.weight
         timings["loss"] = self._timing_elapsed(loss_start)
+        timestep_value = timestep_sample.timestep
+        try:
+            timestep_float = float(timestep_value.detach().flatten()[0].item())
+        except Exception:
+            timestep_float = float(timestep_value)
         metrics = {
             "loss_fm": float(loss_fm.detach().item()),
+            "loss_fm_weighted": float(loss_fm.detach().item()),
+            "loss_fm_unweighted": float(loss_unweighted.detach().item()),
             "sample_sigma": float(timestep_sample.sigma),
+            "sample_timestep": timestep_float,
+            "timestep_weight": float(timestep_sample.weight),
         }
         for key, value in timings.items():
             metrics[f"timing_{key}_sec"] = float(value)
@@ -590,17 +742,27 @@ class Stage1BranchTrainer:
         save_root.mkdir(parents=True, exist_ok=True)
         branch_dir = save_root / ("low_noise_model" if self.branch == "low" else "high_noise_model")
         self.accelerator.wait_for_everyone()
-        state_dict = self.accelerator.get_state_dict(self.model)
-        self.accelerator.wait_for_everyone()
         if self.accelerator.is_main_process:
             unwrapped = self.accelerator.unwrap_model(self.model)
             ensure_dir(branch_dir)
             adapter_state = {
                 key: value.detach().cpu()
-                for key, value in state_dict.items()
+                for key, value in unwrapped.named_parameters()
                 if ".lora_A.weight" in key or ".lora_B.weight" in key
             }
             torch.save(adapter_state, branch_dir / "adapter_state.pt")
+            training_state = {
+                "branch": self.branch,
+                "tag": tag,
+                "global_step": self.global_step,
+                "micro_step": self.micro_step,
+                "optimizer_state_dict": self.optimizer.state_dict() if self.optimizer is not None else None,
+                "scheduler_state_dict": self.scheduler.state_dict() if self.scheduler is not None else None,
+                "torch_rng_state": torch.get_rng_state(),
+                "cuda_rng_state_all": torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
+                "branch_limits": dict(self.branch_limits),
+            }
+            torch.save(training_state, branch_dir / "training_state.pt")
             lora_config = getattr(unwrapped, "_pc_lora_config", {})
             lora_report = getattr(unwrapped, "_pc_lora_target_report", None)
             report_payload = {}
@@ -626,12 +788,11 @@ class Stage1BranchTrainer:
                     "lora_config": lora_config,
                     "lora_target_report": report_payload,
                     "adapter_only": True,
-                    "full_model_weights_file": "diffusion_pytorch_model.bin",
+                    "full_model_saved": False,
+                    "full_model_weights_file": None,
+                    "optimizer_state_file": "training_state.pt",
+                    "scheduler_state_file": "training_state.pt",
                 },
-            )
-            torch.save(
-                export_pretrained_state_dict(unwrapped, state_dict, prefix=""),
-                branch_dir / "diffusion_pytorch_model.bin",
             )
             if hasattr(unwrapped, "save_config"):
                 unwrapped.save_config(branch_dir)

@@ -9,6 +9,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterable
 
+from cam_physgeo.data.stageA_v5_data_gate import run_snapshot as _run_per_sample_snapshot
+
 
 def _read_jsonl(path: Path) -> list[dict]:
     rows: list[dict] = []
@@ -113,7 +115,11 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--timestamp", default="")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--require_validation_ok", action="store_true")
+    parser.add_argument("--validation_jsonl", default="", help="Per-sample StageA v5 validation JSONL; when set, only stage1_ready records enter the snapshot.")
     args = parser.parse_args(list(argv) if argv is not None else None)
+
+    if args.validation_jsonl:
+        return _run_per_sample_snapshot(args)
 
     generated_root = Path(args.generated_root).resolve()
     chunks_dir = Path(args.manifest_chunks_dir).resolve()
