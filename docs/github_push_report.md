@@ -69,3 +69,14 @@ Interpretation:
 
 The run is now past model-loading and early optimizer-step smoke. It is training for real on GPU1-7, with metrics and monitor logs being written. It must remain `RUNNING_NOT_FINAL` until the low and high branches finish and the normal-loss gate evaluates the required minimum/target steps.
 <!-- STAGEA_V5_DATAFIX_TRAIN_20260621_END -->
+
+<!-- STAGEA_V5_DOC_PUSH_20260621_START -->
+## 2026-06-21 StageA documentation push
+
+- Pushed branch: `research/stageA-v5-datafix-train-20260620`
+- Documentation status commit pushed before this push-report update: `28e3d19817e8e721ae9b138fc57feec0b31d7e28`
+- Push time recorded on H20: `2026-06-21T02:15:22+08:00`
+- Scope: Markdown-only status update for StageA v5 data gate, preflight, formal run launch, monitor tmux, and RUNNING_NOT_FINAL state.
+- Explicit exclusions: no `local_assets`, no HDF5/MP4/NPY, no checkpoints, no adapter weights, no large logs.
+- Training state at documentation time: formal StageA running on physical GPU1-7; TDW tmux sessions preserved; GPU0 not used for training.
+<!-- STAGEA_V5_DOC_PUSH_20260621_END -->
