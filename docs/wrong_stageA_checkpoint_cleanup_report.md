@@ -1,0 +1,32 @@
+# Wrong StageA Checkpoint Cleanup Report
+
+Date: Mon Jun 22 13:28:48 2026
+
+Scope: deleted invalid Base/legacy StageA low/high/preflight training outputs only. Preserved generated_v5 raw data, conversion outputs, validation JSONL, manifests, and reusable data snapshots.
+
+Delete manifest: cleanup/wrong_stageA_delete_manifest.tsv
+
+Deleted item count: 17
+
+Deleted paths:
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/formal_stageA_schedulerfix_gradaccum1_snapshot_20260620_144547
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/formal_stageA_high_resume_oomfix_snapshot_20260620_144547_20260622_122116
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/formal_stageA_fixedval_snapshot_20260620_144547
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/formal_stageA_snapshot_20260620_144547
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/high_oomfix_preflight_20260622_115847
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/high_oomfix_preflight_20260622_115955
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/high_oomfix_preflight_20260622_120232
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/preflight_gradaccum1_schedulerfix_20260621_0046
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/preflight_snapshot_20260620_144547
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/preflight20_fixed_val_20260620
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/preflight_fixed_val_20260620
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/preflight_outputs
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/scheduler_preflight_fixed_20260620_000358
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/scheduler_preflight_fixed_correctbase_20260621_000733
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/preflight_stage1_dataset
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/stageA_v5_broad_lora_fixed_val_preflight.yaml
+- local_assets/experiments/exp_stageA_v5_datafix_train_gate/stageA_v5_broad_lora_preflight20.yaml
+
+Remaining deleted paths still present: none
+
+TDW sessions were not touched. GPU0/DISPLAY=:8 was not modified.

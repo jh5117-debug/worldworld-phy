@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
 import pytest
 import torch
 
+from physical_consistency.stages.stage1_physinone_cam.trainer import Stage1BranchTrainer, fixed_validation_noise_seed
 from physical_consistency.trainers.stage1_components import (
     LoRALinear,
     apply_lora_to_wan_model,
@@ -85,3 +87,58 @@ def test_apply_broad_lora_fails_when_required_group_missing() -> None:
             target_groups=("self_attention",),
             required_groups=("self_attention", "cross_attention"),
         )
+
+def test_fixed_validation_noise_seed_is_checkpoint_invariant() -> None:
+    seed_a = fixed_validation_noise_seed(
+        base_seed=42,
+        branch="high_only",
+        validation_index=7,
+        sample_id="01000_drop_orbit_left_72_seed40000",
+    )
+    seed_b = fixed_validation_noise_seed(
+        base_seed=42,
+        branch="high_only",
+        validation_index=7,
+        sample_id="01000_drop_orbit_left_72_seed40000",
+    )
+    assert seed_a == seed_b
+    assert seed_a == fixed_validation_noise_seed(
+        base_seed=42,
+        branch="high",
+        validation_index=7,
+        sample_id="01000_drop_orbit_left_72_seed40000",
+    )
+    assert seed_a != fixed_validation_noise_seed(
+        base_seed=42,
+        branch="low",
+        validation_index=7,
+        sample_id="01000_drop_orbit_left_72_seed40000",
+    )
+    assert seed_a != fixed_validation_noise_seed(
+        base_seed=42,
+        branch="high_only",
+        validation_index=8,
+        sample_id="01000_drop_orbit_left_72_seed40000",
+    )
+
+def test_fixed_timestep_sample_high_only_uses_high_noise_band() -> None:
+    trainer = object.__new__(Stage1BranchTrainer)
+    trainer.branch = "high_only"
+    trainer.cfg = SimpleNamespace(fixed_val_sample_count=4)
+    trainer.accelerator = SimpleNamespace(device=torch.device("cpu"))
+    trainer.helper = SimpleNamespace(
+        high_noise_indices=torch.tensor([8, 9]),
+        high_noise_weights=torch.tensor([1.0, 2.0]),
+        low_noise_indices=torch.tensor([1, 2]),
+        low_noise_weights=torch.tensor([3.0, 4.0]),
+        sigmas=torch.arange(10, dtype=torch.float32),
+        timesteps_schedule=torch.arange(10, dtype=torch.float32),
+        branch_for_timestep_index=lambda idx: "high" if idx >= 8 else "low",
+    )
+
+    sample = Stage1BranchTrainer._fixed_timestep_sample(trainer, validation_index=0)
+
+    assert sample.index in {8, 9}
+    assert sample.branch == "high"
+    assert sample.timestep.item() >= 8
+

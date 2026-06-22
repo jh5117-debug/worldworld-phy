@@ -140,3 +140,19 @@ Interpretation:
 
 The run is now past model-loading and early optimizer-step smoke. It is training for real on GPU1-7, with metrics and monitor logs being written. It must remain `RUNNING_NOT_FINAL` until the low and high branches finish and the normal-loss gate evaluates the required minimum/target steps.
 <!-- STAGEA_V5_DATAFIX_TRAIN_20260621_END -->
+
+## 2026-06-22 Generated v5 Fast StageA Data Gate
+
+Current generated_v5 roots:
+
+- Raw HDF5 root: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/generated_v5/raw_hdf5/v5_aggressive_2x_scaleup_4000_to_5000`
+- Converted Stage1 root: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/generated_v5/converted_stage1_v1`
+- Fast preflight experiment root: `local_assets/experiments/fast_stageA_high_only_data_gate_20260622_135505`
+
+Current caveat:
+
+- Converted metadata count reached 595 during the 2026-06-22 audit, but all converted samples were `drop + orbit_left_72`.
+- This is sufficient for loader/preflight smoke only.
+- It is not a balanced official StageA snapshot.
+
+Formal StageA must wait for conversion to include multiple templates and camera variants, and must exclude the active TDW chunk.

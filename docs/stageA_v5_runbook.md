@@ -140,3 +140,21 @@ Formal run:
 - Output root: local_assets/experiments/exp_stageA_v5_datafix_train_gate/formal_stageA_high_resume_oomfix_snapshot_20260620_144547_20260622_122116
 - The run uses CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7, so rank-local cuda:0 maps to physical GPU1, not physical GPU0.
 - StageB, DPO, reward, rollout and pair mining were not run.
+
+## 2026-06-22 Runbook Update: Fast high-only StageA
+
+Use `scripts/launch_fast_stageA_high_only.sh` or an equivalent `torchrun` command with:
+
+- `CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7` for formal multi-GPU runs.
+- Never include physical GPU0.
+- `--branch_mode high_only`.
+- `--val_every_optimizer_steps` set low enough during preflight to force fixed validation.
+- `--fixed_val_sample_count` set explicitly for smoke/preflight.
+
+Required guards:
+
+- `FAST_ONLY=1`.
+- `FORBID_LINGBOT_BASE=1`.
+- `STAGEA_HIGH_ONLY=1`.
+
+Do not start formal StageA from a drop-only snapshot. Build the immutable generated_v5 snapshot only after conversion covers multiple templates and camera variants, excluding any active TDW chunk.

@@ -193,3 +193,14 @@ Current error scan:
 none
 ```
 <!-- STAGEA_V5_AUDIT_ETA_20260621_END -->
+
+## 2026-06-22 Fast StageA Direction
+
+The active StageA path has been corrected:
+
+- Use LingBot-World-Fast, not LingBot-Base.
+- StageA is high-noise-only for global camera/layout/background structure.
+- StageB is future low/mixed-noise foreground/detail refinement and is not part of the current run.
+- DPO remains later and was not run.
+
+Fast high-only preflights now pass on single GPU7, DDP GPU6/7, and DDP GPU1-7. Formal StageA is waiting for a balanced generated_v5 converted snapshot; the current converted subset is still drop/orbit_left-only.

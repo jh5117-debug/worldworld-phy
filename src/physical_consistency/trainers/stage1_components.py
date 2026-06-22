@@ -573,6 +573,7 @@ def _patch_sdpa_fallback_precision(wan_attention_module) -> None:
 
 
 MODEL_SUBFOLDERS = ("low_noise_model", "high_noise_model")
+FAST_MODEL_SUBFOLDER = "lingbot_world_fast"
 MODEL_TYPE_TO_SUBFOLDER = {
     "low": "low_noise_model",
     "high": "high_noise_model",
@@ -749,6 +750,7 @@ class LingBotStage1Helper:
         LOGGER.info("Stage1 helper: importing Wan runtime modules from %s", lingbot_root)
         import wan.modules.model as wan_model_module
         from wan.modules.model import WanModel
+        from wan.modules.model_fast import WanModelFast
         from wan.modules.t5 import T5EncoderModel
         from wan.modules.vae2_1 import Wan2_1_VAE
         from wan.utils.cam_utils import (
@@ -763,6 +765,7 @@ class LingBotStage1Helper:
         _patch_sdpa_fallback_precision(wan_attention_module)
         _patch_flash_attention_sdpa_fallback(wan_attention_module, wan_model_module)
         self.WanModel = WanModel
+        self.WanModelFast = WanModelFast
         self.T5EncoderModel = T5EncoderModel
         self.Wan2_1_VAE = Wan2_1_VAE
         self.cam_utils = {
@@ -785,10 +788,10 @@ class LingBotStage1Helper:
             start_time = time.perf_counter()
             LOGGER.info(
                 "Stage1 helper: initializing VAE from %s",
-                os.path.join(self.args.base_model_dir, "Wan2.1_VAE.pth"),
+                os.path.join(getattr(self.args, "shared_assets_dir", self.args.base_model_dir), "Wan2.1_VAE.pth"),
             )
             self.vae = self.Wan2_1_VAE(
-                vae_pth=os.path.join(self.args.base_model_dir, "Wan2.1_VAE.pth"),
+                vae_pth=os.path.join(getattr(self.args, "shared_assets_dir", self.args.base_model_dir), "Wan2.1_VAE.pth"),
                 device=self.device,
             )
             LOGGER.info("Stage1 helper: VAE ready in %.2fs", time.perf_counter() - start_time)
@@ -806,14 +809,14 @@ class LingBotStage1Helper:
             start_time = time.perf_counter()
             LOGGER.info(
                 "Stage1 helper: initializing T5 from %s",
-                os.path.join(self.args.base_model_dir, "models_t5_umt5-xxl-enc-bf16.pth"),
+                os.path.join(getattr(self.args, "shared_assets_dir", self.args.base_model_dir), "models_t5_umt5-xxl-enc-bf16.pth"),
             )
             self.t5 = self.T5EncoderModel(
                 text_len=512,
                 dtype=torch.bfloat16,
                 device=torch.device("cpu"),
-                checkpoint_path=os.path.join(self.args.base_model_dir, "models_t5_umt5-xxl-enc-bf16.pth"),
-                tokenizer_path=os.path.join(self.args.base_model_dir, "google", "umt5-xxl"),
+                checkpoint_path=os.path.join(getattr(self.args, "shared_assets_dir", self.args.base_model_dir), "models_t5_umt5-xxl-enc-bf16.pth"),
+                tokenizer_path=os.path.join(getattr(self.args, "shared_assets_dir", self.args.base_model_dir), "google", "umt5-xxl"),
             )
             module = getattr(self.t5, "model", None)
             if module is not None and hasattr(module, "to"):
@@ -841,26 +844,57 @@ class LingBotStage1Helper:
             device,
         )
         self.ensure_runtime_components(device)
-        subfolder = get_model_subfolder(model_type)
-        checkpoint_root = str(checkpoint_dir or self.args.stage1_ckpt_dir)
         control_type = str(control_type).strip().lower()
         if control_type not in {"act", "cam"}:
             raise ValueError(f"Unsupported control_type: {control_type}")
-        LOGGER.info("Loading %s from %s", subfolder, checkpoint_root)
         model_dtype = torch.float32 if _stage1_force_fp32() else resolve_stage1_low_precision_dtype()
-        start_time = time.perf_counter()
-        model = self.WanModel.from_pretrained(
-            checkpoint_root,
-            subfolder=subfolder,
-            torch_dtype=model_dtype,
-            control_type=control_type,
-        )
-        LOGGER.info(
-            "Stage1 helper: WanModel.from_pretrained finished in %.2fs (subfolder=%s dtype=%s)",
-            time.perf_counter() - start_time,
-            subfolder,
-            model_dtype,
-        )
+        model_family = getattr(self.args, "model_family", "lingbot_base")
+        if model_family == "lingbot_world_fast":
+            if model_type not in {"high", "high_only"}:
+                raise ValueError("LingBot-Fast StageA may only load the high_only policy path")
+            shared_root = Path(getattr(self.args, "shared_assets_dir", self.args.base_model_dir)).resolve()
+            fast_root = Path(getattr(self.args, "fast_checkpoint_dir", shared_root / FAST_MODEL_SUBFOLDER)).resolve()
+            if FAST_MODEL_SUBFOLDER not in fast_root.parts or not fast_root.exists():
+                raise ValueError(f"Fast policy path must exist under {FAST_MODEL_SUBFOLDER}: {fast_root}")
+            if any(part in {"low_noise_model", "high_noise_model"} for part in fast_root.parts):
+                raise ValueError(f"Refusing Base branch policy path for Fast StageA: {fast_root}")
+            try:
+                subfolder = str(fast_root.relative_to(shared_root))
+            except ValueError as exc:
+                raise ValueError(f"fast_checkpoint_dir must live under shared_assets_dir: {fast_root} vs {shared_root}") from exc
+            checkpoint_root = str(shared_root)
+            LOGGER.info("Loading LingBot-World-Fast policy from %s (shared_root=%s subfolder=%s)", fast_root, shared_root, subfolder)
+            start_time = time.perf_counter()
+            model = self.WanModelFast.from_pretrained(
+                checkpoint_root,
+                subfolder=subfolder,
+                torch_dtype=model_dtype,
+                low_cpu_mem_usage=False,
+                control_type=control_type,
+            )
+            LOGGER.info(
+                "Stage1 helper: WanModelFast.from_pretrained finished in %.2fs (policy_realpath=%s dtype=%s)",
+                time.perf_counter() - start_time,
+                fast_root,
+                model_dtype,
+            )
+        else:
+            subfolder = get_model_subfolder(model_type)
+            checkpoint_root = str(checkpoint_dir or self.args.stage1_ckpt_dir)
+            LOGGER.info("Loading %s from %s", subfolder, checkpoint_root)
+            start_time = time.perf_counter()
+            model = self.WanModel.from_pretrained(
+                checkpoint_root,
+                subfolder=subfolder,
+                torch_dtype=model_dtype,
+                control_type=control_type,
+            )
+            LOGGER.info(
+                "Stage1 helper: WanModel.from_pretrained finished in %.2fs (subfolder=%s dtype=%s)",
+                time.perf_counter() - start_time,
+                subfolder,
+                model_dtype,
+            )
         if _stage1_force_fp32() and hasattr(model, "float"):
             model.float()
             LOGGER.info("Forced Stage1 student model to fp32 for numerical stability (PC_STAGE1_FORCE_FP32=1)")
@@ -1162,7 +1196,7 @@ class LingBotStage1Helper:
         if model_type == "dual":
             indices = self.all_indices
             weights = self.all_weights
-        elif model_type == "high":
+        elif model_type in {"high", "high_only"}:
             indices = self.high_noise_indices
             weights = self.high_noise_weights
         else:
@@ -1219,9 +1253,29 @@ def apply_gradient_checkpointing(
 
     def _make_ckpt(fn):
         @wraps(fn)
-        def _wrapped(x, e, seq_lens, grid_sizes, freqs, context, context_lens, dit_cond_dict=None):
+        def _wrapped(
+            x,
+            e,
+            seq_lens,
+            grid_sizes,
+            freqs,
+            context,
+            context_lens,
+            dit_cond_dict=None,
+            kv_cache=None,
+            crossattn_cache=None,
+            current_start=0,
+            max_attention_size=1_000_000,
+        ):
             def _forward(*tensor_args):
-                return fn(*tensor_args, dit_cond_dict=dit_cond_dict)
+                return fn(
+                    *tensor_args,
+                    dit_cond_dict=dit_cond_dict,
+                    kv_cache=kv_cache,
+                    crossattn_cache=crossattn_cache,
+                    current_start=current_start,
+                    max_attention_size=max_attention_size,
+                )
 
             checkpoint_args = (x, e, seq_lens, grid_sizes, freqs, context, context_lens)
             if use_reentrant and not any(
@@ -1644,7 +1698,21 @@ def apply_memory_efficient_wan_block_patch(
         if not all(hasattr(block, attr) for attr in required_attrs):
             continue
 
-        def _forward(self, x, e, seq_lens, grid_sizes, freqs, context, context_lens, dit_cond_dict=None):
+        def _forward(
+            self,
+            x,
+            e,
+            seq_lens,
+            grid_sizes,
+            freqs,
+            context,
+            context_lens,
+            dit_cond_dict=None,
+            kv_cache=None,
+            crossattn_cache=None,
+            current_start=0,
+            max_attention_size=1_000_000,
+        ):
             _wan_trace("block_enter", block=self, tensors={"x": x}, sync=True)
             target_dtype = x.dtype
             e = (
@@ -1666,7 +1734,20 @@ def apply_memory_efficient_wan_block_patch(
                 tensors={"self_attn_input": self_attn_input},
                 sync=True,
             )
-            y = self.self_attn(self_attn_input, seq_lens, grid_sizes, freqs)
+            self_attn_forward = getattr(self.self_attn, "forward", None)
+            self_attn_vars = getattr(getattr(self_attn_forward, "__code__", None), "co_varnames", ())
+            if "max_attention_size" in self_attn_vars:
+                y = self.self_attn(
+                    self_attn_input,
+                    seq_lens,
+                    grid_sizes,
+                    freqs,
+                    kv_cache,
+                    current_start,
+                    max_attention_size,
+                )
+            else:
+                y = self.self_attn(self_attn_input, seq_lens, grid_sizes, freqs)
             _wan_trace("after_self_attn", block=self, tensors={"y": y}, sync=True)
             x = _apply_gated_residual(x, y, e[2])
             _wan_trace("after_self_attn_residual", block=self, tensors={"x": x}, sync=True)
@@ -1678,7 +1759,12 @@ def apply_memory_efficient_wan_block_patch(
             _wan_trace("before_cross_attn_norm", block=self, tensors={"x": x}, sync=True)
             cross_input = self.norm3(x).to(target_dtype)
             _wan_trace("before_cross_attn", block=self, tensors={"cross_input": cross_input}, sync=True)
-            x = x + self.cross_attn(cross_input, context, context_lens)
+            cross_attn_forward = getattr(self.cross_attn, "forward", None)
+            cross_attn_vars = getattr(getattr(cross_attn_forward, "__code__", None), "co_varnames", ())
+            if "crossattn_cache" in cross_attn_vars:
+                x = x + self.cross_attn(cross_input, context, context_lens, crossattn_cache=crossattn_cache)
+            else:
+                x = x + self.cross_attn(cross_input, context, context_lens)
             _wan_trace("after_cross_attn", block=self, tensors={"x": x}, sync=True)
 
             _wan_trace("before_ffn", block=self, tensors={"x": x}, sync=True)

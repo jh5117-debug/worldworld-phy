@@ -42,12 +42,15 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train Stage-1 PhysInOne LoRA.")
     parser.add_argument("--config", type=str, default=str(CONFIG_DIR / "train_stage1_physinone_cam.yaml"))
     parser.add_argument("--env_file", type=str, default=str(CONFIG_DIR / "path_config_cluster.env"))
-    parser.add_argument("--branch_mode", type=str, default="sequence", choices=["sequence", "low", "high"])
+    parser.add_argument("--branch_mode", type=str, default="sequence", choices=["sequence", "low", "high", "high_only"])
     parser.add_argument("--source_checkpoint_dir", type=str, default="")
     parser.add_argument("--companion_checkpoint_dir", type=str, default="")
     parser.add_argument("--experiment_name", type=str, default="")
     parser.add_argument("--dataset_dir", type=str, default="")
     parser.add_argument("--base_model_dir", type=str, default="")
+    parser.add_argument("--shared_assets_dir", type=str, default="")
+    parser.add_argument("--fast_checkpoint_dir", type=str, default="")
+    parser.add_argument("--model_family", type=str, default="")
     parser.add_argument("--lingbot_code_dir", type=str, default="")
     parser.add_argument("--control_type", type=str, default="", choices=["", "cam", "act"])
     parser.add_argument("--output_root", type=str, default="")
@@ -62,6 +65,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--diagnostic_stop_optimizer_steps", type=int, default=None)
     parser.add_argument("--min_train_optimizer_steps", type=int, default=None)
     parser.add_argument("--save_every_optimizer_steps", type=int, default=None)
+    parser.add_argument("--val_every_optimizer_steps", type=int, default=None)
+    parser.add_argument("--fixed_val_sample_count", type=int, default=None)
     return parser.parse_args()
 
 
@@ -82,10 +87,25 @@ def main() -> None:
         args.branch_mode,
         cfg.output_dir,
     )
-    source_checkpoint_dir = str(Path(args.source_checkpoint_dir).resolve()) if args.source_checkpoint_dir else cfg.base_model_dir
-    companion_checkpoint_dir = (
-        str(Path(args.companion_checkpoint_dir).resolve()) if args.companion_checkpoint_dir else cfg.base_model_dir
-    )
+
+    # Fast StageA guard: the Fast policy is a single model trained with high-noise sampling only.
+    if cfg.model_family == "lingbot_world_fast":
+        os.environ.setdefault("FAST_ONLY", "1")
+        os.environ.setdefault("FORBID_LINGBOT_BASE", "1")
+        os.environ.setdefault("STAGEA_HIGH_ONLY", "1")
+        if args.branch_mode != "high_only":
+            raise ValueError("LingBot-Fast StageA must run with --branch_mode high_only; low/sequence/mixed are forbidden")
+        if args.companion_checkpoint_dir:
+            raise ValueError("LingBot-Fast StageA must not use a companion low/Base checkpoint")
+        LOGGER.info("Fast StageA guard enabled: FAST_ONLY=1 FORBID_LINGBOT_BASE=1 STAGEA_HIGH_ONLY=1")
+    if cfg.model_family == "lingbot_world_fast":
+        source_checkpoint_dir = cfg.shared_assets_dir
+        companion_checkpoint_dir = ""
+    else:
+        source_checkpoint_dir = str(Path(args.source_checkpoint_dir).resolve()) if args.source_checkpoint_dir else cfg.base_model_dir
+        companion_checkpoint_dir = (
+            str(Path(args.companion_checkpoint_dir).resolve()) if args.companion_checkpoint_dir else cfg.base_model_dir
+        )
 
     if args.branch_mode == "low":
         low_result = Stage1BranchTrainer(
@@ -130,10 +150,10 @@ def main() -> None:
             dist.barrier()
         return
 
-    if args.branch_mode == "high":
+    if args.branch_mode in {"high", "high_only"}:
         high_result = Stage1BranchTrainer(
             cfg,
-            branch="high",
+            branch="high_only" if cfg.model_family == "lingbot_world_fast" else "high",
             source_checkpoint_dir=source_checkpoint_dir,
             companion_checkpoint_dir=companion_checkpoint_dir,
         ).run()
@@ -164,9 +184,10 @@ def main() -> None:
                 },
             )
             LOGGER.info(
-                "[Stage1] Run finished at %s (duration_seconds=%.1f branch_mode=high final_branch_dir=%s)",
+                "[Stage1] Run finished at %s (duration_seconds=%.1f branch_mode=%s final_branch_dir=%s)",
                 _isoformat_local(finished_at),
                 duration_seconds,
+                args.branch_mode,
                 high_result.final_branch_dir,
             )
         if dist.is_initialized():

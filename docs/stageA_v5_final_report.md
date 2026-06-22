@@ -207,3 +207,18 @@ Formal run:
 - Output root: local_assets/experiments/exp_stageA_v5_datafix_train_gate/formal_stageA_high_resume_oomfix_snapshot_20260620_144547_20260622_122116
 - The run uses CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7, so rank-local cuda:0 maps to physical GPU1, not physical GPU0.
 - StageB, DPO, reward, rollout and pair mining were not run.
+
+## 2026-06-22 Interim Final Status
+
+Final StageA is not complete yet.
+
+What is complete:
+
+- Wrong Base low/high training path was stopped and removed from active use.
+- LingBot-World-Fast high-only loader, BF16 path, broad-LoRA gradients, optimizer steps, fixed validation and 7-GPU DDP launch path were validated.
+
+What is blocked:
+
+- Official formal StageA still waits for a balanced generated_v5 converted snapshot. The current converted set is still `drop + orbit_left_72` only.
+
+Do not mark StageA final PASS until formal high-only Fast training runs on an immutable balanced snapshot and passes the loss-normal gate.

@@ -229,3 +229,21 @@ Formal run:
 - Output root: local_assets/experiments/exp_stageA_v5_datafix_train_gate/formal_stageA_high_resume_oomfix_snapshot_20260620_144547_20260622_122116
 - The run uses CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7, so rank-local cuda:0 maps to physical GPU1, not physical GPU0.
 - StageB, DPO, reward, rollout and pair mining were not run.
+
+## 2026-06-22 Training Status Update
+
+The earlier Base high-resume training is superseded and should not be interpreted as a StageA result.
+
+Current valid training status:
+
+- Fast single-GPU preflight: PASS, 20/20 steps on physical GPU7.
+- Fast two-GPU DDP fixed-val preflight: PASS, 4/4 steps on physical GPU6/7.
+- Fast seven-GPU DDP fixed-val preflight: PASS, 2/2 steps on physical GPU1-7.
+- Fixed validation is now forced during preflight and produces finite values.
+- Formal StageA training has not started because the converted generated_v5 snapshot is not balanced yet.
+
+Safety status:
+
+- GPU0 was not used for training.
+- TDW GPU0 generation sessions remained alive.
+- No StageB, DPO, reward scoring, rollout or pair mining was run.

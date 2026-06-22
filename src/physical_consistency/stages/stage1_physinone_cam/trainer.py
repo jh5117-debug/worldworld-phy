@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import gc
+import hashlib
 import json
 import logging
 import math
@@ -89,6 +90,27 @@ class BranchTrainResult:
     micro_step: int
 
 
+def fixed_validation_noise_seed(
+    *,
+    base_seed: int,
+    branch: str,
+    validation_index: int,
+    sample_id: str | int | None = None,
+) -> int:
+    """Return a checkpoint-invariant seed for fixed validation noise.
+
+    The fixed validation gate must compare checkpoints under exactly the same
+    condition, including the noise tensor. Do not include global step, epoch,
+    wall-clock time, rank state, or any mutable training counter here.
+    """
+
+    normalized_branch = "high" if branch == "high_only" else str(branch)
+    branch_offset = 500000 if normalized_branch == "high" else 0
+    sample_text = "" if sample_id is None else str(sample_id)
+    sample_hash = int(hashlib.sha256(sample_text.encode("utf-8")).hexdigest()[:8], 16)
+    return int(base_seed) + 1000003 + int(validation_index) * 9176 + branch_offset + sample_hash
+
+
 class Stage1BranchTrainer:
     """Train one LingBot MoE branch with PhysInOne conditioning and FM loss."""
 
@@ -100,8 +122,10 @@ class Stage1BranchTrainer:
         source_checkpoint_dir: str,
         companion_checkpoint_dir: str,
     ) -> None:
-        if branch not in {"low", "high"}:
+        if branch not in {"low", "high", "high_only"}:
             raise ValueError(f"Unsupported branch: {branch}")
+        if cfg.model_family == "lingbot_world_fast" and branch != "high_only":
+            raise ValueError("LingBot-Fast StageA only supports branch=high_only")
         self.cfg = cfg
         self.branch = branch
         self.source_checkpoint_dir = str(Path(source_checkpoint_dir).resolve())
@@ -972,7 +996,7 @@ class Stage1BranchTrainer:
         return summary
 
     def _fixed_timestep_sample(self, validation_index: int) -> TimestepSample:
-        if self.branch == "high":
+        if self.branch in {"high", "high_only"}:
             indices = self.helper.high_noise_indices
             weights = self.helper.high_noise_weights
         else:
@@ -1055,11 +1079,12 @@ class Stage1BranchTrainer:
             if fixed_validation:
                 generator = torch.Generator(device=video_latent.device)
                 generator.manual_seed(
-                    int(self.cfg.seed)
-                    + 1000003
-                    + int(self.global_step) * 1009
-                    + int(validation_index) * 9176
-                    + (0 if self.branch == "low" else 500000)
+                    fixed_validation_noise_seed(
+                        base_seed=int(self.cfg.seed),
+                        branch=self.branch,
+                        validation_index=int(validation_index),
+                        sample_id=batch.get("sample_id", batch.get("clip_id", "")),
+                    )
                 )
                 noise = torch.randn(
                     video_latent.shape,
@@ -1129,7 +1154,10 @@ class Stage1BranchTrainer:
     def _save_branch_checkpoint(self, *, tag: str) -> Path:
         save_root = self.output_dir / "branches" / tag
         save_root.mkdir(parents=True, exist_ok=True)
-        branch_dir = save_root / ("low_noise_model" if self.branch == "low" else "high_noise_model")
+        if self.cfg.model_family == "lingbot_world_fast":
+            branch_dir = save_root / "fast_stageA_high_noise_adapter"
+        else:
+            branch_dir = save_root / ("low_noise_model" if self.branch == "low" else "high_noise_model")
         self.accelerator.wait_for_everyone()
         if self.accelerator.is_main_process:
             unwrapped = self.accelerator.unwrap_model(self.model)

@@ -198,3 +198,25 @@ Formal run:
 - Output root: local_assets/experiments/exp_stageA_v5_datafix_train_gate/formal_stageA_high_resume_oomfix_snapshot_20260620_144547_20260622_122116
 - The run uses CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7, so rank-local cuda:0 maps to physical GPU1, not physical GPU0.
 - StageB, DPO, reward, rollout and pair mining were not run.
+
+## 2026-06-22 Correction: Base low/high path is invalid for StageA
+
+The previous Base low/high or high-resume outputs are no longer considered valid StageA artifacts. They were stopped and removed from the active experiment path.
+
+Corrected StageA requirements:
+
+- Model family: LingBot-World-Fast only.
+- Branch mode: `high_only`.
+- Noise policy: `high_only`.
+- High-noise probability: `1.0`.
+- Low-noise probability: `0.0`.
+- No companion low checkpoint.
+- No Base teacher or Base adapter initialization.
+
+Preflight status:
+
+- Single GPU7: 20/20 optimizer steps, finite loss, all four broad-LoRA groups received gradients.
+- DDP GPU6/7: 4/4 optimizer steps, fixed validation finite at steps 2 and 4.
+- DDP GPU1-7: 2/2 optimizer steps, fixed validation finite at steps 1 and 2.
+
+Formal StageA is paused until generated_v5 conversion produces a balanced snapshot across templates/camera variants. The currently converted set is still drop/orbit_left-only and must not be used as the official warmup dataset.

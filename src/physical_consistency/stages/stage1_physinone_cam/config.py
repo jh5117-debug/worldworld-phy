@@ -76,6 +76,8 @@ class Stage1PhysInOneConfig:
     run_group: str
     seed: int
     base_model_dir: str
+    shared_assets_dir: str
+    fast_checkpoint_dir: str
     dataset_dir: str
     physinone_raw_dir: str
     lingbot_code_dir: str
@@ -86,6 +88,11 @@ class Stage1PhysInOneConfig:
     config_path: str
     config_hash: str
     env_file: str
+    model_family: str = "lingbot_base"
+    forbid_base_policy: bool = False
+    noise_policy: str = "branch"
+    high_noise_probability: float = 0.0
+    low_noise_probability: float = 1.0
     learning_rate: float = 1.0e-5
     weight_decay: float = 0.01
     num_epochs: int = 5
@@ -186,6 +193,20 @@ class Stage1PhysInOneConfig:
         output_root = _override_str("output_root", path_cfg.output_root)
         dataset_dir = _override_str("dataset_dir", path_cfg.physinone_cam_dir)
         base_model_dir = _override_str("base_model_dir", path_cfg.base_model_dir)
+        shared_assets_dir = _override_str("shared_assets_dir", payload.get("shared_assets_dir", base_model_dir) or base_model_dir)
+        fast_checkpoint_dir = _override_str("fast_checkpoint_dir", payload.get("fast_checkpoint_dir", str(Path(shared_assets_dir) / "lingbot_world_fast")) or str(Path(shared_assets_dir) / "lingbot_world_fast"))
+        model_family = str(payload.get("model_family", "lingbot_base") or "lingbot_base").strip().lower()
+        if model_family in {"fast", "lingbot-fast", "lingbot_world_fast"}:
+            model_family = "lingbot_world_fast"
+        if model_family not in {"lingbot_base", "lingbot_world_fast"}:
+            raise ValueError(f"Unsupported model_family: {model_family}")
+        forbid_base_policy = _coerce_bool(payload.get("forbid_base_policy"), model_family == "lingbot_world_fast")
+        noise_policy = str(payload.get("noise_policy", "high_only" if model_family == "lingbot_world_fast" else "branch") or "branch").strip().lower()
+        high_noise_probability = float(payload.get("high_noise_probability", 1.0 if noise_policy == "high_only" else 0.0) or 0.0)
+        low_noise_probability = float(payload.get("low_noise_probability", 0.0 if noise_policy == "high_only" else 1.0) or 0.0)
+        if model_family == "lingbot_world_fast":
+            if noise_policy != "high_only" or high_noise_probability != 1.0 or low_noise_probability != 0.0:
+                raise ValueError("LingBot-Fast StageA must use noise_policy=high_only, high_noise_probability=1.0, low_noise_probability=0.0")
         physinone_raw_dir = _override_str("physinone_raw_dir", path_cfg.physinone_raw_dir)
         lingbot_code_dir = _override_str("lingbot_code_dir", path_cfg.lingbot_code_dir)
         wandb_dir = _override_str("wandb_dir", path_cfg.wandb_dir)
@@ -236,6 +257,13 @@ class Stage1PhysInOneConfig:
             run_group=run_group,
             seed=seed,
             base_model_dir=base_model_dir,
+            shared_assets_dir=shared_assets_dir,
+            fast_checkpoint_dir=fast_checkpoint_dir,
+            model_family=model_family,
+            forbid_base_policy=forbid_base_policy,
+            noise_policy=noise_policy,
+            high_noise_probability=high_noise_probability,
+            low_noise_probability=low_noise_probability,
             dataset_dir=dataset_dir,
             physinone_raw_dir=physinone_raw_dir,
             lingbot_code_dir=lingbot_code_dir,
@@ -258,7 +286,7 @@ class Stage1PhysInOneConfig:
             height=_override_int("height", int(payload.get("height", 480) or 480)),
             width=_override_int("width", int(payload.get("width", 480) or 480)),
             dataset_repeat=int(payload.get("dataset_repeat", 1) or 1),
-            num_workers=int(payload.get("num_workers", 4) or 4),
+            num_workers=int(payload["num_workers"]) if payload.get("num_workers", "") not in {"", None} else 4,
             save_every_n_epochs=_override_int("save_every_n_epochs", 1),
             max_train_micro_steps=int(payload.get("max_train_micro_steps", 0) or 0),
             max_train_optimizer_steps=_override_int(
@@ -282,8 +310,14 @@ class Stage1PhysInOneConfig:
             optimizer_beta1=float((payload.get("optimizer_betas") or [0.9, 0.95])[0] if payload.get("optimizer_betas") else payload.get("optimizer_beta1", 0.9) or 0.9),
             optimizer_beta2=float((payload.get("optimizer_betas") or [0.9, 0.95])[1] if payload.get("optimizer_betas") else payload.get("optimizer_beta2", 0.95) or 0.95),
             temporal_window_mode=str(payload.get("temporal_window_mode", "random_window") or "random_window"),
-            val_every_optimizer_steps=int(payload.get("val_every_optimizer_steps", 100) or 100),
-            fixed_val_sample_count=int(payload.get("fixed_val_sample_count", 32) or 32),
+            val_every_optimizer_steps=_override_int(
+                "val_every_optimizer_steps",
+                int(payload.get("val_every_optimizer_steps", 100) or 100),
+            ),
+            fixed_val_sample_count=_override_int(
+                "fixed_val_sample_count",
+                int(payload.get("fixed_val_sample_count", 32) or 32),
+            ),
             branch_step_overrides={str(k): {str(kk): int(vv) for kk, vv in dict(v).items()} for k, v in dict(payload.get("branch_step_overrides") or {}).items()} or {
                 "low": {"min_optimizer_steps": 800, "target_optimizer_steps": 1200, "hard_max_optimizer_steps": 1600},
                 "high": {"min_optimizer_steps": 1000, "target_optimizer_steps": 1600, "hard_max_optimizer_steps": 2200},
@@ -347,6 +381,8 @@ class Stage1PhysInOneConfig:
             videophy2_eval=VideoPhy2EvalConfig.from_payload(payload.get("videophy2_eval")),
         )
     def branch_step_limits(self, branch: str) -> dict[str, int]:
+        if branch == "high_only":
+            branch = "high"
         defaults = {
             "low": {"min_optimizer_steps": 800, "target_optimizer_steps": 1200, "hard_max_optimizer_steps": 1600},
             "high": {"min_optimizer_steps": 1000, "target_optimizer_steps": 1600, "hard_max_optimizer_steps": 2200},
@@ -358,4 +394,3 @@ class Stage1PhysInOneConfig:
             "target_optimizer_steps": int(payload.get("target_optimizer_steps", self.max_train_optimizer_steps or 0)),
             "hard_max_optimizer_steps": int(payload.get("hard_max_optimizer_steps", self.max_train_optimizer_steps or 0)),
         }
-

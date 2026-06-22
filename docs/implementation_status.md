@@ -217,3 +217,22 @@ Formal run:
 - Output root: local_assets/experiments/exp_stageA_v5_datafix_train_gate/formal_stageA_high_resume_oomfix_snapshot_20260620_144547_20260622_122116
 - The run uses CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7, so rank-local cuda:0 maps to physical GPU1, not physical GPU0.
 - StageB, DPO, reward, rollout and pair mining were not run.
+
+## 2026-06-22 Implementation Status Correction
+
+The old Base low/high StageA implementation path is no longer active. The current implementation target is LingBot-World-Fast high-only StageA.
+
+Implemented and tested:
+
+- Fast-only guard in runner/config.
+- Base policy rejection for Fast StageA.
+- `high_only` timestep sampling and fixed validation seed stability.
+- CLI overrides for `val_every_optimizer_steps` and `fixed_val_sample_count`.
+- Final run logging preserves `branch_mode=high_only`.
+- Single-GPU, two-GPU DDP and seven-GPU DDP preflights passed.
+
+Still pending:
+
+- Balanced generated_v5 immutable snapshot.
+- Formal high-only StageA run on that snapshot.
+- Final loss-normal gate and generation smoke.
