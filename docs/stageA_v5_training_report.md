@@ -1,3 +1,15 @@
+# Current Training Status - 2026-06-22 17:18 CST
+
+No formal StageA training is currently running. GPU1-7 are idle and GPU0 remains reserved for TDW/Unity only. The two TDW tmux sessions remain active and untouched.
+
+The previous Base low/high training path is invalid for StageA and has been superseded by the corrected LingBot-World-Fast high-only path. The corrected Fast path has passed:
+
+- single-GPU GPU7 preflight;
+- 2-GPU DDP fixed-validation preflight on GPU6/7;
+- 7-GPU DDP fixed-validation preflight on GPU1-7.
+
+Formal high-only StageA is waiting for a balanced generated_v5 converted snapshot. Latest converted Stage1-ready count: 868 total, with drop 816, containment 18, collision 17, roll 17. This is still too imbalanced to start official training. Priority conversion workers are running for collision, roll, and containment. No StageB, DPO, reward scoring, rollout, or pair mining has been run.
+
 # StageA v5 Training Report
 
 # StageA v5 datafix/train gate status (2026-06-20)

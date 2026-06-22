@@ -1,3 +1,19 @@
+# Current Correction Status - 2026-06-22 17:18 CST
+
+The official StageA definition is now **LingBot-World-Fast high-noise-only**. The earlier Base low->high path is invalid for this project stage and must not be resumed or reported as StageA.
+
+Required StageA settings:
+
+- `model_family=lingbot_world_fast`
+- `branch_mode=high_only`
+- `noise_policy=high_only`
+- `high_noise_probability=1.0`
+- `low_noise_probability=0.0`
+- no companion low checkpoint
+- no StageB, DPO, reward, rollout, or pair mining in this phase
+
+Fast high-only preflights have passed on single GPU7, DDP GPU6/7, and DDP GPU1-7. Formal StageA has **not** started yet because the generated_v5 converted dataset is still not balanced enough for an immutable training snapshot. At the latest audit, the converted Stage1-ready set was 868 samples: drop 816, containment 18, collision 17, roll 17. Priority conversion workers for collision, roll, and containment are running while GPU0 continues TDW generation. The next gate is a balanced generated_v5 snapshot, excluding the active TDW chunk, before launching high-only StageA on GPU1-7.
+
 # StageA v5 Broad-LoRA PRD
 
 # StageA v5 datafix/train gate status (2026-06-20)

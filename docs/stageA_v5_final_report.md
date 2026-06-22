@@ -1,3 +1,15 @@
+# Current Final-Report Status - 2026-06-22 17:18 CST
+
+This is **not** a final StageA PASS report yet. The correct StageA is LingBot-World-Fast high-only; the old Base low/high outputs are invalid for the current StageA definition.
+
+Current gate status:
+
+- Fast high-only implementation and preflights: passed.
+- generated_v5 conversion: running.
+- balanced immutable snapshot: pending.
+- formal StageA high-only training: not started.
+- StageB / DPO / reward / rollout / pair mining: not run.
+
 # StageA v5 Final Report
 
 # StageA v5 datafix/train gate status (2026-06-20)

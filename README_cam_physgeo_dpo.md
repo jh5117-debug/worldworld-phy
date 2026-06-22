@@ -1,3 +1,17 @@
+# Current Project Status - 2026-06-22 17:18 CST
+
+The active StageA route is now **LingBot-World-Fast high-only**. The previous Base low->high run is retained only as invalid history and must not be used as StageA evidence, a StageB substitute, or a DPO starting point.
+
+Current status:
+
+- Fast high-only code path: implemented.
+- Fast high-only preflights: passed on GPU7, GPU6/7, and GPU1-7.
+- Formal StageA: waiting for balanced generated_v5 converted snapshot.
+- Latest converted distribution: 868 Stage1-ready samples; drop 816, containment 18, collision 17, roll 17.
+- TDW generation continues on GPU0/DISPLAY=:8 and must not be interrupted.
+- GPU1-7 are reserved for future StageA high-only training after the data gate passes.
+- StageB, DPO, reward scoring, rollout, and pair mining have not been run.
+
 # Cam-PhysGeo-DPO
 
 Camera-Conditioned Physical-Geometric Preference Alignment for LingBot-Fast / LingBot-Base.
