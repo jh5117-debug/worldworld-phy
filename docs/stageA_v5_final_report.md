@@ -1,3 +1,30 @@
+# Formal Fast High-Only StageA Launch - 2026-06-22 19:43 CST
+
+A balanced partial generated_v5 snapshot is now active for formal StageA. It contains 400 Stage1-ready samples, with 100 each for drop, collision, roll, and containment. Clean validation passed 400/400 with `raw_hdf5_valid=true`, `converted_valid=true`, and `stage1_ready=true`; blocked count is 0. The split is train 342 / val 43 / test_holdout 15.
+
+Snapshot paths:
+
+- Validation JSONL: `local_assets/experiments/fast_stageA_high_only_data_gate_20260622_135505/validation_balanced_20260622_1830/stageA_v5_validation.jsonl`
+- Snapshot manifests: `local_assets/experiments/fast_stageA_high_only_data_gate_20260622_135505/manifests/balanced_snapshot_20260622_1830/`
+- Stage1 dataset: `local_assets/experiments/fast_stageA_high_only_data_gate_20260622_135505/stage1_dataset_balanced_snapshot_20260622_1830/`
+
+Balanced snapshot GPU7 preflight passed on the same 81-frame dataset: 2 optimizer steps, finite loss and fixed validation, Fast model loaded from `lingbot_world_fast`, and broad-LoRA groups hit camera conditioning, self-attention, cross-attention, and FFN.
+
+Formal training session:
+
+- tmux: `fast_stageA_high_only_formal_balanced_20260622_1925`
+- branch: `high_only`
+- physical GPUs: 1,2,3,4,5,6,7
+- GPU0: not used for training; TDW/Xorg only
+- optimizer plan: min 400 / target 800 / hard max 1200
+- latest observed step: 3/800 at 2026-06-22 19:43 CST
+- observed losses: 0.207341 -> 0.133926 -> 0.113493
+- gate state: WAIT only because below minimum steps
+- gradients: finite; all four LoRA groups nonzero
+- memory: about 83.9 GiB used per physical GPU1-7 during active training
+
+This is still **RUNNING_NOT_FINAL**. Do not mark StageA PASS until the high-only branch reaches the configured loss-normal gate. StageB, DPO, reward, rollout, and pair mining remain not run.
+
 # Current Final-Report Status - 2026-06-22 17:18 CST
 
 This is **not** a final StageA PASS report yet. The correct StageA is LingBot-World-Fast high-only; the old Base low/high outputs are invalid for the current StageA definition.
