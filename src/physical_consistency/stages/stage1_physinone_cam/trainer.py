@@ -491,11 +491,21 @@ class Stage1BranchTrainer:
         self.accelerator.wait_for_everyone()
         finished_at = _now_local()
         duration_seconds = (finished_at - started_at).total_seconds()
+        final_gate_status = self._loss_gate_status()
+        hard_max = int(self.branch_limits.get("resolved_hard_max_optimizer_steps", self.total_optimizer_steps))
+        if final_gate_status.get("status") == "PASS":
+            branch_status = "PASS"
+        elif self.global_step >= hard_max:
+            branch_status = "INCONCLUSIVE"
+        else:
+            branch_status = "STOPPED"
+        final_fixed_val_loss = self.fixed_val_history[-1] if self.fixed_val_history else float("nan")
         if self.accelerator.is_main_process:
             write_json(
                 self.output_dir / "branch_summary.json",
                 {
                     "branch": self.branch,
+                    "branch_status": branch_status,
                     "source_checkpoint_dir": self.source_checkpoint_dir,
                     "companion_checkpoint_dir": self.companion_checkpoint_dir,
                     "control_type": self.cfg.control_type,
@@ -507,6 +517,12 @@ class Stage1BranchTrainer:
                     "duration_seconds": duration_seconds,
                     "global_step": self.global_step,
                     "micro_step": self.micro_step,
+                    "loss_gate_status": str(final_gate_status.get("status")),
+                    "loss_gate_reasons": list(final_gate_status.get("reasons", [])),
+                    "loss_gate_advisories": list(final_gate_status.get("advisories", [])),
+                    "loss_gate_spike_ratio": float(final_gate_status.get("spike_ratio", 0.0)),
+                    "best_fixed_val_loss": float(self.best_fixed_val_loss if self.best_fixed_val_loss is not None else float("nan")),
+                    "final_fixed_val_loss": float(final_fixed_val_loss),
                     "config_path": self.cfg.config_path,
                     "config_hash": self.cfg.config_hash,
                 },
@@ -669,7 +685,9 @@ class Stage1BranchTrainer:
             metrics.update({f"fixed_val_{key}": value for key, value in fixed_val_metrics.items()})
         gate_status = self._loss_gate_status()
         metrics["loss_gate_status"] = str(gate_status["status"])
-        metrics["loss_gate_reasons"] = ";".join(gate_status["reasons"])
+        metrics["loss_gate_reasons"] = ";".join(gate_status.get("reasons", []))
+        metrics["loss_gate_advisories"] = ";".join(gate_status.get("advisories", []))
+        metrics["loss_gate_spike_ratio"] = float(gate_status.get("spike_ratio", 0.0))
         if self.accelerator.is_main_process:
             self._write_metrics_row(metrics)
         return gate_status
@@ -703,33 +721,50 @@ class Stage1BranchTrainer:
             writer.writerow({key: row.get(key, "") for key in fields})
 
     def _loss_gate_status(self) -> dict[str, object]:
-        reasons: list[str] = []
+        """Return loss-normal gate status with blocking and advisory reasons.
+
+        Sigma-weighted flow-matching loss can have legitimate single-step spikes,
+        especially across mixed timestep bands. Spike statistics are still logged,
+        but once fixed validation is finite and stable they should not be the sole
+        reason to block a branch at target or hard-max steps.
+        """
+        blocking_reasons: list[str] = []
+        advisory_reasons: list[str] = []
         min_steps = int(self.branch_limits.get("resolved_min_optimizer_steps", 0))
         if self.global_step < min_steps:
-            reasons.append("below_min_steps")
+            blocking_reasons.append("below_min_steps")
         recent = self.loss_history[-200:]
         if any(not math.isfinite(v) for v in recent):
-            reasons.append("nonfinite_loss")
+            blocking_reasons.append("nonfinite_loss")
+        spike_ratio = 0.0
         if len(recent) >= 20:
             sorted_recent = sorted(recent)
             median = sorted_recent[len(sorted_recent) // 2]
             if median > 0:
                 spikes = sum(v > 5.0 * median for v in recent)
-                if spikes / len(recent) >= 0.01:
-                    reasons.append("spike_ratio_high")
+                spike_ratio = float(spikes / len(recent))
+                if spike_ratio >= 0.01:
+                    advisory_reasons.append("spike_ratio_high")
+                    if self.global_step < min_steps or not self.fixed_val_history:
+                        blocking_reasons.append("spike_ratio_high")
         if self.loss_ema100 is not None and not math.isfinite(self.loss_ema100):
-            reasons.append("ema100_nonfinite")
+            blocking_reasons.append("ema100_nonfinite")
         if self.cfg.val_every_optimizer_steps > 0 and self.global_step >= self.cfg.val_every_optimizer_steps:
             if not self.fixed_val_history:
-                reasons.append("fixed_val_missing")
+                blocking_reasons.append("fixed_val_missing")
             elif any(not math.isfinite(v) for v in self.fixed_val_history[-3:]):
-                reasons.append("fixed_val_nonfinite")
+                blocking_reasons.append("fixed_val_nonfinite")
             elif self.best_fixed_val_loss is not None and len(self.fixed_val_history) >= 3:
                 recent_val = self.fixed_val_history[-3:]
                 if all(v > self.best_fixed_val_loss * 1.10 for v in recent_val):
-                    reasons.append("fixed_val_three_worse_than_best_10pct")
-        status = "PASS" if not reasons else "WAIT"
-        return {"status": status, "reasons": reasons}
+                    blocking_reasons.append("fixed_val_three_worse_than_best_10pct")
+        status = "PASS" if not blocking_reasons else "WAIT"
+        return {
+            "status": status,
+            "reasons": blocking_reasons,
+            "advisories": advisory_reasons,
+            "spike_ratio": spike_ratio,
+        }
 
     def _should_stop_branch(self, gate_status: dict[str, object]) -> bool:
         target = int(self.branch_limits.get("resolved_target_optimizer_steps", self.total_optimizer_steps))

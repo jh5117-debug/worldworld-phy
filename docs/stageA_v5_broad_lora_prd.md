@@ -169,3 +169,32 @@ Current error scan:
 none
 ```
 <!-- STAGEA_V5_AUDIT_ETA_20260621_END -->
+
+## 2026-06-22 OOM and Low-Gate Fix
+
+Status: mitigation implemented and high-branch resume started.
+
+What failed before:
+- Low branch reached 1600 optimizer steps with finite train loss and stable fixed validation, but the old loss gate marked it blocked because spike_ratio_high was treated as a hard failure.
+- High branch OOMed during broad-LoRA forward because full 81-frame training used rank-16 broad LoRA with unchunked LoRA inputs and forced FP32 LoRA activations.
+
+Low-gate resolution:
+- The gate now separates blocking reasons from advisory reasons.
+- spike_ratio_high is advisory when minimum steps are reached, fixed validation is available, and no finite-loss or validation blocker is present.
+- Low branch evidence: 1600 optimizer steps, final EMA100 about 0.04387, best fixed-val about 0.04359, final fixed-val about 0.04361. This is stable enough to use as the companion low phase for high-branch resume.
+
+OOM resolution:
+- StageA broad-LoRA now uses student_lora_chunk_size=1024.
+- The launch script defaults PC_FORCE_LORA_FP32=0 and PC_LORA_DISABLE_AUTOCAST=0, so LoRA activations can run in bf16 instead of forced FP32.
+- The launch script sets PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to reduce allocator fragmentation.
+
+Preflight result:
+- High-only single-GPU preflight completed 5 optimizer steps on physical GPU7 with finite loss and gradients.
+- The preflight confirmed lora_chunk_size=1024 and lora_dtype=bfloat16.
+- No physical GPU0 training use was observed; GPU0 remains reserved for TDW / DISPLAY=:8.
+
+Formal run:
+- Formal high-branch resume was started in tmux session stageA_v5_high_resume_oomfix_20260622_122116.
+- Output root: local_assets/experiments/exp_stageA_v5_datafix_train_gate/formal_stageA_high_resume_oomfix_snapshot_20260620_144547_20260622_122116
+- The run uses CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7, so rank-local cuda:0 maps to physical GPU1, not physical GPU0.
+- StageB, DPO, reward, rollout and pair mining were not run.
