@@ -390,6 +390,7 @@ class Stage1BranchTrainer:
         LOGGER.info("[Stage1][%s] Post-prepare barrier complete", self.branch)
 
         last_eval_bundle = ""
+        branch_stop_requested = False
         for epoch in range(self.cfg.num_epochs):
             epoch_index = epoch + 1
             self.model.train()
@@ -467,9 +468,13 @@ class Stage1BranchTrainer:
                                     self.branch,
                                     self.global_step,
                                 )
+                            branch_stop_requested = True
                             break
                         if self._should_stop_branch(gate_status):
+                            branch_stop_requested = True
                             break
+                if branch_stop_requested:
+                    break
                 if self.cfg.max_train_micro_steps > 0 and self.micro_step >= self.cfg.max_train_micro_steps:
                     break
                 if (
@@ -490,6 +495,8 @@ class Stage1BranchTrainer:
                 checkpoint_root = self._save_branch_checkpoint(tag=f"epoch_{epoch_index}")
             if should_eval and checkpoint_root is not None:
                 last_eval_bundle = self._run_epoch_eval(epoch_index, checkpoint_root)
+            if branch_stop_requested:
+                break
             if self.cfg.max_train_micro_steps > 0 and self.micro_step >= self.cfg.max_train_micro_steps:
                 break
             if (

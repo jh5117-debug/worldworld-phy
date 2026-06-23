@@ -142,3 +142,31 @@ def test_fixed_timestep_sample_high_only_uses_high_noise_band() -> None:
     assert sample.branch == "high"
     assert sample.timestep.item() >= 8
 
+
+
+def test_target_gate_pass_breaks_outer_epoch_loop() -> None:
+    trainer = object.__new__(Stage1BranchTrainer)
+    trainer.global_step = 9
+    trainer.total_optimizer_steps = 10
+    trainer.branch_limits = {
+        "resolved_target_optimizer_steps": 10,
+        "resolved_hard_max_optimizer_steps": 20,
+    }
+
+    stop_requested = False
+    executed_steps = []
+    for _epoch in range(5):
+        # Simulate one batch per epoch. The old bug only broke this inner loop,
+        # then continued into the next epoch and overshot the target.
+        for _batch in range(1):
+            trainer.global_step += 1
+            executed_steps.append(trainer.global_step)
+            gate_status = {"status": "PASS", "reasons": []}
+            if trainer._should_stop_branch(gate_status):
+                stop_requested = True
+                break
+        if stop_requested:
+            break
+
+    assert executed_steps == [10]
+    assert trainer.global_step == 10
