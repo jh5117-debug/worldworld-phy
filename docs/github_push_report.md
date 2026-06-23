@@ -1,3 +1,14 @@
+# GitHub Push Report - 2026-06-24 StageA Eval / Geometry / BF16
+
+- Branch: `research/stageA-eval-sgc-epipolar-bf16-20260623`
+- Pushed commits:
+  - `443bf98` Implement Fast adapter meeting evaluation and geometry diagnostics
+  - `c2b7c23` Document BF16 formal readiness for StageA
+- Remote: `origin` -> `github-worldworld-phy-deploy:jh5117-debug/worldworld-phy.git`
+- Excluded from commit: `local_assets/`, `reports/`, HDF5/MP4/NPY/checkpoints/weights/big logs.
+
+---
+
 # Current Status Update - 2026-06-24
 
 - Formal StageA high-only optimization: PASS by fixed-val loss trend.
