@@ -1,3 +1,14 @@
+# Current Status Update - 2026-06-24
+
+- Formal StageA high-only optimization: PASS by fixed-val loss trend.
+- StageA generation quality: FAILED_OR_MIXED from 8-condition Original/step800/final883 contact sheets.
+- Epipolar and Camera-Conditioned SGC are implemented and runnable, but reward calibration is PRELIMINARY/BLOCKED for DPO because clean-over-corrupt ordering is below target.
+- generated_v5 current main-root audit: 3999 raw HDF5, 3299 converted/stage1-ready clips; snapshot is partial and imbalanced.
+- Full-data StageA long training is not launched in this task.
+- StageB, DPO, GRPO, reward pair mining, and full model finetuning were not run.
+
+---
+
 # Framework Completeness Audit
 
 A. data manifest: 8/10. Full JSONL manifest builds and validates on 2827 real samples; video probing is optional for speed.

@@ -1,3 +1,14 @@
+# Current Status Update - 2026-06-24
+
+- Formal StageA high-only optimization: PASS by fixed-val loss trend.
+- StageA generation quality: FAILED_OR_MIXED from 8-condition Original/step800/final883 contact sheets.
+- Epipolar and Camera-Conditioned SGC are implemented and runnable, but reward calibration is PRELIMINARY/BLOCKED for DPO because clean-over-corrupt ordering is below target.
+- generated_v5 current main-root audit: 3999 raw HDF5, 3299 converted/stage1-ready clips; snapshot is partial and imbalanced.
+- Full-data StageA long training is not launched in this task.
+- StageB, DPO, GRPO, reward pair mining, and full model finetuning were not run.
+
+---
+
 # Formal Fast High-Only StageA Launch - 2026-06-22 19:43 CST
 
 A balanced partial generated_v5 snapshot is now active for formal StageA. It contains 400 Stage1-ready samples, with 100 each for drop, collision, roll, and containment. Clean validation passed 400/400 with `raw_hdf5_valid=true`, `converted_valid=true`, and `stage1_ready=true`; blocked count is 0. The split is train 342 / val 43 / test_holdout 15.
