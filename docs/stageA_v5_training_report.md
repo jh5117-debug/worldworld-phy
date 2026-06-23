@@ -286,3 +286,75 @@ Safety status:
 - GPU0 was not used for training.
 - TDW GPU0 generation sessions remained alive.
 - No StageB, DPO, reward scoring, rollout or pair mining was run.
+
+## 2026-06-23 Fast High-Only Formal StageA Completion
+
+Status: PASS.
+
+This supersedes the earlier interim status above. The corrected LingBot-World-Fast high-only StageA run completed on the balanced generated_v5 snapshot.
+
+Run identity:
+
+- Branch: `research/lingbot-fast-stageA-high-only-20260622`
+- Start commit: `7aad86e Document Fast high-only StageA formal launch`
+- Experiment root: `local_assets/experiments/fast_stageA_high_only_data_gate_20260622_135505/`
+- Formal run directory: `local_assets/experiments/fast_stageA_high_only_data_gate_20260622_135505/formal_fast_stageA_high_only_balanced_snapshot_20260622_1830_20260622_1925/`
+- Dataset: balanced partial generated_v5 snapshot, 400 stage1-ready samples.
+- Split: train 342 / val 43 / test 15.
+- Templates: drop 100 / collision 100 / roll 100 / containment 100.
+- Training GPUs: physical GPU1-7.
+- GPU0: not used for training; reserved for TDW / DISPLAY=:8.
+
+Config:
+
+- Model family: `lingbot_world_fast`.
+- Branch mode: `high_only`.
+- Noise policy: high-noise only.
+- Frames: full 81-frame clips at 480x832.
+- Tuning: broad-LoRA only; no full model finetuning.
+- LoRA rank/alpha/dropout: 16 / 16 / 0.05.
+- LoRA groups: camera conditioning, self-attention, cross-attention, FFN.
+- Matched LoRA layers: 560 total: camera conditioning 160, self-attention 160, cross-attention 160, FFN 80.
+- Trainable parameters: 102,891,520 / 18,647,224,384.
+- Precision during formal run: mixed-safe bf16 with VAE fp32 and LoRA fp32 safe path.
+
+Completion:
+
+- Target optimizer steps: 800.
+- Final optimizer step: 883.
+- Final gate status: PASS.
+- Final weighted train loss: 0.0604636371.
+- Final EMA20: 0.0552539506.
+- Final EMA100: 0.0582236672.
+- Non-finite loss count: 0.
+- No OOM, SIGFPE, NaN/Inf, or traceback was observed in the final run logs.
+
+Fixed validation:
+
+| Step | Fixed-val weighted loss | Best loss | Finite |
+| --- | ---: | ---: | --- |
+| 100 | 0.1039545274 | 0.1039545274 | yes |
+| 200 | 0.0988732126 | 0.0988732126 | yes |
+| 300 | 0.0901811875 | 0.0901811875 | yes |
+| 400 | 0.0825166529 | 0.0825166529 | yes |
+| 500 | 0.0761510019 | 0.0761510019 | yes |
+| 600 | 0.0721030910 | 0.0721030910 | yes |
+| 700 | 0.0691603681 | 0.0691603681 | yes |
+| 800 | 0.0671306389 | 0.0671306389 | yes |
+
+The fixed validation loss decreased monotonically across all recorded validation checkpoints, ending at the best observed value.
+
+Final adapter/eval bundle:
+
+```text
+local_assets/experiments/fast_stageA_high_only_data_gate_20260622_135505/formal_fast_stageA_high_only_balanced_snapshot_20260622_1830_20260622_1925/checkpoints/fast_stageA_high_only_balanced_snapshot_20260622_1830/high_only_phase/branches/final
+```
+
+Safety statement:
+
+- StageB was not run.
+- DPO was not run.
+- Reward scoring was not run.
+- Rollout or pair mining was not run.
+- No full model checkpoint is committed to Git.
+- `local_assets/` remains excluded from Git.

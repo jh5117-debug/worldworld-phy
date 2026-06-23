@@ -261,3 +261,63 @@ What is blocked:
 - Official formal StageA still waits for a balanced generated_v5 converted snapshot. The current converted set is still `drop + orbit_left_72` only.
 
 Do not mark StageA final PASS until formal high-only Fast training runs on an immutable balanced snapshot and passes the loss-normal gate.
+
+## 2026-06-23 Final StageA Status
+
+Status: PASS for the corrected LingBot-World-Fast high-only StageA formal run.
+
+This section supersedes the interim status above. The balanced generated_v5 snapshot was built, the corrected high-only Fast route was launched on physical GPU1-7, and the formal loss-normal gate passed.
+
+Dataset and snapshot:
+
+- Snapshot source: generated_v5 converted stage1-ready data.
+- Snapshot status: balanced partial generated_v5 snapshot.
+- Eligible stage1-ready samples used for snapshot: 400.
+- Train/val/test: 342 / 43 / 15.
+- Template coverage: drop 100 / collision 100 / roll 100 / containment 100.
+- `use_action=false` and `control_type=cam` are preserved.
+
+Training:
+
+- Model: LingBot-World-Fast camera model.
+- Branch: high-only StageA.
+- Target optimizer steps: 800.
+- Completed optimizer steps: 883.
+- Final gate: PASS.
+- Final weighted train loss: 0.0604636371.
+- Final EMA20: 0.0552539506.
+- Final EMA100: 0.0582236672.
+- Final fixed-val loss at step 800: 0.0671306389.
+- Best fixed-val loss: 0.0671306389.
+- Fixed-val all_finite: true.
+
+LoRA:
+
+- Broad-LoRA matched 560 Linear layers.
+- Group counts: camera conditioning 160, self-attention 160, cross-attention 160, FFN 80.
+- Trainable parameters: 102,891,520.
+- Base DiT, VAE, T5/text encoder, patch embedding, output head, and non-LoRA weights remain frozen.
+
+Output bundle:
+
+```text
+local_assets/experiments/fast_stageA_high_only_data_gate_20260622_135505/formal_fast_stageA_high_only_balanced_snapshot_20260622_1830_20260622_1925/checkpoints/fast_stageA_high_only_balanced_snapshot_20260622_1830/high_only_phase/branches/final
+```
+
+Post-run BF16 LoRA preflight:
+
+- A true LingBot-World-Fast model preflight with `PC_FORCE_LORA_FP32=0` and `PC_LORA_DISABLE_AUTOCAST=0` ran after the formal training finished.
+- It completed 2/2 diagnostic optimizer steps on physical GPU7.
+- LoRA dtype was `bfloat16`.
+- The preflight fixed-val at step 2 was finite: 0.109535 weighted / 0.174363 unweighted.
+- It exited with status 0.
+
+Safety:
+
+- GPU0 was not used for training.
+- TDW/DISPLAY=:8 was not modified by StageA.
+- StageB was not run.
+- DPO was not run.
+- Reward scoring was not run.
+- Rollout and pair mining were not run.
+- `local_assets/` outputs are intentionally not committed.
