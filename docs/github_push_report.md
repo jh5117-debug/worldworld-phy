@@ -38,3 +38,22 @@ Summary:
 - Verified single-GPU, 2-GPU DDP and 7-GPU DDP high-only Fast preflights.
 - Updated PRD, runbook, training report, data locations and status docs.
 - No local_assets, HDF5, MP4, NPY, checkpoint, LoRA weight, or large log files are included in the pushed commit.
+
+## 2026-06-23 Fast High-Only StageA Completion Push
+
+Status: pushed.
+
+- Branch: `research/lingbot-fast-stageA-high-only-20260622`
+- Remote: `git@github-worldworld-phy-deploy:jh5117-debug/worldworld-phy.git`
+- Commit: `a7f755a Document Fast high-only StageA completion`
+- Files pushed:
+  - `docs/stageA_v5_training_report.md`
+  - `docs/stageA_v5_final_report.md`
+  - `docs/fast_bf16_sigfpe_investigation.md`
+- Excluded from Git:
+  - `local_assets/`
+  - training checkpoints and adapter weights
+  - generated HDF5/MP4/NPY/NPZ data
+  - large logs and experiment outputs
+
+The push records the completed LingBot-World-Fast high-only StageA PASS result and the post-run true-model BF16 LoRA preflight PASS result. StageB, DPO, reward scoring, rollout, and pair mining were not run.
