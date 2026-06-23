@@ -17,5 +17,5 @@
 - StageA optimization: PASS
 - StageA generation quality: FAILED_OR_MIXED
 - Physical consistency: PRELIMINARY
-- BF16: PRELIMINARY，单卡 20-step preflight 仍在运行中
+- BF16: FORMAL_READY，单卡/2卡/7卡 20-step preflight 均通过
 - Full-data StageA: READY_TO_PLAN，但不应在本轮直接启动长训练
