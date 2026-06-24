@@ -21,4 +21,4 @@ PY=${PY:-/home/nvme03/workspace/lingbot-world/.conda_envs/lingbot-world-v2/bin/p
 if [[ "$NPROC" == "1" ]]; then
   exec "$PY" -m physical_consistency.stages.stage1_physinone_cam.runner     --config "$CONFIG"     --branch_mode high_only     --dataset_dir "$DATASET_DIR"     --output_root "$OUTPUT_ROOT"     --experiment_name "$EXPERIMENT_NAME"     "$@"
 fi
-exec torchrun --standalone --nproc_per_node="$NPROC"   -m physical_consistency.stages.stage1_physinone_cam.runner   --config "$CONFIG"   --branch_mode high_only   --dataset_dir "$DATASET_DIR"   --output_root "$OUTPUT_ROOT"   --experiment_name "$EXPERIMENT_NAME"   "$@"
+exec "$PY" -m torch.distributed.run --standalone --nproc_per_node="$NPROC"   -m physical_consistency.stages.stage1_physinone_cam.runner   --config "$CONFIG"   --branch_mode high_only   --dataset_dir "$DATASET_DIR"   --output_root "$OUTPUT_ROOT"   --experiment_name "$EXPERIMENT_NAME"   "$@"
