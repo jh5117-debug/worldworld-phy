@@ -1,6 +1,6 @@
 # EXP_004 Anchored DPO Probe
 
-Updated: 2026-06-24 12:47:51 CST  
+Updated: 2026-06-24 15:20 CST  
 Repo: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work`  
 Branch: `research/quant-small-lora-dpo-probe-20260624`  
 Start commit: `63d1b93`  
@@ -32,6 +32,8 @@ B. GT winner vs quality-qualified bad rollout loser.
 C. high-quality rollout winner vs worse rollout loser only if winner absolute quality passes.
 
 Do not use trivial horrible losers. Loser must pass quality floor and be a hard negative in a small number of dimensions.
+
+Current broad-LoRA outputs are not automatically valid DPO losers. They can be used only if they pass the same quality floor as every other candidate. If all generated videos are too poor, use clean GT versus controlled corrupted GT first.
 
 ## Quality Floor
 

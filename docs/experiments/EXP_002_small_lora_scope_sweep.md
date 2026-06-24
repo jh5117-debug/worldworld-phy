@@ -1,6 +1,6 @@
 # EXP_002 Small-LoRA Scope Sweep
 
-Updated: 2026-06-24 12:47:51 CST  
+Updated: 2026-06-24 15:20 CST  
 Repo: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work`  
 Branch: `research/quant-small-lora-dpo-probe-20260624`  
 Start commit: `63d1b93`  
@@ -11,6 +11,8 @@ This PRD is written before experiment launch. It must be updated after results a
 ## Problem and Hypothesis
 
 Broad-LoRA over 560 Linear layers degraded generation despite fixed-val loss improvement. A smaller scope may preserve LingBot-Fast visual priors while improving camera/background consistency.
+
+The key diagnosis is that last week's tiny camera-only LoRA was visually safer because it had about 40,960 trainable parameters and mostly acted as a camera-condition adapter. This week's broad-LoRA had about 102.9M trainable parameters and could rewrite the main DiT denoising path. The small-LoRA sweep is therefore a correction of trainable scope, not merely another attempt to reduce training loss.
 
 Hypothesis: camera-only or limited attention LoRA with low rank can avoid foreground/physics degradation seen in broad-LoRA.
 

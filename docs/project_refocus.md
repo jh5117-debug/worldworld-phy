@@ -5,6 +5,7 @@
 - Current focus: Quantitative Benchmark v1, small/low-rank LoRA scope sweep, Reward Calibration v2, and anchored DPO probe.
 - GPU0-7 are authorized for this round; no full-data long StageA, no StageB, no GRPO, and no large-scale DPO.
 - DPO data strategy: GT winners plus quality-bounded hard-negative losers selected from Original Fast, last-week camera-only tiny LoRA, small-LoRA sweep candidates, controlled corruptions, and broad-LoRA only if it passes loser quality floor.
+- Diagnosis: last week's better visual stability came from the extremely constrained camera-only tiny LoRA; this week's broad-LoRA touched too much of the DiT and optimized loss without preserving generation quality. See `docs/broad_lora_vs_camera_only_diagnosis.md`.
 
 ---
 
