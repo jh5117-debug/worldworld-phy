@@ -61,3 +61,38 @@ Stress benchmark uses remaining non-train camera-heavy/OOD-style rows. Current g
 ## Next
 
 After small-LoRA sweep checkpoints are available, run fixed-seed rollout for Original Fast, prior tiny camera-only LoRA, broad-LoRA step800/final883, and the four small-LoRA candidates. Then compute the quantitative metric table and perform full video audit.
+
+## Evaluation Harness Update - 2026-06-24 15:35 CST
+
+Implemented `cam_physgeo.eval.quant_benchmark_v1` as the fixed benchmark table builder. It accepts a condition manifest and one or more `LABEL=gt|manifest|directory` candidate sources, aligns by `sample_id`, and writes:
+
+- `per_sample_metrics.csv`
+- `model_summary.csv`
+- `template_breakdown.csv`
+- `camera_breakdown.csv`
+- `failure_counts.csv`
+- `summary.json`
+
+Current real-backend metrics:
+
+- video decode status
+- PSNR / SSIM / pixel-L1 proxy against GT
+- freeze rate
+- blur Laplacian
+- flicker proxy
+- quality proxy
+- Epipolar diagnostic when enabled
+- C-SGC diagnostic when enabled
+
+Metrics that still require real tracker / simulator object-state integration are explicitly marked missing instead of faked:
+
+- ADE
+- DTW trajectory distance
+- endpoint error
+- event timing error
+- Mask IoU / st-IoU
+- FG-ID
+- PES
+- RCS
+
+Smoke result: `GT=gt` on 4 benchmark samples with `--skip_geometry` passed and produced PSNR=99, SSIM=1.0, no decode failures. This validates table plumbing only; it is not model evaluation.
