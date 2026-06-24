@@ -98,3 +98,10 @@ Status: PREFLIGHT_PASS_FOR_ALL_FOUR_SCOPES.
 All four 2-GPU 5-step preflights completed with finite train and fixed-val loss. No OOM, SIGFPE, NaN/Inf, or decode failures occurred after the dataset preparation fix.
 
 A/B camera-only all-block scopes are substantially slower than C/D limited-block scopes. The sweep remains valid but will be long-running; it must stay in tmux and be monitored. The trainer scheduler was fixed to step only on true optimizer steps before launching the 200-step sweep.
+
+
+## 2026-06-24 200-Step Sweep Launch
+
+Status: RUNNING_IN_TMUX.
+
+The 200-step sweep started at timestamp `20260624_141215` using all eight GPUs in four 2-GPU groups. Early monitor at 14:43 CST showed A step3, B step2, C step6, D step7 with finite loss/grad and no OOM/SIGFPE/Traceback. Next gate is step50 fixed-val/checkpoint availability.
