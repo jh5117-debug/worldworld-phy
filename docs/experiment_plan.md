@@ -1,11 +1,10 @@
 # Current Status Update - 2026-06-24
 
-- Formal StageA high-only optimization: PASS by fixed-val loss trend.
-- StageA generation quality: FAILED_OR_MIXED from 8-condition Original/step800/final883 contact sheets.
-- Epipolar and Camera-Conditioned SGC are implemented and runnable, but reward calibration is PRELIMINARY/BLOCKED for DPO because clean-over-corrupt ordering is below target.
-- generated_v5 current main-root audit: 3999 raw HDF5, 3299 converted/stage1-ready clips; snapshot is partial and imbalanced.
-- Full-data StageA long training is not launched in this task.
-- StageB, DPO, GRPO, reward pair mining, and full model finetuning were not run.
+- New active branch: `research/quant-small-lora-dpo-probe-20260624` from `63d1b93`.
+- Broad-LoRA is no longer the main route for candidate generation because generation quality was FAILED_OR_MIXED despite fixed-val loss improvement.
+- Current focus: Quantitative Benchmark v1, small/low-rank LoRA scope sweep, Reward Calibration v2, and anchored DPO probe.
+- GPU0-7 are authorized for this round; no full-data long StageA, no StageB, no GRPO, and no large-scale DPO.
+- DPO data strategy: GT winners plus quality-bounded hard-negative losers selected from Original Fast, last-week camera-only tiny LoRA, small-LoRA sweep candidates, controlled corruptions, and broad-LoRA only if it passes loser quality floor.
 
 ---
 
