@@ -64,4 +64,25 @@ Pre-launch PRD commit: `Add quantitative benchmark and small-LoRA sweep PRDs`.
 
 ## Status
 
-PLANNED_PRELAUNCH.
+MANIFEST_READY; ROLLOUT_PENDING_SMALL_LORA_CHECKPOINTS.
+
+
+## 2026-06-24 Manifest Build Result
+
+Status: MANIFEST_READY.
+
+Generated benchmark manifests:
+
+- `manifests/quant_benchmark_v1_all.jsonl` = 80 conditions
+- `manifests/quant_benchmark_v1_core.jsonl` = 64 conditions
+- `manifests/quant_benchmark_v1_stress.jsonl` = 16 conditions
+- `manifests/quant_benchmark_v1_summary.json`
+
+Core uses val/test-holdout only and excludes train sample_id and scene_group_id. Core is balanced at 16 conditions each for drop, collision, roll, and containment. Stress uses remaining non-train camera-heavy/OOD-style conditions; current reobserve source is empty, so stress is diagnostic and does not claim true reobserve coverage.
+
+Overlap with sweep train:
+
+- sample overlap: 0
+- scene overlap: 0
+
+Rollout and metric execution are pending small-LoRA sweep checkpoints.
