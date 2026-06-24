@@ -421,9 +421,12 @@ class Stage1BranchTrainer:
                     if self.accelerator.sync_gradients:
                         metrics.update(self._lora_param_update_metrics())
 
-                    scheduler_start = self._timing_start()
-                    self.scheduler.step()
-                    metrics["timing_scheduler_step_sec"] = self._timing_elapsed(scheduler_start)
+                    if self.accelerator.sync_gradients:
+                        scheduler_start = self._timing_start()
+                        self.scheduler.step()
+                        metrics["timing_scheduler_step_sec"] = self._timing_elapsed(scheduler_start)
+                    else:
+                        metrics["timing_scheduler_step_sec"] = 0.0
 
                     zero_grad_start = self._timing_start()
                     self.optimizer.zero_grad(set_to_none=True)

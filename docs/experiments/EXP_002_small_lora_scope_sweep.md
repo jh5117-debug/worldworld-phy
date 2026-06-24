@@ -88,4 +88,13 @@ First preflight attempt failed before optimizer steps because the Stage1 dataset
 The fixed view contains train/val/test = 2804/329/166 and sampled rows decode correctly. The sweep remains BLOCKED until the four 5-step preflights pass on this fixed view.
 
 
-PLANNED_PRELAUNCH.
+PREFLIGHT_PASS; READY_FOR_200_STEP_SWEEP.
+
+
+## 2026-06-24 Preflight Result
+
+Status: PREFLIGHT_PASS_FOR_ALL_FOUR_SCOPES.
+
+All four 2-GPU 5-step preflights completed with finite train and fixed-val loss. No OOM, SIGFPE, NaN/Inf, or decode failures occurred after the dataset preparation fix.
+
+A/B camera-only all-block scopes are substantially slower than C/D limited-block scopes. The sweep remains valid but will be long-running; it must stay in tmux and be monitored. The trainer scheduler was fixed to step only on true optimizer steps before launching the 200-step sweep.

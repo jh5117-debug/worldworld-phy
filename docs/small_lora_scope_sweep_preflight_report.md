@@ -62,3 +62,34 @@ These are all far below the failed broad-LoRA 102,891,520-param run.
 ## Next action
 
 Rerun the same four 2-GPU 5-step preflights using the fixed snapshot. If all pass, launch the 200-step small-LoRA sweep.
+
+
+## 2026-06-24 5-Step Preflight Results
+
+Run timestamp: `20260624_131846`
+
+All four 2-GPU preflights completed the intended diagnostic stop at optimizer step 5 using the fixed generated_v5 Stage1 dataset.
+
+| Experiment | GPUs | Scope | Trainable params | Step 5 fixed-val | Duration | Status |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| A | 0,1 | camera-only rank4 | 6,553,600 | 0.125979 | 2735.9 s | STOPPED at diagnostic step 5 |
+| B | 2,3 | camera-only rank8 | 13,107,200 | 0.126206 | 2689.1 s | STOPPED at diagnostic step 5 |
+| C | 4,5 | camera + last-4 self-attention rank4 | 1,310,720 | 0.125693 | 1692.4 s | STOPPED at diagnostic step 5 |
+| D | 6,7 | camera + last-4 cross-attention rank4 | 1,310,720 | 0.125691 | 1683.8 s | STOPPED at diagnostic step 5 |
+
+Preflight checks:
+
+- LingBot-World-Fast loaded from `/home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast`.
+- generated_v5 fixed dataset loaded with 2804 train and 329 val samples.
+- 81-frame 480x832 BF16 mixed-safe forward/backward completed.
+- Loss and gradient norms were finite.
+- Fixed validation was finite for all four experiments.
+- No OOM, no SIGFPE, no NaN/Inf, no dataloader decode failure.
+
+Runtime note:
+
+Camera-only all-block A/B are much slower than C/D. A 200-step run at this configuration is expected to be a long tmux task, especially for A/B. This is acceptable as a sweep task, but it should be monitored and not confused with full-data long StageA.
+
+Scheduler fix before 200-step sweep:
+
+The preflight exposed a warning that the LR scheduler was stepping on gradient-accumulation micro-steps before a real optimizer step. The trainer now advances the scheduler only when `accelerator.sync_gradients` is true, so the 200-step sweep uses real optimizer-step LR scheduling.
