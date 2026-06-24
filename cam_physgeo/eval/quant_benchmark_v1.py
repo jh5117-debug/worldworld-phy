@@ -15,7 +15,7 @@ from cam_physgeo.rewards.conditioned_sgc import evaluate_csgc_video
 from cam_physgeo.rewards.epipolar import evaluate_epipolar_video
 from cam_physgeo.utils.io import ensure_dir, read_jsonl, write_json
 
-VIDEO_KEYS = ("candidate_video", "video_path", "target_video", "target_video_path", "video", "mp4")
+VIDEO_KEYS = ("candidate_video", "generated_video", "video_path", "target_video", "target_video_path", "video", "mp4")
 POSE_KEYS = ("poses", "poses_path")
 INTR_KEYS = ("intrinsics", "intrinsics_path")
 MISSING_TRACKER_REASON = "missing_real_tracker_or_sim_object_state_backend"
@@ -112,7 +112,12 @@ def _load_candidate_spec(spec: str, conditions: list[dict[str, Any]]) -> tuple[s
         return label, mapping
     path = Path(value)
     if path.is_file():
-        for row in read_jsonl(path):
+        if path.suffix.lower() == ".csv":
+            with path.open("r", newline="", encoding="utf-8") as f:
+                candidate_rows = list(csv.DictReader(f))
+        else:
+            candidate_rows = list(read_jsonl(path))
+        for row in candidate_rows:
             sid = str(row.get("sample_id") or row.get("condition_id") or "")
             video = _first_path(row, VIDEO_KEYS)
             if sid and video:

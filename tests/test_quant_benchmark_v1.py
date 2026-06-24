@@ -38,3 +38,30 @@ def test_quant_benchmark_gt_identity(tmp_path):
     text = (out / "model_summary.csv").read_text(encoding="utf-8")
     assert "GT" in text
     assert "psnr_mean" in text
+
+def test_quant_benchmark_accepts_rollout_csv_generated_video(tmp_path):
+    frames = []
+    for i in range(6):
+        img = np.zeros((32, 48, 3), dtype=np.uint8)
+        img[:, :, 0] = 30 + i
+        img[8:18, 10 + i:20 + i, 1] = 200
+        frames.append(img)
+    gt_video = tmp_path / "sample" / "video.mp4"
+    cand_video = tmp_path / "candidate" / "generated.mp4"
+    _write_video(gt_video, frames)
+    _write_video(cand_video, frames)
+
+    poses = tmp_path / "sample" / "poses.npy"
+    intr = tmp_path / "sample" / "intrinsics.npy"
+    np.save(poses, np.repeat(np.eye(4)[None], 6, axis=0))
+    np.save(intr, np.repeat(np.array([[40.0, 40.0, 24.0, 16.0]])[None], 6, axis=0))
+    manifest = tmp_path / "conditions.jsonl"
+    manifest.write_text(json.dumps({"sample_id": "s0", "target_video": str(gt_video), "poses": str(poses), "intrinsics": str(intr)}) + "\n", encoding="utf-8")
+    csv_manifest = tmp_path / "generated_manifest.csv"
+    csv_manifest.write_text("sample_id,generated_video\ns0," + str(cand_video) + "\n", encoding="utf-8")
+
+    out = tmp_path / "out_csv"
+    rc = main(["--conditions", str(manifest), "--candidate", f"rollout={csv_manifest}", "--out_dir", str(out), "--frame_count", "6", "--skip_geometry"])
+    assert rc == 0
+    assert "rollout" in (out / "model_summary.csv").read_text(encoding="utf-8")
+    assert "ok" in (out / "per_sample_metrics.csv").read_text(encoding="utf-8")
