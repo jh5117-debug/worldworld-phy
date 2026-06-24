@@ -78,4 +78,14 @@ Pre-launch PRD commit: `Add quantitative benchmark and small-LoRA sweep PRDs`.
 
 ## Status
 
+
+## 2026-06-24 Preflight Data-Gate Fix
+
+First preflight attempt failed before optimizer steps because the Stage1 dataset preparation helper generated bad symlinks (`video.mp4 -> .`) for generated_v5 manifests. The helper now supports `target_video`, `poses`, and `intrinsics`, rejects empty paths, and reads prompt text from prompt files. A fixed immutable dataset view was prepared at:
+
+`local_assets/experiments/small_lora_scope_sweep_20260624/stage1_dataset_fullprep_20260624_0152_fixed/`
+
+The fixed view contains train/val/test = 2804/329/166 and sampled rows decode correctly. The sweep remains BLOCKED until the four 5-step preflights pass on this fixed view.
+
+
 PLANNED_PRELAUNCH.

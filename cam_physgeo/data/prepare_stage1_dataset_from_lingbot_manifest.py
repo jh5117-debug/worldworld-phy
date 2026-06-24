@@ -44,25 +44,37 @@ def _read_jsonl(path: str | Path) -> list[dict]:
 def _resolve_path(value: str | None, *, project_root: Path) -> Path:
     raw = str(value or "").strip()
     if not raw:
-        return Path("")
+        return project_root / "__missing_stage1_manifest_path__"
     path = Path(raw)
     if path.is_absolute():
         return path
     return project_root / path
 
 
+def _resolve_first_path(row: dict, keys: tuple[str, ...], *, project_root: Path) -> Path:
+    for key in keys:
+        value = row.get(key)
+        if str(value or "").strip():
+            return _resolve_path(str(value), project_root=project_root)
+    return _resolve_path(None, project_root=project_root)
+
+
 def _prompt_for_row(row: dict, *, project_root: Path) -> str:
+    for key in ("prompt_path", "prompt_file"):
+        prompt_path = _resolve_path(row.get(key), project_root=project_root)
+        if prompt_path.is_file():
+            return prompt_path.read_text(encoding="utf-8").strip()
     prompt = str(row.get("prompt") or "").strip()
     if prompt:
+        prompt_as_path = _resolve_path(prompt, project_root=project_root)
+        if prompt_as_path.is_file():
+            return prompt_as_path.read_text(encoding="utf-8").strip()
         return prompt
-    prompt_path = _resolve_path(row.get("prompt_path"), project_root=project_root)
-    if prompt_path.exists():
-        return prompt_path.read_text(encoding="utf-8").strip()
     return ""
 
 
 def _link_or_copy(src: Path, dst: Path, *, mode: str) -> None:
-    if not src.exists():
+    if not src.is_file():
         raise FileNotFoundError(src)
     if dst.exists() or dst.is_symlink():
         dst.unlink()
@@ -95,9 +107,17 @@ def _write_split(
         if not sample_id:
             missing.append({"sample_id": "", "reason": "missing_sample_id"})
             continue
-        target_video = _resolve_path(row.get("target_video_path") or row.get("video_path"), project_root=project_root)
-        poses_path = _resolve_path(row.get("poses_path"), project_root=project_root)
-        intrinsics_path = _resolve_path(row.get("intrinsics_path"), project_root=project_root)
+        target_video = _resolve_first_path(
+            row,
+            ("target_video_path", "target_video", "target_mp4", "video_path", "video"),
+            project_root=project_root,
+        )
+        poses_path = _resolve_first_path(row, ("poses_path", "poses", "pose_path"), project_root=project_root)
+        intrinsics_path = _resolve_first_path(
+            row,
+            ("intrinsics_path", "intrinsics", "camera_intrinsics_path"),
+            project_root=project_root,
+        )
         prompt = _prompt_for_row(row, project_root=project_root)
         bad_paths = [
             name
@@ -106,7 +126,7 @@ def _write_split(
                 ("poses_path", poses_path),
                 ("intrinsics_path", intrinsics_path),
             )
-            if not path.exists()
+            if not path.is_file()
         ]
         if bad_paths:
             missing.append({"sample_id": sample_id, "reason": "missing_" + ",".join(bad_paths)})
