@@ -43,3 +43,23 @@ A/B are much slower than C/D because they attach LoRA to all 160 camera-conditio
 ## Next Gate
 
 Wait for step50 checkpoints and fixed validation. Do not run benchmark rollout, reward calibration, pair construction, or DPO probe until at least one candidate checkpoint is available and documented.
+
+## Step-50 Checkpoint Update - 2026-06-24 16:39 CST
+
+Small-LoRA C and D have reached the first checkpoint:
+
+- C = camera conditioning + limited self-attention, selected last 4 blocks, rank 4.
+  - step: 50 / 200
+  - fixed-val loss: 0.125559
+  - unweighted fixed-val: 0.186228
+  - gate: PASS at the minimum step gate
+  - checkpoint: `local_assets/experiments/small_lora_scope_sweep_20260624/train/small_lora_C_camera_self_r4_train200_20260624_141215/checkpoints/small_lora_C_camera_self_r4_train200_20260624_141215/high_only_phase/branches/step_000050/fast_stageA_high_noise_adapter/adapter_state.pt`
+
+- D = camera conditioning + limited cross-attention, selected last 4 blocks, rank 4.
+  - step: 50 / 200
+  - fixed-val loss: 0.125559
+  - unweighted fixed-val: 0.186227
+  - gate: PASS at the minimum step gate
+  - checkpoint: `local_assets/experiments/small_lora_scope_sweep_20260624/train/small_lora_D_camera_cross_r4_train200_20260624_141215/checkpoints/small_lora_D_camera_cross_r4_train200_20260624_141215/high_only_phase/branches/step_000050/fast_stageA_high_noise_adapter/adapter_state.pt`
+
+A/B are still running and are slower because camera-only all-block adapters match substantially more camera-conditioning linears. No OOM, SIGFPE, NaN, or traceback has been observed. No rollout has been launched yet because all GPUs remain occupied by the four sweep trainings.

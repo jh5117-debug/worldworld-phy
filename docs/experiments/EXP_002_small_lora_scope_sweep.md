@@ -107,3 +107,23 @@ A/B camera-only all-block scopes are substantially slower than C/D limited-block
 Status: RUNNING_IN_TMUX.
 
 The 200-step sweep started at timestamp `20260624_141215` using all eight GPUs in four 2-GPU groups. Early monitor at 14:43 CST showed A step3, B step2, C step6, D step7 with finite loss/grad and no OOM/SIGFPE/Traceback. Next gate is step50 fixed-val/checkpoint availability.
+
+## Step-50 Checkpoint Update - 2026-06-24 16:39 CST
+
+Small-LoRA C and D have reached the first checkpoint:
+
+- C = camera conditioning + limited self-attention, selected last 4 blocks, rank 4.
+  - step: 50 / 200
+  - fixed-val loss: 0.125559
+  - unweighted fixed-val: 0.186228
+  - gate: PASS at the minimum step gate
+  - checkpoint: `local_assets/experiments/small_lora_scope_sweep_20260624/train/small_lora_C_camera_self_r4_train200_20260624_141215/checkpoints/small_lora_C_camera_self_r4_train200_20260624_141215/high_only_phase/branches/step_000050/fast_stageA_high_noise_adapter/adapter_state.pt`
+
+- D = camera conditioning + limited cross-attention, selected last 4 blocks, rank 4.
+  - step: 50 / 200
+  - fixed-val loss: 0.125559
+  - unweighted fixed-val: 0.186227
+  - gate: PASS at the minimum step gate
+  - checkpoint: `local_assets/experiments/small_lora_scope_sweep_20260624/train/small_lora_D_camera_cross_r4_train200_20260624_141215/checkpoints/small_lora_D_camera_cross_r4_train200_20260624_141215/high_only_phase/branches/step_000050/fast_stageA_high_noise_adapter/adapter_state.pt`
+
+A/B are still running and are slower because camera-only all-block adapters match substantially more camera-conditioning linears. No OOM, SIGFPE, NaN, or traceback has been observed. No rollout has been launched yet because all GPUs remain occupied by the four sweep trainings.
