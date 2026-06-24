@@ -68,3 +68,9 @@ Post-probe commit: `Validate BF16 DPO and document probe results`.
 ## Status
 
 PLANNED_PRELAUNCH.
+
+## Implementation Update - 2026-06-24 15:55 CST
+
+Added `cam_physgeo.dpo.quality_bounded_pairs` for anchored DPO probe pair construction from benchmark metrics. The tool rejects candidate losers that fail decode, quality floor, freeze floor, or severe failure tags such as global freeze, scene replacement, corruption, or object disappearance. It also rejects margins that are too small or too large, so the selected loser remains a hard negative rather than a trivial collapse.
+
+This matches the current DPO data policy: GT can be the winner, but generated losers must be quality-qualified. If all rollouts are too poor, use clean GT versus controlled corrupted GT first.
