@@ -185,15 +185,16 @@ def run(args: argparse.Namespace) -> None:
         w, h = (int(x) for x in args.size.split("*")); MAX_AREA_CONFIGS[args.size] = w * h
     cfg = WAN_CONFIGS[args.task]
     visible = os.environ.get("CUDA_VISIBLE_DEVICES", "").split(",")[0].strip()
-    if visible == "0":
-        raise RuntimeError("Refusing to run Fast inference with physical GPU0 visible first")
+    if visible == "0" and not args.allow_gpu0:
+        raise RuntimeError("Refusing to run Fast inference with physical GPU0 visible first without --allow_gpu0")
     pipe = wan.WanI2VFast(
         config=cfg, checkpoint_dir=args.ckpt_dir, device_id=0, rank=0,
         t5_fsdp=False, dit_fsdp=False, use_sp=False, t5_cpu=bool(args.t5_cpu),
         convert_model_dtype=False, pipe_dtype=torch.bfloat16,
     )
-    if getattr(pipe, "control_type", None) != "cam":
-        raise RuntimeError(f"Expected Fast camera-control model, got control_type={getattr(pipe, control_type, None)}")
+    control_type = getattr(pipe, "control_type", None)
+    if control_type != "cam":
+        raise RuntimeError(f"Expected Fast camera-control model, got control_type={control_type}")
     adapter_info: dict[str, Any] = {"adapter_loaded": False}
     if args.adapter_dir:
         adapter_info = _load_adapter(pipe, Path(args.adapter_dir)); adapter_info["adapter_loaded"] = True
@@ -258,6 +259,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--task", default="i2v-A14B"); p.add_argument("--size", default="832*480"); p.add_argument("--height", type=int, default=480); p.add_argument("--width", type=int, default=832)
     p.add_argument("--frame_num", type=int, default=81); p.add_argument("--seed", type=int, default=123); p.add_argument("--sample_shift", type=float, default=5.0)
     p.add_argument("--chunk_size", type=int, default=3); p.add_argument("--max_attention_size", type=int, default=None); p.add_argument("--max_samples", type=int, default=8); p.add_argument("--per_template", type=int, default=2)
+    p.add_argument("--allow_gpu0", action="store_true", help="Allow physical GPU0 when CUDA_VISIBLE_DEVICES starts with 0; disabled by default for safety.")
     p.add_argument("--offload_model", action="store_true", default=False); p.add_argument("--t5_cpu", action="store_true", default=False); p.add_argument("--skip_existing", action="store_true")
     return p.parse_args()
 
