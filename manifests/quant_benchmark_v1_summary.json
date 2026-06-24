@@ -1,0 +1,49 @@
+{
+  "created": "2026-06-24",
+  "source_manifests": {
+    "train": "local_assets/meeting_eval_20260624_011137/full_data_audit/manifests/stageA_v5_fullprep_20260624_0152_train.jsonl",
+    "val": "local_assets/meeting_eval_20260624_011137/full_data_audit/manifests/stageA_v5_fullprep_20260624_0152_val.jsonl",
+    "test": "local_assets/meeting_eval_20260624_011137/full_data_audit/manifests/stageA_v5_fullprep_20260624_0152_test_holdout.jsonl"
+  },
+  "selection_policy": "core from val+test only, excluding train sample_id and scene_group_id; 16 per template; stress from remaining camera-heavy/OOD-style val+test rows",
+  "limitations": [
+    "current reobserve manifest is empty, so stress has no true reobserve samples",
+    "containment camera diversity is limited to orbit_left_44"
+  ],
+  "counts": {
+    "all": 80,
+    "core": 64,
+    "stress": 16
+  },
+  "template_distribution_all": {
+    "drop": 16,
+    "collision": 22,
+    "roll": 22,
+    "containment": 20
+  },
+  "template_distribution_core": {
+    "drop": 16,
+    "collision": 16,
+    "roll": 16,
+    "containment": 16
+  },
+  "template_distribution_stress": {
+    "collision": 6,
+    "roll": 6,
+    "containment": 4
+  },
+  "camera_distribution_all": {
+    "orbit_left_72": 16,
+    "orbit_right_64": 16,
+    "orbit_right_60": 22,
+    "orbit_left_44": 20,
+    "strafe_left_180": 6
+  },
+  "sample_overlap_with_train": 0,
+  "scene_overlap_with_train": 0,
+  "sha256": {
+    "all": "e7ba0f973073989930be897478ff426dcbea2e3eb5c741850947c3ceef66d691",
+    "core": "4cc498fc42be83679e17af4e1806bba2e27b57e601054d5370c10a3391e1a868",
+    "stress": "ecbffab044d9d7761110a3bd140e8b281f54e8afee4979c3cc8cf189c1c33b33"
+  }
+}
