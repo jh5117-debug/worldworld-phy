@@ -11,7 +11,7 @@ import numpy as np
 
 from cam_physgeo.utils.io import ensure_dir, read_jsonl
 
-VIDEO_KEYS = ("candidate_video", "video_path", "target_video", "target_video_path", "video", "mp4")
+VIDEO_KEYS = ("candidate_video", "generated_video", "video_path", "target_video", "target_video_path", "video", "mp4")
 SCORE_FIELDS = (
     "background_stability", "camera_following", "foreground_identity", "object_deformation",
     "physical_event", "reobserve", "freeze", "visual_quality",
@@ -107,7 +107,13 @@ def _heuristic_precheck(frames: list[np.ndarray]) -> dict[str, Any]:
 def _load_rows(args: argparse.Namespace) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     if args.candidate_manifest:
-        for row in read_jsonl(args.candidate_manifest):
+        manifest = Path(args.candidate_manifest)
+        if manifest.suffix.lower() == ".csv":
+            with manifest.open("r", newline="", encoding="utf-8") as f:
+                manifest_rows = list(csv.DictReader(f))
+        else:
+            manifest_rows = list(read_jsonl(manifest))
+        for row in manifest_rows:
             video = _first_path(row)
             if video:
                 rows.append(dict(row, candidate_video=video))

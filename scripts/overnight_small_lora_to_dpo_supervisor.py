@@ -157,8 +157,16 @@ def latest_log_step(log_path: Path) -> dict[str, Any]:
         info["errors"].append("missing_log")
         return info
     text = log_path.read_text(errors="replace")[-300000:]
-    for token in ("OOM", "out of memory", "SIGFPE", "NaN", "Inf", "Traceback", "RuntimeError"):
-        if token.lower() in text.lower():
+    error_patterns = {
+        "OOM": r"(?i)(?:out of memory|\bOOM\b)",
+        "SIGFPE": r"\bSIGFPE\b",
+        "NaN": r"(?i)\bNaN\b",
+        "Inf": r"(?<![A-Za-z])(?:Inf|Infinity)(?![A-Za-z])",
+        "Traceback": r"Traceback \(most recent call last\)",
+        "RuntimeError": r"\bRuntimeError\b",
+    }
+    for token, pattern in error_patterns.items():
+        if re.search(pattern, text):
             info["errors"].append(token)
     step_re = re.compile(r"step=(\d+)/(\d+).*?loss=([0-9.eE+-]+).*?ema20=([0-9.eE+-]+).*?ema100=([0-9.eE+-]+).*?gate=([^\s]+)")
     for m in step_re.finditer(text):

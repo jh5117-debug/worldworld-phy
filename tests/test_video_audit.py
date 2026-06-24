@@ -20,3 +20,22 @@ def test_video_audit_smoke(tmp_path):
     assert rc == 0
     assert (out / "all_video_audit.csv").exists()
     assert list((out / "contact_sheets").glob("*.jpg"))
+
+
+def test_video_audit_accepts_rollout_csv_generated_video(tmp_path):
+    video = tmp_path / "vids" / "sample_generated.mp4"
+    video.parent.mkdir(parents=True)
+    writer = cv2.VideoWriter(str(video), cv2.VideoWriter_fourcc(*"mp4v"), 16, (48, 32))
+    for i in range(6):
+        frame = np.zeros((32, 48, 3), dtype=np.uint8)
+        frame[:, :, 1] = 60 + i * 5
+        writer.write(frame)
+    writer.release()
+    manifest = tmp_path / "generated_manifest.csv"
+    manifest.write_text("sample_id,model,generated_video\ns0,m," + str(video) + "\n", encoding="utf-8")
+    out = tmp_path / "audit_csv"
+    rc = main(["--candidate_manifest", str(manifest), "--model_label", "m", "--out_dir", str(out), "--max_frames", "6"])
+    assert rc == 0
+    assert (out / "all_video_audit.csv").exists()
+    assert "s0" in (out / "all_video_audit.csv").read_text(encoding="utf-8")
+    assert list((out / "contact_sheets").glob("*.jpg"))

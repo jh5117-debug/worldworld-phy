@@ -1,20 +1,20 @@
 # Overnight Pipeline Status
 
-Updated: 2026-06-24 17:28:08 CST
-Supervisor root: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/local_assets/overnight_quant_lora_dpo_20260624_overnight_test`
-State file: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/local_assets/overnight_quant_lora_dpo_20260624_overnight_test/pipeline_state.json`
-Heartbeat log: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/local_assets/overnight_quant_lora_dpo_20260624_overnight_test/supervisor.log`
+Updated: 2026-06-25 02:17:26 CST
+Supervisor root: `local_assets/overnight_quant_lora_dpo_20260624_overnight_test`
+State file: `local_assets/overnight_quant_lora_dpo_20260624_overnight_test/pipeline_state.json`
+Heartbeat log: `local_assets/overnight_quant_lora_dpo_20260624_overnight_test/supervisor.log`
 
 ## Status
 
 - sweep_A: RUNNING
 - sweep_B: RUNNING
-- sweep_C: RUNNING
-- sweep_D: RUNNING
-- rollout_screen: PENDING
-- video_audit_screen: PENDING
+- sweep_C: PASS
+- sweep_D: PASS
+- rollout_screen: PASS
+- video_audit_screen: RUNNING
 - quant_screen: PENDING
-- reward_calibration: RUNNING
+- reward_calibration: PASS
 - candidate_selection: PENDING
 - full_benchmark: PENDING
 - pair_build: PENDING
@@ -27,15 +27,15 @@ Heartbeat log: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_st
 
 ## GPU / Disk
 
-- free GPUs under 20GiB used: `[]`
-- /home/nvme04 free GB: `340.24`
+- free GPUs under 20GiB used: `[4, 5, 6, 7]`
+- /home/nvme04 free GB: `338.2`
 
 ## Sweep Progress
 
-- A: status=RUNNING step=31/200 gate=WAIT fixed_val=None gpus=0,1
-- B: status=RUNNING step=31/200 gate=WAIT fixed_val=None gpus=2,3
-- C: status=RUNNING step=70/200 gate=PASS fixed_val={'step': 50, 'loss': 0.125559, 'unweighted': 0.186228, 'best': 0.125559, 'finite': 'True'} gpus=4,5
-- D: status=RUNNING step=72/200 gate=PASS fixed_val={'step': 50, 'loss': 0.125559, 'unweighted': 0.186227, 'best': 0.125559, 'finite': 'True'} gpus=6,7
+- A: status=RUNNING step=120/200 gate=PASS fixed_val={'step': 100, 'loss': 0.125425, 'unweighted': 0.185939, 'best': 0.125036, 'finite': 'True'} gpus=0,1
+- B: status=RUNNING step=120/200 gate=PASS fixed_val={'step': 100, 'loss': 0.125365, 'unweighted': 0.185848, 'best': 0.125283, 'finite': 'True'} gpus=2,3
+- C: status=PASS step=200/200 gate=PASS fixed_val={'step': 200, 'loss': 0.125554, 'unweighted': 0.186221, 'best': 0.125554, 'finite': 'True'} gpus=4,5
+- D: status=PASS step=200/200 gate=PASS fixed_val={'step': 200, 'loss': 0.125553, 'unweighted': 0.18622, 'best': 0.125553, 'finite': 'True'} gpus=6,7
 
 ## Blockers
 
