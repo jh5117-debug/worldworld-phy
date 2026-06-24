@@ -1,0 +1,72 @@
+experiment_name: small_lora_C_camera_self_last4_r4
+run_group: small_lora_scope_sweep_20260624
+seed: 42
+
+model_family: lingbot_world_fast
+fast_checkpoint_dir: /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast
+shared_assets_dir: /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam
+lingbot_code_dir: /home/nvme03/workspace/lingbot-world
+forbid_base_policy: true
+stage_name: stageA
+noise_policy: high_only
+high_noise_probability: 1.0
+low_noise_probability: 0.0
+control_type: cam
+use_action: false
+
+student_tuning_mode: lora
+student_lora_rank: 4
+student_lora_alpha: 4
+student_lora_dropout: 0.05
+student_lora_block_start: 36
+student_lora_block_end: 39
+student_lora_chunk_size: 1024
+student_lora_merge_mode: out_of_place
+student_lora_target_groups:
+  - camera_conditioning
+  - self_attention
+student_lora_required_groups:
+  - camera_conditioning
+  - self_attention
+student_lora_include_patterns: []
+student_lora_exclude_patterns: []
+
+learning_rate: 1.0e-6
+weight_decay: 0.01
+scheduler_eta_min: 1.0e-7
+scheduler_warmup_fraction: 0.05
+optimizer_betas: [0.9, 0.95]
+num_epochs: 100
+gradient_accumulation_steps: 4
+max_train_optimizer_steps: 0
+min_train_optimizer_steps: 0
+branch_step_overrides:
+  high:
+    min_optimizer_steps: 50
+    target_optimizer_steps: 200
+    hard_max_optimizer_steps: 200
+val_every_optimizer_steps: 50
+fixed_val_sample_count: 32
+save_every_optimizer_steps: 50
+max_grad_norm: 1.0
+
+num_frames: 81
+height: 480
+width: 832
+dataset_repeat: 1
+temporal_window_mode: random_window
+num_workers: 0
+save_every_n_epochs: 0
+gradient_checkpointing: true
+student_checkpoint_use_reentrant: false
+student_ddp_find_unused_parameters: true
+student_memory_efficient_modulation: true
+student_memory_efficient_checkpoint_mode: full
+student_ffn_chunk_size: 4096
+student_norm_chunk_size: 0
+student_precision_profile: mixed_safe
+student_low_precision_dtype: bf16
+distributed_timeout_hours: 8
+
+videophy2_eval:
+  enabled: false
