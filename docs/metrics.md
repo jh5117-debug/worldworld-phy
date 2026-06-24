@@ -20,3 +20,21 @@
 - Quality: blur, brightness, saturation, flicker.
 
 Primary benchmark splits: camera-only static, static-camera physics, moving-camera physics, reobserve split, and PhyInOne OOD.
+
+## Video Audit Workflow Update - 2026-06-24
+
+`cam_physgeo.eval.video_audit` now creates per-video contact sheets plus `all_video_audit.csv` / `all_video_audit.jsonl` templates. The script performs only decode/freeze/blur/flicker prechecks and marks rows as `codex_precheck_needs_visual_review`; final PASS/FAIL still requires Codex visual review of every generated video.
+
+Required audit fields remain:
+
+- background stability
+- camera following
+- foreground identity
+- object deformation
+- physical event
+- reobserve
+- freeze
+- visual quality
+- failure tags
+
+This avoids selecting only best-looking examples for PPT or DPO. Every rollout candidate must have a row before pair selection.
