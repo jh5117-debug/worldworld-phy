@@ -40,3 +40,10 @@ def test_prefix5_dataset_reads_new_schema_without_legacy_filter(tmp_path):
     manifest.write_text(json.dumps(pair) + "\n", encoding="utf-8")
     ds = Prefix5DpoDataset(manifest, limit_pairs=1, min_margin=0.0)
     assert len(ds) == 1
+
+
+def test_lingbot_fast_energy_exposes_cpu_runtime_helpers():
+    from cam_physgeo.dpo.lingbot_fast_energy import LingBotFastDpoEnergy
+
+    for name in ("_move_runtime_components", "_encode_video", "_encode_text", "_prepare_y"):
+        assert hasattr(LingBotFastDpoEnergy, name)

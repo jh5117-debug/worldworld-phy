@@ -153,6 +153,55 @@ class LingBotFastDpoEnergy:
         self.policy_trainable_params = int(sum(p.numel() for p in self._trainable))
         self.lora_inventory = self._lora_inventory()
 
+    def _move_runtime_components(self, device: torch.device) -> None:
+        """Move VAE/T5 runtime away from GPU after Fast policy load."""
+        vae = getattr(self.helper, "vae", None)
+        if vae is not None and device.type == "cpu":
+            if hasattr(vae, "model"):
+                vae.model.to(device)
+            vae.device = device
+            vae.mean = vae.mean.to(device)
+            vae.std = vae.std.to(device)
+            vae.scale = [vae.mean, 1.0 / vae.std]
+        t5 = getattr(self.helper, "t5", None)
+        if t5 is not None and hasattr(t5, "model") and device.type == "cpu":
+            t5.model.to(device)
+        if self.device.type == "cuda" and torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+    def _encode_video(self, video_tensor: torch.Tensor) -> torch.Tensor:
+        if self.runtime_device.type == "cpu":
+            with torch.no_grad():
+                latent = self.helper.vae.encode([video_tensor.cpu()])[0]
+            return latent.to(self.device, dtype=self.lowp_dtype)
+        return self.helper.encode_video(video_tensor.to(self.device))
+
+    def _encode_text(self, prompt: str) -> list[torch.Tensor]:
+        if self.runtime_device.type == "cpu":
+            if prompt in self.helper._t5_cache:
+                return [tensor.to(self.device) for tensor in self.helper._t5_cache[prompt]]
+            with torch.no_grad():
+                context = self.helper.t5([prompt], torch.device("cpu"))
+            self.helper._t5_cache[prompt] = [tensor.cpu() for tensor in context]
+            return [tensor.to(self.device) for tensor in context]
+        return self.helper.encode_text(prompt)
+
+    def _prepare_y(self, video_tensor: torch.Tensor, latent: torch.Tensor) -> torch.Tensor:
+        if self.runtime_device.type != "cpu":
+            return self.helper.prepare_y(video_tensor.to(self.device), latent, prefix_len=self.prefix_len)
+        lat_h, lat_w = int(latent.shape[2]), int(latent.shape[3])
+        frame_total = int(video_tensor.shape[1])
+        height, width = int(video_tensor.shape[2]), int(video_tensor.shape[3])
+        prefix = video_tensor[:, : self.prefix_len].cpu()
+        zeros = torch.zeros(3, frame_total - self.prefix_len, height, width, device="cpu", dtype=prefix.dtype)
+        y_input = torch.cat([prefix, zeros], dim=1)
+        with torch.no_grad():
+            y_latent = self.helper.vae.encode([y_input])[0].to(self.device, dtype=self.lowp_dtype)
+        mask = torch.zeros(4, y_latent.shape[1], lat_h, lat_w, device=self.device, dtype=y_latent.dtype)
+        visible_latents = min((self.prefix_len - 1) // self.temporal_compression + 1, int(y_latent.shape[1]))
+        mask[:, :visible_latents] = 1
+        return torch.cat([mask, y_latent])
+
     def _module_for_lora(self):
         return getattr(self.model, "module", self.model)
 
