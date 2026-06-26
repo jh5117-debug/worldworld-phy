@@ -563,6 +563,13 @@ def dpo_trainer_ready() -> tuple[bool, str]:
     return True, "ready"
 
 
+def dpo_report_status(path: Path) -> tuple[str, dict[str, Any]]:
+    obj = read_json(path, {})
+    if not obj:
+        return "MISSING", {}
+    return str(obj.get("status") or "UNKNOWN"), obj
+
+
 def update_dpo_states(state: dict[str, Any], root: Path) -> None:
     ready, reason = dpo_trainer_ready()
     if not ready:
@@ -574,10 +581,39 @@ def update_dpo_states(state: dict[str, Any], root: Path) -> None:
         for key in ("dpo_bf16_single", "dpo_bf16_ddp2", "dpo_bf16_ddp8", "dpo_probe", "post_dpo_eval"):
             state[key] = "PENDING"
         return
-    # Real DPO implementation should add launch commands here once trainer is complete.
+
+    diagnostic_status, diagnostic = dpo_report_status(REPO / "reports/dpo_bf16_preflight/diagnostic_energy/preflight_summary.json")
+    fast_status, fast = dpo_report_status(REPO / "reports/dpo_bf16_preflight/lingbot_fast_backend/lingbot_fast_backend_probe.json")
+    state.setdefault("details", {})["dpo_preflight"] = {
+        "trainer_ready": ready,
+        "diagnostic_status": diagnostic_status,
+        "diagnostic": diagnostic,
+        "lingbot_fast_status": fast_status,
+        "lingbot_fast": fast,
+    }
+
+    if diagnostic_status == "PASS":
+        state["dpo_bf16_single"] = "PASS"
+    else:
+        state["dpo_bf16_single"] = "BLOCKED"
+        state.setdefault("blockers", {})["dpo"] = f"diagnostic DPO preflight status={diagnostic_status}"
+        for key in ("dpo_bf16_ddp2", "dpo_bf16_ddp8", "dpo_probe", "post_dpo_eval"):
+            state[key] = "BLOCKED"
+        return
+
+    if fast_status == "BLOCKED_FAST_ENERGY_BACKEND":
+        state["dpo_bf16_ddp2"] = "BLOCKED"
+        state["dpo_bf16_ddp8"] = "BLOCKED"
+        state["dpo_probe"] = "BLOCKED"
+        state["post_dpo_eval"] = "BLOCKED"
+        state.setdefault("blockers", {})["dpo"] = fast.get("reason", "LingBot-Fast DPO energy backend blocked")
+        return
+
+    # Real DPO launch remains disabled until the LingBot-Fast energy backend
+    # produces a PASS report; do not start DPO from the supervisor implicitly.
     for key in ("dpo_bf16_single", "dpo_bf16_ddp2", "dpo_bf16_ddp8", "dpo_probe", "post_dpo_eval"):
         state[key] = "BLOCKED"
-    state.setdefault("blockers", {})["dpo"] = "DPO trainer readiness hook exists, but launch command intentionally not defined until real preflight CLI is audited"
+    state.setdefault("blockers", {})["dpo"] = f"LingBot-Fast DPO preflight status={fast_status}"
 
 
 def update_git_status(state: dict[str, Any]) -> None:
