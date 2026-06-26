@@ -33,3 +33,14 @@ The diagnostic backend is intentionally not presented as real LingBot-Fast DPO. 
 3. Encode condition, winner latent, and loser latent with shared timestep and shared noise.
 4. Backpropagate only into the selected small LoRA policy scope.
 5. Run BF16 single/DDP preflight after the real energy backend is callable.
+
+
+## Prefix-5 Pair Rebuild Status (2026-06-27 03:24:08)
+
+- Old anchored pairs were I2V-1 / first-image conditioned, not V2V-5.
+- New manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`.
+- Pair count: `50`.
+- Valid prefix5 pair count: `50`.
+- Prefix clips use frames 0-4; winner/loser futures use frames 5-80.
+- DPO loss/reward masks are `5..80`.
+- Real DPO remains blocked until LingBot-Fast winner/loser energy backend and BF16 DDP preflight are available.

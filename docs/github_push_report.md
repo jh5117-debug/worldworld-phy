@@ -1,3 +1,9 @@
+# GitHub Push Report
+
+Updated: 2026-06-27 03:24:08
+
+Prefix5 pair rebuild commit will include code/tests/docs and the lightweight manifest. Generated MP4/JPG/contact sheets remain under local_assets/reports and are not staged.
+
 # GitHub Push Report - 2026-06-24 StageA Eval / Geometry / BF16
 
 - Branch: `research/stageA-eval-sgc-epipolar-bf16-20260623`

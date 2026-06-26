@@ -27,3 +27,14 @@ LingBot-Fast rollout initialization is available in prior artifacts, but the anc
 ## Decision
 
 Do not scale DPO yet. The next step is to implement the real LingBot-Fast energy path, then run the requested single-GPU, DDP2, and DDP8 BF16 DPO preflights before any DPO probe training.
+
+
+## Prefix-5 Pair Rebuild Status (2026-06-27 03:24:08)
+
+- Old anchored pairs were I2V-1 / first-image conditioned, not V2V-5.
+- New manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`.
+- Pair count: `50`.
+- Valid prefix5 pair count: `50`.
+- Prefix clips use frames 0-4; winner/loser futures use frames 5-80.
+- DPO loss/reward masks are `5..80`.
+- Real DPO remains blocked until LingBot-Fast winner/loser energy backend and BF16 DDP preflight are available.

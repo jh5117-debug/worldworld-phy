@@ -256,3 +256,14 @@ Still pending:
 - Balanced generated_v5 immutable snapshot.
 - Formal high-only StageA run on that snapshot.
 - Final loss-normal gate and generation smoke.
+
+
+## Prefix-5 Pair Rebuild Status (2026-06-27 03:24:08)
+
+- Old anchored pairs were I2V-1 / first-image conditioned, not V2V-5.
+- New manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`.
+- Pair count: `50`.
+- Valid prefix5 pair count: `50`.
+- Prefix clips use frames 0-4; winner/loser futures use frames 5-80.
+- DPO loss/reward masks are `5..80`.
+- Real DPO remains blocked until LingBot-Fast winner/loser energy backend and BF16 DDP preflight are available.
