@@ -843,7 +843,11 @@ class LingBotStage1Helper:
             control_type,
             device,
         )
-        self.ensure_runtime_components(device)
+        if getattr(self.args, "skip_runtime_components_on_load", False):
+            self.bootstrap_imports()
+            self.device = device
+        else:
+            self.ensure_runtime_components(device)
         control_type = str(control_type).strip().lower()
         if control_type not in {"act", "cam"}:
             raise ValueError(f"Unsupported control_type: {control_type}")

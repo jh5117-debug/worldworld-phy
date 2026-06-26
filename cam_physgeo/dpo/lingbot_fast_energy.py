@@ -87,6 +87,7 @@ def build_stage1_args(cfg: dict[str, Any]) -> SimpleNamespace:
         student_memory_efficient_modulation=bool(_cfg_get(cfg, "student_memory_efficient_modulation", True)),
         student_ffn_chunk_size=int(_cfg_get(cfg, "student_ffn_chunk_size", 4096) or 0),
         student_norm_chunk_size=int(_cfg_get(cfg, "student_norm_chunk_size", 0) or 0),
+        skip_runtime_components_on_load=bool(_cfg_get(cfg, "dpo_skip_runtime_components_on_load", False)),
     )
 
 
@@ -144,6 +145,14 @@ class LingBotFastDpoEnergy:
         self.helper = LingBotStage1Helper(self.args)
         self.model = self.helper.load_model(self.device, "high_only", checkpoint_dir=self.args.shared_assets_dir, control_type="cam")
         self.model.to(self.device)
+        if bool(_cfg_get(cfg, "gradient_checkpointing", True)):
+            from physical_consistency.trainers.stage1_components import apply_gradient_checkpointing
+            apply_gradient_checkpointing(
+                self.model,
+                model_name="lingbot_fast_dpo_policy",
+                use_reentrant=False,
+                memory_efficient_mode=str(_cfg_get(cfg, "student_memory_efficient_checkpoint_mode", "full")),
+            )
         self.model.train()
         self.runtime_device = torch.device(str(_cfg_get(cfg, "dpo_runtime_device", "cpu")))
         self._move_runtime_components(self.runtime_device)
