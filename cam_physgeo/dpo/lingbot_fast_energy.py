@@ -145,6 +145,8 @@ class LingBotFastDpoEnergy:
         self.model = self.helper.load_model(self.device, "high_only", checkpoint_dir=self.args.shared_assets_dir, control_type="cam")
         self.model.to(self.device)
         self.model.train()
+        self.runtime_device = torch.device(str(_cfg_get(cfg, "dpo_runtime_device", "cpu")))
+        self._move_runtime_components(self.runtime_device)
         self._trainable = [p for p in self.model.parameters() if p.requires_grad]
         if not self._trainable:
             raise RuntimeError("LingBot-Fast DPO policy has no trainable LoRA parameters")
@@ -213,9 +215,9 @@ class LingBotFastDpoEnergy:
         intrinsics = intrinsics.to(self.device)
         height, width = int(video.shape[2]), int(video.shape[3])
         with torch.no_grad():
-            latent = self.helper.encode_video(video)
-            context = self.helper.encode_text(prompt)
-            y = self.helper.prepare_y(video, latent, prefix_len=self.prefix_len)
+            latent = self._encode_video(video)
+            context = self._encode_text(prompt)
+            y = self._prepare_y(video, latent)
             lat_f, lat_h, lat_w = int(latent.shape[1]), int(latent.shape[2]), int(latent.shape[3])
             seq_len = lat_f * lat_h * lat_w // (self.helper.patch_size[1] * self.helper.patch_size[2])
             dit_cond = self.helper.prepare_control_signal(
@@ -278,7 +280,7 @@ class LingBotFastDpoEnergy:
         winner_video = example.winner_video.to(self.device)
         loser_video = example.loser_video.to(self.device)
         with torch.no_grad():
-            winner_latent = self.helper.encode_video(winner_video)
+            winner_latent = self._encode_video(winner_video)
         timestep_sample, noise = self.sample_timestep_and_noise(tuple(winner_latent.shape), seed=seed)
         winner = self.prepare(
             winner_video,
