@@ -1,3 +1,20 @@
+# Current Unified Eval / DPO Status (2026-06-27 04:43:25)
+
+Active DPO data path:
+- `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`
+- 50 prefix-aware V2V-5 anchored pairs
+- Readiness check: `reports/dpo_prefix5_pair_visual_audit/prefix5_training_readiness_summary.md`
+
+Active code path:
+- `cam_physgeo/dpo/prefix5_dpo_dataset.py` loads prefix5 pairs and validates schema/assets.
+- `cam_physgeo/dpo/lingbot_fast_energy.py` computes real LingBot-Fast flow-matching energies on future latent slots.
+- `cam_physgeo/dpo/anchored_dpo_trainer.py` runs minimal DPO BF16 preflight.
+
+Current DPO decision: do not scale. Real BF16 preflight still must pass before any tiny probe.
+
+
+---
+
 # Current Unified Eval / DPO Status
 
 Updated: 2026-06-27 01:28:06

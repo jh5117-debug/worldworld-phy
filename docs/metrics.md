@@ -1,3 +1,13 @@
+# Metrics Status (2026-06-27 04:43:25)
+
+DPO-specific metric state:
+- DPO energy diagnostics now record policy/ref winner and loser energies, delta_policy, delta_ref, DPO loss, implicit accuracy, winner_improvement, loser_degradation, same_noise, same_timestep, and future-only latent loss indices.
+- Prefix frames are excluded from the DPO energy target at latent level.
+- Video metrics for tiny probe checkpoints remain pending until BF16 preflight passes and probe checkpoints exist.
+
+
+---
+
 # Current Metrics Status
 
 Updated: 2026-06-27 01:28:38

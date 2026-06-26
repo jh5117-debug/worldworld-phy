@@ -1,3 +1,16 @@
+# Cam PhysGeo DPO Current Status (2026-06-27 04:43:25)
+
+Current DPO input is V2V-5, not I2V-1:
+- Active pair manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`
+- Prefix frames 0-4 are condition.
+- Future frames 5-80 are winner/loser targets.
+- Loss/reward are future-only.
+
+The real LingBot-Fast DPO energy backend is implemented for BF16 preflight, but DPO is not yet approved to scale. A tiny probe can only start after single-GPU, DDP2, and DDP8 preflight gates pass.
+
+
+---
+
 # Cam-PhysGeo DPO Current Status
 
 Updated: 2026-06-27 01:28:38

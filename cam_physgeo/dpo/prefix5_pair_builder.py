@@ -82,7 +82,9 @@ def frame_mask(total_frames: int = 81, prefix_len: int = 5) -> dict[str, list[in
 def latent_future_indices(total_frames: int = 81, prefix_len: int = 5, temporal_compression: int = 4) -> list[int]:
     if temporal_compression <= 0:
         raise ValueError("temporal_compression must be positive")
-    return sorted({idx // temporal_compression for idx in future_indices(prefix_len, total_frames)})
+    visible_latents = (int(prefix_len) - 1) // int(temporal_compression) + 1
+    latent_count = (int(total_frames) - 1) // int(temporal_compression) + 1
+    return list(range(min(visible_latents, latent_count), latent_count))
 
 
 def decode_video(path: str | Path) -> tuple[list[np.ndarray], dict[str, Any]]:

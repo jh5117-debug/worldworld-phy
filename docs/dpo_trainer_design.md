@@ -1,3 +1,22 @@
+# Current DPO Trainer Design (2026-06-27 04:43:25)
+
+Status: real LingBot-Fast prefix5 energy backend implemented for BF16 preflight.
+
+Key current facts:
+- Old anchored DPO pairs were I2V-1 and are deprecated for training.
+- Active manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`.
+- Condition is V2V-5: clean frames 0-4, `prefix_len=5`, `prediction_start_frame=5`.
+- Winner/loser target is future frames 5-80 only.
+- DPO loss/reward masks use future frames 5-80.
+- Latent loss mask is stricter than raw frame mask: latent slots touched by prefix frames are excluded to avoid prefix leakage under Wan temporal compression. For 81 frames and prefix_len=5, DPO scores latent slots 2..20.
+- Energy backend reuses the StageA LingBot-Fast flow-matching path: VAE encode, T5 prompt encode, prefix `prepare_y`, camera Plucker conditioning from poses/intrinsics, same timestep/noise, and MSE flow-matching energy on future latent slots only.
+- Policy uses LoRA trainable parameters only. Reference is frozen by temporarily disabling LoRA scaling on the same base model, avoiding a second full Fast model copy.
+
+Next gate: run single-GPU, DDP2, and DDP8 BF16 DPO preflight before any tiny DPO probe.
+
+
+---
+
 # Anchored DPO Trainer Design
 
 Updated: 2026-06-27 01:28:06

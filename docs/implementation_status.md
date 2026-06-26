@@ -1,3 +1,22 @@
+# Implementation Status (2026-06-27 04:43:25)
+
+Latest update:
+- Added real prefix5 LingBot-Fast DPO energy backend.
+- Added prefix5 DPO dataset loader with asset/schema validation.
+- Added strict latent future mask to avoid prefix leakage.
+- Wired `train_stage2_anchored_dpo --backend lingbot_fast` to the real preflight runner instead of the previous blocked diagnostic stub.
+- Added tests for future mask, backend args, same-noise/timestep, and frozen reference behavior.
+
+Safety status:
+- No StageB.
+- No GRPO.
+- No full-data long StageA.
+- No large-scale DPO.
+- No checkpoint deletion or historical checkpoint modification.
+
+
+---
+
 # Current Implementation Status
 
 Updated: 2026-06-27 01:28:38

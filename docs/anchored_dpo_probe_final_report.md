@@ -1,3 +1,20 @@
+# Anchored DPO Probe Status (2026-06-27 04:43:25)
+
+Current decision: tiny DPO probe is not launched yet.
+
+Completed prerequisite:
+- Rebuilt anchored DPO pairs as true V2V-5 prefix pairs.
+- Verified 50/50 pairs: prefix_len=5, prediction_start_frame=5, prefix 5 frames, future 76 frames.
+
+New prerequisite in progress:
+- Real LingBot-Fast energy backend is now implemented for preflight.
+- DPO probe may proceed only if BF16 preflight passes and energy diagnostics are finite with nonzero LoRA gradients.
+
+No large-scale DPO, StageB, GRPO, or full-data StageA was run in this update.
+
+
+---
+
 # Anchored DPO Probe Final Report
 
 Updated: 2026-06-27 01:28:06

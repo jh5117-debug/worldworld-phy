@@ -1,3 +1,58 @@
+# EXP Prefix-Aware Anchored DPO Probe (2026-06-27 04:43:53)
+
+Status: PRE-DPO PREFLIGHT. No DPO probe has been launched yet.
+
+## Hypothesis
+
+A prefix-aware anchored DPO probe can provide a meaningful preference signal only if the energy backend scores future frames 5-80 while conditioning on clean prefix frames 0-4, prompt, poses, and intrinsics.
+
+## Active Pair Manifest
+
+`manifests/anchored_dpo_probe_pairs_prefix5.jsonl`
+
+- pair count: 50
+- prefix_len: 5
+- prediction_start_frame: 5
+- loss_frame_indices: 5..80
+- reward_frame_indices: 5..80
+- readiness summary: `reports/dpo_prefix5_pair_visual_audit/prefix5_training_readiness_summary.md`
+
+## Backend
+
+- Policy: LingBot-World-Fast high-only camera model with LoRA trainable parameters.
+- Reference: same base model with LoRA scaling disabled under no_grad.
+- Energy: flow-matching prediction error on strict future latent slots only.
+- Same timestep/noise: required for winner and loser.
+- use_action: false.
+
+## BF16 Policy
+
+- DiT / LoRA mixed-safe BF16 path.
+- VAE FP32 by Stage1 precision environment.
+- Camera/projection and loss reduction are kept stable through Stage1 helper policies.
+
+## Gates
+
+1. Single GPU7 2-step preflight must pass.
+2. DDP2 GPU6,7 5-step preflight must pass.
+3. DDP8 GPU0-7 5-step preflight must pass.
+4. Tiny DPO probe may run only after the above gates pass.
+
+## Stop Conditions
+
+- Any nonfinite energy/loss.
+- SIGFPE, OOM, or exit code 136.
+- Reference has trainable params or receives gradients.
+- Winner/loser do not share timestep/noise.
+- Prefix frames enter loss mask.
+
+## Current Decision
+
+Do not scale DPO. Real BF16 preflight is the next gate.
+
+
+---
+
 # EXP Prefix-Aware Anchored DPO Probe
 
 Status: blocked_until_real_trainer

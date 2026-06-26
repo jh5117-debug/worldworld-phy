@@ -253,6 +253,33 @@ def probe_lingbot_fast_backend(*, out_dir: str) -> dict:
     return result
 
 
+
+
+def run_lingbot_fast_preflight_entry(
+    *,
+    pair_manifest: str,
+    out_dir: str,
+    cfg: dict,
+    limit_pairs: int,
+    max_steps: int,
+    beta: float,
+    seed: int,
+    device: str,
+):
+    from cam_physgeo.dpo.anchored_dpo_trainer import run_lingbot_fast_preflight
+
+    return run_lingbot_fast_preflight(
+        pair_manifest=pair_manifest,
+        out_dir=out_dir,
+        cfg=cfg,
+        limit_pairs=limit_pairs,
+        max_steps=max_steps,
+        beta=beta,
+        seed=seed,
+        device=device,
+        repo_root=Path.cwd(),
+    )
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="")
@@ -306,7 +333,16 @@ def main(argv=None) -> int:
     if args.plan_only or not args.run_preflight:
         return 0
     if args.backend == "lingbot_fast":
-        result = probe_lingbot_fast_backend(out_dir=str(out))
+        result = run_lingbot_fast_preflight_entry(
+            pair_manifest=pair_manifest,
+            out_dir=str(out),
+            cfg=cfg,
+            limit_pairs=args.limit_pairs,
+            max_steps=args.max_steps,
+            beta=args.beta,
+            seed=args.seed,
+            device=args.device,
+        )
     else:
         result = run_diagnostic_preflight(
             pair_manifest=pair_manifest,

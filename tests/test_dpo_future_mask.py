@@ -19,5 +19,5 @@ def test_future_indices_reject_invalid_prefix():
 
 def test_latent_future_indices_do_not_overflow():
     idxs = latent_future_indices(total_frames=81, prefix_len=5, temporal_compression=4)
-    assert min(idxs) == 1
+    assert min(idxs) == 2
     assert max(idxs) == 20
