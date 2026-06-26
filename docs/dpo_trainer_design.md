@@ -1,3 +1,19 @@
+# Dpo Trainer Design
+
+Updated: 2026-06-27T07:14:17
+
+## Current DPO Prefix5 Status
+
+- Old I2V-1 pair manifest is deprecated.
+- New V2V-5 pair manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`.
+- Real LingBot-Fast DPO energy backend is implemented using future-only flow-matching energy.
+- DPO BF16 preflight status: **DPO_BF16_READY** (single GPU, DDP2, and DDP8 all PASS).
+- Tiny DPO probe is **blocked** pending a verified V2V-5 generation/evaluation wrapper; no probe checkpoint video metrics have been produced yet.
+
+See `docs/dpo_bf16_preflight_report.md` for details.
+
+---
+
 # Current DPO Trainer Design (2026-06-27 04:43:25)
 
 Status: real LingBot-Fast prefix5 energy backend implemented for BF16 preflight.
