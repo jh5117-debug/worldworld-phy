@@ -5,10 +5,9 @@ from pathlib import Path
 from typing import Any, Iterator
 
 import cv2
+import json
 import numpy as np
 import torch
-
-from cam_physgeo.dpo.anchored_dataset import AnchoredPreferenceDataset
 
 
 def resolve_asset_path(path: str | Path | None, *, repo_root: str | Path = ".") -> Path:
@@ -162,7 +161,15 @@ class Prefix5DpoDataset:
         self.num_frames = int(num_frames)
         self.height = int(height)
         self.width = int(width)
-        rows = list(AnchoredPreferenceDataset(pair_manifest, min_margin=min_margin))
+        rows: list[dict[str, Any]] = []
+        with Path(pair_manifest).open("r", encoding="utf-8") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                if float(row.get("margin") or 0.0) < float(min_margin):
+                    continue
+                rows.append(row)
         if limit_pairs > 0:
             rows = rows[: int(limit_pairs)]
         self.rows = rows
