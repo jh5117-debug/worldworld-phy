@@ -998,14 +998,17 @@ class LingBotStage1Helper:
         return outputs
 
     @torch.no_grad()
-    def prepare_y(self, video_tensor: torch.Tensor, latent: torch.Tensor) -> torch.Tensor:
+    def prepare_y(self, video_tensor: torch.Tensor, latent: torch.Tensor, prefix_len: int = 1) -> torch.Tensor:
         vae_numeric_audit = _numeric_audit_enabled("PC_VAE_NUMERIC_AUDIT")
         lat_h, lat_w = latent.shape[2], latent.shape[3]
         frame_total = video_tensor.shape[1]
         height, width = video_tensor.shape[2], video_tensor.shape[3]
-        first_frame = video_tensor[:, 0:1]
-        zeros = torch.zeros(3, frame_total - 1, height, width, device=video_tensor.device)
-        y_input = torch.concat([first_frame, zeros], dim=1)
+        prefix_len = int(prefix_len)
+        if prefix_len < 1 or prefix_len >= int(frame_total):
+            raise ValueError(f"prefix_len must be in [1, frame_total), got {prefix_len}/{int(frame_total)}")
+        prefix = video_tensor[:, :prefix_len]
+        zeros = torch.zeros(3, frame_total - prefix_len, height, width, device=video_tensor.device)
+        y_input = torch.concat([prefix, zeros], dim=1)
         _audit_tensor_numerics(
             "vae_prepare_y_input",
             y_input,
@@ -1026,9 +1029,14 @@ class LingBotStage1Helper:
             enabled=vae_numeric_audit,
         )
 
-        # Wan consumes a 4-channel temporal mask aligned to the latent timeline, not the raw frame count.
+        # Wan consumes a 4-channel temporal mask aligned to the latent timeline,
+        # not the raw frame count. The VAE/Wan temporal compression maps several
+        # raw prefix frames to one latent slot, so mark all latent slots touched by
+        # prefix raw frames as visible.
         mask = torch.zeros(4, y_latent.shape[1], lat_h, lat_w, device=self.device, dtype=y_latent.dtype)
-        mask[:, 0] = 1
+        temporal_compression = max(int((frame_total - 1) // max(y_latent.shape[1] - 1, 1)), 1)
+        visible_latents = min((prefix_len - 1) // temporal_compression + 1, int(y_latent.shape[1]))
+        mask[:, :visible_latents] = 1
         return torch.concat([mask, y_latent])
 
     @torch.no_grad()

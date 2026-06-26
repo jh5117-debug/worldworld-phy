@@ -832,7 +832,8 @@ class Stage1BranchTrainer:
             timings["encode_text"] = self._timing_elapsed(encode_text_start)
 
             prepare_y_start = self._timing_start()
-            y = self.helper.prepare_y(video, video_latent)
+            prefix_len = int(batch.get("prefix_len", os.environ.get("PC_PREFIX_LEN", 1)) or 1)
+            y = self.helper.prepare_y(video, video_latent, prefix_len=prefix_len)
             timings["prepare_y"] = self._timing_elapsed(prepare_y_start)
 
             lat_f, lat_h, lat_w = video_latent.shape[1], video_latent.shape[2], video_latent.shape[3]
@@ -1059,7 +1060,8 @@ class Stage1BranchTrainer:
             timings["encode_text"] = self._timing_elapsed(encode_text_start)
 
             prepare_y_start = self._timing_start()
-            y = self.helper.prepare_y(video, video_latent)
+            prefix_len = int(batch.get("prefix_len", os.environ.get("PC_PREFIX_LEN", 1)) or 1)
+            y = self.helper.prepare_y(video, video_latent, prefix_len=prefix_len)
             timings["prepare_y"] = self._timing_elapsed(prepare_y_start)
 
             lat_f, lat_h, lat_w = video_latent.shape[1], video_latent.shape[2], video_latent.shape[3]
