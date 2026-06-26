@@ -6,6 +6,7 @@ import math
 import os
 import sys
 import time
+from datetime import timedelta
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -37,6 +38,13 @@ def _grad_norm(parameters) -> float:
             continue
         total += float(parameter.grad.detach().float().norm().cpu()) ** 2
     return math.sqrt(total)
+
+
+def _distributed_info() -> tuple[bool, int, int, int]:
+    world_size = int(os.environ.get("WORLD_SIZE", "1") or 1)
+    rank = int(os.environ.get("RANK", "0") or 0)
+    local_rank = int(os.environ.get("LOCAL_RANK", "0") or 0)
+    return world_size > 1, world_size, rank, local_rank
 
 
 def _write_rows(path: Path, rows: list[dict[str, Any]]) -> None:
@@ -102,6 +110,7 @@ def _precompute_pairs(
     cfg: dict[str, Any],
     device: str,
     out_dir: Path,
+    rank_suffix: str = "",
 ) -> list[PrecomputedPair]:
     _ensure_src_path()
     from physical_consistency.trainers.stage1_components import (
@@ -170,7 +179,7 @@ def _precompute_pairs(
         helper.release_runtime_components()
         if dev.type == "cuda" and torch.cuda.is_available():
             torch.cuda.empty_cache()
-    _write_rows(out_dir / "precompute_latents.csv", rows)
+    _write_rows(out_dir / f"precompute_latents{rank_suffix}.csv", rows)
     return out
 
 
@@ -205,8 +214,22 @@ def run_lingbot_fast_preflight(
     started = time.time()
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    if device == "cuda" and torch.cuda.is_available():
-        device = "cuda:0"
+    distributed, world_size, rank, local_rank = _distributed_info()
+    dist = None
+    if device.startswith("cuda") and torch.cuda.is_available():
+        if distributed:
+            torch.cuda.set_device(local_rank)
+            device = f"cuda:{local_rank}"
+        elif device == "cuda":
+            device = "cuda:0"
+    if distributed:
+        import torch.distributed as dist_mod
+
+        dist = dist_mod
+        if not dist.is_initialized():
+            timeout_hours = float(cfg.get("distributed_timeout_hours", 2) or 2)
+            dist.init_process_group(backend="nccl", timeout=timedelta(hours=timeout_hours))
+    rank_suffix = "" if rank == 0 else f"_rank{rank}"
     dataset = Prefix5DpoDataset(
         pair_manifest,
         repo_root=repo_root,
@@ -218,13 +241,23 @@ def run_lingbot_fast_preflight(
     )
     if len(dataset) <= 0:
         result = {"status": "BLOCKED_NO_PREFIX5_PAIRS", "pair_manifest": pair_manifest}
-        (out / "preflight_summary.json").write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
+        if rank == 0:
+            (out / "preflight_summary.json").write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
+        if distributed and dist is not None and dist.is_initialized():
+            dist.destroy_process_group()
         return result
 
-    precomputed = _precompute_pairs(dataset, cfg=cfg, device=device, out_dir=out)
+    precomputed = _precompute_pairs(dataset, cfg=cfg, device=device, out_dir=out, rank_suffix=rank_suffix)
     model_cfg = dict(cfg)
     model_cfg["dpo_skip_runtime_components_on_load"] = True
     backend = LingBotFastDpoEnergy(model_cfg, device=device, prefix_len=5)
+    if distributed:
+        backend.model = torch.nn.parallel.DistributedDataParallel(
+            backend.model,
+            device_ids=[local_rank],
+            output_device=local_rank,
+            find_unused_parameters=bool(cfg.get("student_ddp_find_unused_parameters", True)),
+        )
     params = backend.trainable_parameters()
     optimizer = torch.optim.AdamW(
         params,
@@ -241,7 +274,7 @@ def run_lingbot_fast_preflight(
     for step in range(max(1, int(max_steps))):
         step_start = time.time()
         try:
-            cache = precomputed[step % len(precomputed)]
+            cache = precomputed[(step * world_size + rank) % len(precomputed)]
             optimizer.zero_grad(set_to_none=True)
             timestep_sample, noise = backend.sample_timestep_and_noise(tuple(cache.winner_latent.shape), seed=int(seed) + step)
             winner = _prepared_from_cache(cache, side="winner", backend=backend, timestep_sample=timestep_sample, noise=noise)
@@ -284,22 +317,36 @@ def run_lingbot_fast_preflight(
         except Exception as exc:
             finite = False; error = repr(exc); break
 
-    _write_rows(out / "energy_checks.csv", rows)
-    metrics_jsonl = out / "training_metrics.jsonl"
+    _write_rows(out / f"energy_checks{rank_suffix}.csv", rows)
+    metrics_jsonl = out / f"training_metrics{rank_suffix}.jsonl"
     with metrics_jsonl.open("w", encoding="utf-8") as f:
         for row in rows:
             f.write(json.dumps(row, sort_keys=True) + "\n")
 
+    local_ok = bool(rows and finite and same_noise and same_timestep and nonzero_grad)
+    if distributed and dist is not None:
+        ok_tensor = torch.tensor([1 if local_ok else 0], device=device, dtype=torch.int32)
+        dist.all_reduce(ok_tensor, op=dist.ReduceOp.MIN)
+        all_ranks_ok = bool(int(ok_tensor.item()))
+    else:
+        all_ranks_ok = local_ok
+
     save_load_ok = False
     ckpt = out / "lingbot_fast_dpo_lora_state.pt"
-    if rows:
+    if rows and rank == 0:
         torch.save(extract_lora_state(backend.model), ckpt)
         saved = torch.load(ckpt, map_location="cpu")
         before = extract_lora_state(backend.model)
         load_lora_state(backend.model, saved)
         after = extract_lora_state(backend.model)
         save_load_ok = bool(before.keys() == after.keys() and all(torch.equal(before[k], after[k]) for k in before))
-    status = "PASS" if rows and finite and same_noise and same_timestep and nonzero_grad and save_load_ok else "FAILED"
+    if distributed and dist is not None:
+        save_tensor = torch.tensor([1 if (save_load_ok if rank == 0 else True) else 0], device=device, dtype=torch.int32)
+        dist.all_reduce(save_tensor, op=dist.ReduceOp.MIN)
+        save_load_all = bool(int(save_tensor.item()))
+    else:
+        save_load_all = save_load_ok
+    status = "PASS" if all_ranks_ok and save_load_all else "FAILED"
     result = {
         "status": status,
         "backend": "lingbot_fast_flow_matching_energy_precomputed_latents",
@@ -323,6 +370,15 @@ def run_lingbot_fast_preflight(
         "elapsed_seconds": time.time() - started,
         "device": device,
         "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES", ""),
+        "distributed": distributed,
+        "world_size": world_size,
+        "rank": rank,
+        "local_rank": local_rank,
+        "all_ranks_ok": all_ranks_ok,
     }
-    (out / "preflight_summary.json").write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
+    summary_name = "preflight_summary.json" if rank == 0 else f"preflight_summary_rank{rank}.json"
+    (out / summary_name).write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
+    if distributed and dist is not None and dist.is_initialized():
+        dist.barrier()
+        dist.destroy_process_group()
     return result
