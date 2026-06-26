@@ -48,3 +48,13 @@ Do not scale DPO unless:
 - FG-ID and quality do not regress
 - checkpoint rollout videos pass Codex visual audit
 
+
+
+## Current Status Update (2026-06-27 01:28:06)
+
+- screen16 artifacts are available.
+- full80 all-checkpoint rollout is incomplete; current full80 covers `GT, original_fast, D_step050` only.
+- prefix-aware conditioning code and tests are implemented.
+- diagnostic DPO preflight status: `PASS`.
+- LingBot-Fast DPO backend status: `BLOCKED_FAST_ENERGY_BACKEND`.
+- DPO probe remains blocked until real winner/loser energy is callable.

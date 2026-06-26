@@ -1,3 +1,13 @@
+# Current Experiment Plan
+
+Updated: 2026-06-27 01:28:38
+
+1. Treat D_step050 as a provisional candidate generator only, not a proven winner.
+2. Do not scale DPO until the LingBot-Fast energy backend is callable and DPO BF16 preflight passes on the real path.
+3. Re-run full80 for all small-LoRA checkpoints after Fast inference initialization is stable.
+4. Install/provide approved LPIPS/FVD/VBench backends before claiming those traditional metrics.
+5. Use prefix-aware V2V-5 as the default DPO conditioning target once real DPO is ready.
+
 # Current Status Update - 2026-06-24
 
 - New active branch: `research/quant-small-lora-dpo-probe-20260624` from `63d1b93`.

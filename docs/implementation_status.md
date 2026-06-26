@@ -1,3 +1,13 @@
+# Current Implementation Status
+
+Updated: 2026-06-27 01:28:38
+
+- Prefix-aware I2V/V2V conditioning code is implemented and tested for prefix_len 1/5/8/16 manifest metadata and latent masks.
+- Small-LoRA screen16 sweep artifacts are available; full80 all-checkpoint evaluation is still incomplete.
+- Energy-form anchored DPO loss and diagnostic DPO preflight are implemented.
+- Real LingBot-Fast anchored DPO remains blocked until a callable winner/loser flow-matching energy backend is exposed.
+- LPIPS, FVD, and VBench are blocked in the current environment because the required packages/backends are unavailable.
+
 # Current Status Update - 2026-06-24
 
 - New active branch: `research/quant-small-lora-dpo-probe-20260624` from `63d1b93`.

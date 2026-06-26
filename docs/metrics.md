@@ -1,3 +1,12 @@
+# Current Metrics Status
+
+Updated: 2026-06-27 01:28:38
+
+- Available now: PSNR, SSIM, freeze proxy, quality proxy, Epipolar diagnostic, C-SGC diagnostic.
+- Blocked by environment: LPIPS, FVD, VBench.
+- Incomplete real backends: ADE/DTW trajectory, object mask IoU, FG-ID, PES, RCS.
+- Interpretation rule: PSNR/SSIM are reconstruction indicators only; they cannot prove camera-conditioned physical consistency.
+
 # Current Status Update - 2026-06-24
 
 - New active branch: `research/quant-small-lora-dpo-probe-20260624` from `63d1b93`.

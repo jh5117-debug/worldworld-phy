@@ -1,38 +1,19 @@
-# Current Unified Eval / DPO Status
+# Small-LoRA Scope Sweep Final Report
 
 Updated: 2026-06-27 01:28:06
 
-This report is generated from the current H20 artifacts. It does not invent missing videos or missing metrics.
+## Status
 
-## Git / Artifact State
+Screen16 sweep and selection are complete. Full80 all-checkpoint evaluation is incomplete.
 
-- Branch: `research/quant-small-lora-dpo-probe-20260624`
-- Overnight root: `local_assets/overnight_quant_lora_dpo_20260624_overnight_test`
-- Supervisor next action: `DPO blocked until real trainer/preflight is implemented`
-- Supervisor blockers: `{'dpo': 'DPO trainer readiness hook exists, but launch command intentionally not defined until real preflight CLI is audited', 'old_tiny_camera': 'legacy checkpoint lacks adapter_metadata.json required by strict Fast adapter loader'}`
+## Screen16 Artifact Coverage
+
+- Rollout videos: `208`
+- Checkpoints inventoried: `12`
 - Selected candidate: `D_step050`
-- Candidate decision: `NEW_SMALL_LORA_SELECTED`
+- Selection reason: screen16 proxy/diagnostic selection; final full80 and visual audit still required
 
-## Completion State
-
-- small-LoRA A/B/C/D training: completed in supervisor state.
-- screen16 rollout: completed, `208` MP4 files.
-- screen16 video audit: completed in supervisor state.
-- quant screen: completed in supervisor state.
-- full80 benchmark: partial for model coverage; existing full80 videos = `160`.
-- full80 candidates present: `GT, original_fast, D_step050`.
-- pair build: `50` anchored pairs.
-- reward calibration: completed as diagnostic, not DPO-ready.
-- DPO diagnostic backend: `PASS`.
-- LingBot-Fast DPO energy backend: `BLOCKED_FAST_ENERGY_BACKEND`.
-
-## Important Blockers
-
-1. Full80 all-checkpoint rollout is not complete. Existing full80 currently covers Original Fast and `D_step050` only.
-2. LPIPS / FVD / VBench packages are not installed in the current environment, so those metrics are blocked rather than fabricated.
-3. LingBot-Fast anchored DPO still needs a callable winner/loser flow-matching energy backend with frozen reference.
-
-## Checkpoint Inventory
+## Checkpoints
 
 | model | checkpoint |
 |---|---|
@@ -48,3 +29,13 @@ This report is generated from the current H20 artifacts. It does not invent miss
 | D_step050 | `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/local_assets/experiments/small_lora_scope_sweep_20260624/train/small_lora_D_camera_cross_r4_train200_20260624_141215/checkpoints/small_lora_D_camera_cross_r4_train200_20260624_141215/high_only_phase/branches/step_000050/fast_stageA_high_noise_adapter` |
 | D_step100 | `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/local_assets/experiments/small_lora_scope_sweep_20260624/train/small_lora_D_camera_cross_r4_train200_20260624_141215/checkpoints/small_lora_D_camera_cross_r4_train200_20260624_141215/high_only_phase/branches/step_000100/fast_stageA_high_noise_adapter` |
 | D_step200 | `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/local_assets/experiments/small_lora_scope_sweep_20260624/train/small_lora_D_camera_cross_r4_train200_20260624_141215/checkpoints/small_lora_D_camera_cross_r4_train200_20260624_141215/high_only_phase/branches/step_000200/fast_stageA_high_noise_adapter` |
+
+## Full80 Status
+
+- Existing full80 videos: `160`
+- Models present in full80 summary: `GT, original_fast, D_step050`
+- Remaining: run full80 for all other checkpoints after Fast inference initialization is stable.
+
+## Decision
+
+`D_step050` remains the provisional candidate generator, but it is not a proven overall winner. Broad-LoRA remains a failed/mixed route for generation quality and should not be the main DPO candidate generator.

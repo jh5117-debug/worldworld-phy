@@ -1,3 +1,9 @@
+# Cam-PhysGeo DPO Current Status
+
+Updated: 2026-06-27 01:28:38
+
+Current DPO status: BLOCKED for real LingBot-Fast training. The repository now has energy-form anchored DPO loss plus a diagnostic trainer path that validates anchored pairs, same noise/timestep, backward, optimizer step, and save/load. The real policy/reference LingBot-Fast flow-matching energy backend is still required before BF16 DPO preflight or DPO probe can be claimed.
+
 # Current Status Update - 2026-06-24
 
 - New active branch: `research/quant-small-lora-dpo-probe-20260624` from `63d1b93`.
