@@ -1,34 +1,38 @@
 # Current V2V-5 StageA / DPO Execution Status
 
-Updated: 2026-06-27
+Updated: 2026-06-27T17:40:45
 
-- Branch: `research/quant-small-lora-dpo-probe-20260624`
-- Baseline commit before wrapper work: `53d8882`
-- Prefix5 pairs: READY, `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`, 50/50 valid.
-- DPO energy backend: READY, real LingBot-Fast energy.
-- DPO BF16 preflight: READY for single GPU, DDP2 and DDP8.
-- Current focus: replace image-first Fast inference with honest V2V-5 generation.
+## Current Branch
 
-## Fixed Blocker
+`research/quant-small-lora-dpo-probe-20260624`
 
-The old inference path called `pipe.generate(prompt, image, action_path=...)`, which encoded only frame 0. The new wrapper constructs a prefix-video condition: frames 0-4 are encoded, frames 5-80 are zeroed, and evaluation uses future frames only.
+## Completed
 
-## Not Running
+- Prefix-aware V2V-5 pair manifest is ready: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl` with 50 valid pairs.
+- True V2V-5 generation wrapper is implemented and used: prefix frames 0-4 are loaded as condition, future frames 5-80 are generated/evaluated.
+- Original Fast V2V-5 baseline rollout completed on 16 screen conditions.
+- StageA V2V-5 camera-only LoRA warmup completed: 100 high-noise steps, rank 4, future-only loss.
+- Every StageA checkpoint was evaluated by real V2V-5 inference and future-only PSNR/SSIM/freeze proxy.
+- Tiny prefix5 DPO probe completed: 5 pairs, 20 optimizer steps, true LingBot-Fast energy backend.
+- DPO checkpoint step20 was converted to an adapter, run through true V2V-5 inference, audited visually, and scored.
 
-No StageB, no GRPO, no large-scale DPO, no full-data long StageA, no data/checkpoint deletion, and no generated videos/checkpoints are pushed to Git.
+## Decisions
 
-## 2026-06-27 V2V-5 StageA Pilot Readiness
+- StageA V2V-5: `STAGEA_V2V5_MIXED_USE_WITH_CAUTION`. It is slightly better than Original Fast on PSNR/SSIM but visually still hallucinates objects and has weak foreground/physics consistency.
+- DPO probe: `DPO_PROBE_FAILED`. Runtime path works, but learning signal and post-probe video quality do not pass.
 
-- Branch: `research/quant-small-lora-dpo-probe-20260624`
-- Latest code checkpoint before pilot launch includes true V2V-5 inference wrapper and future-only StageA loss.
-- Prefix5 pair manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl` with 50/50 valid V2V-5 pairs.
-- Original Fast V2V-5 screen16 rollout is running under `local_assets/v2v5_rollouts_20260627_082915/original_fast_screen16/`.
-- StageA V2V-5 pilot dataset: `local_assets/stageA_v2v5_pilot_20260627/dataset/`.
-- Pilot split: train 800 / val 100 / test 100, total 1000.
-- Pilot template distribution: drop 300, collision 300, roll 200, containment 200.
-- Pilot config: `configs/cam_physgeo/fast_stageA_v2v5_camera_r4_100step.yaml`.
-- Pilot launcher: `scripts/launch_fast_stageA_v2v5_camera_r4.sh`.
-- StageA pilot policy: LingBot-Fast, high-noise only, camera-conditioning LoRA only, rank 4, alpha 4, LR 1e-6, max 100 optimizer steps.
-- Prefix condition: `PC_PREFIX_LEN=5`; frames 0-4 are visible condition frames.
-- Prediction/loss target: future frames 5-80 only; latent loss starts after prefix-touched latent slots.
-- Not launched in this checkpoint: StageB, GRPO, large-scale DPO, full-data long StageA.
+## Key Metrics
+
+| Model | PSNR up | SSIM up | Freeze down |
+|---|---:|---:|---:|
+| Original Fast | 15.844572 | 0.837829 | 0.000 |
+| StageA V2V-5 final | 16.012353 | 0.841087 | 0.000 |
+| DPO step20 | 15.819494 | 0.836042 | 0.000 |
+
+## Not Run
+
+- No StageB.
+- No GRPO.
+- No full-data long StageA.
+- No large-scale DPO.
+- No data/checkpoint deletion.

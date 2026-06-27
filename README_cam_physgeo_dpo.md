@@ -1,3 +1,22 @@
+# Cam PhysGeo DPO Current Status
+
+Updated: 2026-06-27T17:40:45
+
+## Current Result
+
+The project now has a real prefix-aware V2V-5 path through StageA warmup, inference, visual audit, metric scoring, and a tiny LingBot-Fast energy-form DPO probe.
+
+- Pair manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`
+- Prefix condition: frames 0-4
+- Prediction/evaluation target: frames 5-80
+- StageA V2V-5 final: `STAGEA_V2V5_MIXED_USE_WITH_CAUTION`
+- DPO BF16 backend: `DPO_BF16_READY`
+- Tiny DPO probe: `DPO_PROBE_FAILED` for scale-up
+
+Reason for DPO failure: the backend runs, but loss stays near 0.693, winner improvement is too small/negative at the end, and DPO step20 video quality is not better than Original Fast or StageA final. Do not scale DPO from this checkpoint.
+
+---
+
 # Readme Cam Physgeo Dpo
 
 Updated: 2026-06-27T07:14:17

@@ -1,5 +1,24 @@
 # Implementation Status
 
+Updated: 2026-06-27T17:40:45
+
+## Current V2V-5 / DPO Status
+
+- Active branch: `research/quant-small-lora-dpo-probe-20260624`.
+- True prefix-aware V2V-5 generation wrapper is implemented.
+- Prefix frames 0-4 are condition; future frames 5-80 are prediction/evaluation target.
+- StageA V2V-5 camera-only LoRA warmup completed 100 high-noise steps.
+- StageA final decision: `STAGEA_V2V5_MIXED_USE_WITH_CAUTION`.
+- Real LingBot-Fast prefix5 DPO energy backend is implemented and BF16-ready.
+- Tiny DPO probe completed but failed the scale-up gate: loss stayed near 0.693, winner improvement was tiny/negative at final, and DPO step20 video metrics were below StageA final.
+- Current recommendation: do not scale DPO; improve pair quality/reward calibration first.
+
+Safety: no StageB, no GRPO, no full-data long StageA, no large-scale DPO, no checkpoint deletion.
+
+---
+
+# Implementation Status
+
 Updated: 2026-06-27T07:14:17
 
 ## Current DPO Prefix5 Status

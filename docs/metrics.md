@@ -1,3 +1,23 @@
+# Metrics Status
+
+Updated: 2026-06-27T17:40:45
+
+## V2V-5 StageA / DPO Metrics
+
+All current primary numbers below are computed on future frames 5-80 only.
+
+| Model | PSNR up | SSIM up | Freeze down |
+|---|---:|---:|---:|
+| Original Fast | 15.844572 | 0.837829 | 0.000 |
+| StageA V2V-5 final | 16.012353 | 0.841087 | 0.000 |
+| DPO step20 | 15.819494 | 0.836042 | 0.000 |
+
+LPIPS, FVD, and VBench are still blocked/not available in the active environment and were not fabricated. PhysGeo components remain diagnostic; PSNR/SSIM are not sufficient evidence of physical consistency.
+
+DPO signal summary: mean loss 0.693144497, final loss 0.693165958, mean implicit accuracy 0.600, mean winner improvement 0.000084573.
+
+---
+
 # Metrics Status (2026-06-27 04:43:25)
 
 DPO-specific metric state:

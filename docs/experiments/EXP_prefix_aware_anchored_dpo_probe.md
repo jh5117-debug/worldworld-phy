@@ -1,126 +1,53 @@
-# EXP Prefix-Aware Anchored DPO Probe (2026-06-27 04:43:53)
-
-Status: PRE-DPO PREFLIGHT. No DPO probe has been launched yet.
-
-## Hypothesis
-
-A prefix-aware anchored DPO probe can provide a meaningful preference signal only if the energy backend scores future frames 5-80 while conditioning on clean prefix frames 0-4, prompt, poses, and intrinsics.
-
-## Active Pair Manifest
-
-`manifests/anchored_dpo_probe_pairs_prefix5.jsonl`
-
-- pair count: 50
-- prefix_len: 5
-- prediction_start_frame: 5
-- loss_frame_indices: 5..80
-- reward_frame_indices: 5..80
-- readiness summary: `reports/dpo_prefix5_pair_visual_audit/prefix5_training_readiness_summary.md`
-
-## Backend
-
-- Policy: LingBot-World-Fast high-only camera model with LoRA trainable parameters.
-- Reference: same base model with LoRA scaling disabled under no_grad.
-- Energy: flow-matching prediction error on strict future latent slots only.
-- Same timestep/noise: required for winner and loser.
-- use_action: false.
-
-## BF16 Policy
-
-- DiT / LoRA mixed-safe BF16 path.
-- VAE FP32 by Stage1 precision environment.
-- Camera/projection and loss reduction are kept stable through Stage1 helper policies.
-
-## Gates
-
-1. Single GPU7 2-step preflight must pass.
-2. DDP2 GPU6,7 5-step preflight must pass.
-3. DDP8 GPU0-7 5-step preflight must pass.
-4. Tiny DPO probe may run only after the above gates pass.
-
-## Stop Conditions
-
-- Any nonfinite energy/loss.
-- SIGFPE, OOM, or exit code 136.
-- Reference has trainable params or receives gradients.
-- Winner/loser do not share timestep/noise.
-- Prefix frames enter loss mask.
-
-## Current Decision
-
-Do not scale DPO. Real BF16 preflight is the next gate.
-
-
----
-
 # EXP Prefix-Aware Anchored DPO Probe
 
-Status: blocked_until_real_trainer
+Updated: 2026-06-27T17:40:45
+
+Status: **FAILED_FOR_SCALEUP**.
 
 ## Question
 
-Can a tiny anchored DPO probe improve future-segment generation without degrading foreground identity, quality, or camera adherence?
+Can a tiny prefix-aware anchored DPO probe improve future-segment V2V-5 generation without degrading foreground identity, quality, or camera adherence?
 
-## Current Blocker
+## Input
 
-`cam_physgeo/training/train_stage2_anchored_dpo.py` is still guarded and does not run a real LingBot-Fast policy/reference DPO optimization step.
+- Pair manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`
+- Pair count available: 50
+- Probe count: 5 pairs
+- Prefix: frames 0-4
+- Winner/loser future: frames 5-80
+- Loss/reward: future-only
 
-## Required Real Path
+## Backend
 
-The trainer must:
+- Real LingBot-Fast flow-matching energy backend.
+- Policy/reference winner-loser energies are real model calls, not fake MSE proxies.
+- Reference is frozen.
+- Winner/loser use same timestep and same noise.
+- Camera-conditioning LoRA rank 4, 160 modules, 6,553,600 trainable parameters.
 
-- load LingBot-Fast policy
-- load frozen LingBot-Fast reference
-- initialize policy from selected checkpoint or Original Fast
-- encode condition, winner future, and loser future
-- use the same timestep and same noise for winner and loser
-- compute policy and reference energies on the future segment only
-- compute anchored DPO loss
-- backpropagate only through the expected LoRA parameters
-- save adapter-only checkpoints
-- verify save/load and resume
+## Runtime Result
 
-## Default Pair Type
+- Single-GPU tiny probe ran 20 optimizer steps.
+- no SIGFPE / no OOM / no NaN or Inf.
+- Adapter save/load worked.
 
-Start with anchored pairs:
+## Learning Result
 
-- clean GT future > corrupted GT future
-- clean GT future > quality-qualified bad rollout future
+| Metric | Value |
+|---|---:|
+| mean DPO loss | 0.693144497 |
+| final DPO loss | 0.693165958 |
+| mean implicit accuracy | 0.600 |
+| final implicit accuracy | 0.000 |
+| mean winner improvement | 0.000084573 |
+| final winner improvement | -0.000231806 |
 
-Avoid using bad top rollout > worse bottom rollout as the main pair source.
+The preference signal is weak/inconclusive and does not justify scale-up.
 
-## Prefix
+## Video Result
 
-Default probe prefix length: `prefix_len=5`.
+DPO step20 underperforms the StageA final checkpoint on future-only PSNR/SSIM and visually shows extra object fragments. Decision: `DPO_PROBE_FAILED`.
 
-## Gate
+## Next Step
 
-Do not scale DPO unless:
-
-- DPO loss has non-saturated signal
-- winner improvement is positive
-- the policy does not merely degrade the loser
-- FG-ID and quality do not regress
-- checkpoint rollout videos pass Codex visual audit
-
-
-
-## Current Status Update (2026-06-27 01:28:06)
-
-- screen16 artifacts are available.
-- full80 all-checkpoint rollout is incomplete; current full80 covers `GT, original_fast, D_step050` only.
-- prefix-aware conditioning code and tests are implemented.
-- diagnostic DPO preflight status: `PASS`.
-- LingBot-Fast DPO backend status: `BLOCKED_FAST_ENERGY_BACKEND`.
-- DPO probe remains blocked until real winner/loser energy is callable.
-
-
-## Prefix-5 Pair Rebuild Status (2026-06-27 03:24:08)
-
-- Old anchored pairs were I2V-1 / first-image conditioned, not V2V-5.
-- New manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`.
-- Pair count: `50`.
-- Valid prefix5 pair count: `50`.
-- Prefix clips use frames 0-4; winner/loser futures use frames 5-80.
-- DPO loss/reward masks are `5..80`.
-- Real DPO remains blocked until LingBot-Fast winner/loser energy backend and BF16 DDP preflight are available.
+Do not scale DPO. Rebuild quality-bounded pair selection with stronger rewards and harder-but-not-collapsed negatives. Keep clean GT winners for diagnostics; do not use current StageA/DPO rollouts as winners.

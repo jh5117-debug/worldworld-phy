@@ -1,73 +1,85 @@
-# Anchored Dpo Probe Final Report
-
-Updated: 2026-06-27T07:14:17
-
-## Current DPO Prefix5 Status
-
-- Old I2V-1 pair manifest is deprecated.
-- New V2V-5 pair manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`.
-- Real LingBot-Fast DPO energy backend is implemented using future-only flow-matching energy.
-- DPO BF16 preflight status: **DPO_BF16_READY** (single GPU, DDP2, and DDP8 all PASS).
-- Tiny DPO probe is **blocked** pending a verified V2V-5 generation/evaluation wrapper; no probe checkpoint video metrics have been produced yet.
-
-See `docs/dpo_bf16_preflight_report.md` for details.
-
----
-
-# Anchored DPO Probe Status (2026-06-27 04:43:25)
-
-Current decision: tiny DPO probe is not launched yet.
-
-Completed prerequisite:
-- Rebuilt anchored DPO pairs as true V2V-5 prefix pairs.
-- Verified 50/50 pairs: prefix_len=5, prediction_start_frame=5, prefix 5 frames, future 76 frames.
-
-New prerequisite in progress:
-- Real LingBot-Fast energy backend is now implemented for preflight.
-- DPO probe may proceed only if BF16 preflight passes and energy diagnostics are finite with nonzero LoRA gradients.
-
-No large-scale DPO, StageB, GRPO, or full-data StageA was run in this update.
-
-
----
-
 # Anchored DPO Probe Final Report
 
-Updated: 2026-06-27 01:28:06
+Updated: 2026-06-27T17:40:45
 
-## Status
+## Final Status
 
-`DPO_PROBE_BLOCKED`
+**DPO_PROBE_FAILED** for scale-up.
 
-## What Completed
+The true LingBot-Fast prefix-aware V2V-5 DPO path is now runnable, but the tiny probe did not produce a useful preference-learning signal and the post-probe video evaluation is worse than the best StageA V2V-5 checkpoint. Do not scale DPO from this checkpoint.
 
-- Anchored pair manifest exists with `50` pairs.
-- Energy-form DPO loss implemented.
-- Diagnostic DPO preflight completed and passed.
-- Same noise/timestep tests pass.
-- Save/load for the diagnostic adapter state passes.
+## What Was Actually Run
 
-## What Did Not Complete
+- Pair manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`
+- Pair count used in probe: 5 prefix5 pairs
+- Condition: clean prefix frames 0-4, prompt, poses, intrinsics
+- Target: winner/loser future frames 5-80
+- Loss/reward mask: future only, raw frame indices 5..80
+- Policy/reference: LingBot-World-Fast flow-matching energy backend
+- LoRA: camera-conditioning only, rank 4, 160 modules, 6,553,600 trainable parameters
+- Probe: 20 optimizer steps on GPU7, BF16 mixed-safe path
+- Large-scale DPO: not run
 
-- Real LingBot-Fast DPO training did not run.
-- DPO BF16 single/DDP preflight did not run on the real backend.
-- DPO checkpoint rollout/video audit/metrics did not run.
+## DPO Runtime Checks
 
-## Blocker
+- no SIGFPE / no OOM / no NaN or Inf
+- same noise and same timestep verified
+- reference frozen verified
+- prefix excluded from loss
+- future-only energy verified
+- adapter save/load passed
 
-LingBot-Fast rollout initialization is available in prior artifacts, but the anchored DPO energy path has not yet exposed a callable winner/loser flow-matching energy function with frozen reference.
+## DPO Learning Signal
+
+| Metric | Value |
+|---|---:|
+| dpo_loss mean | 0.693144497 |
+| dpo_loss last | 0.693165958 |
+| implicit accuracy mean | 0.600 |
+| implicit accuracy last | 0.000 |
+| winner improvement mean | 0.000084573 |
+| winner improvement last | -0.000231806 |
+| loser degradation mean | -0.000030977 |
+| loser degradation last | -0.000143982 |
+| reference-relative margin mean | 0.000053596 |
+| grad norm mean | 0.001245106 |
+| mean step time sec | 192.222 |
+
+Interpretation: the DPO loss stays essentially at random-preference scale (`~0.693`), winner improvement is tiny and turns negative at the last step, and the margin is too small to treat as a useful preference signal.
+
+## Video Evaluation
+
+All reported metrics are future-only on frames 5-80.
+
+| Model | PSNR up | SSIM up | Freeze down | Decision |
+|---|---:|---:|---:|---|
+| Original Fast | 15.844572 | 0.837829 | 0.000 | baseline |
+| StageA V2V-5 final | 16.012353 | 0.841087 | 0.000 | mixed, best available checkpoint |
+| DPO step20 | 15.819494 | 0.836042 | 0.000 | failed for scale-up |
+
+Codex visual review of the DPO comparison sheets found that DPO step20 tends to add extra small objects/fragments and does not improve foreground identity or physical events. It is not a good DPO policy checkpoint.
+
+LPIPS / FVD / VBench remain `BLOCKED_BY_ENV_or_not_requested` in this environment. They were not fabricated.
 
 ## Decision
 
-Do not scale DPO yet. The next step is to implement the real LingBot-Fast energy path, then run the requested single-GPU, DDP2, and DDP8 BF16 DPO preflights before any DPO probe training.
+- DPO backend: **real and runnable**.
+- DPO BF16 runtime: **ready**.
+- Tiny DPO learning/video outcome: **failed for scale-up**.
+- Recommended next action: keep using prefix5 GT-clean > controlled-corruption pairs for diagnostics, but rebuild pair scoring/quality floors before another DPO probe. Do not use current StageA or current DPO outputs as winners.
+
+## Artifacts
+
+- Prefix5 pairs: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`
+- StageA metrics: `reports/stageA_v2v5_20260627/metrics_summary.csv`
+- StageA decision: `reports/stageA_v2v5_20260627/best_stageA_checkpoint_decision.json`
+- DPO training metrics: `reports/dpo_probe_v2v5_20260627/tiny5_step20/training_metrics.jsonl`
+- DPO signal summary: `reports/dpo_probe_v2v5_20260627/tiny5_step20/probe_signal_summary.json`
+- DPO checkpoint video eval: `reports/dpo_probe_v2v5_20260627/step020_eval/metrics/checkpoint_summary.json`
+- DPO video audit: `reports/dpo_probe_v2v5_20260627/step020_eval/video_audit/all_video_audit.csv`
+- DPO comparison sheets: `reports/dpo_probe_v2v5_20260627/step020_eval/model_comparison_contact_sheets/`
 
 
-## Prefix-5 Pair Rebuild Status (2026-06-27 03:24:08)
+## Safety
 
-- Old anchored pairs were I2V-1 / first-image conditioned, not V2V-5.
-- New manifest: `manifests/anchored_dpo_probe_pairs_prefix5.jsonl`.
-- Pair count: `50`.
-- Valid prefix5 pair count: `50`.
-- Prefix clips use frames 0-4; winner/loser futures use frames 5-80.
-- DPO loss/reward masks are `5..80`.
-- Real DPO remains blocked until LingBot-Fast winner/loser energy backend and BF16 DDP preflight are available.
+No StageB, GRPO, full-data long StageA, or large-scale DPO was run. No historical checkpoint was deleted or modified. Large videos/checkpoints remain outside Git.
