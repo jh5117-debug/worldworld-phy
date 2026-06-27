@@ -1,5 +1,22 @@
 # Cam PhysGeo DPO Current Status
 
+Updated: 2026-06-28T00:20:04
+
+## Preference Pair Protocol v1
+
+DPO training remains paused. The current work produced a stable V2V-5 preference-pair protocol:
+
+- `manifests/dpo_preference_protocol_v1_pairs.jsonl`
+- 66 valid pairs
+- Type A local corruption: 50
+- Type B medium-hard rollout loser: 16
+
+Recommended next DPO input: start with Type A after full real-energy audit, then cautiously mix Type B.
+
+---
+
+# Cam PhysGeo DPO Current Status
+
 Updated: 2026-06-27T17:40:45
 
 ## Current Result

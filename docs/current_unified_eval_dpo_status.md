@@ -1,5 +1,24 @@
 # Current Unified Eval / DPO Status
 
+Updated: 2026-06-28T00:20:04
+
+## Current Protocol State
+
+- DPO training: not running.
+- New pair protocol: `manifests/dpo_preference_protocol_v1_pairs.jsonl`.
+- Valid pairs: 66.
+- Type A local corruption: 50.
+- Type B medium-hard rollout: 16.
+- Prior DPO probe remains failed for scale-up; this protocol is the data repair step.
+
+## Decision
+
+Pair protocol v1 is ready for review and selected-subset real-energy audit. It is not approval to launch DPO automatically.
+
+---
+
+# Current Unified Eval / DPO Status
+
 Updated: 2026-06-27T07:14:17
 
 ## Current Status

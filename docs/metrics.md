@@ -1,5 +1,22 @@
 # Metrics Status
 
+Updated: 2026-06-28T00:20:04
+
+## Preference Protocol v1 Metrics
+
+- Rollout pool scored: 48.
+- Quality-floor pass rollout count: 48.
+- Medium-hard rollout losers selected: 16.
+- Valid final pairs: 66.
+- Real energy sampled pairs: 5.
+- Proxy energy triage pairs: 61.
+
+LPIPS/FVD/VBench remain blocked by environment for protocol scoring and were not fabricated.
+
+---
+
+# Metrics Status
+
 Updated: 2026-06-27T17:40:45
 
 ## V2V-5 StageA / DPO Metrics

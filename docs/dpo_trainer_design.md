@@ -1,3 +1,18 @@
+# DPO Trainer Design
+
+Updated: 2026-06-28T00:20:04
+
+## Preference Protocol v1 Implication
+
+The trainer should not consume arbitrary rollout-ranking pairs. The recommended input is now:
+
+1. Type A: clean GT future > local corrupted GT future, with affected region/time/mask.
+2. Type B: clean GT future > quality-floor-passing medium-hard rollout.
+
+Future trainer changes should add SDPO-style winner preservation and Linear-DPO-style sustained utility before scaling.
+
+---
+
 # Dpo Trainer Design
 
 Updated: 2026-06-27T07:14:17

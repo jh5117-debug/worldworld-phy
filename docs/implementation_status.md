@@ -1,5 +1,20 @@
 # Implementation Status
 
+Updated: 2026-06-28T00:20:04
+
+## DPO Preference Protocol v1
+
+- New manifest: `manifests/dpo_preference_protocol_v1_pairs.jsonl`.
+- Valid pairs: 66.
+- Type A local-corruption pairs: 50.
+- Type B GT-vs-medium-hard-rollout pairs: 16.
+- No DPO training was run in this protocol pass.
+- Decision: protocol ready for review; run full real-energy audit before training.
+
+---
+
+# Implementation Status
+
 Updated: 2026-06-27T17:40:45
 
 ## Current V2V-5 / DPO Status
