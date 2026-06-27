@@ -20,7 +20,20 @@ from cam_physgeo.eval.prefix_video_condition import (
     read_video_tensor,
     write_video_tensor,
 )
-from cam_physgeo.eval.run_fast_adapter_inference import DEFAULT_FAST_ROOT, DEFAULT_LINGBOT_CODE, _install_paths, _load_adapter
+DEFAULT_FAST_ROOT = "/home/nvme03/workspace/lingbot-world/lingbot-world-base-cam"
+DEFAULT_LINGBOT_CODE = "/home/nvme03/workspace/lingbot-world"
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+def _install_paths(lingbot_code_dir: str) -> None:
+    root = _repo_root()
+    for path in (str(root / "src"), str(root), lingbot_code_dir):
+        if path not in os.sys.path:
+            os.sys.path.insert(0, path)
+
 from cam_physgeo.eval.v2v5_generation_wrapper import generate_v2v5_fast
 
 
@@ -93,11 +106,14 @@ def _copy_condition_files(row: dict[str, Any], dst: Path, *, repo_root: Path) ->
 
 
 def run(args: argparse.Namespace) -> None:
+    print("[v2v5] run start", flush=True)
     repo_root = Path(args.repo_root).resolve()
     _install_paths(args.lingbot_code_dir)
+    print("[v2v5] import wan", flush=True)
     import wan
     from wan.configs import MAX_AREA_CONFIGS, SIZE_CONFIGS, WAN_CONFIGS
     from wan.utils.utils import save_video
+    print("[v2v5] wan imported", flush=True)
 
     logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s")
     if args.prefix_len != 5 or args.prediction_start_frame != 5:
@@ -124,6 +140,7 @@ def run(args: argparse.Namespace) -> None:
         w, h = (int(x) for x in args.size.split("*"))
         MAX_AREA_CONFIGS[args.size] = w * h
     cfg = WAN_CONFIGS[args.task]
+    print("[v2v5] instantiate WanI2VFast", flush=True)
     pipe = wan.WanI2VFast(
         config=cfg,
         checkpoint_dir=args.ckpt_dir,
@@ -136,10 +153,12 @@ def run(args: argparse.Namespace) -> None:
         convert_model_dtype=False,
         pipe_dtype=torch.bfloat16 if args.bf16 else torch.float32,
     )
+    print("[v2v5] WanI2VFast ready", flush=True)
     if getattr(pipe, "control_type", None) != "cam":
         raise RuntimeError(f"expected camera-control Fast checkpoint, got {getattr(pipe, 'control_type', None)}")
     adapter_info: dict[str, Any] = {"adapter_loaded": False}
     if args.adapter_path:
+        from cam_physgeo.eval.run_fast_adapter_inference import _load_adapter
         adapter_info = _load_adapter(pipe, Path(args.adapter_path))
         adapter_info["adapter_loaded"] = True
 
