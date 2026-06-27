@@ -11,7 +11,17 @@ import numpy as np
 
 from cam_physgeo.utils.io import ensure_dir, read_jsonl
 
-VIDEO_KEYS = ("candidate_video", "generated_video", "video_path", "target_video", "target_video_path", "video", "mp4")
+VIDEO_KEYS = (
+    "candidate_video",
+    "generated_future_video_path",
+    "generated_full_video_path",
+    "generated_video",
+    "video_path",
+    "target_video",
+    "target_video_path",
+    "video",
+    "mp4",
+)
 SCORE_FIELDS = (
     "background_stability", "camera_following", "foreground_identity", "object_deformation",
     "physical_event", "reobserve", "freeze", "visual_quality",
@@ -19,7 +29,8 @@ SCORE_FIELDS = (
 FAILURE_TAGS = (
     "background_drift", "wrong_camera", "object_disappear", "object_duplicate", "object_deform",
     "color_change", "scene_replace", "event_missing", "penetration", "freeze", "blur",
-    "flicker", "reobserve_failure",
+    "flicker", "reobserve_failure", "camera_ignored", "freeze_camera", "freeze_object",
+    "global_freeze", "teleport", "prefix_ignored",
 )
 
 
