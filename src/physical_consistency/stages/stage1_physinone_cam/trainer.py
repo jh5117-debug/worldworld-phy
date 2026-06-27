@@ -75,6 +75,23 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
+def _future_latent_start(prefix_len: int, latent_frames: int, frame_total: int) -> int:
+    """First latent slot that is safe for future-only loss.
+
+    Raw frames are temporally compressed by the Wan VAE.  For V2V-5, raw prefix
+    frame 4 shares latent slot 1 with early future frames, so slot 1 must still
+    be excluded from the loss.
+    """
+
+    prefix_len = int(prefix_len)
+    latent_frames = int(latent_frames)
+    frame_total = int(frame_total)
+    if prefix_len < 1 or prefix_len >= frame_total:
+        raise ValueError(f"prefix_len must be in [1, frame_total), got {prefix_len}/{frame_total}")
+    temporal_compression = max(int((frame_total - 1) // max(latent_frames - 1, 1)), 1)
+    return min((prefix_len - 1) // temporal_compression + 1, latent_frames)
+
+
 @dataclass(slots=True)
 class BranchTrainResult:
     """Outputs from one branch-specific Stage-1 run."""
@@ -882,8 +899,11 @@ class Stage1BranchTrainer:
             )[0]
             timings["student_forward"] = self._timing_elapsed(student_forward_start)
         loss_start = self._timing_start()
-        pred_rest = pred[:, 1:]
-        target_rest = target[:, 1:]
+        future_start = _future_latent_start(prefix_len, pred.shape[1], video.shape[1])
+        pred_rest = pred[:, future_start:]
+        target_rest = target[:, future_start:]
+        if pred_rest.numel() == 0:
+            raise ValueError(f"future-only loss has no latent slots: prefix_len={prefix_len} pred_shape={tuple(pred.shape)}")
         loss_unweighted = F.mse_loss(pred_rest.float(), target_rest.float())
         loss_fm = loss_unweighted * timestep_sample.weight
         timings["loss"] = self._timing_elapsed(loss_start)
@@ -899,6 +919,8 @@ class Stage1BranchTrainer:
             "sample_sigma": float(timestep_sample.sigma),
             "sample_timestep": timestep_float,
             "timestep_weight": float(timestep_sample.weight),
+            "prefix_len": float(prefix_len),
+            "future_latent_start": float(future_start),
         }
         for key, value in timings.items():
             metrics[f"timing_{key}_sec"] = float(value)
@@ -1131,8 +1153,11 @@ class Stage1BranchTrainer:
             )[0]
             timings["student_forward"] = self._timing_elapsed(student_forward_start)
         loss_start = self._timing_start()
-        pred_rest = pred[:, 1:]
-        target_rest = target[:, 1:]
+        future_start = _future_latent_start(prefix_len, pred.shape[1], video.shape[1])
+        pred_rest = pred[:, future_start:]
+        target_rest = target[:, future_start:]
+        if pred_rest.numel() == 0:
+            raise ValueError(f"future-only loss has no latent slots: prefix_len={prefix_len} pred_shape={tuple(pred.shape)}")
         loss_unweighted = F.mse_loss(pred_rest.float(), target_rest.float())
         loss_fm = loss_unweighted * timestep_sample.weight
         timings["loss"] = self._timing_elapsed(loss_start)
@@ -1148,6 +1173,8 @@ class Stage1BranchTrainer:
             "sample_sigma": float(timestep_sample.sigma),
             "sample_timestep": timestep_float,
             "timestep_weight": float(timestep_sample.weight),
+            "prefix_len": float(prefix_len),
+            "future_latent_start": float(future_start),
         }
         for key, value in timings.items():
             metrics[f"timing_{key}_sec"] = float(value)
