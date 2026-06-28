@@ -1,5 +1,22 @@
 # Implementation Status
 
+<!-- DPO_FAILURE_DIAG_20260629_START -->
+## Current Status: DPO Failure Root-Cause Diagnosis Completed (2026-06-29)
+
+- S0_sanity_8 objective ablation failed the signal gate, so S1/S2 were not launched.
+- Winner-only overfit on the strongest Type B pair did not robustly improve winner energy relative to the reference: mean winner improvement = -2.27876e-05, final = -4.29377e-05.
+- Loser-only maximization was weak/non-monotonic: mean loser degradation = 1.04467e-04, final = -1.55047e-04.
+- Gradient decomposition found mixed winner/loser alignment: mean cosine(g_w,g_l) = 0.065 and winner/loser grad norm ratio ranged from 0.417 to 10.228.
+- Timestep/sigma sensitivity is currently blocked for low/mid bins because all requested bins map to actual sigma about 0.947 in the DPO backend.
+- Beta/utility analysis shows `u = Delta_policy - Delta_ref` is effectively zero at initialization, so standard sigmoid DPO starts at the no-margin 0.693 point.
+- LocalDPO metadata contains affected spatial masks for 34 / 34 local-corruption pairs, but the current LocalDPO objective only used affected-time masking; spatial-token masking remains TODO.
+- Decision: do not proceed with standard DPO or scale DPO. Next probe should use an explicit winner-anchor objective plus conservative loser lambda, and only after spatial LocalDPO masks / sigma sampling are fixed.
+- Report: `docs/dpo_failure_root_cause_report.md`.
+
+Safety: no large DPO, no StageB, no GRPO, no full-data StageA, no checkpoint deletion, and no data/weight/video push.
+<!-- DPO_FAILURE_DIAG_20260629_END -->
+
+
 <!-- ENERGY_AUDIT_20260628_START -->
 ## Current Status: Full Real-Energy Audit Completed (2026-06-28)
 

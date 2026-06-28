@@ -1,0 +1,9 @@
+elapsed_sec,index,latent_shape,pair_id
+59.549758195877075,0,"(16, 21, 60, 104)",protocol_v1_B_008_prefix5_anchored_95981b8f74bed0_background_drift_stageA_final
+54.580766916275024,1,"(16, 21, 60, 104)",protocol_v1_B_001_prefix5_anchored_1128e39109fc83_object_deformation_stageA_final
+12.594002723693848,2,"(16, 21, 60, 104)",protocol_v1_B_006_prefix5_anchored_525c18bc4422f0_background_drift_stageA_final
+12.908569574356079,3,"(16, 21, 60, 104)",protocol_v1_B_015_prefix5_anchored_ede413792fce8b_nonrigid_background_warp_stageA_final
+12.93876600265503,4,"(16, 21, 60, 104)",protocol_v1_A_030_02222_collision_orbit_right_64_seed41222_wrong_camera_motion_local
+13.129048109054565,5,"(16, 21, 60, 104)",protocol_v1_A_032_02222_collision_orbit_right_64_seed41222_object_identity_change_local
+12.95149040222168,6,"(16, 21, 60, 104)",protocol_v1_A_013_02202_collision_orbit_right_64_seed41202_partial_freeze
+12.927157402038574,7,"(16, 21, 60, 104)",protocol_v1_A_023_02222_collision_orbit_right_64_seed41222_wrong_camera_motion_local

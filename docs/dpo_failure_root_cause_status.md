@@ -1,6 +1,6 @@
 # DPO Failure Root-Cause Status
 
-Updated: 2026-06-29 03:05 CST
+Updated: 2026-06-29 05:40 CST
 
 ## Current State
 
@@ -9,27 +9,25 @@ Updated: 2026-06-29 03:05 CST
 - Preference protocol v1 is complete: 66 valid V2V-5 pairs.
 - Full real LingBot-Fast energy audit is complete: 66/66 OK.
 - DPO-ready pairs: 50 total, with 34 Type A local-corruption and 16 Type B medium-hard rollout losers.
-- S0 objective ablation completed and failed signal gate. S1/S2 will not be launched in this diagnosis.
+- S0 objective ablation completed and failed signal gate. S1/S2 were not launched.
 
-## This Turn
+## Completed Diagnostics
 
-This turn only diagnoses the failure root cause. It does not run large DPO, StageB, GRPO, or full-data StageA.
+- Diagnostic subsets: `manifests/dpo_diagnostics/`.
+- Winner-only energy minimization: `reports/dpo_failure_diagnostics/winner_only_overfit.csv`.
+- Loser-only energy maximization: `reports/dpo_failure_diagnostics/loser_only_overfit.csv`.
+- Gradient decomposition: `reports/dpo_failure_diagnostics/gradient_decomposition.csv`.
+- Timestep/sigma sensitivity: `reports/dpo_failure_diagnostics/timestep_sigma_sensitivity.csv`.
+- Beta / utility scale analysis: `reports/dpo_failure_diagnostics/beta_utility_scale.csv`.
+- LoRA scope capacity smoke: `reports/dpo_failure_diagnostics/lora_scope_capacity.csv`.
+- LocalDPO mask audit: `reports/dpo_failure_diagnostics/localdpo_mask_audit.csv`.
+- Consolidated summary: `reports/dpo_failure_diagnostics/diagnostic_summary.json`.
+- Root-cause report: `docs/dpo_failure_root_cause_report.md`.
 
-## Diagnostic Subsets
+## Decision
 
-- D0: strongest Type B one-pair subset.
-- D1: five strongest Type B pairs.
-- D2: five strongest Type A pairs.
-- D3: 4 Type B + 4 Type A, matching S0 style.
+Do not proceed with standard DPO or scale DPO. The next probe should add an explicit winner-anchor term, cap loser updates until winner energy improves, fix low/mid sigma sampling exposure, and connect spatial LocalDPO masks before claiming region-aware DPO.
 
-Subset files are under `manifests/dpo_diagnostics/` and summary is `reports/dpo_failure_diagnostics/subset_summary.csv`.
+## Safety
 
-## Pending Diagnostics
-
-- Winner-only energy minimization.
-- Loser-only energy maximization.
-- Winner/loser gradient decomposition.
-- Timestep / sigma sensitivity.
-- Beta / utility scale analysis.
-- LoRA scope capacity smoke.
-- LocalDPO mask audit.
+No large DPO, StageB, GRPO, full-data StageA, checkpoint deletion, data deletion, or data/weight/video push was performed.

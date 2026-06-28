@@ -319,7 +319,7 @@ def _make_timestep_sample(backend: LingBotFastDpoEnergy, target_sigma: float):
     from physical_consistency.trainers.stage1_components import TimestepSample
 
     sigmas = backend.helper.sigmas.detach().float().cpu()
-    indices = getattr(backend.helper, "high_noise_indices", torch.arange(len(sigmas))).detach().long().cpu()
+    indices = torch.arange(len(sigmas), dtype=torch.long)
     best = min(indices.tolist(), key=lambda idx: abs(float(sigmas[int(idx)]) - float(target_sigma)))
     timestep = backend.helper.timesteps_schedule[int(best)].to(backend.device).unsqueeze(0)
     sigma = float(backend.helper.sigmas[int(best)].item())

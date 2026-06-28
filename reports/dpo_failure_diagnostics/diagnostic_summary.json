@@ -1,0 +1,208 @@
+{
+  "beta": {
+    "betas": [
+      {
+        "beta": "0.05",
+        "count": 84,
+        "mean_gradient_scale": 0.02499999999999996,
+        "mean_u": 0.0,
+        "near_zero_ratio": 1.0,
+        "saturation_ratio": 0.0
+      },
+      {
+        "beta": "0.1",
+        "count": 84,
+        "mean_gradient_scale": 0.04999999999999992,
+        "mean_u": 0.0,
+        "near_zero_ratio": 1.0,
+        "saturation_ratio": 0.0
+      },
+      {
+        "beta": "0.2",
+        "count": 84,
+        "mean_gradient_scale": 0.09999999999999984,
+        "mean_u": 0.0,
+        "near_zero_ratio": 1.0,
+        "saturation_ratio": 0.0
+      },
+      {
+        "beta": "0.5",
+        "count": 84,
+        "mean_gradient_scale": 0.25,
+        "mean_u": 0.0,
+        "near_zero_ratio": 1.0,
+        "saturation_ratio": 0.0
+      },
+      {
+        "beta": "1.0",
+        "count": 84,
+        "mean_gradient_scale": 0.5,
+        "mean_u": 0.0,
+        "near_zero_ratio": 1.0,
+        "saturation_ratio": 0.0
+      },
+      {
+        "beta": "2.0",
+        "count": 84,
+        "mean_gradient_scale": 1.0,
+        "mean_u": 0.0,
+        "near_zero_ratio": 1.0,
+        "saturation_ratio": 0.0
+      },
+      {
+        "beta": "5.0",
+        "count": 84,
+        "mean_gradient_scale": 2.5,
+        "mean_u": 0.0,
+        "near_zero_ratio": 1.0,
+        "saturation_ratio": 0.0
+      },
+      {
+        "beta": "10.0",
+        "count": 84,
+        "mean_gradient_scale": 5.0,
+        "mean_u": 0.0,
+        "near_zero_ratio": 1.0,
+        "saturation_ratio": 0.0
+      }
+    ],
+    "rows": 672
+  },
+  "gradient": {
+    "mean_conflict_score": 0.09209456369280815,
+    "mean_cosine_gw_gl": 0.06523585245013237,
+    "mean_grad_norm_loser": 0.02998957708477974,
+    "mean_grad_norm_winner": 0.06240927260369063,
+    "mean_ratio": 2.8803216844856054,
+    "ratio_max": 10.228428368611064,
+    "ratio_min": 0.41675445773634623,
+    "rows": 5
+  },
+  "localdpo_mask": {
+    "affected_mask_exists": {
+      "True": 34
+    },
+    "levels": {
+      "spatial_region": 34
+    },
+    "rows": 34
+  },
+  "lora": {
+    "rows": [
+      {
+        "first_energy": 0.11727020144462585,
+        "last_energy": 0.06133153662085533,
+        "last_winner_improvement": 5.747005343437195e-05,
+        "mean_grad_norm": 0.02477373751993567,
+        "mean_winner_improvement": 0.0003309031948447227,
+        "positive_winner_ratio": 0.8,
+        "rows": 10,
+        "scope": "L0_camera_r4",
+        "target_groups": "camera_conditioning",
+        "trainable_params": 6553600.0
+      },
+      {
+        "first_energy": 0.13987566530704498,
+        "last_energy": 0.008261267095804214,
+        "last_winner_improvement": 3.1585805118083954e-05,
+        "mean_grad_norm": 0.031513150249884506,
+        "mean_winner_improvement": -0.0002281450666487217,
+        "positive_winner_ratio": 0.3,
+        "rows": 10,
+        "scope": "L1_camera_r8",
+        "target_groups": "camera_conditioning",
+        "trainable_params": 13107200.0
+      },
+      {
+        "first_energy": 0.09789924323558807,
+        "last_energy": 0.005525950342416763,
+        "last_winner_improvement": -2.641696482896805e-06,
+        "mean_grad_norm": 0.037392989506226645,
+        "mean_winner_improvement": 0.00028736512176692487,
+        "positive_winner_ratio": 0.5,
+        "rows": 10,
+        "scope": "L2_camera_self_r4",
+        "target_groups": "camera_conditioning,self_attention",
+        "trainable_params": 1638400.0
+      },
+      {
+        "first_energy": 0.05648151412606239,
+        "last_energy": 0.08620235323905945,
+        "last_winner_improvement": -0.00010151416063308716,
+        "mean_grad_norm": 0.019179991236817507,
+        "mean_winner_improvement": -4.2916461825370786e-05,
+        "positive_winner_ratio": 0.3,
+        "rows": 10,
+        "scope": "L3_camera_cross_r4",
+        "target_groups": "camera_conditioning,cross_attention",
+        "trainable_params": 1638400.0
+      }
+    ]
+  },
+  "loser_only": {
+    "first_energy": 0.20953424274921417,
+    "last_energy": 0.20436331629753113,
+    "last_loser_degradation": -0.00015504658222198486,
+    "last_winner_improvement": NaN,
+    "mean_grad_norm": 0.05003707986607635,
+    "mean_loser_degradation": 0.00010446682572364807,
+    "mean_winner_improvement": NaN,
+    "positive_loser_ratio": 0.5,
+    "positive_winner_ratio": 0.0,
+    "rows": 20
+  },
+  "sigma": {
+    "bins": [
+      {
+        "count": 8,
+        "mean_Delta_policy": 0.030635901726782322,
+        "mean_Delta_ref": 0.030635901726782322,
+        "mean_actual_sigma": 0.9471819996833801,
+        "mean_refrel": 0.0,
+        "sigma_bin": "0.05-0.20",
+        "unique_actual_sigma": 1
+      },
+      {
+        "count": 8,
+        "mean_Delta_policy": 0.029362318571656942,
+        "mean_Delta_ref": 0.029362318571656942,
+        "mean_actual_sigma": 0.9471819996833801,
+        "mean_refrel": 0.0,
+        "sigma_bin": "0.20-0.50",
+        "unique_actual_sigma": 1
+      },
+      {
+        "count": 8,
+        "mean_Delta_policy": 0.02886679908260703,
+        "mean_Delta_ref": 0.02886679908260703,
+        "mean_actual_sigma": 0.9471819996833801,
+        "mean_refrel": 0.0,
+        "sigma_bin": "0.50-0.80",
+        "unique_actual_sigma": 1
+      },
+      {
+        "count": 8,
+        "mean_Delta_policy": 0.029423668049275875,
+        "mean_Delta_ref": 0.029423668049275875,
+        "mean_actual_sigma": 0.9471819996833801,
+        "mean_refrel": 0.0,
+        "sigma_bin": "0.80-0.95",
+        "unique_actual_sigma": 1
+      }
+    ],
+    "rows": 32,
+    "schedule_covers_requested_bins": false
+  },
+  "winner_only": {
+    "first_energy": 0.1419973075389862,
+    "last_energy": 0.10622692853212357,
+    "last_loser_degradation": NaN,
+    "last_winner_improvement": -4.293769598007202e-05,
+    "mean_grad_norm": 0.04091840778416049,
+    "mean_loser_degradation": NaN,
+    "mean_winner_improvement": -2.2787638008594514e-05,
+    "positive_loser_ratio": 0.0,
+    "positive_winner_ratio": 0.46,
+    "rows": 50
+  }
+}
