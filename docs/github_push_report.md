@@ -50,3 +50,7 @@ Previous result commits on this branch include:
 ## Safety
 
 No DPO training, StageB, GRPO, full-data long StageA, checkpoint deletion, or data/weight/video push was performed.
+
+## 2026-06-28 DPO Objective Ablation
+
+Pending commit/push after S0 report generation. No data, videos, checkpoints, or large logs staged.

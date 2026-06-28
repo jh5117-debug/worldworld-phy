@@ -97,3 +97,14 @@ LPIPS / FVD / VBench remain `BLOCKED_BY_ENV_or_not_requested` in this environmen
 ## Safety
 
 No StageB, GRPO, full-data long StageA, or large-scale DPO was run. No historical checkpoint was deleted or modified. Large videos/checkpoints remain outside Git.
+
+
+## 2026-06-28 DPO Objective Ablation S0
+
+- S0_sanity_8 and S_localdpo_16 completed with real LingBot-Fast V2V-5 energy.
+- Runtime/BF16 path was stable for Standard, SDPO-style, Linear-DPO-style, and LocalDPO-style diagnostics.
+- Research signal failed: losses stayed near 0.693, Standard/Linear/LocalDPO showed winner-worse or loser-only behavior, and SDPO-style was only borderline at final step but failed mean winner-preservation gate.
+- S1_probe_20 was not launched.
+- No StageB, GRPO, large-scale DPO, or full-data StageA was run.
+- Report: docs/dpo_objective_ablation_report.md
+
