@@ -1,5 +1,17 @@
 # GitHub Push Report
 
+<!-- ENERGY_AUDIT_PUSH_20260628_START -->
+## Full Real-Energy Audit Push Update (2026-06-28)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Scope: full real LingBot-Fast energy audit for 66 V2V-5 DPO preference protocol v1 pairs.
+- Submitted files are lightweight code, Markdown, CSV, and JSONL summaries only.
+- Not submitted: MP4/JPG contact sheets, HDF5, NPY/NPZ, PT/PTH/safetensors, checkpoints, weights, large logs, and local_assets.
+- Push status will be verified after commit.
+
+<!-- ENERGY_AUDIT_PUSH_20260628_END -->
+
+
 Updated: 2026-06-28T00:25:45
 
 Branch: `research/quant-small-lora-dpo-probe-20260624`

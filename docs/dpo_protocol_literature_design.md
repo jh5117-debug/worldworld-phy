@@ -1,5 +1,19 @@
 # DPO Protocol Literature Design
 
+<!-- ENERGY_AUDIT_20260628_START -->
+## Current Status: Full Real-Energy Audit Completed (2026-06-28)
+
+- Protocol v1 pair manifest: `manifests/dpo_preference_protocol_v1_pairs.jsonl`.
+- Full real LingBot-Fast energy audit completed for 66 / 66 V2V-5 pairs.
+- Real energy outputs: `reports/dpo_preference_protocol_v1/full_real_energy_audit.csv` and `.jsonl`.
+- DPO-ready selection: 50 pairs total = 34 Type A local corruption + 16 Type B GT vs medium-hard rollout.
+- LocalDPO-ready subset: 34 Type A pairs with affected region/time metadata and positive usable energy margin.
+- Type B pairs have stronger real-energy margins (Delta_ref median 0.075306) than Type A local corruptions (Delta_ref median 0.009849), but Type A is better aligned with region-aware LocalDPO.
+- Recommendation: tiny standard energy-DPO is unblocked only as a controlled probe; use SDPO-style winner-preserving monitoring and consider Linear-DPO for weak-margin Type A pairs.
+- No DPO training, StageB, GRPO, full-data StageA, checkpoint deletion, or data/weight push was run for this audit.
+
+<!-- ENERGY_AUDIT_20260628_END -->
+
 Updated: 2026-06-28T00:20:04
 
 ## Protocol v1 Goal
