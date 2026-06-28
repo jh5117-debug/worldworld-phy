@@ -7,7 +7,8 @@
 - Scope: full real LingBot-Fast energy audit for 66 V2V-5 DPO preference protocol v1 pairs.
 - Submitted files are lightweight code, Markdown, CSV, and JSONL summaries only.
 - Not submitted: MP4/JPG contact sheets, HDF5, NPY/NPZ, PT/PTH/safetensors, checkpoints, weights, large logs, and local_assets.
-- Push status will be verified after commit.
+- Commit pushed: `1f61a2b` (`Audit real LingBot energy margins for V2V5 DPO preference pairs`).
+- Push status: success to `origin/research/quant-small-lora-dpo-probe-20260624`.
 
 <!-- ENERGY_AUDIT_PUSH_20260628_END -->
 
