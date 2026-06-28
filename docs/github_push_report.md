@@ -1,5 +1,19 @@
 # GitHub Push Report
 
+<!-- DPO_FAILURE_DIAG_PUSH_20260629_START -->
+## DPO Failure Root-Cause Diagnosis Push Update (2026-06-29)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Scope: DPO failure root-cause diagnostics after S0 objective ablation failed.
+- Commit pushed: `824005a` (`Diagnose DPO winner-preserving signal failure`).
+- Included: diagnostic code, tests, Markdown reports, and small CSV/JSON summaries under `reports/dpo_failure_diagnostics/`.
+- Excluded: `local_assets/`, MP4/JPG/PNG videos/contact sheets, HDF5/H5, NPY/NPZ, PT/PTH/safetensors, checkpoints, model weights, and large logs.
+- Push status: success to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Safety: no large DPO, StageB, GRPO, full-data StageA, checkpoint deletion, or data/weight/video push was performed.
+
+<!-- DPO_FAILURE_DIAG_PUSH_20260629_END -->
+
+
 <!-- ENERGY_AUDIT_PUSH_20260628_START -->
 ## Full Real-Energy Audit Push Update (2026-06-28)
 
