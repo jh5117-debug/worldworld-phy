@@ -1,5 +1,16 @@
 # GitHub Push Report
 
+## Current Push Status (2026-06-29 15:45:34)
+
+- Branch: research/quant-small-lora-dpo-probe-20260624
+- Latest pushed commit before this report update: efbea19 Build DPO preference protocol v3 with local masks
+- Protocol v3 PRD commit: 93af736
+- Metrics backend v2 commit: 8d5711a
+- Final tests: compileall PASS; pytest related set 17 passed.
+- Candidate generator v2 and DPO smoke v3 blocked by GPU capacity; not launched.
+- Large artifacts excluded: MP4/JPG/PNG/HDF5/NPY/PT/PTH/checkpoints/local_assets.
+
+
 ## Current Pending Protocol v3 Work (2026-06-29 15:39:49)
 
 - Metrics v2 commit: `8d5711a` pushed.
