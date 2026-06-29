@@ -1,3 +1,12 @@
+# EXP_dpo_engineering_runthrough_v2
+
+Current Status: PASS_ENGINEERING_ONLY: 8 TypeA pairs, sdpo_anchor, 10 steps, checkpoint save/load/video/metrics complete; learning signal still loser-dominant.
+Updated: 2026-06-29 14:18:28
+
+## Result Update
+
+PASS_ENGINEERING_ONLY: 8 TypeA pairs, sdpo_anchor, 10 steps, checkpoint save/load/video/metrics complete; learning signal still loser-dominant.
+
 # EXP DPO Engineering Runthrough v2
 
 Current Status: PLANNED

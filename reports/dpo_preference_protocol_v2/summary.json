@@ -1,0 +1,17 @@
+{
+  "manifest": "manifests/dpo_preference_protocol_v2_pairs.jsonl",
+  "protocol_version": "v2",
+  "status": "MIXED_TYPEA_READY_TYPEB_BLOCKED_BY_BLUR",
+  "total_pairs": 34,
+  "typeA_count": 34,
+  "typeB_candidates": 48,
+  "typeB_count": 0,
+  "typeB_protocol_v1_candidates": 16,
+  "typeB_reject_reasons": {
+    "r_quality_below_condition_p40": 10,
+    "sharpness_ratio_lt_0.55": 16
+  },
+  "typeB_rejected_v2": 16,
+  "typeB_selected_v2": 0,
+  "typeC_count": 0
+}

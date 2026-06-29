@@ -31,7 +31,7 @@ from cam_physgeo.dpo.lingbot_fast_energy import (
 from cam_physgeo.dpo.prefix5_dpo_dataset import Prefix5DpoDataset
 
 
-OBJECTIVES = {"standard", "sdpo", "linear", "localdpo"}
+OBJECTIVES = {"standard", "sdpo", "sdpo_anchor", "linear", "localdpo"}
 
 
 def _load_jsonl(path: str | Path) -> list[dict[str, Any]]:
@@ -261,6 +261,7 @@ class ObjectiveResult:
     u_raw: float = 0.0
     u_clipped: float = 0.0
     winner_contribution_ratio: float = 0.0
+    winner_anchor_weight: float = 0.0
     local_mask_ratio: float = 1.0
     affected_tokens_count: int = 0
     full_future_tokens_count: int = 0
@@ -276,6 +277,7 @@ def compute_objective_loss(
     beta: float,
     reward_margin: float = 0.0,
     u_clip: float = 1.0,
+    lambda_winner_anchor: float = 0.25,
 ) -> ObjectiveResult:
     objective = objective.lower()
     delta_policy = policy_loser - policy_winner
@@ -291,7 +293,7 @@ def compute_objective_loss(
             u_clipped=_scalar(torch.clamp(u.detach(), -float(u_clip), float(u_clip))),
             winner_contribution_ratio=_scalar(ratio.detach()),
         )
-    if objective == "sdpo":
+    if objective in {"sdpo", "sdpo_anchor"}:
         winner_bad = bool((winner_improvement.detach() <= 0).all().item())
         ratio_value = _scalar(ratio.detach())
         if winner_bad:
@@ -301,9 +303,12 @@ def compute_objective_loss(
         else:
             lambda_loser = 1.0
         effective_loser = ref_loser + float(lambda_loser) * (policy_loser - ref_loser)
+        safe_loss = dpo_loss(policy_winner, effective_loser, ref_winner, ref_loser, beta=beta)
+        anchor_weight = float(lambda_winner_anchor) if objective == "sdpo_anchor" else 0.0
         return ObjectiveResult(
-            loss=dpo_loss(policy_winner, effective_loser, ref_winner, ref_loser, beta=beta),
+            loss=safe_loss + anchor_weight * policy_winner.mean(),
             lambda_loser=lambda_loser,
+            winner_anchor_weight=anchor_weight,
             u_raw=_scalar(u.detach()),
             u_clipped=_scalar(torch.clamp(u.detach(), -float(u_clip), float(u_clip))),
             winner_contribution_ratio=ratio_value,
@@ -470,6 +475,7 @@ def run_probe(args: argparse.Namespace) -> dict[str, Any]:
                 beta=float(args.beta),
                 reward_margin=_reward_margin(meta),
                 u_clip=float(args.u_clip),
+                lambda_winner_anchor=float(getattr(args, "lambda_winner_anchor", 0.25)),
             )
             loss = objective_result.loss
             if not torch.isfinite(loss).all().item():
@@ -498,6 +504,7 @@ def run_probe(args: argparse.Namespace) -> dict[str, Any]:
                 "loser_degradation": loser_degradation,
                 "winner_contribution_ratio": ratio,
                 "lambda_loser": objective_result.lambda_loser,
+                "winner_anchor_weight": objective_result.winner_anchor_weight,
                 "pair_weight": objective_result.pair_weight,
                 "linear_utility": objective_result.u_raw,
                 "u_raw": objective_result.u_raw,
@@ -588,6 +595,7 @@ def main(argv: list[str] | None = None) -> None:
     r.add_argument("--max_steps", type=int, default=20)
     r.add_argument("--beta", type=float, default=0.1)
     r.add_argument("--u_clip", type=float, default=1.0)
+    r.add_argument("--lambda_winner_anchor", type=float, default=0.25)
     r.add_argument("--learning_rate", type=float, default=1e-6)
     r.add_argument("--weight_decay", type=float, default=0.01)
     r.add_argument("--seed", type=int, default=123)

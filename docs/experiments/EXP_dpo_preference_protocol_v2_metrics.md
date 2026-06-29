@@ -1,3 +1,12 @@
+# EXP_dpo_preference_protocol_v2_metrics
+
+Current Status: PASS_PARTIAL: metric wrappers added; PSNR/SSIM/LPIPS pass; FVD/VBench blocked by environment.
+Updated: 2026-06-29 14:18:28
+
+## Result Update
+
+PASS_PARTIAL: metric wrappers added; PSNR/SSIM/LPIPS pass; FVD/VBench blocked by environment.
+
 # EXP DPO Preference Protocol v2 Metrics
 
 Current Status: PLANNED

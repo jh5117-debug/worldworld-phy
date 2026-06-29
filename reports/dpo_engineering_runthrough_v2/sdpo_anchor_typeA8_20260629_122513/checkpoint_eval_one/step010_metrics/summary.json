@@ -1,0 +1,23 @@
+{
+  "fvd_reason": "pytorch-fid is available, but no real video FVD backend is installed; FID is not reported as FVD.",
+  "fvd_status": "BLOCKED_BY_ENV",
+  "lpips_reason": "",
+  "lpips_status": "AVAILABLE",
+  "mean_laplacian_sharpness_mean": 31.15690970538484,
+  "mean_laplacian_sharpness_median": 31.15690970538484,
+  "metric_scope": "future_frames_5_80",
+  "mse_mean": 0.03484603017568588,
+  "mse_median": 0.03484603017568588,
+  "ok_rows": 1,
+  "pixel_l1_mean": 0.1422809660434723,
+  "pixel_l1_median": 0.1422809660434723,
+  "psnr_mean": 14.578466916261519,
+  "psnr_median": 14.578466916261519,
+  "rows": 1,
+  "ssim_mean": 0.8672648314256598,
+  "ssim_median": 0.8672648314256598,
+  "temporal_blur_proxy_mean": 0.009159757755696774,
+  "temporal_blur_proxy_median": 0.009159757755696774,
+  "vbench_reason": "VBench import failed: No module named 'vbench'",
+  "vbench_status": "BLOCKED_BY_ENV"
+}

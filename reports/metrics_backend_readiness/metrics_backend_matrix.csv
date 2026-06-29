@@ -1,0 +1,6 @@
+metric,status,reason,attempted_fix,smoke_value
+PSNR,PASS,,implemented OpenCV/numpy wrapper,39.63431813324856
+SSIM,PASS,,implemented OpenCV/numpy wrapper,0.9993827624058426
+LPIPS,PASS,,pip install lpips; smoke compute on 2 frames,0.0004653754294849932
+FVD,BLOCKED_BY_ENV,"pytorch-fid is available, but no real video FVD backend is installed; FID is not reported as FVD.",pytorch-fid installed; true FVD implementation still required,
+VBench,BLOCKED_BY_ENV,VBench import failed: No module named 'vbench',Checked local Python environment. VBench was not installed; large model downloads were not started automatically.,

@@ -1,3 +1,12 @@
+# EXP_rollout_loser_quality_gate_v2
+
+Current Status: MIXED: stricter gate worked and rejected blur-dominated Type B losers; selected TypeB count is 0.
+Updated: 2026-06-29 14:18:28
+
+## Result Update
+
+MIXED: stricter gate worked and rejected blur-dominated Type B losers; selected TypeB count is 0.
+
 # EXP Rollout Loser Quality Gate v2
 
 Current Status: PLANNED

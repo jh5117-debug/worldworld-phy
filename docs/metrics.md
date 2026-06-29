@@ -1,17 +1,20 @@
 # Metrics Status
 
-Updated: 2026-06-28T00:20:04
+Current Status: Protocol v2 metric backend readiness updated
+Updated: 2026-06-29 11:58:36
 
-## Preference Protocol v1 Metrics
+## Protocol v2 Backend Matrix
 
-- Rollout pool scored: 48.
-- Quality-floor pass rollout count: 48.
-- Medium-hard rollout losers selected: 16.
-- Valid final pairs: 66.
-- Real energy sampled pairs: 5.
-- Proxy energy triage pairs: 61.
+- PSNR: PASS
+- SSIM: PASS
+- LPIPS: PASS
+- FVD: BLOCKED_BY_ENV
+- VBench: BLOCKED_BY_ENV
 
-LPIPS/FVD/VBench remain blocked by environment for protocol scoring and were not fabricated.
+Report: `reports/metrics_backend_readiness/metrics_backend_report.md`
+Matrix: `reports/metrics_backend_readiness/metrics_backend_matrix.csv`
+
+LPIPS/FVD/VBench are never fabricated. FVD remains blocked unless a real video FVD backend is configured. VBench remains blocked unless local VBench package/assets/config are available.
 
 ---
 

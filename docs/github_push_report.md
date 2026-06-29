@@ -1,5 +1,16 @@
 # GitHub Push Report
 
+
+## Current DPO Protocol v2 Status (2026-06-29 14:18:28)
+
+- Protocol v2 manifest: `manifests/dpo_preference_protocol_v2_pairs.jsonl`
+- Valid v2 pairs: 34 total, 34 Type A, 0 Type B, 0 Type C.
+- Type B rollout losers are currently blocked by blur/sharpness gates; do not use them for DPO.
+- Metrics backend: PSNR/SSIM/LPIPS pass; FVD and VBench are BLOCKED_BY_ENV.
+- DPO engineering run-through: PASS_ENGINEERING_ONLY on 8 Type A pairs for 10 steps with checkpoint video eval. Learning signal remains loser-dominant, so do not scale DPO.
+- Explicitly not run: StageB, GRPO, full-data long StageA, large-scale DPO.
+
+
 <!-- DPO_FAILURE_DIAG_PUSH_20260629_START -->
 ## DPO Failure Root-Cause Diagnosis Push Update (2026-06-29)
 

@@ -1,3 +1,12 @@
+# EXP_candidate_generator_small_lora_v2
+
+Current Status: TRIGGERED_NOT_RUN: TypeB blur gate triggered this line, but no new generator training was started in this run.
+Updated: 2026-06-29 14:18:28
+
+## Result Update
+
+TRIGGERED_NOT_RUN: TypeB blur gate triggered this line, but no new generator training was started in this run.
+
 # EXP Candidate Generator Small-LoRA v2
 
 Current Status: PLANNED

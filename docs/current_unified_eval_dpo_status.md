@@ -1,5 +1,16 @@
 # Current Unified Eval / DPO Status
 
+
+## Current DPO Protocol v2 Status (2026-06-29 14:18:28)
+
+- Protocol v2 manifest: `manifests/dpo_preference_protocol_v2_pairs.jsonl`
+- Valid v2 pairs: 34 total, 34 Type A, 0 Type B, 0 Type C.
+- Type B rollout losers are currently blocked by blur/sharpness gates; do not use them for DPO.
+- Metrics backend: PSNR/SSIM/LPIPS pass; FVD and VBench are BLOCKED_BY_ENV.
+- DPO engineering run-through: PASS_ENGINEERING_ONLY on 8 Type A pairs for 10 steps with checkpoint video eval. Learning signal remains loser-dominant, so do not scale DPO.
+- Explicitly not run: StageB, GRPO, full-data long StageA, large-scale DPO.
+
+
 <!-- DPO_FAILURE_DIAG_20260629_START -->
 ## Current Status: DPO Failure Root-Cause Diagnosis Completed (2026-06-29)
 
@@ -81,4 +92,3 @@ The DPO trainer can now compute real energy and update LoRA. However the probe s
 - S1_probe_20 was not launched.
 - No StageB, GRPO, large-scale DPO, or full-data StageA was run.
 - Report: docs/dpo_objective_ablation_report.md
-
