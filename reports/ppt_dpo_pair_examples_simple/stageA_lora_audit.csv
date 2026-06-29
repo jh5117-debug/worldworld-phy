@@ -1,0 +1,18 @@
+item,value
+scope,camera-conditioning LoRA only
+rank,4
+alpha,4
+dropout,0.05
+trainable_scope,camera_conditioning
+self_attention_lora,no
+cross_attention_lora,no
+ffn_lora,no
+noise_branch,high-noise only
+low_noise_trained,no
+future_only_loss,yes
+prefix_excluded_from_loss,yes
+optimizer_steps,100
+adapter_tensor_count,320
+adapter_param_count,6553600
+lora_module_estimate,160
+decision,MIXED_USE_WITH_CAUTION
