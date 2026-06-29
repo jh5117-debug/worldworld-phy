@@ -1,5 +1,23 @@
 # Metrics Status
 
+Current Status: Protocol v3 metric backend readiness updated
+
+## Protocol v3 Backend Matrix
+
+- PSNR: PASS
+- SSIM: PASS
+- LPIPS: PASS
+- FVD: BLOCKED_BY_ENV after pytorchvideo/torchmetrics audit; no real video FVD backend or local temporal weights.
+- VBench: BLOCKED_BY_ENV; no local VBench package/assets.
+
+Report: reports/metrics_backend_readiness_v2/metrics_backend_report.md
+Matrix: reports/metrics_backend_readiness_v2/metrics_backend_matrix.csv
+
+LPIPS/FVD/VBench are never fabricated. Image FID is not reported as FVD.
+
+---
+
+
 Current Status: Protocol v2 metric backend readiness updated
 Updated: 2026-06-29 11:58:36
 

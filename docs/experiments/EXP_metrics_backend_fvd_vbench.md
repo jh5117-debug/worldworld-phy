@@ -1,6 +1,6 @@
 # Metrics backend FVD/VBench repair
 
-Current Status: PRD_PREPARED / NOT_STARTED
+Current Status: PASS_PARTIAL / FVD_VBENCH_BLOCKED_BY_ENV
 Updated: 2026-06-29 15:16:36
 
 ## Experiment Goal

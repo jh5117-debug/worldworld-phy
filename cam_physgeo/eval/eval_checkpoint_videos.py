@@ -15,6 +15,7 @@ from cam_physgeo.eval.metrics_traditional import (
     write_csv,
     write_json,
 )
+from cam_physgeo.eval.metrics_fvd import compute_fvd_if_available
 from cam_physgeo.eval.metrics_vbench import compute_vbench_if_available, vbench_backend_status
 
 
@@ -80,6 +81,7 @@ def run(args: argparse.Namespace) -> int:
             lpips_max_frames=args.lpips_max_frames,
             lpips_device=args.lpips_device,
         )
+        result.update(compute_fvd_if_available(gt, pred))
         result.update(compute_vbench_if_available(gt, pred))
         results.append({**base, **result})
     write_csv(out_dir / "per_sample_metrics.csv", results)

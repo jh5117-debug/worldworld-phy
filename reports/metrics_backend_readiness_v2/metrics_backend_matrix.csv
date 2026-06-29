@@ -1,0 +1,6 @@
+metric,status,reason,attempted_fix,smoke_value
+PSNR,PASS,,implemented OpenCV/numpy wrapper,27.39688024428642
+SSIM,PASS,,implemented OpenCV/numpy wrapper,0.9639218061889078
+LPIPS,PASS,,lpips installed and smoke computed on 2 frames,0.008018536027520895
+FVD,BLOCKED_BY_ENV,"No real video FVD backend with local temporal feature weights is available. torchmetrics.video.FrechetVideoDistance unavailable: No module named 'matplotlib.axes' | pytorchvideo imports after lightweight install, but it does not provide an FVD metric or local I3D/FVD weights | pytorch-fid is installed, but image FID is not reported as video FVD",Installed/checked pytorchvideo and torchmetrics; refused to substitute image FID for FVD; no uncontrolled I3D weight download was started.,
+VBench,BLOCKED_BY_ENV,VBench import failed: No module named 'vbench',Checked local Python environment. VBench was not installed; large model downloads were not started automatically.,

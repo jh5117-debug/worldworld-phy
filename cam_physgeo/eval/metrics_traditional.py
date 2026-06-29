@@ -158,16 +158,10 @@ def compute_lpips(reference: np.ndarray, prediction: np.ndarray, max_frames: int
 
 
 def fvd_backend_status() -> BackendStatus:
-    try:
-        import pytorch_fid  # noqa: F401
-    except Exception as exc:  # pragma: no cover
-        return BackendStatus("FVD", "BLOCKED_BY_ENV", str(exc), "pip install pytorch-fid was attempted")
-    return BackendStatus(
-        "FVD",
-        "BLOCKED_BY_ENV",
-        "pytorch-fid is available, but no real video FVD backend is installed; FID is not reported as FVD.",
-        "pytorch-fid installed; true FVD implementation still required",
-    )
+    from cam_physgeo.eval.metrics_fvd import fvd_backend_status as _fvd_backend_status
+
+    status = _fvd_backend_status()
+    return BackendStatus("FVD", status.status, status.reason, status.attempted_fix)
 
 
 def compute_video_pair_metrics(
