@@ -1,5 +1,16 @@
 # Implementation Status
 
+## Current Protocol v3 / DPO Smoke Status (2026-06-30 05:14:29)
+
+- Candidate generator v2: CANDIDATE_GENERATOR_FAILED_TYPEB_STILL_BLOCKED; audited 208 existing true V2V-5 small-LoRA rollout candidates, selected 0 usable TypeB rollout losers.
+- Protocol v3: MIXED_TYPEA_READY_TYPEB_FAILED_CANDIDATE_GENERATOR; 34 valid TypeA local-corruption pairs, 0 TypeB, 0 TypeC.
+- LocalDPO spatial mask v2: PASS; 34/34 TypeA pairs have usable spatial+time masks.
+- DPO smoke v3: ENGINEERING_PASS_OBJECTIVE_SIGNAL_FAIL on 8 TypeA pairs for 10 steps. Runtime/save-load/nonzero-grad checks passed, but winner improvement remains weak/unstable and checkpoint video smoke shows no visual improvement.
+- Checkpoint video smoke: step000/005/010 generated true prefix5 V2V-5 videos on 1 screen16 sample each; PSNR/SSIM/LPIPS PASS; FVD/VBench remain BLOCKED_BY_ENV.
+- Decision: do not scale DPO. Do not use TypeB rollout losers until blur/sharpness quality is fixed.
+
+
+
 ## Current Protocol v3 Status (2026-06-29 15:38:49)
 
 - Metrics backend v2: PSNR/SSIM/LPIPS PASS; FVD/VBench BLOCKED_BY_ENV with attempted fixes recorded.

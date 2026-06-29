@@ -1,5 +1,23 @@
 {
-  "status": "BLOCKED_WAITING_FOR_GPU_CAPACITY",
+  "models_checked": [
+    "original_fast",
+    "A_step050",
+    "B_step050",
+    "C_step050",
+    "D_step050",
+    "A_step100",
+    "B_step100",
+    "C_step100",
+    "D_step100",
+    "A_step200",
+    "B_step200",
+    "C_step200",
+    "D_step200"
+  ],
+  "reason": "Existing small-LoRA candidates do not provide clearly sharper quality-qualified medium-hard TypeB losers; keep TypeA-only protocol v3.",
+  "rollout_count": 208,
+  "source": "existing overnight small-LoRA true V2V-5 rollouts plus Codex overview inspection",
+  "status": "CANDIDATE_GENERATOR_FAILED_TYPEB_STILL_BLOCKED",
   "typeB_usable": 0,
-  "reason": "GPU0-7 occupied by unrelated LIBERO evaluation; candidate generator training/rollout not launched"
+  "updated_at": "2026-06-30 03:14:25"
 }

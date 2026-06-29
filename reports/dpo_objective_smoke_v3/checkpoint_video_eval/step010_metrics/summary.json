@@ -1,0 +1,23 @@
+{
+  "fvd_reason": "No real video FVD backend with local temporal feature weights is available. torchmetrics.video.FrechetVideoDistance unavailable: cannot import name 'FrechetVideoDistance' from 'torchmetrics.video' (/home/nvme03/workspace/lingbot-world/.conda_envs/lingbot-world-v2/lib/python3.10/site-packages/torchmetrics/video/__init__.py) | pytorchvideo imports after lightweight install, but it does not provide an FVD metric or local I3D/FVD weights | pytorch-fid is installed, but image FID is not reported as video FVD",
+  "fvd_status": "BLOCKED_BY_ENV",
+  "lpips_reason": "",
+  "lpips_status": "AVAILABLE",
+  "mean_laplacian_sharpness_mean": 54.32109321876101,
+  "mean_laplacian_sharpness_median": 54.32109321876101,
+  "metric_scope": "future_frames_5_80",
+  "mse_mean": 0.023365024477243423,
+  "mse_median": 0.023365024477243423,
+  "ok_rows": 1,
+  "pixel_l1_mean": 0.11181413382291794,
+  "pixel_l1_median": 0.11181413382291794,
+  "psnr_mean": 16.314337596717166,
+  "psnr_median": 16.314337596717166,
+  "rows": 1,
+  "ssim_mean": 0.877213649739796,
+  "ssim_median": 0.877213649739796,
+  "temporal_blur_proxy_mean": 0.013739296235144138,
+  "temporal_blur_proxy_median": 0.013739296235144138,
+  "vbench_reason": "VBench import failed: No module named 'vbench'",
+  "vbench_status": "BLOCKED_BY_ENV"
+}

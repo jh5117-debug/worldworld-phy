@@ -1,0 +1,41 @@
+[
+  {
+    "checkpoint": "step000",
+    "sample_count": 1,
+    "psnr": 16.46577321719764,
+    "ssim": 0.8785882478721825,
+    "lpips": 0.6611297205090523,
+    "sharpness": 63.019014521618914,
+    "temporal_blur_proxy": 0.014943676069378853,
+    "fvd_status": "BLOCKED_BY_ENV",
+    "vbench_status": "BLOCKED_BY_ENV",
+    "generated_manifest": "local_assets/dpo_objective_smoke_v3/checkpoint_video_eval/step000_sample1/generated_manifest.jsonl",
+    "contact_sheet": "local_assets/dpo_objective_smoke_v3/checkpoint_video_eval/step000_sample1/contact_sheets/prefix5_anchored_525c18bc4422f0_background_drift_dpo_smoke_v3_step000_prefix_future.jpg"
+  },
+  {
+    "checkpoint": "step005",
+    "sample_count": 1,
+    "psnr": 16.39187083755538,
+    "ssim": 0.8778662193870014,
+    "lpips": 0.6605525314807892,
+    "sharpness": 56.32506660072337,
+    "temporal_blur_proxy": 0.015090076252818108,
+    "fvd_status": "BLOCKED_BY_ENV",
+    "vbench_status": "BLOCKED_BY_ENV",
+    "generated_manifest": "local_assets/dpo_objective_smoke_v3/checkpoint_video_eval/step005_sample1/generated_manifest.jsonl",
+    "contact_sheet": "local_assets/dpo_objective_smoke_v3/checkpoint_video_eval/step005_sample1/contact_sheets/prefix5_anchored_525c18bc4422f0_background_drift_dpo_smoke_v3_step005_prefix_future.jpg"
+  },
+  {
+    "checkpoint": "step010",
+    "sample_count": 1,
+    "psnr": 16.314337596717166,
+    "ssim": 0.877213649739796,
+    "lpips": 0.653485618531704,
+    "sharpness": 54.32109321876101,
+    "temporal_blur_proxy": 0.013739296235144138,
+    "fvd_status": "BLOCKED_BY_ENV",
+    "vbench_status": "BLOCKED_BY_ENV",
+    "generated_manifest": "local_assets/dpo_objective_smoke_v3/checkpoint_video_eval/step010_sample1/generated_manifest.jsonl",
+    "contact_sheet": "local_assets/dpo_objective_smoke_v3/checkpoint_video_eval/step010_sample1/contact_sheets/prefix5_anchored_525c18bc4422f0_background_drift_dpo_smoke_v3_step010_prefix_future.jpg"
+  }
+]

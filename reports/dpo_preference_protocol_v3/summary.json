@@ -1,11 +1,12 @@
 {
+  "candidate_generator_v2": "reports/candidate_generator_v2/candidate_generator_decision.json",
   "manifest": "manifests/dpo_preference_protocol_v3_pairs.jsonl",
   "rejected_count": 1,
-  "status": "MIXED_TYPEA_READY_TYPEB_BLOCKED",
+  "status": "MIXED_TYPEA_READY_TYPEB_FAILED_CANDIDATE_GENERATOR",
   "total_pairs": 34,
   "typeA_count": 34,
   "typeB_count": 0,
-  "typeB_status": "blocked_by_blur_or_generator_quality",
+  "typeB_status": "blocked_after_candidate_generator_v2_audit",
   "typeC_count": 0,
   "valid_count": 34
 }

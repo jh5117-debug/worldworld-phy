@@ -1,0 +1,844 @@
+{
+  "checkpoints": [
+    {
+      "path": "reports/dpo_objective_smoke_v3/sdpo_anchor_v3_typeA8/checkpoints/sdpo_anchor_step000_lora_state.pt",
+      "step": 0
+    },
+    {
+      "path": "reports/dpo_objective_smoke_v3/sdpo_anchor_v3_typeA8/checkpoints/sdpo_anchor_step005_lora_state.pt",
+      "step": 5
+    },
+    {
+      "path": "reports/dpo_objective_smoke_v3/sdpo_anchor_v3_typeA8/checkpoints/sdpo_anchor_step010_lora_state.pt",
+      "step": 10
+    }
+  ],
+  "cuda_visible_devices": "1",
+  "device": "cuda:0",
+  "elapsed_seconds": 2827.4276247024536,
+  "error": "",
+  "final_dpo_loss": 0.6931220889091492,
+  "final_implicit_accuracy": 1.0,
+  "final_loser_degradation": 0.0002856738865375519,
+  "final_objective_loss": 0.6974141001701355,
+  "final_winner_contribution_ratio": 0.43118754029273987,
+  "final_winner_improvement": 0.00021656230092048645,
+  "finite": true,
+  "lora_inventory": {
+    "count": 160,
+    "groups": {
+      "camera_conditioning": 160
+    },
+    "modules": [
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.0.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.0.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.0.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.0.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.1.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.1.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.1.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.1.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.2.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.2.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.2.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.2.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.3.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.3.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.3.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.3.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.4.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.4.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.4.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.4.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.5.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.5.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.5.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.5.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.6.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.6.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.6.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.6.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.7.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.7.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.7.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.7.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.8.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.8.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.8.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.8.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.9.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.9.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.9.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.9.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.10.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.10.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.10.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.10.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.11.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.11.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.11.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.11.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.12.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.12.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.12.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.12.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.13.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.13.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.13.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.13.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.14.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.14.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.14.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.14.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.15.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.15.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.15.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.15.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.16.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.16.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.16.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.16.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.17.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.17.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.17.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.17.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.18.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.18.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.18.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.18.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.19.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.19.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.19.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.19.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.20.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.20.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.20.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.20.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.21.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.21.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.21.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.21.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.22.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.22.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.22.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.22.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.23.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.23.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.23.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.23.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.24.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.24.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.24.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.24.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.25.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.25.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.25.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.25.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.26.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.26.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.26.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.26.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.27.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.27.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.27.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.27.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.28.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.28.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.28.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.28.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.29.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.29.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.29.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.29.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.30.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.30.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.30.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.30.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.31.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.31.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.31.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.31.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.32.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.32.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.32.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.32.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.33.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.33.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.33.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.33.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.34.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.34.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.34.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.34.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.35.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.35.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.35.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.35.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.36.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.36.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.36.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.36.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.37.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.37.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.37.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.37.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.38.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.38.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.38.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.38.cam_shift_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.39.cam_injector_layer1",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.39.cam_injector_layer2",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.39.cam_scale_layer",
+        "rank": 4
+      },
+      {
+        "group": "camera_conditioning",
+        "name": "blocks.39.cam_shift_layer",
+        "rank": 4
+      }
+    ]
+  },
+  "metrics_csv": "reports/dpo_objective_smoke_v3/sdpo_anchor_v3_typeA8/training_metrics_sdpo_anchor.csv",
+  "nonzero_grad": true,
+  "objective": "sdpo_anchor",
+  "pair_count": 8,
+  "pair_manifest": "manifests/dpo_objective_smoke_v3_8.jsonl",
+  "policy_trainable_params": 6553600,
+  "save_load_ok": true,
+  "status": "PASS",
+  "steps": 10
+}

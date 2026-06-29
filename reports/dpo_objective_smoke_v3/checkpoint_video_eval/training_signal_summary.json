@@ -1,0 +1,22 @@
+{
+  "status": "ENGINEERING_PASS_OBJECTIVE_SIGNAL_FAIL",
+  "objective": "sdpo_anchor_v3",
+  "pairs": 8,
+  "steps": 10,
+  "final_step": 10,
+  "final_dpo_loss": 0.6931220889091492,
+  "final_objective_loss": 0.6974141001701355,
+  "mean_winner_improvement": 9.940029121935367e-06,
+  "final_winner_improvement": 0.00021656230092048645,
+  "mean_loser_degradation": 0.0001058422727510333,
+  "final_loser_degradation": 0.0002856738865375519,
+  "mean_winner_contribution_ratio": 0.3524372324347496,
+  "final_winner_contribution_ratio": 0.43118754029273987,
+  "mean_implicit_accuracy": 0.7,
+  "final_implicit_accuracy": 1.0,
+  "nonzero_grad": true,
+  "save_load_ok": true,
+  "policy_trainable_params": 6553600,
+  "same_noise_all": true,
+  "same_timestep_all": true
+}

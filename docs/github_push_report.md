@@ -1,5 +1,13 @@
 # GitHub Push Report
 
+## Current Push Status (2026-06-30 05:14:29)
+
+- Branch: research/quant-small-lora-dpo-probe-20260624
+- Scope prepared for push: candidate generator v2 audit, TypeA-only Protocol v3 refresh, DPO smoke v3 training/video-smoke reports.
+- DPO smoke v3 status: ENGINEERING_PASS_OBJECTIVE_SIGNAL_FAIL, not scalable.
+- Large artifacts excluded from intended commit: local_assets, MP4/JPG/PNG, NPY/NPZ, PT/PTH/safetensors/checkpoints, and large logs.
+
+
 ## Current Push Status (2026-06-29 15:45:34)
 
 - Branch: research/quant-small-lora-dpo-probe-20260624

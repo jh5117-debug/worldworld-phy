@@ -1,24 +1,21 @@
 # Candidate Generator Small-LoRA v2 Report
 
-Current Status: BLOCKED_WAITING_FOR_GPU_CAPACITY
-Updated: 2026-06-29 15:39:49
+Current Status: CANDIDATE_GENERATOR_FAILED_TYPEB_STILL_BLOCKED
 
-## Trigger
+Updated: 2026-06-30 03:14:25
 
-Protocol v2 rejected all Type B rollout losers: 16 / 16 failed the sharpness-ratio gate and 10 / 16 failed the per-condition R_quality p40 gate. This means rollout-based medium-hard losers are not usable yet.
+## What was audited
 
-## Current Round Result
+Reused existing true V2V-5 overnight small-LoRA rollouts from `local_assets/overnight_quant_lora_dpo_20260624_overnight_test/` because they already contain Original Fast plus A/B/C/D small-LoRA checkpoints and screen16 rollouts/contact sheets.
 
-Candidate-generator v2 was not launched because all physical GPUs 0-7 were occupied by an unrelated LIBERO evaluation, with roughly 25-50 GB already used per GPU. Previous DPO/LingBot energy and generation paths reserve high memory, so launching would risk OOM and interfere with another workload.
-
-## Planned Models Once GPU Capacity Is Available
-
-- G0: Original Fast baseline, no train.
-- G1: old camera-only tiny LoRA, no new train.
-- G2: camera-only rank8, 100 steps.
-- G3: camera + limited temporal/self-attn rank4, max 4 blocks, 100 steps.
-- G4: optional mixed high/mid/low-noise detail refinement.
+Codex visually inspected overview sheets for `original_fast`, `A_step050`, `B_step050`, `C_step050`, and `D_step050`. D_step050 had previously been selected by proxy metrics, but the visual overview is still too similar to Original Fast and does not produce clearly sharper, quality-qualified TypeB losers.
 
 ## Decision
 
-Do not use current Type B rollout losers. Protocol v3 remains TypeA-only until candidate generator v2 can be run and produces sharp, quality-qualified medium-hard rollout losers.
+- Rollout candidates audited: 208
+- TypeB usable count: 0
+- Selected generator: fallback to TypeA-only; no TypeB rollout loser admitted.
+- FVD: BLOCKED_BY_ENV; no true local video FVD/I3D backend.
+- VBench: BLOCKED_BY_ENV; no local evaluator/weights.
+
+No broad-LoRA, StageB, GRPO, full-data StageA, or large-scale DPO was run.
