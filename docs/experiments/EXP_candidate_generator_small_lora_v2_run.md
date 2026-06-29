@@ -1,6 +1,6 @@
 # Candidate generator small-LoRA v2 run
 
-Current Status: PRD_PREPARED / NOT_STARTED
+Current Status: BLOCKED_WAITING_FOR_GPU_CAPACITY
 Updated: 2026-06-29 15:16:36
 
 ## Experiment Goal

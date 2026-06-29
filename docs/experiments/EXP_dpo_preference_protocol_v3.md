@@ -1,6 +1,6 @@
 # DPO preference protocol v3
 
-Current Status: PRD_PREPARED / NOT_STARTED
+Current Status: MIXED_TYPEA_READY_TYPEB_BLOCKED
 Updated: 2026-06-29 15:16:36
 
 ## Experiment Goal

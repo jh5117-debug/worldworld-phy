@@ -1,0 +1,10 @@
+{
+  "input_pairs": "reports/dpo_preference_protocol_v2/localdpo_ready_pairs_v2.jsonl",
+  "invalid": 0,
+  "max_local_mask_ratio": 0.36538461538461536,
+  "mean_local_mask_ratio": 0.19961796459474473,
+  "min_local_mask_ratio": 0.07979082321187585,
+  "time_only_fallback": 0,
+  "total_pairs": 34,
+  "usable_spatial_time_masks": 34
+}

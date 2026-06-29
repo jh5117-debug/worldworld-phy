@@ -1,5 +1,12 @@
 # GitHub Push Report
 
+## Current Pending Protocol v3 Work (2026-06-29 15:39:49)
+
+- Metrics v2 commit: `8d5711a` pushed.
+- LocalDPO mask v2 and Protocol v3 are being prepared for commit.
+- Candidate generator and DPO smoke are blocked by GPU capacity, not launched.
+
+
 ## Current Push Status (2026-06-29 14:24:45)
 
 - Branch: `research/quant-small-lora-dpo-probe-20260624`

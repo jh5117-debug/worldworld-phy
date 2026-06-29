@@ -1,0 +1,5 @@
+{
+  "status": "BLOCKED_WAITING_FOR_GPU_CAPACITY",
+  "typeB_usable": 0,
+  "reason": "GPU0-7 occupied by unrelated LIBERO evaluation; candidate generator training/rollout not launched"
+}

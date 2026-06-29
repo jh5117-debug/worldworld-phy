@@ -1,6 +1,6 @@
 # DPO objective smoke v3
 
-Current Status: PRD_PREPARED / NOT_STARTED
+Current Status: WAITING_FOR_GPU_CAPACITY_AFTER_PROTOCOL_V3
 Updated: 2026-06-29 15:16:36
 
 ## Experiment Goal

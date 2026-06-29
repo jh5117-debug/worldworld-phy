@@ -1,0 +1,6 @@
+model,status,reason
+G0_original_fast_baseline,NOT_RERUN_THIS_ROUND,GPU capacity unavailable; prior rollouts exist but TypeB was blur-blocked
+G1_old_tiny_camera_lora,NOT_RERUN_THIS_ROUND,GPU capacity unavailable
+G2_camera_only_rank8_100steps,BLOCKED_WAITING_FOR_GPU_CAPACITY,All GPUs occupied by unrelated LIBERO evaluation; not safe for LingBot training/inference
+G3_camera_limited_temporal_rank4_100steps,BLOCKED_WAITING_FOR_GPU_CAPACITY,All GPUs occupied by unrelated LIBERO evaluation; not safe for LingBot training/inference
+G4_mixed_noise_detail_refinement,OPTIONAL_NOT_RUN,G2/G3 not run yet

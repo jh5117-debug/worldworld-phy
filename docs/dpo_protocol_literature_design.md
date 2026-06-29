@@ -1,5 +1,14 @@
 # DPO Protocol Literature Design
 
+## Current Protocol v3 Status (2026-06-29 15:38:49)
+
+- Metrics backend v2: PSNR/SSIM/LPIPS PASS; FVD/VBench BLOCKED_BY_ENV with attempted fixes recorded.
+- LocalDPO spatial mask v2: PASS, 34/34 Type A pairs have usable spatial+time masks.
+- Protocol v3: 34 valid Type A pairs, 0 Type B, 0 Type C.
+- Candidate generator v2: waiting for GPU capacity; current GPUs are occupied by unrelated workloads.
+- DPO smoke v3: not run yet because GPU capacity is unavailable; no scale DPO.
+
+
 
 ## Current DPO Protocol v2 Status (2026-06-29 14:18:28)
 
