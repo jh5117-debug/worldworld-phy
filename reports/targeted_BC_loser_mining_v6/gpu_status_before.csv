@@ -1,0 +1,26 @@
+# safe_gpu_status 2026-06-30T18:27:22,691203876+08:00 host=instance-afs92r3e
+# query_gpu
+index, memory.used [MiB], memory.total [MiB], utilization.gpu [%]
+0, 28 MiB, 97871 MiB, 0 %
+1, 4 MiB, 97871 MiB, 0 %
+2, 1 MiB, 97871 MiB, 0 %
+3, 1 MiB, 97871 MiB, 0 %
+4, 1 MiB, 97871 MiB, 0 %
+5, 1 MiB, 97871 MiB, 0 %
+6, 1 MiB, 97871 MiB, 0 %
+7, 1 MiB, 97871 MiB, 0 %
+# pmon
+# gpu         pid   type     sm    mem    enc    dec    jpg    ofa    command
+# Idx           #    C/G      %      %      %      %      %      %    name
+    0     883875     G      -      -      -      -      -      -    Xorg
+    1          -     -      -      -      -      -      -      -    -
+    2          -     -      -      -      -      -      -      -    -
+    3          -     -      -      -      -      -      -      -    -
+    4          -     -      -      -      -      -      -      -    -
+    5          -     -      -      -      -      -      -      -    -
+    6          -     -      -      -      -      -      -      -    -
+    7          -     -      -      -      -      -      -      -    -
+# compute_apps
+pid, gpu_uuid, used_gpu_memory [MiB]
+# fallback
+fallback_full_nvidia_smi_skipped_to_avoid_hang

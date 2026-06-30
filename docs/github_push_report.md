@@ -1,3 +1,14 @@
+<!-- targeted_BC_loser_mining_v6_update -->
+# Git Push Report Update
+
+Current Status: PENDING_PUSH
+
+Updated: 2026-06-30 20:50:46 CST
+
+This update will commit only lightweight docs/scripts/CSV/JSONL summaries for targeted B/C loser mining v6. MP4/JPG/PNG/contact sheets/local_assets/checkpoints/weights remain untracked and must not be pushed.
+
+<!-- /targeted_BC_loser_mining_v6_update -->
+
 
 
 ## Targeted B/C Loser Mining v6 Update - 2026-06-30

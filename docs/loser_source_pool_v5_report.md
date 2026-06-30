@@ -1,3 +1,20 @@
+<!-- targeted_BC_loser_mining_v6_update -->
+# Targeted B/C Loser Mining v6 Update
+
+Current Status: BLOCKED_INSUFFICIENT_MEDIUM_HARD_ROLLOUTS
+
+Updated: 2026-06-30 20:50:46 CST
+
+- Safe GPU status and deterministic V2V-5 runner discovery are fixed.
+- 1-condition smoke PASS for M0/B/C.
+- Available-condition rollout PARTIAL_PASS: 15 videos from 5 runnable prefix5 conditions.
+- C produced 4 visually meaningful medium-hard loser candidates.
+- Final DPO-ready pair count is 4, below the >=10 DPO-smoke gate.
+- 8/32-condition rollout could not be faithfully executed because only 5 runnable prefix5 conditions are present in this tree.
+- Do not start DPO smoke until more runnable conditions or an external rollout source raises the pair count.
+
+<!-- /targeted_BC_loser_mining_v6_update -->
+
 
 
 ## Targeted B/C Loser Mining v6 Update - 2026-06-30
