@@ -1,4 +1,29 @@
 
+
+## Camera Condition Status Correction (2026-06-30 14:21:36)
+
+Current Status: CAMERA_CONDITION_PATH_CONFIRMED_BUT_SENSITIVITY_PARTIAL
+
+Corrected camera status:
+
+- CAMERA_CONDITION_PATH_CONFIRMED
+- CAMERA_SENSITIVITY_PARTIAL
+- NORMAL_CAMERA_MOTION_RESPONSE_WEAK
+- STRONG_CAMERA_PERTURBATION_AFFECTS_OUTPUT
+
+Earlier camera ablation evidence from prior logs:
+
+- repeat A vs B = 0.0
+- correct vs frozen = 0.0
+- correct vs reversed = 0.02218
+- correct vs exaggerated_yaw = 0.03502
+- correct vs exaggerated_translation = 0.03765
+
+Interpretation: LingBot-Fast / LingBot supports camera/control and the camera path is not dead. Strong camera perturbations do change output. The remaining issue is not that camera condition never enters the model; it is that ordinary correct-vs-frozen motion has weak response, and reward/pair mining has not yet produced stable human-visible medium-hard camera-difference pairs.
+
+Next work should focus on reward visual alignment and medium-hard pair construction. A future camera audit may refine sensitivity thresholds, but it should not be framed as re-proving the camera path from scratch.
+
+
 # Reward Pair Failure and LingBot-Fast Support Status
 
 Current Status: PLANNED_AUDIT_BEFORE_ANY_TRAINING

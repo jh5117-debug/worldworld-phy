@@ -1,17 +1,15 @@
 # LingBot-Fast Camera Condition Audit
 
-Current Status: BLOCKED_NOT_RUN_AFTER_REWARD_GATE_FAIL
+Current Status: CAMERA_CONDITION_PATH_CONFIRMED_BUT_SENSITIVITY_PARTIAL
 
-Updated: 2026-06-30 13:33:20
+Updated: 2026-06-30 14:21:36
 
-No new Original Fast camera-variant rollout was launched in this round. The reason is intentional: the first priority reward-visual alignment gate found Protocol v4 NOT_READY for DPO, with only 3/42 pairs passing strict human-visible criteria. Launching camera variants and small-LoRA scaling before fixing pair visibility would consume compute without resolving the immediate pair-protocol blocker.
+This file corrects the previous `UNKNOWN` wording. No new camera-variant rollout was launched in the v5 reward-visual-alignment round, but earlier camera ablation has already shown:
 
-Required next audit remains:
+- repeat A vs B = 0.0
+- correct vs frozen = 0.0
+- correct vs reversed = 0.02218
+- correct vs exaggerated_yaw = 0.03502
+- correct vs exaggerated_translation = 0.03765
 
-- correct camera
-- frozen camera
-- reversed camera
-- exaggerated yaw
-- shuffled camera
-
-Decision rule: if correct vs frozen/reversed outputs are nearly identical, Fast weakly uses camera conditions and camera injection/LoRA scope must be fixed before DPO.
+Interpretation: the camera condition path is confirmed, strong perturbations affect output, and ordinary camera motion sensitivity is weak. Future camera work should calibrate sensitivity and pair mining, not re-prove that the path exists.

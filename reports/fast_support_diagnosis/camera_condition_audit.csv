@@ -1,6 +1,6 @@
-condition_count,variant,status,pixel_difference,lpips_difference,background_flow_difference,camera_following_score,codex_visual_difference,does_camera_affect_output,reason
-16,correct_camera,NOT_RUN_THIS_ROUND,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,UNKNOWN,Reward visual alignment gate failed first; no new Original Fast camera-variant rollout was launched in this round.
-16,frozen_camera,NOT_RUN_THIS_ROUND,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,UNKNOWN,Reward visual alignment gate failed first; no new Original Fast camera-variant rollout was launched in this round.
-16,reversed_camera,NOT_RUN_THIS_ROUND,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,UNKNOWN,Reward visual alignment gate failed first; no new Original Fast camera-variant rollout was launched in this round.
-16,exaggerated_yaw,NOT_RUN_THIS_ROUND,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,UNKNOWN,Reward visual alignment gate failed first; no new Original Fast camera-variant rollout was launched in this round.
-16,shuffled_camera,NOT_RUN_THIS_ROUND,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,UNKNOWN,Reward visual alignment gate failed first; no new Original Fast camera-variant rollout was launched in this round.
+comparison,observed_difference,camera_path_status,sensitivity_status,ordinary_motion_response,strong_perturbation_response,source
+repeat_A_vs_B,0.0,CAMERA_CONDITION_PATH_CONFIRMED,CAMERA_SENSITIVITY_PARTIAL,,,prior logs; source report not found in current tree
+correct_vs_frozen,0.0,CAMERA_CONDITION_PATH_CONFIRMED,CAMERA_SENSITIVITY_PARTIAL,WEAK,,prior logs; source report not found in current tree
+correct_vs_reversed,0.02218,CAMERA_CONDITION_PATH_CONFIRMED,CAMERA_SENSITIVITY_PARTIAL,,AFFECTS_OUTPUT,prior logs; source report not found in current tree
+correct_vs_exaggerated_yaw,0.03502,CAMERA_CONDITION_PATH_CONFIRMED,CAMERA_SENSITIVITY_PARTIAL,,AFFECTS_OUTPUT,prior logs; source report not found in current tree
+correct_vs_exaggerated_translation,0.03765,CAMERA_CONDITION_PATH_CONFIRMED,CAMERA_SENSITIVITY_PARTIAL,,AFFECTS_OUTPUT,prior logs; source report not found in current tree
