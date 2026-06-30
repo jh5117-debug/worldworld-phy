@@ -1,4 +1,12 @@
 
+
+## Targeted B/C Loser Mining v6 Update - 2026-06-30
+
+Current Status: BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY
+
+B and C checkpoints were found. B camera-r8 remains the stable candidate generator/control baseline; C camera+self/temporal-r4 remains the intended loser mining scope. New rollout did not start because GPU/process queries were unsafe/hung under high GPU occupancy. No DPO-ready TypeB-C pairs were produced, and no saved sweep video was promoted to DPO-ready.
+
+
 ## Small-LoRA Sweep Loser Source Audit Update - 2026-06-30
 
 Current Status: MIXED / DIAGNOSTIC_ONLY

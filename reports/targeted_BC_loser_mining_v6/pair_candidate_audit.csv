@@ -1,0 +1,2 @@
+pair_id,status,winner_source,loser_source,reason
+none,BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,none,none,"No new B/C rollout videos, so no TypeB-C pairs constructed."

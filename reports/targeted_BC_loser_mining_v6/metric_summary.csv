@@ -1,0 +1,10 @@
+metric,status,reason
+PSNR,BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,No v6 rollout video generated.
+SSIM,BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,No v6 rollout video generated.
+LPIPS,BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,No v6 rollout video generated.
+FVD,BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,No v6 rollout video generated.
+VBench,BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,No v6 rollout video generated.
+PhysGeo,BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,No v6 rollout video generated.
+sharpness,BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,No v6 rollout video generated.
+blur,BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,No v6 rollout video generated.
+freeze,BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,No v6 rollout video generated.

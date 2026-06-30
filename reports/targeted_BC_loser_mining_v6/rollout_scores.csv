@@ -1,0 +1,19 @@
+status,metric,value,reason
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,PSNR,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,SSIM,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,LPIPS,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,FVD,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,VBench,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,R_bg,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,R_cam,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,R_fg,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,R_phys,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,R_reobs,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,R_quality,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,P_freeze,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,P_blur,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,R_total,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,sharpness,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,blur,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,flicker,,No v6 rollout video generated; metric not computed or fabricated.
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,freeze_rate,,No v6 rollout video generated; metric not computed or fabricated.

@@ -181,3 +181,24 @@ Do not force pair count by including blurry, collapsed, too-similar, too-degrade
 ## Git Checkpoint Before / After
 
 Before rollout work, commit and push this PRD. After rollout / score / audit / pair construction, update this PRD and the final report with actual status, blocked reasons, and output paths.
+
+## Experiment Update - 2026-06-30 16:20 CST
+
+Current Status: BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY
+
+Checkpoint inventory completed successfully. B and C step200 adapters were found and fingerprinted in `reports/targeted_BC_loser_mining_v6/checkpoint_inventory.csv`.
+
+New rollout did not start because all GPUs showed high memory occupancy in the initial status check, and follow-up `nvidia-smi --query-compute-apps` calls hung. Repository runner discovery also timed out under current filesystem/I/O conditions. No videos, metrics, rewards, or DPO-ready pairs were fabricated.
+
+Outputs written:
+
+- `reports/targeted_BC_loser_mining_v6/checkpoint_inventory.csv`
+- `reports/targeted_BC_loser_mining_v6/generated_manifest.csv`
+- `reports/targeted_BC_loser_mining_v6/metric_summary.csv`
+- `reports/targeted_BC_loser_mining_v6/pair_summary.md`
+- `docs/targeted_BC_loser_mining_v6_report.md`
+
+## Verification
+
+- `python3 -m compileall cam_physgeo src tests`: PASS.
+- `pytest -q tests/test_pair_schema_v2v5.py tests/test_medium_hard_loser_selection.py tests/test_reward_guided_pair_selector.py`: BLOCKED_BY_ENV, `pytest` command not found in the active remote shell. No pytest PASS was claimed.

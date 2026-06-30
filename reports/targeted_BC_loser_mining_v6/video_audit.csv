@@ -1,0 +1,2 @@
+sample_id,model_key,condition_id,template,camera_motion,seed,background_stability,camera_following,foreground_identity,object_deformation,physical_event,reobserve,freeze,visual_quality,sharpness_ok,too_blurry,too_collapsed,too_similar_to_gt,medium_hard_loser_candidate,failure_tags,written_reason
+not_run,M_B/M_C,not_run,,,,,,,,,,,,,,,,no,BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,"No new v6 rollout videos were generated, so Codex visual audit for new videos could not be performed."

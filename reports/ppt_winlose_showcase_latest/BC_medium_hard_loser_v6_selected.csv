@@ -1,0 +1,2 @@
+rank,pair_id,status,reason
+1,none,BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,No v6 rollout videos were generated; do not use saved sweep videos as DPO-ready TypeB pairs.

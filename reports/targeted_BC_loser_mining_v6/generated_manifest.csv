@@ -1,0 +1,2 @@
+status,reason,model_key,condition_id,seed,generated_full_mp4,generated_future_mp4,prefix_mp4,gt_future_mp4,contact_sheet
+BLOCKED_BY_GPU_OR_RUNNER_DISCOVERY,"B/C checkpoints found, but no safe GPU rollout was started because all GPUs showed high memory occupancy and subsequent nvidia-smi compute-app queries hung; runner discovery by repository traversal also timed out.",M_B/M_C,not_run,not_run,,,,,
