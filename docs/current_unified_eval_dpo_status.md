@@ -1,5 +1,19 @@
 # Current Unified Eval / DPO Status
 
+
+## Current Protocol v4 Status (2026-06-30 12:09:54)
+
+Current Status: PASS_REWARD_GUIDED_PROTOCOL_READY_FOR_SMALL_SMOKE
+
+- Protocol v4 manifest: `manifests/dpo_preference_protocol_v4_pairs.jsonl`
+- Total pairs: 42
+- TypeA_plus: 34
+- TypeM: 8
+- TypeB_usable: 0
+- TypeB remains blocked by rollout blur/quality.
+- No DPO training, StageB, GRPO, or full-data StageA was run in v4.
+
+
 ## Current Protocol v3 / DPO Smoke Status (2026-06-30 05:14:29)
 
 - Candidate generator v2: CANDIDATE_GENERATOR_FAILED_TYPEB_STILL_BLOCKED; audited 208 existing true V2V-5 small-LoRA rollout candidates, selected 0 usable TypeB rollout losers.

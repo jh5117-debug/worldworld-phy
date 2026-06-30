@@ -1,6 +1,6 @@
 # EXP TypeA Strength Sweep v4
 
-Current Status: PLANNED_PRD_READY
+Current Status: PASS_TYPEA_PLUS_34_ACCEPTED
 
 Updated: 2026-06-30 11:17:53
 
@@ -61,3 +61,13 @@ All severities are too subtle, too degraded, blur-inducing, globally destructive
 
 - Before execution: commit PRD files with `Prepare reward-guided DPO protocol v4 PRDs`.
 - After execution: commit only source, tests, docs, manifests, and small CSV/JSON summaries.
+
+## Post-Run Update
+
+Updated: 2026-06-30 12:09:54
+
+- Protocol v4 generated 42 training-ready pairs.
+- TypeA_plus: 34.
+- TypeM: 8.
+- TypeB_usable: 0.
+- No DPO training or checkpoint modification was run.

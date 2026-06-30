@@ -1,0 +1,10 @@
+{
+  "max_lpips_future": 0.25,
+  "max_reward_margin": 0.4,
+  "min_alignment_margin": 0.05,
+  "min_lpips_future": 0.04,
+  "min_reward_margin": 0.12,
+  "min_sharpness_ratio": 0.65,
+  "min_ssim_future": 0.35,
+  "min_visual_quality": 1.0
+}

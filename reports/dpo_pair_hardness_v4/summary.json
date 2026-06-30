@@ -1,0 +1,18 @@
+{
+  "fvd": "BLOCKED_BY_ENV",
+  "selected_ppt_pairs": 5,
+  "showcase_codec": "libx264",
+  "total_pairs": 42,
+  "type_counts": {
+    "TypeA_plus": 34,
+    "TypeM": 8
+  },
+  "typea_plus_count": 34,
+  "typea_sweep_rows": 136,
+  "typeb_audit_counts": {
+    "TYPEB_DIAGNOSTIC_BLUR_FAILED": 16
+  },
+  "typeb_usable_count": 0,
+  "typem_count": 8,
+  "vbench": "BLOCKED_BY_ENV"
+}

@@ -1,0 +1,28 @@
+{
+  "backend_policy": "Every reward vector must label backend as real, proxy, diagnostic, or blocked.",
+  "name": "Cam-PhysGeo reward-guided selector v4",
+  "penalty_keys": [
+    "P_freeze",
+    "P_blur"
+  ],
+  "reward_formula": "w_bg*R_bg + w_cam*R_cam + w_fg*R_fg + w_phys*R_phys + w_reobs*R_reobs + w_quality*R_quality - w_freeze*P_freeze - w_blur*P_blur",
+  "subreward_keys": [
+    "R_bg",
+    "R_cam",
+    "R_fg",
+    "R_phys",
+    "R_reobs",
+    "R_quality"
+  ],
+  "typeb_policy": "TypeB rollout losers are not admitted unless they pass sharpness, quality, reward, and Codex visual gates.",
+  "weights": {
+    "w_bg": 0.16,
+    "w_blur": 0.18,
+    "w_cam": 0.16,
+    "w_fg": 0.16,
+    "w_freeze": 0.12,
+    "w_phys": 0.18,
+    "w_quality": 0.2,
+    "w_reobs": 0.14
+  }
+}
