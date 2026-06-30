@@ -1,8 +1,8 @@
-# safe_gpu_status 2026-06-30T18:27:22,691203876+08:00 host=instance-afs92r3e
+# safe_gpu_status 2026-06-30T20:55:04,220532585+08:00 host=instance-afs92r3e
 # query_gpu
 index, memory.used [MiB], memory.total [MiB], utilization.gpu [%]
 0, 28 MiB, 97871 MiB, 0 %
-1, 4 MiB, 97871 MiB, 0 %
+1, 1 MiB, 97871 MiB, 0 %
 2, 1 MiB, 97871 MiB, 0 %
 3, 1 MiB, 97871 MiB, 0 %
 4, 1 MiB, 97871 MiB, 0 %
