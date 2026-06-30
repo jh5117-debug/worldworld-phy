@@ -1,0 +1,6 @@
+condition_count,variant,status,pixel_difference,lpips_difference,background_flow_difference,camera_following_score,codex_visual_difference,does_camera_affect_output,reason
+16,correct_camera,NOT_RUN_THIS_ROUND,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,UNKNOWN,Reward visual alignment gate failed first; no new Original Fast camera-variant rollout was launched in this round.
+16,frozen_camera,NOT_RUN_THIS_ROUND,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,UNKNOWN,Reward visual alignment gate failed first; no new Original Fast camera-variant rollout was launched in this round.
+16,reversed_camera,NOT_RUN_THIS_ROUND,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,UNKNOWN,Reward visual alignment gate failed first; no new Original Fast camera-variant rollout was launched in this round.
+16,exaggerated_yaw,NOT_RUN_THIS_ROUND,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,UNKNOWN,Reward visual alignment gate failed first; no new Original Fast camera-variant rollout was launched in this round.
+16,shuffled_camera,NOT_RUN_THIS_ROUND,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,BLOCKED_NOT_RUN,UNKNOWN,Reward visual alignment gate failed first; no new Original Fast camera-variant rollout was launched in this round.

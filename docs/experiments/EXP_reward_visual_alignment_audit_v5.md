@@ -1,7 +1,7 @@
 
 # EXP Reward Visual Alignment Audit v5
 
-Current Status: PLANNED_PRD_READY
+Current Status: COMPLETED_PROTOCOL_V4_NOT_READY_TOO_SUBTLE
 
 Updated: 2026-06-30 13:11:54
 
@@ -64,3 +64,12 @@ Audit is failed if visual visibility is inferred only from proxy reward, if too-
 
 Before execution: commit PRD/status files with `Prepare reward visual alignment and Fast support diagnosis PRDs`.
 After execution: commit only code, scripts, docs, and small CSV/JSON summaries.
+
+## Post-Run Update
+
+Updated: 2026-06-30 13:33:20
+
+- Reward visual alignment checked 42 pairs.
+- Strict DPO-ready count: 3.
+- Protocol v4 is NOT_READY for DPO until visual pair generation is fixed.
+- No DPO, StageB, GRPO, full-data StageA, broad-LoRA, or checkpoint modification was run.

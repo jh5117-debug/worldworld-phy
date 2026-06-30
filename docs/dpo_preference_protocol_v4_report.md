@@ -1,4 +1,20 @@
 
+## Current Reward Visual Alignment v5 Status (2026-06-30 13:33:20)
+
+Current Status: PROTOCOL_V4_NOT_READY_TOO_SUBTLE
+
+- v4 pairs checked: 42
+- Human-visible strict count: 3
+- DPO-ready after visual gate: 3
+- Too subtle: 39
+- TypeA_plus too subtle: 31
+- TypeM true medium-hard: 0
+- New ready manifest: `reports/reward_visual_alignment_v5/dpo_ready_pairs_visual_v5.jsonl`
+- New PPT diagnostic: `reports/ppt_winlose_showcase_latest/winlose_showcase_visible_mediumhard_v5_for_ppt.mp4`
+
+Conclusion: reward-guided v4 is not ready for DPO; proxy reward margins do not yet guarantee human-visible medium-hard failures.
+
+
 # DPO Preference Protocol v4 Report
 
 Current Status: PASS_REWARD_GUIDED_PROTOCOL_READY_FOR_SMALL_SMOKE

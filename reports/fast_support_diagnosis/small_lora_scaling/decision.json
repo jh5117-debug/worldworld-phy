@@ -1,0 +1,20 @@
+{
+  "configs_run": [],
+  "current_status": "BLOCKED_NOT_RUN_AFTER_REWARD_VISUAL_GATE_FAIL",
+  "diagnosis": {
+    "camera_condition_problem": "unknown until camera-variant audit is run",
+    "domain_support_problem": "plausible because TypeB rollouts remain blurry/degraded",
+    "high_noise_only_problem": "likely contributes to lack of low-level detail repair",
+    "too_few_params": "possible but unproven; camera-only rank4 cannot fix texture/identity/physics alone",
+    "too_few_steps": "possible but not the first blocker; more steps on weak pair/objective may not help",
+    "too_many_params": "broad-LoRA remains disallowed; prior broad direction not supported by visual quality evidence"
+  },
+  "existing_evidence": {
+    "candidate_generator_v2": "failed to produce usable TypeB rollout losers",
+    "dpo_smoke_v3": "engineering PASS but loser-dominant objective signal",
+    "stageA_warmup": "camera-only small LoRA/high-noise warmup did not solve blur/detail support"
+  },
+  "next_required_experiment": "Run camera-condition variant audit before any 500-step LoRA scaling.",
+  "reason": "Protocol v4 visual alignment failed first; no new small-LoRA 500-step training was launched.",
+  "steps_run": 0
+}
