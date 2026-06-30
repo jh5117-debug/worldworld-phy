@@ -1,0 +1,5 @@
+rank,model_key,checkpoint,sample_or_panel,status,why_selected,ppt_caption
+1,B_camera_r8,step050 overview,screen16 overview,candidate_generator_recommended,"stable, clear, lowest fixed-val among A/B/C/D, best control generator","B camera-r8 is the cleanest candidate generator, but not a direct loser source."
+2,C_camera_self_temporal_r4,step050 overview,screen16 overview,loser_source_diagnostic_recommended,best visual balance of readability and foreground/physical-event failure,C self/temporal LoRA is the best scope to mine future medium-hard losers.
+3,D_camera_cross_r4,step050 overview,screen16 overview,diagnostic_runner_up,visible failures but more local/cross-attention artifact risk,"D can reveal failures, but needs stricter artifact gates."
+4,A_camera_r4,step050 overview,screen16 overview,not_primary_loser_source,stable but too similar/mild,A is too conservative for DPO loser mining.

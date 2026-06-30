@@ -1,0 +1,9 @@
+path,exists,size_bytes,notes
+reports/candidate_generator_v2/run_inventory.csv,True,1497,"run inventory: confirmed original_fast plus A/B/C/D step050/100/200, 16 rollouts each"
+reports/candidate_generator_v2/checkpoint_inventory.csv,True,1590,checkpoint inventory exists; content read was slow in this round
+reports/candidate_generator_v2/video_audit.csv,True,120017,primary source for 208 recovered video paths/contact sheets
+reports/candidate_generator_v2/typeB_usability.csv,True,120017,same-sized usability table exists; not separately reread
+reports/candidate_generator_v2/psnr_ssim_lpips.csv,True,1522,traditional metrics summary exists
+reports/candidate_generator_v2/physgeo_metrics.csv,True,1455,PhysGeo metrics summary exists
+reports/candidate_generator_v2/fvd_summary.csv,True,113,"FVD summary exists, prior status blocked/diagnostic"
+reports/candidate_generator_v2/vbench_summary.csv,True,82,"VBench summary exists, prior status blocked/diagnostic"

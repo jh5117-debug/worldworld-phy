@@ -1,0 +1,17 @@
+{
+  "current_status": "NO_DIRECT_DPO_READY_LOSER_SOURCE_FROM_SAVED_SWEEP",
+  "saved_video_rows": 208,
+  "contact_sheet_rows": 212,
+  "typeB_quality_gate_pass_count": 0,
+  "best_loser_source_for_future_mining": "C_camera_self_temporal_r4",
+  "best_candidate_generator": "B_camera_r8",
+  "runner_up_loser_source": "D_camera_cross_r4",
+  "not_suitable": [
+    "A_camera_r4 as primary loser source: too conservative/too similar",
+    "saved A/B/C/D artifacts as immediate DPO-ready TypeB: all existing gates failed"
+  ],
+  "old_tiny_camera_lora_found": "not independently found beyond A_camera_r4/B_camera_r8 recovered artifacts",
+  "use_B_first": "Use B first as stable generator/control baseline, not as the main loser source; use C first for medium-hard loser mining diagnostics.",
+  "need_rerollout": "Yes, if TypeB pairs are desired: reroll full80/quant80 from C and B, then reapply visual + reward gates.",
+  "can_use_for_TypeB_DPO_now": "No. Existing sweep videos are diagnostic; all candidate_generator_v2 TypeB gates passed count is 0."
+}
