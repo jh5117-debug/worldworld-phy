@@ -1,6 +1,6 @@
 # EXP Tiny SDPO Anchor Smoke v7
 
-Current Status: PRD_READY_NOT_RUN
+Current Status: BLOCKED_GPU_BUSY_SUBSET_READY
 
 This experiment follows `docs/experiments/PRD_VISUAL_AUDIT_POLICY.md`.
 

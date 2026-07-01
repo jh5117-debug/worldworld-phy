@@ -1,6 +1,6 @@
 # EXP Scale GT C Pair Factory v7
 
-Current Status: PRD_READY_NOT_RUN
+Current Status: BLOCKED_GPU_BUSY_CONDITION_EXPANSION_PARTIAL
 
 This experiment follows `docs/experiments/PRD_VISUAL_AUDIT_POLICY.md`.
 

@@ -1,3 +1,19 @@
+
+<!-- dpo_smoke_pair_factory_v7_update -->
+## DPO Smoke and GT>C Pair Factory v7 Update
+
+Current Status: BLOCKED_GPU_BUSY_SUBSET_READY / PAIR_FACTORY_CONDITION_EXPANSION_PARTIAL
+
+Updated: 2026-07-01 16:05:00 CST
+
+- Visual audit policy and v7 PRDs were committed and pushed before experiment work.
+- Tiny smoke subset is ready: 10 reviewed GT>C pairs, loser reward mean 0.759517, reward margin mean 0.240483.
+- Loser visual audit is complete for the smoke subset: 10 / 10 reviewed and DPO-ready.
+- DPO smoke training did not start because authorized GPU4-7 were occupied at launch time; GPU0-3 were not used.
+- Pair factory condition expansion from existing v6b candidate rows produced 21 unique runnable conditions, below the 80 target.
+- Pair factory rollout did not start because GPU4-7 were occupied and more condition recovery is still needed.
+- No large-scale DPO, StageB, GRPO, full-data StageA, broad-LoRA, checkpoint deletion, or checkpoint modification was run.
+<!-- /dpo_smoke_pair_factory_v7_update -->
 <!-- targeted_BC_loser_mining_v6b_update -->
 # Targeted B/C Loser Mining v6b Update
 
