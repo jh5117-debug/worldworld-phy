@@ -77,3 +77,9 @@ where:
 ## Next Check
 
 Search local paths for existing V-JEPA / VideoREPA encoders and weights. If no local backend is present, mark `BLOCKED_BY_ENV_LOCAL_ENCODER_MISSING` and keep this as a future monitor plan.
+
+## v8b Update
+
+Current Status: DESIGN_ONLY_NOT_INTEGRATED
+
+v8b did not authorize V-JEPA/VideoREPA training integration. Sigma mapping is now bounded and separated, but winner-anchor-only failed by OOM after one completed step with winner_improvement = 0.0. The latent winner anchor should remain a monitor-first plan: use it to measure whether future memory-safe winner-anchor runs preserve GT winner structure before adding `lambda_J * L_VJEPA_TRD_winner` to training. No large model download was performed.

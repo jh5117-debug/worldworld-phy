@@ -115,3 +115,14 @@ Current Status: PASS
 - Pair factory v8 was not launched; no new unreviewed loser entered any manifest.
 - Pushed artifacts were lightweight source, docs, tests, CSV/JSON/Markdown summaries only.
 - No MP4/JPG/PNG/contact sheets/local_assets/checkpoints/weights/large logs were staged or pushed.
+
+## 2026-07-02 v8b Bounded Sigma / Winner Anchor Update
+
+Current Status: PENDING_COMMIT
+
+- PRD commit pushed: `117a0a6 Prepare bounded sigma and winner-anchor diagnosis v8b PRD`.
+- Sampler-only sigma check passed.
+- One-pair real-energy sigma smoke passed with low/mid/high actual sigmas separated.
+- Winner-anchor-only 1-pair failed after one completed step due CUDA OOM; winner improvement remained 0.0.
+- 10-pair winner-anchor, strict SDPO, Linear-DPO, safe-linear DPO, and pair factory rollout were not run.
+- No videos, weights, checkpoints, or large files are intended for Git.

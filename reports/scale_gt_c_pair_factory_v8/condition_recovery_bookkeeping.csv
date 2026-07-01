@@ -1,0 +1,2 @@
+status,reason,new_conditions,new_rollouts,new_pairs,next_action
+NOT_RUN_V8B_OBJECTIVE_FIRST,v8b focused on bounded sigma and winner-anchor-only diagnosis; pair factory must not compete for GPU before objective gate is resolved,0,0,0,rerun condition recovery after memory-safe winner-anchor gate is diagnosed

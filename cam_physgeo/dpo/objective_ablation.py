@@ -575,6 +575,204 @@ def run_sigma_bin_check(args: argparse.Namespace) -> dict[str, Any]:
     return summary
 
 
+def _append_csv_row(path: str | Path, row: dict[str, Any], fieldnames: list[str]) -> None:
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    exists = p.exists() and p.stat().st_size > 0
+    with p.open("a", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if not exists:
+            writer.writeheader()
+        writer.writerow(row)
+        f.flush()
+
+
+def _append_jsonl_row(path: str | Path, row: dict[str, Any]) -> None:
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(row, sort_keys=True) + "\n")
+        f.flush()
+
+
+def _is_reviewed_pair(pair: dict[str, Any]) -> bool:
+    audit = pair.get("codex_visual_audit") or pair.get("codex_audit") or {}
+    reviewed = audit.get("reviewed", audit.get("valid_preference", True))
+    ready = audit.get("is_dpo_ready", pair.get("medium_hard", True))
+    return _boolish(reviewed) and _boolish(ready)
+
+
+def run_real_energy_smoke_v8b(args: argparse.Namespace) -> dict[str, Any]:
+    from cam_physgeo.dpo.failure_diagnostics import _make_timestep_sample
+
+    out_csv = Path(args.out_csv)
+    out_jsonl = Path(args.out_jsonl)
+    out_md = Path(args.out_md)
+    for path in (out_csv, out_jsonl):
+        if bool(args.overwrite) and path.exists():
+            path.unlink()
+    cfg = _load_yaml(args.config)
+    cfg["num_frames"] = int(args.num_frames)
+    cfg["height"] = int(args.height)
+    cfg["width"] = int(args.width)
+    cfg["dpo_runtime_device"] = args.runtime_device or args.device
+    cfg["dpo_skip_runtime_components_on_load"] = True
+    if args.device.startswith("cuda") and torch.cuda.is_available() and args.device == "cuda":
+        device = "cuda:0"
+    else:
+        device = args.device
+
+    pairs = _load_jsonl(args.pair_manifest)
+    reviewed = [row for row in pairs if _is_reviewed_pair(row)]
+    if not reviewed:
+        result = {"status": "BLOCKED_NO_REVIEWED_PAIR", "pair_manifest": args.pair_manifest}
+        out_md.parent.mkdir(parents=True, exist_ok=True)
+        out_md.write_text("Current Status:\nBLOCKED\n\n# Sigma Real-Energy Smoke v8b\n\nNo reviewed pair found.\n", encoding="utf-8")
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return result
+    selected = reviewed[:1]
+    tmp_manifest = out_csv.parent / "sigma_real_energy_smoke_pair1.jsonl"
+    _write_jsonl(tmp_manifest, selected)
+    dataset = Prefix5DpoDataset(
+        tmp_manifest,
+        repo_root=args.repo_root,
+        limit_pairs=1,
+        num_frames=int(args.num_frames),
+        height=int(args.height),
+        width=int(args.width),
+        min_margin=0.0,
+    )
+    precomputed = _precompute_pairs(dataset, cfg=cfg, device=device, out_dir=out_csv.parent)
+    backend = LingBotFastDpoEnergy(cfg, device=device, prefix_len=5)
+    cache = precomputed[0]
+    fieldnames = [
+        "pair_id",
+        "requested_bin",
+        "target_sigma",
+        "timestep",
+        "timestep_index",
+        "actual_sigma",
+        "actual_sigma_bin",
+        "E_ref_winner",
+        "E_ref_loser",
+        "E_policy_winner",
+        "E_policy_loser",
+        "Delta_ref",
+        "Delta_policy",
+        "reference_relative_margin",
+        "seconds",
+        "gpu",
+        "status",
+        "error_reason",
+    ]
+    rows: list[dict[str, Any]] = []
+    bins = [b.strip() for b in str(args.bins).split(",") if b.strip()]
+    for requested_bin in bins:
+        started = time.time()
+        error = ""
+        row: dict[str, Any]
+        try:
+            target_sigma = float(SIGMA_BINS_V8[requested_bin])
+            ts = _make_timestep_sample(backend, target_sigma)
+            gen = torch.Generator(device=backend.device)
+            gen.manual_seed(int(args.seed) + int(target_sigma * 1000))
+            noise = torch.randn(tuple(cache.winner_latent.shape), device=backend.device, dtype=backend.lowp_dtype, generator=gen)
+            winner = _prepared_from_cache(cache, side="winner", backend=backend, timestep_sample=ts, noise=noise)
+            loser = _prepared_from_cache(cache, side="loser", backend=backend, timestep_sample=ts, noise=noise)
+            with torch.no_grad():
+                pw = backend.energy(winner, ts)
+                pl = backend.energy(loser, ts)
+                with backend.reference_mode():
+                    rw = backend.energy(winner, ts)
+                    rl = backend.energy(loser, ts)
+            delta_ref = _scalar((rl - rw).detach())
+            delta_policy = _scalar((pl - pw).detach())
+            row = {
+                "pair_id": cache.pair_id,
+                "requested_bin": requested_bin,
+                "target_sigma": target_sigma,
+                "timestep": float(ts.timestep.detach().flatten()[0].item()) if hasattr(ts.timestep, "detach") else float(ts.timestep),
+                "timestep_index": int(ts.index),
+                "actual_sigma": float(ts.sigma),
+                "actual_sigma_bin": actual_sigma_bin(float(ts.sigma)),
+                "E_ref_winner": _scalar(rw.detach()),
+                "E_ref_loser": _scalar(rl.detach()),
+                "E_policy_winner": _scalar(pw.detach()),
+                "E_policy_loser": _scalar(pl.detach()),
+                "Delta_ref": delta_ref,
+                "Delta_policy": delta_policy,
+                "reference_relative_margin": delta_policy - delta_ref,
+                "seconds": time.time() - started,
+                "gpu": __import__("os").environ.get("CUDA_VISIBLE_DEVICES", ""),
+                "status": "PASS",
+                "error_reason": "",
+            }
+        except Exception as exc:
+            error = repr(exc)
+            row = {
+                "pair_id": getattr(cache, "pair_id", ""),
+                "requested_bin": requested_bin,
+                "target_sigma": SIGMA_BINS_V8.get(requested_bin, ""),
+                "timestep": "",
+                "timestep_index": "",
+                "actual_sigma": "",
+                "actual_sigma_bin": "",
+                "E_ref_winner": "",
+                "E_ref_loser": "",
+                "E_policy_winner": "",
+                "E_policy_loser": "",
+                "Delta_ref": "",
+                "Delta_policy": "",
+                "reference_relative_margin": "",
+                "seconds": time.time() - started,
+                "gpu": __import__("os").environ.get("CUDA_VISIBLE_DEVICES", ""),
+                "status": "ERROR",
+                "error_reason": error,
+            }
+        _append_csv_row(out_csv, row, fieldnames)
+        _append_jsonl_row(out_jsonl, row)
+        rows.append(row)
+        if row["status"] != "PASS":
+            break
+    pass_rows = [row for row in rows if row.get("status") == "PASS"]
+    unique_sigmas = sorted({round(float(row["actual_sigma"]), 8) for row in pass_rows if row.get("actual_sigma") not in {"", None}})
+    completed = len(pass_rows) == len(bins)
+    separated = len(unique_sigmas) == len(bins)
+    if completed and separated:
+        status = "SIGMA_REAL_ENERGY_SMOKE_PASS"
+    elif completed:
+        status = "SIGMA_BLOCKED"
+    else:
+        status = "SIGMA_MAPPING_PASS_ENERGY_TOO_SLOW" if pass_rows else "SIGMA_BLOCKED"
+    result = {
+        "status": status,
+        "pair_manifest": args.pair_manifest,
+        "pair_id": cache.pair_id,
+        "rows": len(rows),
+        "pass_rows": len(pass_rows),
+        "unique_actual_sigmas": unique_sigmas,
+        "out_csv": str(out_csv),
+        "out_jsonl": str(out_jsonl),
+    }
+    out_md.parent.mkdir(parents=True, exist_ok=True)
+    out_md.write_text(
+        "Current Status:\n"
+        f"{('PASS' if status == 'SIGMA_REAL_ENERGY_SMOKE_PASS' else 'BLOCKED')}\n\n"
+        "# Sigma Real-Energy Smoke v8b\n\n"
+        f"Decision: `{status}`\n\n"
+        f"- Pair: `{cache.pair_id}`\n"
+        f"- Rows written: {len(rows)}\n"
+        f"- PASS rows: {len(pass_rows)}\n"
+        f"- Unique actual sigmas: {unique_sigmas}\n"
+        f"- CSV: `{out_csv}`\n"
+        f"- JSONL: `{out_jsonl}`\n"
+        "\nThis smoke appends rows incrementally and uses one reviewed pair only.\n",
+        encoding="utf-8",
+    )
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return result
+
+
 def run_probe(args: argparse.Namespace) -> dict[str, Any]:
     started = time.time()
     objective = str(args.objective).lower()
@@ -784,6 +982,24 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--height", type=int, default=480)
     s.add_argument("--width", type=int, default=832)
     s.set_defaults(func=run_sigma_bin_check)
+
+
+    e = sub.add_parser("real-energy-smoke-v8b")
+    e.add_argument("--pair_manifest", required=True)
+    e.add_argument("--out_csv", default="reports/dpo_objective_diagnosis_v8b/sigma_real_energy_smoke.csv")
+    e.add_argument("--out_jsonl", default="reports/dpo_objective_diagnosis_v8b/sigma_real_energy_smoke.jsonl")
+    e.add_argument("--out_md", default="reports/dpo_objective_diagnosis_v8b/sigma_real_energy_smoke_summary.md")
+    e.add_argument("--config", default="configs/cam_physgeo/fast_stageA_v2v5_camera_r4_100step.yaml")
+    e.add_argument("--repo_root", default=".")
+    e.add_argument("--bins", default="low,mid,high")
+    e.add_argument("--seed", type=int, default=8901)
+    e.add_argument("--device", default="cuda")
+    e.add_argument("--runtime_device", default="cuda")
+    e.add_argument("--num_frames", type=int, default=81)
+    e.add_argument("--height", type=int, default=480)
+    e.add_argument("--width", type=int, default=832)
+    e.add_argument("--overwrite", action="store_true")
+    e.set_defaults(func=run_real_energy_smoke_v8b)
 
     r = sub.add_parser("run-probe")
     r.add_argument("--objective", required=True, choices=sorted(OBJECTIVES))

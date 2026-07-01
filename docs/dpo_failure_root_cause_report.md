@@ -1,6 +1,13 @@
 Current Status:
 BLOCKED
 
+## 2026-07-02 v8b Root Cause Update
+
+Current Status: BLOCKED_WINNER_ANCHOR_1PAIR_OOM
+
+v8b shows sigma mapping itself is not collapsed when checked with bounded sampler-only and one-pair real-energy smoke. The active blocker moved to winner-anchor-only: one reviewed pair completed a single optimization step, then OOMed before 5 steps; winner improvement stayed 0.0 on the completed row. Root-cause hypotheses now prioritize memory pressure in the train graph, optimizer/checkpointing/offload, and whether the winner energy sign/scope can produce a positive update once the run is memory-safe.
+
+
 ## 2026-07-02 v8 Sigma Check Blocker
 - v8 PRDs were committed and pushed before execution.
 - The full 10-pair real-energy sigma-bin check on GPU4 reached latent precompute and model-shard load, then saturated GPU4 in the energy loop for 60 minutes without producing actual sigma rows.

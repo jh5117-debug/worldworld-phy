@@ -1,5 +1,5 @@
 Current Status:
-PRD_READY_NOT_STARTED
+BLOCKED_WINNER_ANCHOR_1PAIR_OOM
 
 # DPO Objective Diagnosis v8b Start Status
 
@@ -35,3 +35,10 @@ Input subset: `manifests/dpo_smoke_v7_gt_c_10.jsonl`. The subset comes from prev
 - One-pair real-energy smoke: `reports/dpo_objective_diagnosis_v8b/sigma_real_energy_smoke.csv`
 - Winner-anchor 1-pair: `reports/dpo_objective_diagnosis_v8b/winner_anchor_only_1pair_5step.csv`
 - Final decision: `reports/dpo_objective_diagnosis_v8b/decision.json`
+
+## Result Summary
+
+- Sampler-only sigma: PASS.
+- Real-energy sigma smoke: PASS on one reviewed pair, low/mid/high actual sigmas separated.
+- Winner-anchor-only 1-pair: BLOCKED by CUDA OOM after one completed step; winner_improvement remained 0.0.
+- 10-pair winner-anchor and SDPO/Linear variants were not run.

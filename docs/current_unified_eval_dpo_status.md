@@ -1,6 +1,13 @@
 Current Status:
 BLOCKED
 
+## 2026-07-02 v8b Bounded Sigma / Winner Anchor
+
+Current Status: BLOCKED_WINNER_ANCHOR_1PAIR_OOM
+
+Sampler-only sigma and 1-pair real-energy smoke both separated low/mid/high sigma values. Winner-anchor-only 1-pair completed 1/5 steps, then hit CUDA OOM on physical GPU4; completed winner_improvement was 0.0. Do not run strict SDPO or Linear-DPO until winner-anchor-only passes in a memory-safe 1-pair gate.
+
+
 ## 2026-07-02 v8 Sigma Check Blocker
 - v8 PRDs were committed and pushed before execution.
 - The full 10-pair real-energy sigma-bin check on GPU4 reached latent precompute and model-shard load, then saturated GPU4 in the energy loop for 60 minutes without producing actual sigma rows.

@@ -1,0 +1,23 @@
+{
+  "dpo_can_proceed": false,
+  "linear_dpo_next": "BLOCKED_UNTIL_WINNER_ANCHOR_PASS",
+  "no_broad_lora": true,
+  "no_full_data_stagea": true,
+  "no_grpo": true,
+  "no_large_dpo": true,
+  "no_stageb": true,
+  "pair_factory_bookkeeping": "NOT_RUN",
+  "real_energy_actual_sigmas": [
+    0.12433391809463501,
+    0.34955453872680664,
+    0.824742317199707
+  ],
+  "real_energy_sigma_smoke_status": "SIGMA_REAL_ENERGY_SMOKE_PASS",
+  "sampler_only_sigma_status": "SIGMA_SAMPLER_ONLY_PASS",
+  "status": "V8B_BLOCKED_WINNER_ANCHOR_1PAIR_OOM",
+  "strict_sdpo_next": "BLOCKED_UNTIL_WINNER_ANCHOR_PASS",
+  "winner_anchor_only_10pair_status": "NOT_RUN_AFTER_1PAIR_FAIL",
+  "winner_anchor_only_1pair_completed_steps": 1,
+  "winner_anchor_only_1pair_error": "OutOfMemoryError('CUDA out of memory. Tried to allocate 1.25 GiB. GPU 0 has a total capacity of 95.09 GiB of which 1.11 GiB is free. Including non-PyTorch memory, this process has 93.96 GiB memory in use. Of the allocated memory 89.93 GiB is allocated by PyTorch, and 3.53 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)')",
+  "winner_anchor_only_1pair_status": "WINNER_ANCHOR_1PAIR_FAIL_OOM"
+}

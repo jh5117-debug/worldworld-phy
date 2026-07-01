@@ -1,7 +1,23 @@
 Current Status:
-PRD_READY_NOT_STARTED
+BLOCKED_WINNER_ANCHOR_1PAIR_OOM
 
 # EXP Bounded Sigma and Winner-Anchor Diagnosis v8b
+
+## Actual Result 2026-07-02
+
+- PRD was committed and pushed before execution.
+- Sampler-only sigma mapping completed and separated low/mid/high bins.
+- One-pair real-energy smoke completed for low/mid/high with actual sigmas 0.1243339181, 0.3495545387, and 0.8247423172.
+- Winner-anchor-only 1-pair run was attempted for 5 steps on physical GPU4.
+- Completed steps: 1 / 5.
+- Status: `WINNER_ANCHOR_1PAIR_FAIL_OOM`.
+- Final winner improvement from completed row: 0.0.
+- Nonzero grad: true.
+- Save/load OK: false, because run failed before final save/load check.
+- Error: CUDA OOM during the 1-pair winner-anchor-only run after one completed step. The error message names CUDA device 0 because `CUDA_VISIBLE_DEVICES=4` remaps physical GPU4 to process-local cuda:0.
+- 10-pair winner-anchor, strict SDPO, Linear-DPO, and safe-linear DPO were not run.
+- Decision: `V8B_BLOCKED_WINNER_ANCHOR_1PAIR_OOM`; DPO cannot proceed.
+
 
 Updated: 2026-07-02 03:45 CST
 
