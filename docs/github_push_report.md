@@ -1,4 +1,12 @@
 Current Status:
+PUSHED
+
+## 2026-07-01 v7 Smoke Result Push
+- Commit pushed: `cf05ebe Run tiny SDPO anchor smoke v7`.
+- Remote branch verified: `research/quant-small-lora-dpo-probe-20260624`.
+- Big artifacts were not committed: no MP4/JPG/contact sheets/local_assets/checkpoints/PT files.
+
+Current Status:
 READY_TO_PUSH
 
 ## 2026-07-01 v7 Smoke Result Commit
