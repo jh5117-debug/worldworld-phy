@@ -118,11 +118,15 @@ Current Status: PASS
 
 ## 2026-07-02 v8b Bounded Sigma / Winner Anchor Update
 
-Current Status: PENDING_COMMIT
+Current Status: PASS
 
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
 - PRD commit pushed: `117a0a6 Prepare bounded sigma and winner-anchor diagnosis v8b PRD`.
+- Implementation commit pushed: `bd7cfda Add bounded sigma timestep diagnostics`.
+- Result commit pushed and verified: `2b53c6f Run bounded winner-anchor diagnosis v8b`.
 - Sampler-only sigma check passed.
 - One-pair real-energy sigma smoke passed with low/mid/high actual sigmas separated.
 - Winner-anchor-only 1-pair failed after one completed step due CUDA OOM; winner improvement remained 0.0.
 - 10-pair winner-anchor, strict SDPO, Linear-DPO, safe-linear DPO, and pair factory rollout were not run.
-- No videos, weights, checkpoints, or large files are intended for Git.
+- Pushed artifacts were lightweight source, docs, tests, CSV/JSONL/Markdown summaries only.
+- No MP4/JPG/PNG/local_assets/checkpoints/weights/large logs were staged or pushed.
