@@ -14,6 +14,8 @@ from cam_physgeo.dpo.winner_anchor_only_runner import (
     _load_winner_inputs,
     _prepare_winner_cached,
     cuda_stats,
+    ensure_runtime_ready,
+    offload_runtime_after_cache,
     reviewed_pairs,
 )
 
@@ -53,9 +55,10 @@ def run_memory_audit(args: argparse.Namespace) -> dict[str, Any]:
     device = f"cuda:{int(args.gpu)}" if torch.cuda.is_available() else "cpu"
     rows: list[dict[str, Any]] = []
     rows.append(_record(out, "0_initial", "connected; no model loaded"))
-    cfg = _cfg(args.config, frames=int(args.used_window_frames), height=int(args.height), width=int(args.width), runtime_device="cpu", gradient_checkpointing=True)
+    cfg = _cfg(args.config, frames=int(args.used_window_frames), height=int(args.height), width=int(args.width), runtime_device=str(args.runtime_device), gradient_checkpointing=True)
     backend = LingBotFastDpoEnergy(cfg, device=device, prefix_len=5)
-    rows.append(_record(out, "1_load_policy_only", "policy loaded; LoRA trainables only"))
+    ensure_runtime_ready(backend)
+    rows.append(_record(out, "1_load_policy_only", "policy loaded; LoRA trainables only; runtime ready for cache"))
     rows.append(_record(out, "2_load_reference_only_if_needed", "no separate reference model loaded; reference uses LoRA scaling zero under no_grad"))
     pairs = reviewed_pairs(args.pair_manifest, int(args.num_pairs))
     if not pairs:
@@ -82,7 +85,8 @@ def run_memory_audit(args: argparse.Namespace) -> dict[str, Any]:
         seed=int(args.seed),
         total_frames=int(args.used_window_frames),
     )
-    rows.append(_record(out, "5_load_or_cache_winner_latents", "winner-only fixed timestep/noise prepared; loser not decoded"))
+    offload_runtime_after_cache(backend)
+    rows.append(_record(out, "5_load_or_cache_winner_latents", "winner-only fixed timestep/noise prepared; loser not decoded; runtime offloaded to CPU"))
     with torch.no_grad(), backend.reference_mode():
         ref_energy = backend.energy(prepared, ts).detach()
     rows.append(_record(out, "3_precompute_ref_energy_no_grad", f"E_ref_winner={float(ref_energy.detach().float().cpu())}"))
@@ -140,6 +144,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--width", type=int, default=832)
     parser.add_argument("--used_window_frames", type=int, default=81)
     parser.add_argument("--target_sigma", type=float, default=0.35)
+    parser.add_argument("--runtime_device", default="cuda")
     parser.add_argument("--seed", type=int, default=1234)
     args = parser.parse_args(argv)
     run_memory_audit(args)

@@ -79,6 +79,21 @@ def _cfg(config: str | Path, *, frames: int, height: int, width: int, runtime_de
     return cfg
 
 
+
+def ensure_runtime_ready(backend: LingBotFastDpoEnergy) -> None:
+    if not hasattr(backend.helper, "vae") or not hasattr(backend.helper, "t5"):
+        backend.helper.ensure_runtime_components(backend.runtime_device)
+        backend._move_runtime_components(backend.runtime_device)
+
+
+
+def offload_runtime_after_cache(backend: LingBotFastDpoEnergy) -> None:
+    backend.runtime_device = torch.device("cpu")
+    backend._move_runtime_components(torch.device("cpu"))
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+
 def _load_winner_inputs(pair: dict[str, Any], *, repo_root: str | Path, frames: int, height: int, width: int, prefix_len: int, prediction_start_frame: int):
     if not is_reviewed_dpo_pair(pair):
         raise ValueError(f"pair is not reviewed DPO-ready: {pair.get('pair_id')}")
@@ -267,6 +282,7 @@ def run_winner_anchor(args: argparse.Namespace) -> dict[str, Any]:
         try:
             cfg = _cfg(args.config, frames=used_frames, height=int(args.height), width=int(args.width), runtime_device=args.runtime_device, gradient_checkpointing=bool(args.gradient_checkpointing))
             backend = LingBotFastDpoEnergy(cfg, device=device, prefix_len=int(args.prefix_len))
+            ensure_runtime_ready(backend)
             params = backend.trainable_parameters()
             optimizer = torch.optim.AdamW(params, lr=float(args.learning_rate), betas=(0.9, 0.95), weight_decay=float(args.weight_decay))
             prepared_by_pair: list[tuple[dict[str, Any], PreparedEnergyInput, Any, float]] = []
@@ -278,8 +294,7 @@ def run_winner_anchor(args: argparse.Namespace) -> dict[str, Any]:
                     ref_energy = backend.energy(prepared, ts).detach()
                 prepared_by_pair.append((pair, prepared, ts, _scalar(ref_energy)))
                 del video, poses, intrinsics, ref_energy
-                if torch.cuda.is_available():
-                    torch.cuda.empty_cache()
+                offload_runtime_after_cache(backend)
             for step in range(int(args.steps)):
                 step_start = time.time()
                 pair, prepared, ts, ref_energy = prepared_by_pair[step % len(prepared_by_pair)]
@@ -393,7 +408,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--output", required=True)
     parser.add_argument("--config", default="configs/cam_physgeo/fast_stageA_v2v5_camera_r4_100step.yaml")
     parser.add_argument("--repo_root", default=".")
-    parser.add_argument("--runtime_device", default="cpu")
+    parser.add_argument("--runtime_device", default="cuda")
     parser.add_argument("--height", type=int, default=480)
     parser.add_argument("--width", type=int, default=832)
     parser.add_argument("--used_window_frames", type=int, default=0)
