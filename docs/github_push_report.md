@@ -1,3 +1,14 @@
+<!-- targeted_BC_loser_mining_v6b_push_update -->
+# Git Push Report Update
+
+Current Status: PENDING_PUSH
+
+Updated: 2026-07-01 09:20:29 CST
+
+This v6b update is ready to commit lightweight docs, manifests, CSV, and JSONL summaries only. MP4/JPG/PNG/contact sheets/local_assets/checkpoints/weights/large logs must remain untracked and unpushed.
+
+<!-- /targeted_BC_loser_mining_v6b_push_update -->
+
 <!-- targeted_BC_loser_mining_v6_push_update -->
 # Git Push Report Update
 

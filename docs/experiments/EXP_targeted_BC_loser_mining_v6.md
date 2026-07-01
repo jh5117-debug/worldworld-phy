@@ -1,3 +1,26 @@
+<!-- targeted_BC_loser_mining_v6b_update -->
+# Targeted B/C Loser Mining v6b Update
+
+Current Status: READY_FOR_TINY_DPO_SMOKE
+
+Updated: 2026-07-01 09:20:29 CST
+
+- Runnable prefix5 recovery PASS: 32 / 32 conditions recovered from quant benchmark full videos by materializing prefix frames 0-4 and GT future frames 5-80.
+- Previous v6 had only 5 runnable rows because it only used already-materialized DPO prefix5 asset dirs; quant benchmark rows needed prefix/future video recovery.
+- Smoke rollout PASS for M0/B/C.
+- 16-condition rollout PASS for M0/B/C.
+- 32-condition rollout PASS for B camera-r8 and C camera+self-temporal-r4. M0 32cond baseline remains PARTIAL (first16 only) and was not needed for GT>C pair construction.
+- B camera-r8 conclusion: stable candidate generator / control baseline.
+- C camera+self-temporal-r4 conclusion: usable medium-hard loser source.
+- Codex visually reviewed first16 and remaining16 overview sheets.
+- Medium-hard C loser candidates selected: 16.
+- DPO-ready GT>C pairs: 15, exceeding the >=10 tiny DPO smoke gate.
+- Final v6b pair manifest: `manifests/dpo_typeB_C_loser_pairs_v6b.jsonl`.
+- PPT showcase generated locally: `reports/ppt_winlose_showcase_latest/BC_medium_hard_loser_v6b_for_ppt.mp4` (not for Git).
+- No DPO training, StageB, GRPO, full-data StageA, broad-LoRA, checkpoint edits, or checkpoint deletion were run.
+
+<!-- /targeted_BC_loser_mining_v6b_update -->
+
 <!-- targeted_BC_loser_mining_v6_update -->
 # Targeted B/C Loser Mining v6 Update
 
@@ -219,3 +242,9 @@ Outputs written:
 
 - `python3 -m compileall cam_physgeo src tests`: PASS.
 - `pytest -q tests/test_pair_schema_v2v5.py tests/test_medium_hard_loser_selection.py tests/test_reward_guided_pair_selector.py`: BLOCKED_BY_ENV, `pytest` command not found in the active remote shell. No pytest PASS was claimed.
+
+## v6b Recovery Follow-up
+
+Current Status: READY_FOR_TINY_DPO_SMOKE
+
+See `docs/targeted_BC_loser_mining_v6b_report.md`. v6b recovered 32 runnable prefix5 conditions, completed B/C 32-condition rollout, selected 16 C medium-hard loser candidates, and produced 15 DPO-ready GT>C pairs. No DPO training was run.

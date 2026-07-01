@@ -1,0 +1,16 @@
+model_key,template,n,PSNR_mean,SSIM_mean,R_total_mean,sharpness_ratio_mean,freeze_mean
+M0_original_fast,ALL,16,16.396906,0.820074,0.717158,1.104328,0.0
+M0_original_fast,collision,4,16.801926,0.849275,0.675301,0.663085,0.0
+M0_original_fast,containment,4,15.919777,0.818566,0.760495,1.659542,0.0
+M0_original_fast,drop,4,14.611013,0.741477,0.717155,1.348136,0.0
+M0_original_fast,roll,4,18.254907,0.870979,0.715683,0.746546,0.0
+M_B_camera_r8,ALL,16,16.345493,0.816646,0.714721,1.135514,0.0
+M_B_camera_r8,collision,4,16.513281,0.844533,0.654179,0.663012,0.0
+M_B_camera_r8,containment,4,16.097651,0.819365,0.762999,1.672407,0.0
+M_B_camera_r8,drop,4,14.781959,0.74288,0.719782,1.460267,0.0
+M_B_camera_r8,roll,4,17.989082,0.859804,0.721926,0.74637,0.0
+M_C_camera_self_temporal_r4,ALL,16,16.402102,0.820182,0.722758,1.173487,0.0
+M_C_camera_self_temporal_r4,collision,4,16.925286,0.854865,0.687035,0.665936,0.0
+M_C_camera_self_temporal_r4,containment,4,15.83705,0.813578,0.757715,1.958879,0.0
+M_C_camera_self_temporal_r4,drop,4,14.8251,0.749748,0.722726,1.3118,0.0
+M_C_camera_self_temporal_r4,roll,4,18.020971,0.862538,0.723556,0.757335,0.0
