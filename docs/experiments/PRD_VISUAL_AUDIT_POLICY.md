@@ -156,3 +156,9 @@ If `reviewed != true`, the pair must not enter a DPO-ready manifest.
 Any PPT win/lose video must use reviewed pairs only. PPT losers must come from `reports/<experiment>/loser_visual_audit.csv` and must be either `is_dpo_ready = yes` or explicitly labeled diagnostic only.
 
 PPT videos must label WIN, LOSE, pair_id, pair_type, winner_reward, loser_reward, reward_margin, main_failure_tag, and DPO_READY or DIAGNOSTIC_ONLY.
+
+## 10. v8 Objective / Pair Factory Addendum
+
+Winner-preserving objective diagnosis v8 may train only on pairs that already passed this loser audit policy. Pair factory recovery v8 may generate additional C rollout losers, but no loser can enter `manifests/dpo_gt_c_pairs_v8.jsonl`, `manifests/dpo_gt_c_pairs_v8_top50.jsonl`, or any DPO-ready subset until its contact sheet/video has been reviewed and the required audit fields are written.
+
+Objective diagnosis v8 must stop if the winner-anchor-only objective cannot improve winner energy. Pair factory v8 must stop or mark partial if review coverage is incomplete; unreviewed losers are not allowed as placeholders.

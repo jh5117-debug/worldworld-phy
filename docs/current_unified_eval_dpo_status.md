@@ -1,6 +1,14 @@
 Current Status:
 MIXED
 
+## 2026-07-01 v8 Winner-Preserving Diagnosis Start
+- v7 tiny SDPO-anchor smoke is engineering PASS but objective-signal FAIL: final winner improvement is negative and final winner contribution ratio is 0.0.
+- v8 will not rerun the same SDPO-anchor objective as a scale path. It first checks low/mid/high sigma mapping, then runs winner-anchor-only. If winner-anchor-only fails, the remaining objective variants stop early.
+- Pair factory v8 is scoped to recovering reviewed GT>C pairs only; no unreviewed C loser may enter any DPO-ready manifest.
+- Authorized GPU scope remains physical GPU4-7 only unless explicitly blocked.
+- Explicitly not run in v8 PRD stage: large DPO, StageB, GRPO, full-data StageA, broad-LoRA, checkpoint deletion, data/weight/video push.
+
+
 ## 2026-07-01 v7 SDPO Smoke Update
 - Tiny SDPO-anchor smoke on reviewed GT>C pairs completed on physical GPU6: runtime PASS, 20/20 steps, no OOM/SIGFPE/NaN, save/load OK, nonzero gradients.
 - Final DPO loss: 0.6931381226; final winner improvement: -0.0002626628; final loser degradation: 0.0004442334; final winner contribution ratio: 0.0.

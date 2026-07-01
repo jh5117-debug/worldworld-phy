@@ -1,6 +1,13 @@
 Current Status:
 MIXED
 
+## 2026-07-01 v8 Diagnosis Plan
+The next diagnosis is explicitly winner-preserving. Before running any new objective, the backend must verify requested low/mid/high sigma bins map to distinct actual sigma values. The first objective is winner-anchor-only (`loss = E_policy_winner`, `lambda_loser = 0`). If that cannot reduce winner energy relative to the frozen reference, strict SDPO, linear-DPO, and safe-linear variants are blocked and should not be treated as meaningful DPO evidence.
+
+Pair quantity remains a separate blocker: pair factory v8 may recover more reviewed GT>C pairs, but no unreviewed C rollout loser can enter a DPO-ready manifest.
+
+Safety: no large DPO, StageB, GRPO, full-data StageA, broad-LoRA, checkpoint deletion, or data/weight/video push is authorized by this v8 plan.
+
 ## 2026-07-01 v7 Failure Evidence
 Tiny SDPO-anchor on cleaner GT>C medium-hard losers is engineering-stable but still not winner-preserving enough to scale. Final winner improvement is negative (-0.0002626628), final loser degradation is positive (0.0004442334), and final winner contribution ratio is 0.0. Checkpoint videos show persistent hallucinated extra objects/fragments. This strengthens the prior diagnosis that DPO objective/data still produce weak or conflicting winner-side signal.
 
