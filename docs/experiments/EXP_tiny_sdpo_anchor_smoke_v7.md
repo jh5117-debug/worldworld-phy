@@ -1,3 +1,19 @@
+Current Status:
+MIXED
+
+## Actual Result 2026-07-01
+- Input manifest: `manifests/dpo_smoke_v7_gt_c_10.jsonl` after schema fix.
+- Run dir: `reports/dpo_smoke_v7/sdpo_anchor_gtc10_schemafix_20260701_161657`.
+- GPU: physical GPU6 only.
+- Steps: 20/20.
+- Runtime: PASS; no OOM/SIGFPE/NaN; nonzero gradients; save/load OK.
+- Final DPO loss: 0.6931381226.
+- Final winner improvement: -0.0002626628.
+- Final loser degradation: 0.0004442334.
+- Final winner contribution ratio: 0.0.
+- Checkpoint V2V-5 video eval: step000/005/010/020 completed on one reviewed GT>C sample. Visual audit found persistent hallucinated extra objects/fragments, with step020 worse.
+- Decision: ENGINEERING_PASS_OBJECTIVE_SIGNAL_FAIL; do not scale.
+
 # EXP Tiny SDPO Anchor Smoke v7
 
 Current Status: BLOCKED_GPU_BUSY_SUBSET_READY

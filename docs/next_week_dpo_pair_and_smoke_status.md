@@ -1,3 +1,15 @@
+Current Status:
+MIXED
+
+## 2026-07-01 Actual v7 Result
+- PRD and visual-audit policy were prepared and pushed before running.
+- DPO smoke subset: 10 reviewed GT>C medium-hard pairs.
+- First launch failed on schema only; manifest was fixed by adding condition.image, loss/reward frame indices, winner/loser future frame indices, and margin. Schema dry-run then passed.
+- Relaunch completed: runtime PASS, 20 steps, GPU6 only.
+- Objective signal remains unhealthy: final winner improvement negative and final winner contribution ratio 0.0.
+- Checkpoint video eval completed for step000/005/010/020 on one true prefix5 V2V-5 sample. Visual audit shows persistent object duplication/hallucinated fragments; step020 is worse.
+- Pair factory v7 remains blocked/partial: 21 recovered conditions, not 80, and no 50+ pair expansion yet.
+
 # Next Week DPO Pair and Smoke Status
 
 Current Status: READY_FOR_TINY_SDPO_SMOKE_AND_PAIR_FACTORY_EXPANSION

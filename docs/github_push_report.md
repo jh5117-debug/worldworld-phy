@@ -1,3 +1,17 @@
+Current Status:
+READY_TO_PUSH
+
+## 2026-07-01 v7 Smoke Result Commit
+- Includes schema-fixed smoke subset manifest, tiny SDPO-anchor v7 result docs, checkpoint video eval summaries, Codex visual audit CSV/JSONL, and strict reward-alignment threshold fix.
+- Excludes MP4/JPG/contact sheets/local_assets/checkpoints/PT files and large logs.
+- Tests: compileall PASS; pair schema PASS; medium-hard selection PASS; reward selector PASS; same-noise/timestep PASS; reference frozen PASS.
+
+Current Status:
+PENDING_PUSH
+
+## 2026-07-01 v7 Pending Commit
+Prepared lightweight v7 smoke result docs/CSVs and schema-fixed the v7 smoke subset manifest. Big artifacts remain untracked in local_assets/reports and must not be pushed.
+
 
 <!-- dpo_smoke_pair_factory_v7_update -->
 ## DPO Smoke and GT>C Pair Factory v7 Update

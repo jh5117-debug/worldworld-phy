@@ -1,3 +1,9 @@
+Current Status:
+MIXED
+
+## 2026-07-01 v7 Trainer Smoke Evidence
+The current SDPO-anchor trainer path can run reviewed GT>C prefix5 pairs end-to-end on LingBot-Fast camera-conditioning LoRA rank4: same timestep/noise true, reference frozen, future-only loss, checkpoint save/load, and true V2V-5 checkpoint video smoke all completed. However objective signal remains loser-dominant/weak and must not be scaled.
+
 # DPO Trainer Design
 
 Updated: 2026-06-28T00:20:04

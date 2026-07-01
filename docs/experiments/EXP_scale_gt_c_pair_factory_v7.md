@@ -1,3 +1,9 @@
+Current Status:
+BLOCKED
+
+## Actual Result 2026-07-01
+Pair factory rollout did not launch in this stage. The DPO smoke plus required checkpoint video eval consumed the safe GPU window, and the v7 condition recovery remains incomplete: `manifests/scale_gt_c_pair_factory_v7_conditions_80.jsonl` has 21 recovered rows, not the requested 80. No new v7 rollout videos or 50+ DPO-ready pairs were produced.
+
 # EXP Scale GT C Pair Factory v7
 
 Current Status: BLOCKED_GPU_BUSY_CONDITION_EXPANSION_PARTIAL

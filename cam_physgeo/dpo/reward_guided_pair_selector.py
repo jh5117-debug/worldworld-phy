@@ -162,7 +162,7 @@ def alignment_decision(
             "observed_max": 0.0,
         }
     observed = max((_as_float(margins.get(k)) for k in expected), default=0.0)
-    aligned = observed >= min_margin
+    aligned = observed > (min_margin + 1e-8)
     return {
         "aligned": aligned,
         "status": "PASS" if aligned else "REWARD_FAILURE_MISMATCH",

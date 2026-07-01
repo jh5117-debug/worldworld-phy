@@ -1,3 +1,9 @@
+Current Status:
+MIXED
+
+## 2026-07-01 v7 Failure Evidence
+Tiny SDPO-anchor on cleaner GT>C medium-hard losers is engineering-stable but still not winner-preserving enough to scale. Final winner improvement is negative (-0.0002626628), final loser degradation is positive (0.0004442334), and final winner contribution ratio is 0.0. Checkpoint videos show persistent hallucinated extra objects/fragments. This strengthens the prior diagnosis that DPO objective/data still produce weak or conflicting winner-side signal.
+
 # DPO Failure Root-Cause Report
 
 ## Current Protocol v3 Status (2026-06-29 15:38:49)

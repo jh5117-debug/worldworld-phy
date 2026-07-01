@@ -1,3 +1,13 @@
+Current Status:
+MIXED
+
+## 2026-07-01 v7 SDPO Smoke Update
+- Tiny SDPO-anchor smoke on reviewed GT>C pairs completed on physical GPU6: runtime PASS, 20/20 steps, no OOM/SIGFPE/NaN, save/load OK, nonzero gradients.
+- Final DPO loss: 0.6931381226; final winner improvement: -0.0002626628; final loser degradation: 0.0004442334; final winner contribution ratio: 0.0.
+- Decision: ENGINEERING_PASS_OBJECTIVE_SIGNAL_FAIL. Do not scale DPO.
+- Checkpoint video smoke generated true V2V-5 videos for step000/005/010/020 on one reviewed GT>C condition. Step010 had best one-sample PSNR/SSIM, but all checkpoints visually hallucinated extra balls/fragments; step020 degraded.
+- Pair factory v7 was not launched; only 21 runnable conditions are currently recovered for the v7 80-condition target.
+
 
 <!-- dpo_smoke_pair_factory_v7_update -->
 ## DPO Smoke and GT>C Pair Factory v7 Update

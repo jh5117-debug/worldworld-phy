@@ -1,0 +1,5 @@
+checkpoint,R_bg,R_cam,R_fg,R_phys,R_reobs,R_quality,P_freeze,P_blur,R_total,status,reason
+step000,,,,,,,,,,BLOCKED_NOT_RUN_IN_CHECKPOINT_VIDEO_SMOKE,This v7 checkpoint video smoke computed PSNR/SSIM/LPIPS and quality proxies only; full PhysGeo reward backend was not run here and is not fabricated.
+step005,,,,,,,,,,BLOCKED_NOT_RUN_IN_CHECKPOINT_VIDEO_SMOKE,This v7 checkpoint video smoke computed PSNR/SSIM/LPIPS and quality proxies only; full PhysGeo reward backend was not run here and is not fabricated.
+step010,,,,,,,,,,BLOCKED_NOT_RUN_IN_CHECKPOINT_VIDEO_SMOKE,This v7 checkpoint video smoke computed PSNR/SSIM/LPIPS and quality proxies only; full PhysGeo reward backend was not run here and is not fabricated.
+step020,,,,,,,,,,BLOCKED_NOT_RUN_IN_CHECKPOINT_VIDEO_SMOKE,This v7 checkpoint video smoke computed PSNR/SSIM/LPIPS and quality proxies only; full PhysGeo reward backend was not run here and is not fabricated.
