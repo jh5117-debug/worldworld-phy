@@ -1,5 +1,13 @@
 Current Status:
-MIXED
+BLOCKED
+
+## 2026-07-02 v8 Sigma Check Blocker
+- v8 PRDs were committed and pushed before execution.
+- The full 10-pair real-energy sigma-bin check on GPU4 reached latent precompute and model-shard load, then saturated GPU4 in the energy loop for 60 minutes without producing actual sigma rows.
+- Status: `SIGMA_ENERGY_CHECK_TIMEOUT`; actual sigma values were not fabricated.
+- Winner-anchor-only and all follow-on objective variants were not run.
+- DPO remains blocked; next fix is a bounded/progress-writing sigma check before any objective training.
+
 
 ## 2026-07-01 v8 Diagnosis Plan
 The next diagnosis is explicitly winner-preserving. Before running any new objective, the backend must verify requested low/mid/high sigma bins map to distinct actual sigma values. The first objective is winner-anchor-only (`loss = E_policy_winner`, `lambda_loser = 0`). If that cannot reduce winner energy relative to the frozen reference, strict SDPO, linear-DPO, and safe-linear variants are blocked and should not be treated as meaningful DPO evidence.

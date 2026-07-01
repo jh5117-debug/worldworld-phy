@@ -1,7 +1,17 @@
 Current Status:
-PRD_READY_NOT_STARTED
+BLOCKED_NOT_RUN_SIGMA_GATE_TIMEOUT
 
 # EXP GT>C Pair Factory Recovery v8
+
+## Actual Result 2026-07-02
+
+- PRD was committed and pushed before execution.
+- Pair factory v8 was not launched in this round.
+- Reason: the required winner-preserving objective sigma-bin precheck timed out before objective training could begin, and the run budget was kept on GPU4 only to avoid unsafe parallel rollout while the objective gate was unresolved.
+- New v8 conditions recovered: 0.
+- New v8 rollout videos generated: 0.
+- New v8 reviewed GT>C pairs: 0.
+- Decision: `PAIR_FACTORY_V8_NOT_RUN_SIGMA_GATE_TIMEOUT`; keep existing v6b/v7 reviewed pairs unchanged and do not start new DPO from v8 outputs.
 
 Updated: 2026-07-01 23:25 CST
 

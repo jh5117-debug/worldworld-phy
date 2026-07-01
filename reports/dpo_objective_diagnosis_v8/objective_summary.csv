@@ -1,0 +1,5 @@
+objective,status,steps,reason
+winner_anchor_only,BLOCKED_NOT_RUN_SIGMA_CHECK_TIMEOUT,0,sigma precheck did not complete
+strict_sdpo_anchor,BLOCKED_NOT_RUN_SIGMA_PRECHECK_INCOMPLETE,0,winner-anchor-only did not run because sigma precheck failed
+linear_dpo_anchor,BLOCKED_NOT_RUN_SIGMA_PRECHECK_INCOMPLETE,0,winner-anchor-only did not run because sigma precheck failed
+safe_linear_dpo,BLOCKED_NOT_RUN_SIGMA_PRECHECK_INCOMPLETE,0,winner-anchor-only did not run because sigma precheck failed

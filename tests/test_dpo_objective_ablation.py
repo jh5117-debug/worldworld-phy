@@ -77,6 +77,44 @@ def test_sdpo_style_reduces_loser_when_winner_worsens() -> None:
     assert result.lambda_loser == 0.0
 
 
+def test_winner_anchor_only_uses_policy_winner_energy() -> None:
+    result = compute_objective_loss(
+        "winner_anchor_only",
+        policy_winner=torch.tensor(0.8),
+        policy_loser=torch.tensor(1.2),
+        ref_winner=torch.tensor(1.0),
+        ref_loser=torch.tensor(1.1),
+        beta=0.1,
+    )
+    assert torch.isfinite(result.loss)
+    assert result.lambda_loser == 0.0
+    assert result.lambda_w == 1.0
+    assert torch.equal(result.loss, torch.tensor(0.8))
+
+
+def test_strict_sdpo_anchor_gates_loser_until_winner_streak() -> None:
+    blocked = compute_objective_loss(
+        "strict_sdpo_anchor",
+        policy_winner=torch.tensor(0.8),
+        policy_loser=torch.tensor(1.2),
+        ref_winner=torch.tensor(1.0),
+        ref_loser=torch.tensor(1.1),
+        beta=0.1,
+        winner_positive_streak=2,
+    )
+    released = compute_objective_loss(
+        "strict_sdpo_anchor",
+        policy_winner=torch.tensor(0.8),
+        policy_loser=torch.tensor(1.2),
+        ref_winner=torch.tensor(1.0),
+        ref_loser=torch.tensor(1.1),
+        beta=0.1,
+        winner_positive_streak=3,
+    )
+    assert blocked.lambda_loser == 0.0
+    assert released.lambda_loser == 0.25
+
+
 def test_linear_objective_has_clipped_finite_loss() -> None:
     result = compute_objective_loss(
         "linear",
@@ -91,6 +129,37 @@ def test_linear_objective_has_clipped_finite_loss() -> None:
     assert torch.isfinite(result.loss)
     assert result.pair_weight == reward_to_pair_weight(0.45)
     assert abs(result.u_clipped) <= 1.0
+
+
+def test_linear_dpo_anchor_adds_winner_anchor() -> None:
+    result = compute_objective_loss(
+        "linear_dpo_anchor",
+        policy_winner=torch.tensor(0.8),
+        policy_loser=torch.tensor(1.4),
+        ref_winner=torch.tensor(1.0),
+        ref_loser=torch.tensor(1.1),
+        beta=0.1,
+        reward_margin=0.30,
+        lambda_winner_anchor=0.25,
+    )
+    assert torch.isfinite(result.loss)
+    assert result.lambda_w == 0.25
+    assert result.pair_weight == reward_to_pair_weight(0.30)
+
+
+def test_safe_linear_dpo_keeps_loser_gated_initially() -> None:
+    result = compute_objective_loss(
+        "safe_linear_dpo",
+        policy_winner=torch.tensor(0.8),
+        policy_loser=torch.tensor(1.4),
+        ref_winner=torch.tensor(1.0),
+        ref_loser=torch.tensor(1.1),
+        beta=0.1,
+        reward_margin=0.30,
+        winner_positive_streak=0,
+    )
+    assert torch.isfinite(result.loss)
+    assert result.lambda_loser == 0.0
 
 
 def test_localdpo_affected_indices_exclude_prefix() -> None:

@@ -1,5 +1,19 @@
 Current Status:
-PRD_READY_NOT_STARTED
+BLOCKED
+
+## Actual Result 2026-07-02
+
+- PRD was committed and pushed before execution.
+- Full real-energy sigma-bin check was attempted on `manifests/dpo_smoke_v7_gt_c_10.jsonl` with 10 reviewed GT>C pairs.
+- GPU: physical GPU4 only.
+- Runtime: stopped after the 60 minute safety window.
+- Evidence: latent precompute completed and 16 checkpoint shards loaded; GPU4 stayed saturated in the energy loop, but no actual sigma/energy CSV rows were produced.
+- Status: `SIGMA_ENERGY_CHECK_TIMEOUT`.
+- Winner-anchor-only: NOT_RUN.
+- Strict SDPO-anchor: NOT_RUN.
+- Linear-DPO + winner-anchor: NOT_RUN.
+- SDPO + linear utility: NOT_RUN.
+- Decision: `OBJECTIVE_BLOCKED_SIGMA_ENERGY_CHECK_TIMEOUT`; do not run objective training until sigma mapping has a bounded/progress-writing check.
 
 # EXP Winner-Preserving Objective Diagnosis v8
 

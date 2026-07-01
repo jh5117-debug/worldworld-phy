@@ -1,0 +1,11 @@
+{
+  "dpo_can_proceed": false,
+  "linear_dpo_anchor": "NOT_RUN",
+  "next_action": "Add progress-writing/bounded sigma check or reduce check cost without faking actual sigma; then rerun winner-anchor-only only after sigma gate passes.",
+  "reason": "Required full 10-pair real-energy sigma-bin check did not complete within 60 minutes; objective training was not started.",
+  "safe_linear_dpo": "NOT_RUN",
+  "sigma_bin_status": "SIGMA_ENERGY_CHECK_TIMEOUT",
+  "status": "OBJECTIVE_BLOCKED_SIGMA_ENERGY_CHECK_TIMEOUT",
+  "strict_sdpo_anchor": "NOT_RUN",
+  "winner_anchor_only": "NOT_RUN"
+}

@@ -31,7 +31,19 @@ from cam_physgeo.dpo.lingbot_fast_energy import (
 from cam_physgeo.dpo.prefix5_dpo_dataset import Prefix5DpoDataset
 
 
-OBJECTIVES = {"standard", "sdpo", "sdpo_anchor", "linear", "localdpo"}
+OBJECTIVES = {
+    "standard",
+    "sdpo",
+    "sdpo_anchor",
+    "linear",
+    "localdpo",
+    "winner_anchor_only",
+    "strict_sdpo_anchor",
+    "linear_dpo_anchor",
+    "safe_linear_dpo",
+}
+
+SIGMA_BINS_V8 = {"low": 0.125, "mid": 0.35, "high": 0.825}
 
 
 def _load_jsonl(path: str | Path) -> list[dict[str, Any]]:
@@ -260,6 +272,7 @@ class ObjectiveResult:
     pair_weight: float = 1.0
     u_raw: float = 0.0
     u_clipped: float = 0.0
+    lambda_w: float = 0.0
     winner_contribution_ratio: float = 0.0
     winner_anchor_weight: float = 0.0
     local_mask_ratio: float = 1.0
@@ -278,6 +291,7 @@ def compute_objective_loss(
     reward_margin: float = 0.0,
     u_clip: float = 1.0,
     lambda_winner_anchor: float = 0.25,
+    winner_positive_streak: int = 0,
 ) -> ObjectiveResult:
     objective = objective.lower()
     delta_policy = policy_loser - policy_winner
@@ -286,6 +300,16 @@ def compute_objective_loss(
     winner_improvement = ref_winner - policy_winner
     loser_degradation = policy_loser - ref_loser
     ratio = winner_contribution_ratio(winner_improvement, loser_degradation)
+    if objective == "winner_anchor_only":
+        return ObjectiveResult(
+            loss=policy_winner.mean(),
+            lambda_loser=0.0,
+            lambda_w=1.0,
+            winner_anchor_weight=1.0,
+            u_raw=_scalar(u.detach()),
+            u_clipped=_scalar(torch.clamp(u.detach(), -float(u_clip), float(u_clip))),
+            winner_contribution_ratio=_scalar(ratio.detach()),
+        )
     if objective in {"standard", "localdpo"}:
         return ObjectiveResult(
             loss=dpo_loss(policy_winner, policy_loser, ref_winner, ref_loser, beta=beta),
@@ -308,10 +332,25 @@ def compute_objective_loss(
         return ObjectiveResult(
             loss=safe_loss + anchor_weight * policy_winner.mean(),
             lambda_loser=lambda_loser,
+            lambda_w=anchor_weight,
             winner_anchor_weight=anchor_weight,
             u_raw=_scalar(u.detach()),
             u_clipped=_scalar(torch.clamp(u.detach(), -float(u_clip), float(u_clip))),
             winner_contribution_ratio=ratio_value,
+        )
+    if objective == "strict_sdpo_anchor":
+        lambda_loser = 0.25 if int(winner_positive_streak) >= 3 else 0.0
+        effective_loser = ref_loser + float(lambda_loser) * (policy_loser - ref_loser)
+        safe_loss = dpo_loss(policy_winner, effective_loser, ref_winner, ref_loser, beta=beta)
+        anchor_weight = float(lambda_winner_anchor)
+        return ObjectiveResult(
+            loss=safe_loss + anchor_weight * policy_winner.mean(),
+            lambda_loser=lambda_loser,
+            lambda_w=anchor_weight,
+            winner_anchor_weight=anchor_weight,
+            u_raw=_scalar(u.detach()),
+            u_clipped=_scalar(torch.clamp(u.detach(), -float(u_clip), float(u_clip))),
+            winner_contribution_ratio=_scalar(ratio.detach()),
         )
     if objective == "linear":
         pair_weight = reward_to_pair_weight(float(reward_margin))
@@ -323,7 +362,47 @@ def compute_objective_loss(
             u_clipped=_scalar(u_clipped.detach()),
             winner_contribution_ratio=_scalar(ratio.detach()),
         )
+    if objective == "linear_dpo_anchor":
+        pair_weight = reward_to_pair_weight(float(reward_margin))
+        u_clipped = torch.clamp(u, -float(u_clip), float(u_clip))
+        anchor_weight = float(lambda_winner_anchor)
+        return ObjectiveResult(
+            loss=-float(pair_weight) * float(beta) * u_clipped.mean() + anchor_weight * policy_winner.mean(),
+            lambda_loser=1.0,
+            pair_weight=pair_weight,
+            lambda_w=anchor_weight,
+            winner_anchor_weight=anchor_weight,
+            u_raw=_scalar(u.detach()),
+            u_clipped=_scalar(u_clipped.detach()),
+            winner_contribution_ratio=_scalar(ratio.detach()),
+        )
+    if objective == "safe_linear_dpo":
+        pair_weight = reward_to_pair_weight(float(reward_margin))
+        lambda_loser = 0.25 if int(winner_positive_streak) >= 3 else 0.0
+        effective_loser = ref_loser + float(lambda_loser) * (policy_loser - ref_loser)
+        safe_u = (effective_loser - policy_winner) - delta_ref
+        u_clipped = torch.clamp(safe_u, -float(u_clip), float(u_clip))
+        anchor_weight = float(lambda_winner_anchor)
+        return ObjectiveResult(
+            loss=-float(pair_weight) * float(beta) * u_clipped.mean() + anchor_weight * policy_winner.mean(),
+            lambda_loser=lambda_loser,
+            pair_weight=pair_weight,
+            lambda_w=anchor_weight,
+            winner_anchor_weight=anchor_weight,
+            u_raw=_scalar(safe_u.detach()),
+            u_clipped=_scalar(u_clipped.detach()),
+            winner_contribution_ratio=_scalar(ratio.detach()),
+        )
     raise ValueError(f"unsupported objective: {objective}")
+
+
+def actual_sigma_bin(sigma: float) -> str:
+    sigma = float(sigma)
+    if sigma < 0.20:
+        return "low"
+    if sigma < 0.60:
+        return "mid"
+    return "high"
 
 
 def parse_affected_time_span(value: Any) -> tuple[int, int] | None:
@@ -405,6 +484,97 @@ def _save_lora_checkpoint(backend: LingBotFastDpoEnergy, out: Path, objective: s
     return str(ckpt)
 
 
+def _param_update_norm(before: list[torch.Tensor], params: list[torch.nn.Parameter]) -> float:
+    total = 0.0
+    for old, param in zip(before, params):
+        diff = param.detach().float().cpu() - old
+        total += float(torch.sum(diff * diff).item())
+    return math.sqrt(total)
+
+
+def run_sigma_bin_check(args: argparse.Namespace) -> dict[str, Any]:
+    from cam_physgeo.dpo.failure_diagnostics import _make_timestep_sample
+
+    out_csv = Path(args.out_csv)
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+    cfg = _load_yaml(args.config)
+    cfg["num_frames"] = int(args.num_frames)
+    cfg["height"] = int(args.height)
+    cfg["width"] = int(args.width)
+    cfg["dpo_runtime_device"] = args.runtime_device or args.device
+    cfg["dpo_skip_runtime_components_on_load"] = True
+    if args.device.startswith("cuda") and torch.cuda.is_available() and args.device == "cuda":
+        device = "cuda:0"
+    else:
+        device = args.device
+    dataset = Prefix5DpoDataset(
+        args.pair_manifest,
+        repo_root=args.repo_root,
+        limit_pairs=int(args.limit_pairs),
+        num_frames=int(args.num_frames),
+        height=int(args.height),
+        width=int(args.width),
+        min_margin=0.0,
+    )
+    precomputed = _precompute_pairs(dataset, cfg=cfg, device=device, out_dir=out_csv.parent)
+    backend = LingBotFastDpoEnergy(cfg, device=device, prefix_len=5)
+    rows: list[dict[str, Any]] = []
+    for idx, cache in enumerate(precomputed):
+        for requested_bin, target_sigma in SIGMA_BINS_V8.items():
+            ts = _make_timestep_sample(backend, target_sigma)
+            gen = torch.Generator(device=backend.device)
+            gen.manual_seed(int(args.seed) + idx * 100 + int(target_sigma * 1000))
+            noise = torch.randn(tuple(cache.winner_latent.shape), device=backend.device, dtype=backend.lowp_dtype, generator=gen)
+            winner = _prepared_from_cache(cache, side="winner", backend=backend, timestep_sample=ts, noise=noise)
+            loser = _prepared_from_cache(cache, side="loser", backend=backend, timestep_sample=ts, noise=noise)
+            with torch.no_grad():
+                pw = backend.energy(winner, ts)
+                pl = backend.energy(loser, ts)
+                with backend.reference_mode():
+                    rw = backend.energy(winner, ts)
+                    rl = backend.energy(loser, ts)
+            rows.append({
+                "pair_id": cache.pair_id,
+                "requested_bin": requested_bin,
+                "target_sigma": float(target_sigma),
+                "actual_sigma": float(ts.sigma),
+                "actual_sigma_bin": actual_sigma_bin(float(ts.sigma)),
+                "timestep_index": int(ts.index),
+                "E_policy_winner": _scalar(pw.detach()),
+                "E_ref_winner": _scalar(rw.detach()),
+                "E_policy_loser": _scalar(pl.detach()),
+                "E_ref_loser": _scalar(rl.detach()),
+                "Delta_policy": _scalar((pl - pw).detach()),
+                "Delta_ref": _scalar((rl - rw).detach()),
+            })
+    _write_csv(out_csv, rows)
+    unique_actual = sorted({round(float(row["actual_sigma"]), 8) for row in rows})
+    collapsed = len(unique_actual) <= 1
+    status = "SIGMA_MAPPING_BROKEN" if collapsed else "PASS"
+    summary = {
+        "status": status,
+        "pair_count": len(dataset),
+        "rows": len(rows),
+        "unique_actual_sigmas": unique_actual,
+        "out_csv": str(out_csv),
+    }
+    md = Path(args.out_md)
+    md.parent.mkdir(parents=True, exist_ok=True)
+    md.write_text(
+        "Current Status:\n"
+        f"{status}\n\n"
+        "# Sigma Bin Check v8\n\n"
+        f"- Pair manifest: `{args.pair_manifest}`\n"
+        f"- Pair count: {len(dataset)}\n"
+        f"- Requested bins: {', '.join(SIGMA_BINS_V8)}\n"
+        f"- Unique actual sigma values: {unique_actual}\n"
+        f"- Decision: {status}\n",
+        encoding="utf-8",
+    )
+    print(json.dumps(summary, indent=2, sort_keys=True))
+    return summary
+
+
 def run_probe(args: argparse.Namespace) -> dict[str, Any]:
     started = time.time()
     objective = str(args.objective).lower()
@@ -446,6 +616,7 @@ def run_probe(args: argparse.Namespace) -> dict[str, Any]:
     error = ""
     nonzero_grad = False
     save_load_ok = False
+    winner_positive_streak = 0
     temporal_compression = int(cfg.get("temporal_compression", 4) or 4)
     for step in range(max(1, int(args.max_steps))):
         step_start = time.time()
@@ -476,6 +647,7 @@ def run_probe(args: argparse.Namespace) -> dict[str, Any]:
                 reward_margin=_reward_margin(meta),
                 u_clip=float(args.u_clip),
                 lambda_winner_anchor=float(getattr(args, "lambda_winner_anchor", 0.25)),
+                winner_positive_streak=winner_positive_streak,
             )
             loss = objective_result.loss
             if not torch.isfinite(loss).all().item():
@@ -485,7 +657,9 @@ def run_probe(args: argparse.Namespace) -> dict[str, Any]:
             loss.backward()
             grad_norm = _grad_norm(params)
             nonzero_grad = nonzero_grad or grad_norm > 0.0
+            before_params = [p.detach().float().cpu().clone() for p in params]
             optimizer.step()
+            update_norm = _param_update_norm(before_params, params)
             diag = dpo_energy_diagnostics(policy_winner.detach(), policy_loser.detach(), ref_winner.detach(), ref_loser.detach(), beta=float(args.beta))
             winner_improvement = _scalar(ref_winner - policy_winner.detach())
             loser_degradation = _scalar(policy_loser.detach() - ref_loser)
@@ -500,10 +674,19 @@ def run_probe(args: argparse.Namespace) -> dict[str, Any]:
                 "corruption_type": _nested_get(meta, "loser.corruption_type", ""),
                 "reward_margin": _reward_margin(meta),
                 "grad_norm": grad_norm,
+                "update_norm": update_norm,
+                "winner_anchor_loss": _scalar(policy_winner.detach()),
+                "E_policy_winner": _scalar(policy_winner.detach()),
+                "E_ref_winner": _scalar(ref_winner.detach()),
+                "E_policy_loser": _scalar(policy_loser.detach()),
+                "E_ref_loser": _scalar(ref_loser.detach()),
+                "Delta_policy": _scalar((policy_loser - policy_winner).detach()),
+                "Delta_ref": _scalar((ref_loser - ref_winner).detach()),
                 "winner_improvement": winner_improvement,
                 "loser_degradation": loser_degradation,
                 "winner_contribution_ratio": ratio,
                 "lambda_loser": objective_result.lambda_loser,
+                "lambda_w": objective_result.lambda_w,
                 "winner_anchor_weight": objective_result.winner_anchor_weight,
                 "pair_weight": objective_result.pair_weight,
                 "linear_utility": objective_result.u_raw,
@@ -518,6 +701,7 @@ def run_probe(args: argparse.Namespace) -> dict[str, Any]:
                 "prediction_start_frame": int(cache.prediction_start_frame),
                 "timestep_index": int(timestep_sample.index),
                 "sigma": float(timestep_sample.sigma),
+                "actual_sigma_bin": actual_sigma_bin(float(timestep_sample.sigma)),
                 "latent_loss_indices": " ".join(map(str, winner.latent_loss_indices)),
                 "policy_trainable_params": int(backend.policy_trainable_params),
                 "reference_trainable_params": 0,
@@ -526,6 +710,7 @@ def run_probe(args: argparse.Namespace) -> dict[str, Any]:
                 "cuda_memory_reserved_gb": (torch.cuda.memory_reserved() / (1024**3) if torch.cuda.is_available() else 0.0),
             }
             rows.append(row)
+            winner_positive_streak = winner_positive_streak + 1 if winner_improvement > 0.0 else 0
             if (step + 1) in {5, 10, 20, 50}:
                 checkpoints.append({"step": step + 1, "path": _save_lora_checkpoint(backend, out, objective, step + 1)})
         except Exception as exc:
@@ -584,6 +769,21 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--out_dir", default="manifests/dpo_probe_subsets")
     p.add_argument("--summary_csv", default="reports/dpo_objective_ablation/subset_summary.csv")
     p.set_defaults(func=build_subsets)
+
+    s = sub.add_parser("sigma-bin-check")
+    s.add_argument("--pair_manifest", required=True)
+    s.add_argument("--out_csv", default="reports/dpo_objective_diagnosis_v8/sigma_bin_check.csv")
+    s.add_argument("--out_md", default="reports/dpo_objective_diagnosis_v8/sigma_bin_check.md")
+    s.add_argument("--config", default="configs/cam_physgeo/fast_stageA_v2v5_camera_r4_100step.yaml")
+    s.add_argument("--repo_root", default=".")
+    s.add_argument("--limit_pairs", type=int, default=0)
+    s.add_argument("--seed", type=int, default=123)
+    s.add_argument("--device", default="cuda")
+    s.add_argument("--runtime_device", default="cuda")
+    s.add_argument("--num_frames", type=int, default=81)
+    s.add_argument("--height", type=int, default=480)
+    s.add_argument("--width", type=int, default=832)
+    s.set_defaults(func=run_sigma_bin_check)
 
     r = sub.add_parser("run-probe")
     r.add_argument("--objective", required=True, choices=sorted(OBJECTIVES))

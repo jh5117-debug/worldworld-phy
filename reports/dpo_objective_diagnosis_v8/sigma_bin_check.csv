@@ -1,0 +1,2 @@
+status,completed,pair_manifest,pair_count,requested_bins,actual_sigma_values,gpu,duration_seconds,blocked_reason,objective_training_allowed
+SIGMA_ENERGY_CHECK_TIMEOUT,false,manifests/dpo_smoke_v7_gt_c_10.jsonl,10,low mid high,,physical_gpu4,3645,full real energy sigma-bin check saturated GPU4 but produced no sigma_bin_check.csv/md within 60 minutes,false

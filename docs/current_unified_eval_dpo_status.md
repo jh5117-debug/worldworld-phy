@@ -1,5 +1,13 @@
 Current Status:
-MIXED
+BLOCKED
+
+## 2026-07-02 v8 Sigma Check Blocker
+- v8 PRDs were committed and pushed before execution.
+- The full 10-pair real-energy sigma-bin check on GPU4 reached latent precompute and model-shard load, then saturated GPU4 in the energy loop for 60 minutes without producing actual sigma rows.
+- Status: `SIGMA_ENERGY_CHECK_TIMEOUT`; actual sigma values were not fabricated.
+- Winner-anchor-only and all follow-on objective variants were not run.
+- DPO remains blocked; next fix is a bounded/progress-writing sigma check before any objective training.
+
 
 ## 2026-07-01 v8 Winner-Preserving Diagnosis Start
 - v7 tiny SDPO-anchor smoke is engineering PASS but objective-signal FAIL: final winner improvement is negative and final winner contribution ratio is 0.0.
