@@ -1,0 +1,3 @@
+{"output_root": "local_assets/dpo_objective_cache_v8d/gt_c_1_window49_smoke", "requested_pairs": 1, "stage": "start", "time": 1782956300.7362342}
+{"device": "cuda:0", "stage": "before_backend_load", "time": 1782956300.7936995}
+{"allocated_gb": 34.64405107498169, "max_allocated_gb": 34.64405107498169, "max_reserved_gb": 34.646484375, "reserved_gb": 34.646484375, "stage": "after_policy_load", "time": 1782956418.706032}

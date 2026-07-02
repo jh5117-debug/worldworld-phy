@@ -1,4 +1,18 @@
 Current Status:
+BLOCKED_CACHE_BUILD_RUNTIME_READY_TIMEOUT
+
+## Actual Result 2026-07-02 09:45 CST
+
+- PRD was committed and pushed before execution.
+- Reusable cache builder, validator, and cache-only runner mode were implemented and pushed.
+- 10-pair cache build on physical GPU7 produced no first row after more than 6 minutes.
+- 1-pair cache smoke with progress logging reached `after_policy_load` but did not reach `after_runtime_ready` after about 4 minutes 45 seconds.
+- Cache validation was not run because no cache was produced.
+- Cache-only 10-pair / 20-step winner-anchor was not run.
+- Decision: `BLOCKED_CACHE_BUILD_RUNTIME_READY_TIMEOUT`.
+- Strict SDPO / Linear-DPO remain blocked.
+
+Current Status:
 PLANNED_REUSABLE_CACHE_WINNER_ANCHOR_V8D
 
 # EXP Reusable Cache Winner-Anchor Diagnosis v8d

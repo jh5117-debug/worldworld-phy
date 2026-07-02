@@ -1,4 +1,11 @@
 Current Status:
+BLOCKED_CACHE_BUILD_RUNTIME_READY_TIMEOUT
+
+## 2026-07-02 v8d Status
+
+Reusable cache code is implemented, but cache build did not reach runtime ready; cache validation and cache10 winner-anchor were not run. Do not run SDPO / Linear-DPO next.
+
+Current Status:
 BLOCKED_10PAIR_WINNER_ANCHOR_CACHE_TOO_SLOW
 
 ## 2026-07-02 07:45 CST v8c Memory-Safe Winner Anchor

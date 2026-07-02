@@ -84,12 +84,23 @@ def write_jsonl(path: Path, row: dict[str, Any]) -> None:
         f.flush()
 
 
+def _progress(path: Path, **row: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    row = {"time": time.time(), **row}
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(row, sort_keys=True) + "\n")
+        f.flush()
+
+
 def build_cache(args: argparse.Namespace) -> dict[str, Any]:
     out_root = Path(args.output_root)
     out_root.mkdir(parents=True, exist_ok=True)
     report = Path(args.report)
+    progress_path = Path(args.progress) if args.progress else report.with_name(report.stem + "_progress.jsonl")
     if report.exists():
         report.unlink()
+    if progress_path.exists():
+        progress_path.unlink()
     index_path = out_root / "cache_index.jsonl"
     if index_path.exists():
         index_path.unlink()
@@ -105,6 +116,7 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
         "context_shapes", "y_shape", "dit_cond_shapes", "finite", "seconds", "allocated_gb",
         "reserved_gb", "max_allocated_gb", "max_reserved_gb", "error_reason",
     ]
+    _progress(progress_path, stage="start", requested_pairs=int(args.num_pairs), output_root=str(out_root))
     cfg = _cfg(
         args.config,
         frames=int(args.used_window_frames),
@@ -113,8 +125,11 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
         runtime_device=str(args.runtime_device),
         gradient_checkpointing=True,
     )
+    _progress(progress_path, stage="before_backend_load", device=device)
     backend = LingBotFastDpoEnergy(cfg, device=device, prefix_len=int(args.prefix_len))
+    _progress(progress_path, stage="after_policy_load", **cuda_stats())
     ensure_runtime_ready(backend)
+    _progress(progress_path, stage="after_runtime_ready", **cuda_stats())
     success = 0
     fail = 0
     for idx, pair in enumerate(pairs):
@@ -147,6 +162,7 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
             "error_reason": "",
         }
         try:
+            _progress(progress_path, stage="pair_start", pair_id=pair_id, pair_index=idx, **cuda_stats())
             video, prompt, poses, intrinsics, sh, sw = _load_winner_inputs(
                 pair,
                 repo_root=args.repo_root,
@@ -156,7 +172,9 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
                 prefix_len=int(args.prefix_len),
                 prediction_start_frame=int(args.prediction_start_frame),
             )
+            _progress(progress_path, stage="after_load_winner_inputs", pair_id=pair_id, pair_index=idx, **cuda_stats())
             ts = _make_timestep_sample(backend, float(args.target_sigma))
+            _progress(progress_path, stage="before_prepare_winner_cached", pair_id=pair_id, pair_index=idx, **cuda_stats())
             prepared = _prepare_winner_cached(
                 backend,
                 video=video,
@@ -169,8 +187,10 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
                 seed=int(args.seed) + idx * 997,
                 total_frames=int(args.used_window_frames),
             )
+            _progress(progress_path, stage="after_prepare_winner_cached", pair_id=pair_id, pair_index=idx, **cuda_stats())
             with torch.no_grad(), backend.reference_mode():
                 ref_energy = backend.energy(prepared, ts).detach()
+            _progress(progress_path, stage="after_ref_energy", pair_id=pair_id, pair_index=idx, E_ref_winner_cached=float(ref_energy.detach().float().cpu().item()), **cuda_stats())
             cache_payload = {
                 "target": to_cpu(prepared.target),
                 "noisy_latent": to_cpu(prepared.noisy_latent),
@@ -240,15 +260,18 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
                 }
             )
             success += 1
+            _progress(progress_path, stage="pair_cache_pass", pair_id=pair_id, pair_index=idx, cache_tensor_path=str(tensor_path), **cuda_stats())
             del video, poses, intrinsics, prepared, cache_payload, ref_energy
         except Exception as exc:  # noqa: BLE001 - row-level cache failure must be recorded
             fail += 1
             row["error_reason"] = repr(exc)
+            _progress(progress_path, stage="pair_cache_fail", pair_id=pair_id, pair_index=idx, error_reason=repr(exc), **cuda_stats())
             write_jsonl(index_path, {"pair_id": pair_id, "status": "FAILED", "error_reason": repr(exc)})
         row.update({"seconds": time.time() - start, **cuda_stats()})
         append_csv(report, row, fieldnames)
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
+        _progress(progress_path, stage="pair_done", pair_id=pair_id, pair_index=idx, cache_status=row.get("cache_status"), **cuda_stats())
     summary = {
         "status": "CACHE_BUILD_PASS" if success == len(pairs) and success > 0 else "CACHE_INCOMPLETE",
         "requested_pairs": int(args.num_pairs),
@@ -258,6 +281,7 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
         "cache_root": str(out_root),
         "cache_index": str(index_path),
         "report": str(report),
+        "progress": str(progress_path),
     }
     (out_root / "cache_summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
     summary_md = Path(args.report).with_name("cache_build_summary.md")
@@ -289,6 +313,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--used_window_frames", type=int, default=49)
     parser.add_argument("--output_root", required=True)
     parser.add_argument("--report", required=True)
+    parser.add_argument("--progress", default="")
     parser.add_argument("--config", default="configs/cam_physgeo/fast_stageA_v2v5_camera_r4_100step.yaml")
     parser.add_argument("--repo_root", default=".")
     parser.add_argument("--runtime_device", default="cuda")

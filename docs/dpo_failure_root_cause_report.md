@@ -1,4 +1,11 @@
 Current Status:
+BLOCKED_CACHE_BUILD_RUNTIME_READY_TIMEOUT
+
+## 2026-07-02 v8d Root Cause Update
+
+The active blocker moved one step earlier than optimizer behavior: reusable winner cache construction cannot reach runtime ready in a bounded window. DPO variants remain blocked until cache build and 10-pair winner-anchor pass.
+
+Current Status:
 BLOCKED_10PAIR_WINNER_ANCHOR_CACHE_TOO_SLOW
 
 ## 2026-07-02 07:45 CST v8c Root Cause Update

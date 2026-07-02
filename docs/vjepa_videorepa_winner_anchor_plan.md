@@ -1,4 +1,11 @@
 Current Status:
+MONITOR_PLAN_CACHE10_BLOCKED
+
+## 2026-07-02 v8d Update
+
+Explicit winner-energy anchor is still blocked at reusable cache construction. V-JEPA / VideoREPA should remain monitor-first and should not be integrated into training before cache10 winner-anchor passes or a new winner-side signal path is validated. No model download was performed.
+
+Current Status:
 DESIGN_ONLY_NOT_INTEGRATED
 
 ## 2026-07-02 07:45 CST v8c Update

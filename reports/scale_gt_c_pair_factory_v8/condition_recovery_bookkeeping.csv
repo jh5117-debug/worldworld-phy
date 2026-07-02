@@ -1,6 +1,6 @@
-path,exists,rows,reviewed_rows,dpo_ready_or_medium_hard_rows
-manifests/targeted_BC_loser_mining_v6b_conditions.jsonl,True,32,0,0
-manifests/dpo_gt_c_pairs_v8.jsonl,False,0,0,0
-manifests/dpo_gt_c_pairs_v8_top50.jsonl,False,0,0,0
-manifests/dpo_smoke_v7_gt_c_10.jsonl,True,10,10,10
-reports/targeted_BC_loser_mining_v6b/dpo_ready_pairs_v6b.jsonl,True,15,15,15
+name,path,exists,rows,reviewed,ready_or_medium_hard
+targeted_BC_loser_mining_v6b_conditions,manifests/targeted_BC_loser_mining_v6b_conditions.jsonl,True,32,0,0
+dpo_gt_c_pairs_v8,manifests/dpo_gt_c_pairs_v8.jsonl,False,0,0,0
+dpo_gt_c_pairs_v8_top50,manifests/dpo_gt_c_pairs_v8_top50.jsonl,False,0,0,0
+dpo_smoke_v7_gt_c_10,manifests/dpo_smoke_v7_gt_c_10.jsonl,True,10,10,10
+targeted_BC_v6b_dpo_ready,reports/targeted_BC_loser_mining_v6b/dpo_ready_pairs_v6b.jsonl,True,15,15,15

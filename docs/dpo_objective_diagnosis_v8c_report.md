@@ -1,4 +1,11 @@
 Current Status:
+SUPERSEDED_BY_V8D_CACHE_BLOCKED
+
+## 2026-07-02 v8d Follow-Up
+
+v8d implemented reusable cache plumbing but cache build blocked before runtime ready. v8c 1-pair/window49 result remains valid; 10-pair winner-anchor remains not passed.
+
+Current Status:
 MIXED_1PAIR_PASS_10PAIR_CACHE_BLOCKED
 
 # DPO Objective Diagnosis v8c Report
