@@ -59,6 +59,7 @@ class StageLogger:
         self.current_stage = ""
         self.stage_start_time = 0.0
         self.timeout_written: set[str] = set()
+        self.last_stage = ""
         self.thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
         self.thread.start()
 
@@ -83,6 +84,7 @@ class StageLogger:
         start = time.time()
         with self._lock:
             self.current_stage = name
+            self.last_stage = name
             self.stage_start_time = start
             self.timeout_written.discard(name)
         self.write(stage=name, event="stage_start", status="START", notes=notes, elapsed_seconds=0.0)
@@ -293,6 +295,9 @@ def run_debug(args: argparse.Namespace) -> dict[str, Any]:
         stages_done.append("9_check_weight_file_sizes")
 
         def load_tokenizer() -> None:
+            if args.skip_text_vae:
+                logger.write(stage="10_load_tokenizer_or_text_runtime_cpu", event="stage_skipped", status="SKIPPED", notes="skip_text_vae=true; mirrors dpo_skip_runtime_components_on_load")
+                return
             transformers = importlib.import_module("transformers")
             state["tokenizer"] = transformers.AutoTokenizer.from_pretrained(str(state["tokenizer_path"]), local_files_only=True)
         run_stage(logger, "10_load_tokenizer_or_text_runtime_cpu", load_tokenizer, notes=str(state.get("tokenizer_path", "")))
@@ -307,6 +312,9 @@ def run_debug(args: argparse.Namespace) -> dict[str, Any]:
             return helper
 
         def load_t5() -> None:
+            if args.skip_text_vae:
+                logger.write(stage="11_load_t5_or_text_encoder_cpu", event="stage_skipped", status="SKIPPED", notes="skip_text_vae=true; mirrors dpo_skip_runtime_components_on_load")
+                return
             torch = state["torch"]
             helper = ensure_helper()
             state["t5"] = helper.T5EncoderModel(text_len=512, dtype=torch.bfloat16, device=torch.device("cpu"), checkpoint_path=str(state["t5_path"]), tokenizer_path=str(state["tokenizer_path"]))
@@ -314,6 +322,9 @@ def run_debug(args: argparse.Namespace) -> dict[str, Any]:
         stages_done.append("11_load_t5_or_text_encoder_cpu")
 
         def load_vae() -> None:
+            if args.skip_text_vae:
+                logger.write(stage="12_load_vae_cpu", event="stage_skipped", status="SKIPPED", notes="skip_text_vae=true; mirrors dpo_skip_runtime_components_on_load")
+                return
             torch = state["torch"]
             helper = ensure_helper()
             state["vae"] = helper.Wan2_1_VAE(vae_pth=str(state["vae_path"]), device=torch.device("cpu"))
@@ -391,7 +402,7 @@ def run_debug(args: argparse.Namespace) -> dict[str, Any]:
         stages_done.append("23_empty_cache_final")
         status = "POLICY_RUNTIME_LOAD_PASS"
     except Exception as exc:  # noqa: BLE001
-        blocked_stage = logger.current_stage or (stages_done[-1] if stages_done else "unknown")
+        blocked_stage = logger.current_stage or getattr(logger, "last_stage", "") or (stages_done[-1] if stages_done else "unknown")
         status = f"POLICY_RUNTIME_LOAD_BLOCKED_{blocked_stage.upper().replace('-', '_')}"
         notes = repr(exc)
         logger.write(stage=blocked_stage, event="final_error", status=status, error_reason=repr(exc))
@@ -424,6 +435,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--prediction_start_frame", type=int, default=5)
     parser.add_argument("--height", type=int, default=480)
     parser.add_argument("--width", type=int, default=832)
+    parser.add_argument("--skip_text_vae", action="store_true", help="Mirror v8e policy-only path by recording tokenizer/T5/VAE stages as skipped.")
     args = parser.parse_args(argv)
     run_debug(args)
 

@@ -1,4 +1,11 @@
 Current Status:
+SUPERSEDED_BY_V8F_POLICY_LOAD_SPLIT
+
+## 2026-07-02 v8f Follow-Up
+
+v8d cache build timed out before first row because policy runtime initialization is blocked. v8f narrowed this to CPU-side `WanModelFast.from_pretrained` model construction / shard loading.
+
+Current Status:
 SUPERSEDED_BY_V8E_GPU_BLOCKED
 
 ## 2026-07-02 v8e Follow-Up

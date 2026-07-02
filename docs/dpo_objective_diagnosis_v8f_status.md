@@ -1,4 +1,11 @@
 Current Status:
+POLICY_RUNTIME_LOAD_BLOCKED_14_CONSTRUCT_POLICY_MODEL_CPU
+
+## 2026-07-02 v8f Result
+
+The policy-only v8f run on H20 physical GPU7 matched v8e's skip-runtime path and blocked at `14_construct_policy_model_cpu` / `WanModelFast.from_pretrained`. Imports, config, weight path resolution, and policy config all passed. Tokenizer/T5/VAE were also tested separately: T5 CPU load timed out after ~185s, but that is a secondary runtime bottleneck rather than the exact v8e policy-only blocker. No DPO or cache row ran.
+
+Current Status:
 PRD_READY_NOT_RUN
 
 # DPO Objective Diagnosis v8f Status
@@ -20,3 +27,13 @@ Use H20 physical GPU4-7 only. Prefer GPU7; use GPU6 only if GPU7 is not availabl
 ## v8f Objective
 
 Split policy runtime loading into bounded substages with heartbeat output and identify the exact blocked substage. This round does not run DPO, SDPO, Linear-DPO, Safe-linear, cache10 training, pair factory rollout, StageB, GRPO, full-data StageA, or broad-LoRA.
+
+## Verification
+
+- `python -m compileall cam_physgeo src tests`: PASS.
+- `pytest`: BLOCKED_BY_ENV because `/usr/bin/python3` has no `pytest` module.
+- Direct smoke for `StageLogger` and `run_stage`: PASS (`reports/dpo_objective_diagnosis_v8f/test_logs/direct_smoke_policy_runtime_load_debug.jsonl`).
+
+## Explicit Non-Runs
+
+No DPO, SDPO, Linear-DPO, Safe-linear, large DPO, StageB, GRPO, full-data StageA, broad-LoRA, checkpoint deletion, video push, image push, or weight push occurred.

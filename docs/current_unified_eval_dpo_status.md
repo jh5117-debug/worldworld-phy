@@ -1,4 +1,11 @@
 Current Status:
+POLICY_RUNTIME_LOAD_BLOCKED_14_CONSTRUCT_POLICY_MODEL_CPU
+
+## 2026-07-02 v8f Unified Status
+
+v7 DPO smoke remains engineering-pass / objective-signal-fail. v8b sigma mapping passed. v8c proved 1-pair/window49 winner-anchor can work. v8f now shows cache/runtime scale is blocked before training: policy-only runtime loading times out at `WanModelFast.from_pretrained` with 0 GB GPU allocation. Do not scale DPO.
+
+Current Status:
 GPU_POLICY_UPDATED_H20_0_3_AUTHORIZED_BLOCKED_BUSY
 
 ## 2026-07-02 v8e GPU Policy Correction

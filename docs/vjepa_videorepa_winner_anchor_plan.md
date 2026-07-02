@@ -1,4 +1,11 @@
 Current Status:
+MONITOR_FIRST_RUNTIME_BLOCKED
+
+## 2026-07-02 v8f Update
+
+Explicit winner-energy training is still blocked by runtime/cache plumbing before cache10. v8f narrowed the active blocker to CPU-side policy model construction / shard loading in `WanModelFast.from_pretrained`. V-JEPA / VideoREPA should remain monitor-first and must not be integrated into training until the policy runtime/cache path is stable. No model download and no training integration were performed.
+
+Current Status:
 MONITOR_PLAN_GPU_BLOCKED
 
 ## 2026-07-02 v8e Update

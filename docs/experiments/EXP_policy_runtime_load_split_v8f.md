@@ -1,4 +1,11 @@
 Current Status:
+POLICY_RUNTIME_LOAD_BLOCKED_14_CONSTRUCT_POLICY_MODEL_CPU
+
+## 2026-07-02 Result
+
+v8f identified the exact v8e policy-only blocker as `14_construct_policy_model_cpu`, the `WanModelFast.from_pretrained` CPU model construction / shard loading call. GPU allocation stayed at 0 GB, so the loader did not reach move-to-GPU. A full runtime path also showed T5 CPU load exceeds the 180s bounded stage. No DPO, SDPO, Linear-DPO, cache10 training, or pair rollout was run.
+
+Current Status:
 PRD_READY_NOT_RUN
 
 # EXP: Policy Runtime Load Split Diagnosis v8f
@@ -43,3 +50,13 @@ Black-box timeout remains, heartbeat missing, wrong repo, H20 GPU0-3 used, local
 ## What Is Not Run
 
 No DPO, SDPO, Linear-DPO, Safe-linear, cache10 training, pair factory rollout, StageB, GRPO, full-data StageA, broad-LoRA, checkpoint deletion, or video/weight push.
+
+## Verification
+
+- `python -m compileall cam_physgeo src tests`: PASS.
+- `pytest`: BLOCKED_BY_ENV because `/usr/bin/python3` has no `pytest` module.
+- Direct smoke for `StageLogger` and `run_stage`: PASS (`reports/dpo_objective_diagnosis_v8f/test_logs/direct_smoke_policy_runtime_load_debug.jsonl`).
+
+## Explicit Non-Runs
+
+No DPO, SDPO, Linear-DPO, Safe-linear, large DPO, StageB, GRPO, full-data StageA, broad-LoRA, checkpoint deletion, video push, image push, or weight push occurred.

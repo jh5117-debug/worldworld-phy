@@ -1,4 +1,11 @@
 Current Status:
+POLICY_RUNTIME_LOAD_BLOCKED_14_CONSTRUCT_POLICY_MODEL_CPU
+
+## 2026-07-02 v8f Root Cause Update
+
+The current blocker is not sigma/timestep and not 1-pair winner-anchor objective sign. v8f shows the policy-only runtime path blocks at CPU-side `WanModelFast.from_pretrained` before GPU allocation. T5 CPU load is also slow, but the exact v8e policy-only blocker is policy model construction / shard loading. DPO should not proceed.
+
+Current Status:
 GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
 
 ## 2026-07-02 v8e Root Cause Update

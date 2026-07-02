@@ -1,4 +1,11 @@
 Current Status:
+SUPERSEDED_BY_V8F_POLICY_LOAD_SPLIT
+
+## 2026-07-02 v8f Follow-Up
+
+v8e's coarse `6_load_policy_runtime` timeout has now been split. The exact policy-only blocker is `14_construct_policy_model_cpu` / `WanModelFast.from_pretrained`, before GPU allocation.
+
+Current Status:
 GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
 
 # DPO Objective Diagnosis v8e Report
