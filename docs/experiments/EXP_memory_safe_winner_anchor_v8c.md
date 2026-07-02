@@ -1,5 +1,19 @@
 Current Status:
-PRD_READY_NOT_EXECUTED
+MIXED_1PAIR_PASS_10PAIR_CACHE_BLOCKED
+
+# EXP Memory-Safe Winner-Anchor Diagnosis v8c
+
+## Actual Result 2026-07-02 07:45 CST
+
+- PRD was committed and pushed before execution.
+- Direct H20-2 connectivity was restored via IP.
+- Memory audit passed: no separate reference model, no loser branch, cached winner input.
+- Full81 runner completed 2/5 steps, remained winner-negative, and was interrupted due runtime/backward latency.
+- Window49 fallback completed 1-pair / 5-step winner-anchor-only.
+- Final winner_improvement_post: +0.00006324052810668945.
+- 10-pair / 20-step was attempted but interrupted during multi-winner VAE/cache construction before optimizer steps.
+- Decision: 1-pair memory-safe PASS, 10-pair scalability BLOCKED.
+- Strict SDPO / Linear-DPO are not authorized next until the 10-pair winner-anchor cache path is fixed.
 
 # EXP Memory-Safe Winner-Anchor Diagnosis v8c
 

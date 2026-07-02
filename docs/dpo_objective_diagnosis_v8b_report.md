@@ -1,4 +1,11 @@
 Current Status:
+SUPERSEDED_BY_V8C
+
+## 2026-07-02 07:45 CST v8c Follow-Up
+
+v8b sigma mapping remains valid. v8c resolved the 1-pair OOM using a window49 memory-safe winner-anchor path, but 10-pair scalability is still blocked by VAE/cache construction cost. See `docs/dpo_objective_diagnosis_v8c_report.md`.
+
+Current Status:
 BLOCKED_WINNER_ANCHOR_1PAIR_OOM
 
 # DPO Objective Diagnosis v8b Report

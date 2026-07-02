@@ -1,4 +1,15 @@
 Current Status:
+BLOCKED_10PAIR_WINNER_ANCHOR_CACHE_TOO_SLOW
+
+## 2026-07-02 07:45 CST v8c Memory-Safe Winner Anchor
+
+- H20-2 direct SSH recovered; previous hal-9000 attempt did not execute.
+- Memory audit PASS: no separate ref model, no loser branch, cached winner input.
+- 1-pair window49 winner-anchor PASS, final winner_improvement_post +0.00006324052810668945.
+- 10-pair expansion NOT PASS: interrupted during multi-winner VAE/cache construction before optimizer steps.
+- DPO remains blocked; do not run strict SDPO or Linear-DPO until persistent cache makes 10-pair winner-anchor pass.
+
+Current Status:
 BLOCKED
 
 ## 2026-07-02 v8b Bounded Sigma / Winner Anchor

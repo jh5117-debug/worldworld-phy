@@ -1,6 +1,12 @@
 Current Status:
-NOT_RUN_V8B_OBJECTIVE_FIRST
+BOOKKEEPING_ONLY
 
-# GT>C Pair Factory v8b Bookkeeping
+# Pair Factory v8 Bookkeeping
 
-No new condition recovery, B/C rollout, or pair construction was run in v8b. The round focused on bounded sigma/timestep diagnosis and winner-anchor-only sanity. Pair factory rollout should not compete for GPU resources until the winner-anchor gate is memory-safe.
+No rollout or video generation was run in v8c. Counts:
+
+- `manifests/targeted_BC_loser_mining_v6b_conditions.jsonl`: exists=True, rows=32, reviewed=0, ready_or_medium_hard=0
+- `manifests/dpo_gt_c_pairs_v8.jsonl`: exists=False, rows=0, reviewed=0, ready_or_medium_hard=0
+- `manifests/dpo_gt_c_pairs_v8_top50.jsonl`: exists=False, rows=0, reviewed=0, ready_or_medium_hard=0
+- `manifests/dpo_smoke_v7_gt_c_10.jsonl`: exists=True, rows=10, reviewed=10, ready_or_medium_hard=10
+- `reports/targeted_BC_loser_mining_v6b/dpo_ready_pairs_v6b.jsonl`: exists=True, rows=15, reviewed=15, ready_or_medium_hard=15

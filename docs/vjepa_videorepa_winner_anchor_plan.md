@@ -1,6 +1,13 @@
 Current Status:
 DESIGN_ONLY_NOT_INTEGRATED
 
+## 2026-07-02 07:45 CST v8c Update
+
+Explicit winner-energy anchor is memory-safe and positive on 1 reviewed pair with window49, but it is not yet scalable to 10 pairs because repeated VAE/T5 cache construction is too slow. V-JEPA / VideoREPA remains monitor-first only. Do not integrate it into training until the explicit energy winner-anchor path passes the 10-pair gate. Later objective remains: L = L_safe_DPO + lambda_E * L_winner_energy_anchor + lambda_J * L_VJEPA_TRD_winner.
+
+Current Status:
+DESIGN_ONLY_NOT_INTEGRATED
+
 # V-JEPA / VideoREPA Winner Anchor Plan
 
 Updated: 2026-07-01 23:59 CST

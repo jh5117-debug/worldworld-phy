@@ -1,4 +1,11 @@
 Current Status:
+BLOCKED_10PAIR_WINNER_ANCHOR_CACHE_TOO_SLOW
+
+## 2026-07-02 07:45 CST v8c Root Cause Update
+
+v8c shows sigma mapping is fixed and winner-anchor-only can produce a positive post-update winner improvement on 1 reviewed pair when using a memory-safe window49 path. The blocker moved from pure OOM to scalability/runtime: full81 reached backward but was too slow, and 10-pair expansion was interrupted during VAE/cache construction before optimizer steps. The next root-cause fix is persistent winner latent/control/text cache so 10-pair winner-anchor can run without repeated VAE/T5 work.
+
+Current Status:
 BLOCKED
 
 ## 2026-07-02 v8b Root Cause Update

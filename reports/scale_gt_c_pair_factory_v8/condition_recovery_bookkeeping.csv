@@ -1,2 +1,6 @@
-status,reason,new_conditions,new_rollouts,new_pairs,next_action
-NOT_RUN_V8B_OBJECTIVE_FIRST,v8b focused on bounded sigma and winner-anchor-only diagnosis; pair factory must not compete for GPU before objective gate is resolved,0,0,0,rerun condition recovery after memory-safe winner-anchor gate is diagnosed
+path,exists,rows,reviewed_rows,dpo_ready_or_medium_hard_rows
+manifests/targeted_BC_loser_mining_v6b_conditions.jsonl,True,32,0,0
+manifests/dpo_gt_c_pairs_v8.jsonl,False,0,0,0
+manifests/dpo_gt_c_pairs_v8_top50.jsonl,False,0,0,0
+manifests/dpo_smoke_v7_gt_c_10.jsonl,True,10,10,10
+reports/targeted_BC_loser_mining_v6b/dpo_ready_pairs_v6b.jsonl,True,15,15,15
