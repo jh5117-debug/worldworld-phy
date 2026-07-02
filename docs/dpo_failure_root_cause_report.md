@@ -1,4 +1,11 @@
 Current Status:
+GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
+
+## 2026-07-02 v8e Root Cause Update
+
+v8e implementation is ready to isolate runtime-ready stages, but execution is blocked by GPU4-7 occupancy. No DPO objective variant should run until runtime-ready preflight and cache10 winner-anchor pass.
+
+Current Status:
 BLOCKED_CACHE_BUILD_RUNTIME_READY_TIMEOUT
 
 ## 2026-07-02 v8d Root Cause Update

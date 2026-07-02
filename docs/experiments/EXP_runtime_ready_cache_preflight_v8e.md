@@ -1,4 +1,16 @@
 Current Status:
+GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
+
+## Actual Result 2026-07-02 10:28 CST
+
+- PRD was committed and pushed before execution.
+- Runtime-ready diagnostic code was implemented and pushed.
+- GPU preflight was not run because physical GPU4-7 were occupied by existing Python jobs.
+- GPU0-3 were not used.
+- one-pair minimal_no_ref, with_ref, cache10, validation, and training were not run.
+- Decision: `GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN`.
+
+Current Status:
 PLANNED_RUNTIME_READY_CACHE_PREFLIGHT_V8E
 
 # EXP Runtime-Ready Cache Preflight v8e

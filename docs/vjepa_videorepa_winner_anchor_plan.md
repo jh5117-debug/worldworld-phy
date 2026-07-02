@@ -1,4 +1,11 @@
 Current Status:
+MONITOR_PLAN_GPU_BLOCKED
+
+## 2026-07-02 v8e Update
+
+Explicit winner-energy anchor is still blocked before cache10. V-JEPA / VideoREPA remains monitor-first; do not integrate into training while runtime/cache preflight is unresolved. No model download was performed.
+
+Current Status:
 MONITOR_PLAN_CACHE10_BLOCKED
 
 ## 2026-07-02 v8d Update

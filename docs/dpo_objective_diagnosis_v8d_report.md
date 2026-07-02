@@ -1,4 +1,11 @@
 Current Status:
+SUPERSEDED_BY_V8E_GPU_BLOCKED
+
+## 2026-07-02 v8e Follow-Up
+
+v8e added runtime-ready stage diagnostics but could not run GPU preflight because authorized GPUs 4-7 were occupied. v8d blocker remains active.
+
+Current Status:
 BLOCKED_CACHE_BUILD_RUNTIME_READY_TIMEOUT
 
 # DPO Objective Diagnosis v8d Report

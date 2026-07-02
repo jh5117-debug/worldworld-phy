@@ -1,4 +1,11 @@
 Current Status:
+GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
+
+## 2026-07-02 v8e Status
+
+Runtime-ready diagnostics were implemented, but GPU4-7 were occupied, so runtime preflight/cache build/training were not run. DPO remains blocked.
+
+Current Status:
 BLOCKED_CACHE_BUILD_RUNTIME_READY_TIMEOUT
 
 ## 2026-07-02 v8d Status
