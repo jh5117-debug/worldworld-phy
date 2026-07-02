@@ -19,3 +19,8 @@ Updated: 2026-07-02 19:31 CST
 v8f PRD commit `9ab511a`, instrumentation commit `ababbb6`, and result commit `ae6b197` were pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
 
 The v8f result commit includes docs, source/test update, small JSONL/markdown/CSV reports, and no videos/images/checkpoints/weights. Forbidden large artifacts were not added.
+
+
+## v8h Update - 2026-07-03T06:46:04
+
+Prepared v8h PRD in commit `815588e`. Added safe Wan policy loader instrumentation and v8h runtime/cache reports locally; final code/report commit pending after verification. No media/checkpoint/weights intended for commit.

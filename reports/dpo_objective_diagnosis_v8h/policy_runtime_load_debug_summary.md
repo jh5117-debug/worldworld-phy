@@ -1,0 +1,10 @@
+Current Status:
+POLICY_RUNTIME_LOAD_PASS
+
+# v8f Policy Runtime Load Debug Summary
+
+- Status: `POLICY_RUNTIME_LOAD_PASS`
+- Blocked stage: ``
+- Stages done: 0_initial, 1_import_basic_python, 2_import_torch, 3_import_diffusers_transformers_peft, 4_import_lingbot_modules, 5_resolve_repo_paths, 6_resolve_config_path, 7_read_config, 8_resolve_model_weight_paths, 9_check_weight_file_sizes, 10_load_tokenizer_or_text_runtime_cpu, 11_load_t5_or_text_encoder_cpu, 12_load_vae_cpu, 13_load_policy_config_cpu, 14_construct_policy_model_cpu, 15_load_policy_weights_cpu, 16_load_lora_adapter_cpu_if_needed, 17_enable_gradient_checkpointing_if_available, 18_configure_sdpa_or_xformers, 19_move_policy_to_gpu, 20_cast_policy_dtype, 21_freeze_base_set_lora_trainable, 22_policy_runtime_ready, 23_empty_cache_final
+- JSONL: `reports/dpo_objective_diagnosis_v8h/policy_runtime_load_debug_after_safe_loader.jsonl`
+- Notes:

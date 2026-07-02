@@ -60,3 +60,16 @@ No DPO, SDPO, Linear-DPO, Safe-linear, large DPO, StageB, GRPO, full-data StageA
 ## Git Checkpoint
 
 Commit and push this PRD/status before code execution with `Prepare safe Wan loader runtime patch v8h PRD`, then continue.
+
+
+## Post-run Update - 2026-07-03T06:46:04
+
+Current Status: MIXED
+
+v8h successfully patched the policy runtime debug path to use the safe Wan loader. The policy-only runtime load reached `22_policy_runtime_ready` on physical GPU7 with about 34.64 GiB allocated. The earlier v8f/v8g blocker at broad `WanModelFast.from_pretrained(...)` is resolved for this path.
+
+The follow-up one-pair `minimal_no_ref` cache smoke did not write the first cache row. Progress reached `after_policy_load`, then did not reach `after_runtime_ready` or `pair_start`. This localizes the next blocker to `ensure_runtime_ready(backend)` after policy load, before winner video decode/cache preparation. The process was stopped after about 10 minutes without further heartbeat to release GPU7.
+
+Decision: `POLICY_RUNTIME_LOAD_PASS_CACHE_FIRST_ROW_BLOCKED_AT_ENSURE_RUNTIME_READY`.
+
+Next required experiment: split `ensure_runtime_ready` / runtime component initialization into bounded stages before attempting cache10 or any winner-anchor training.

@@ -1,0 +1,3 @@
+{"output_root": "local_assets/dpo_objective_cache_v8h/one_pair_minimal_no_ref", "requested_pairs": 1, "stage": "start", "time": 1783031518.3486156}
+{"device": "cuda:0", "stage": "before_backend_load", "time": 1783031518.4047344}
+{"allocated_gb": 34.64405107498169, "max_allocated_gb": 34.64405107498169, "max_reserved_gb": 34.646484375, "reserved_gb": 34.646484375, "stage": "after_policy_load", "time": 1783031685.0826144}

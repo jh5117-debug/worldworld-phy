@@ -316,3 +316,8 @@ The DPO trainer can now compute real energy and update LoRA. However the probe s
 - S1_probe_20 was not launched.
 - No StageB, GRPO, large-scale DPO, or full-data StageA was run.
 - Report: docs/dpo_objective_ablation_report.md
+
+
+## v8h Update - 2026-07-03T06:46:04
+
+Policy runtime safe loader now reaches runtime-ready on H20 physical GPU7. The first-row cache smoke then blocks after `after_policy_load` and before `after_runtime_ready`, localizing the next blocker to `ensure_runtime_ready` / runtime component initialization. DPO remains not ready; no DPO/SDPO/Linear-DPO was run.

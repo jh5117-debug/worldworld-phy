@@ -294,9 +294,12 @@ def run_debug(args: argparse.Namespace) -> dict[str, Any]:
         run_stage(logger, "9_check_weight_file_sizes", check_sizes)
         stages_done.append("9_check_weight_file_sizes")
 
+        skip_text = bool(getattr(args, "skip_text_vae", False) or str(getattr(args, "skip_text", "false")).lower() in {"1", "true", "yes"})
+        skip_vae = bool(getattr(args, "skip_text_vae", False) or str(getattr(args, "skip_vae", "false")).lower() in {"1", "true", "yes"})
+
         def load_tokenizer() -> None:
-            if args.skip_text_vae:
-                logger.write(stage="10_load_tokenizer_or_text_runtime_cpu", event="stage_skipped", status="SKIPPED", notes="skip_text_vae=true; mirrors dpo_skip_runtime_components_on_load")
+            if skip_text:
+                logger.write(stage="10_load_tokenizer_or_text_runtime_cpu", event="stage_skipped", status="SKIPPED", notes="skip_text=true; policy-only path")
                 return
             transformers = importlib.import_module("transformers")
             state["tokenizer"] = transformers.AutoTokenizer.from_pretrained(str(state["tokenizer_path"]), local_files_only=True)
@@ -312,8 +315,8 @@ def run_debug(args: argparse.Namespace) -> dict[str, Any]:
             return helper
 
         def load_t5() -> None:
-            if args.skip_text_vae:
-                logger.write(stage="11_load_t5_or_text_encoder_cpu", event="stage_skipped", status="SKIPPED", notes="skip_text_vae=true; mirrors dpo_skip_runtime_components_on_load")
+            if skip_text:
+                logger.write(stage="11_load_t5_or_text_encoder_cpu", event="stage_skipped", status="SKIPPED", notes="skip_text=true; policy-only path")
                 return
             torch = state["torch"]
             helper = ensure_helper()
@@ -322,8 +325,8 @@ def run_debug(args: argparse.Namespace) -> dict[str, Any]:
         stages_done.append("11_load_t5_or_text_encoder_cpu")
 
         def load_vae() -> None:
-            if args.skip_text_vae:
-                logger.write(stage="12_load_vae_cpu", event="stage_skipped", status="SKIPPED", notes="skip_text_vae=true; mirrors dpo_skip_runtime_components_on_load")
+            if skip_vae:
+                logger.write(stage="12_load_vae_cpu", event="stage_skipped", status="SKIPPED", notes="skip_vae=true; policy-only path")
                 return
             torch = state["torch"]
             helper = ensure_helper()
@@ -342,7 +345,38 @@ def run_debug(args: argparse.Namespace) -> dict[str, Any]:
 
         def construct_policy() -> None:
             helper = ensure_helper()
-            state["model"] = helper.WanModelFast.from_pretrained(state["checkpoint_root"], subfolder=state["fast_subfolder"], torch_dtype=state["model_dtype"], low_cpu_mem_usage=False, control_type="cam")
+            if str(getattr(args, "loader_mode", "stage1_helper")) == "safe_wan_policy_only":
+                from cam_physgeo.dpo.safe_wan_policy_loader import load_wan_policy_safe
+
+                loaded = load_wan_policy_safe(
+                    state["checkpoint_root"],
+                    dtype="fp32" if state["model_dtype"] == state["torch"].float32 else "bf16",
+                    device="cpu",
+                    local_files_only=True,
+                    use_safetensors=True,
+                    low_cpu_mem_usage=True,
+                    policy_only=True,
+                    load_text=False,
+                    load_vae=False,
+                    load_lora=False,
+                    move_to_gpu=False,
+                    heartbeat_path=output.with_name(output.stem + "_safe_loader.jsonl"),
+                    control_type="cam",
+                    heartbeat_seconds=float(args.heartbeat_seconds),
+                )
+                state["model"] = loaded.model
+                state["safe_loader_result"] = loaded
+                logger.write(stage="14_construct_policy_model_cpu", event="safe_loader_result", status="INFO", notes=f"root={loaded.model_root} subfolder={loaded.subfolder} elapsed={loaded.elapsed_seconds:.2f}")
+            else:
+                state["model"] = helper.WanModelFast.from_pretrained(
+                    state["checkpoint_root"],
+                    subfolder=state["fast_subfolder"],
+                    torch_dtype=state["model_dtype"],
+                    local_files_only=True,
+                    use_safetensors=True,
+                    low_cpu_mem_usage=True,
+                    control_type="cam",
+                )
         run_stage(logger, "14_construct_policy_model_cpu", construct_policy, notes="WanModelFast.from_pretrained includes checkpoint/shard loading")
         stages_done.append("14_construct_policy_model_cpu")
 
@@ -436,6 +470,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--height", type=int, default=480)
     parser.add_argument("--width", type=int, default=832)
     parser.add_argument("--skip_text_vae", action="store_true", help="Mirror v8e policy-only path by recording tokenizer/T5/VAE stages as skipped.")
+    parser.add_argument("--skip_text", default="false")
+    parser.add_argument("--skip_vae", default="false")
+    parser.add_argument("--loader_mode", default="stage1_helper", choices=["stage1_helper", "safe_wan_policy_only"])
     args = parser.parse_args(argv)
     run_debug(args)
 

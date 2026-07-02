@@ -1,0 +1,7 @@
+termination_time,2026-07-03T06:42:07,888471317+08:00
+reason,CACHE_FIRST_ROW_BLOCKED_NO_HEARTBEAT_AFTER_POLICY_RUNTIME_PASS
+pid,344363
+pgid,344363
+USER         PID    PPID    PGID     SID     ELAPSED STAT %CPU %MEM   RSS CMD
+ubuntu    344363  288492  344363  344363       10:19 Ss+   0.0  0.0  3380 bash -c cd /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work && CUDA_VISIBLE_DEVICES=7 /usr/bin/python3 -m cam_physgeo.dpo.winner_anchor_cache_builder --pair_manifest manifests/dpo_smoke_v7_gt_c_10.jsonl --num_pairs 1 --gpu 0 --prefix_len 5 --prediction_start_frame 5 --future_only true --used_window_frames 49 --cache_level minimal_no_ref --loader_mode safe_wan_policy_only --output_root local_assets/dpo_objective_cache_v8h/one_pair_minimal_no_ref --report reports/dpo_objective_diagnosis_v8h/cache_build_one_pair_minimal_no_ref.csv --heartbeat_seconds 15 --per_stage_timeout_seconds 180 > "reports/dpo_objective_diagnosis_v8h/cache_build_one_pair_minimal_no_ref.stdout.log" 2>&1; code=$?; echo EXIT:$code > "reports/dpo_objective_diagnosis_v8h/cache_build_one_pair_minimal_no_ref.exit"
+kill_escalation,TERM_SUFFICIENT

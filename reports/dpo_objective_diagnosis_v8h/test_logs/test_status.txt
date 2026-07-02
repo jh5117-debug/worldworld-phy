@@ -1,0 +1,3 @@
+compileall=0
+pytest=1
+direct_smoke=0

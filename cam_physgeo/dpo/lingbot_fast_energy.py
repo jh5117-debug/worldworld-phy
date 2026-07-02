@@ -143,7 +143,62 @@ class LingBotFastDpoEnergy:
         self.temporal_compression = int(_cfg_get(cfg, "temporal_compression", 4))
         self.args = build_stage1_args(cfg)
         self.helper = LingBotStage1Helper(self.args)
-        self.model = self.helper.load_model(self.device, "high_only", checkpoint_dir=self.args.shared_assets_dir, control_type="cam")
+        self.policy_loader_mode = str(_cfg_get(cfg, "dpo_policy_loader_mode", "stage1_helper"))
+        if self.policy_loader_mode == "safe_wan_policy_only":
+            # Keep runtime construction explicit: VAE/T5 are needed for cache/energy prep,
+            # but policy loading uses the direct safe Wan path proven in v8g.
+            if getattr(self.args, "skip_runtime_components_on_load", False):
+                self.helper.bootstrap_imports()
+                self.helper.device = self.device
+            else:
+                self.helper.ensure_runtime_components(self.device)
+            from cam_physgeo.dpo.safe_wan_policy_loader import load_wan_policy_safe
+
+            loaded = load_wan_policy_safe(
+                self.args.shared_assets_dir,
+                dtype="fp32" if self.lowp_dtype == torch.float32 else "bf16",
+                device="cpu",
+                local_files_only=True,
+                use_safetensors=True,
+                low_cpu_mem_usage=True,
+                policy_only=True,
+                load_text=False,
+                load_vae=False,
+                load_lora=False,
+                move_to_gpu=False,
+                heartbeat_path=str(_cfg_get(cfg, "dpo_safe_loader_heartbeat_path", "")) or None,
+                control_type="cam",
+            )
+            self.model = loaded.model
+            if getattr(self.args, "student_memory_efficient_modulation", True):
+                from physical_consistency.trainers.stage1_components import apply_memory_efficient_wan_block_patch
+
+                apply_memory_efficient_wan_block_patch(
+                    self.model,
+                    loaded.subfolder,
+                    ffn_chunk_size=getattr(self.args, "student_ffn_chunk_size", None),
+                    norm_chunk_size=getattr(self.args, "student_norm_chunk_size", None),
+                )
+            if getattr(self.args, "student_tuning_mode", "full") == "lora":
+                from physical_consistency.trainers.stage1_components import apply_lora_to_wan_model
+
+                apply_lora_to_wan_model(
+                    self.model,
+                    model_name=loaded.subfolder,
+                    rank=getattr(self.args, "student_lora_rank", 16),
+                    alpha=getattr(self.args, "student_lora_alpha", 16),
+                    dropout=getattr(self.args, "student_lora_dropout", 0.0),
+                    block_start=getattr(self.args, "student_lora_block_start", 0),
+                    block_end=getattr(self.args, "student_lora_block_end", None),
+                    target_groups=getattr(self.args, "student_lora_target_groups", None),
+                    required_groups=getattr(self.args, "student_lora_required_groups", None),
+                    include_patterns=getattr(self.args, "student_lora_include_patterns", None),
+                    exclude_patterns=getattr(self.args, "student_lora_exclude_patterns", None),
+                    lora_chunk_size=getattr(self.args, "student_lora_chunk_size", None),
+                    merge_mode=getattr(self.args, "student_lora_merge_mode", "inplace"),
+                )
+        else:
+            self.model = self.helper.load_model(self.device, "high_only", checkpoint_dir=self.args.shared_assets_dir, control_type="cam")
         self.model.to(self.device)
         if bool(_cfg_get(cfg, "gradient_checkpointing", True)):
             from physical_consistency.trainers.stage1_components import apply_gradient_checkpointing

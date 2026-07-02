@@ -115,3 +115,8 @@ Search local paths for existing V-JEPA / VideoREPA encoders and weights. If no l
 Current Status: DESIGN_ONLY_NOT_INTEGRATED
 
 v8b did not authorize V-JEPA/VideoREPA training integration. Sigma mapping is now bounded and separated, but winner-anchor-only failed by OOM after one completed step with winner_improvement = 0.0. The latent winner anchor should remain a monitor-first plan: use it to measure whether future memory-safe winner-anchor runs preserve GT winner structure before adding `lambda_J * L_VJEPA_TRD_winner` to training. No large model download was performed.
+
+
+## v8h Update - 2026-07-03T06:46:04
+
+Policy runtime safe loader now reaches runtime-ready on H20 physical GPU7. The first-row cache smoke then blocks after `after_policy_load` and before `after_runtime_ready`, localizing the next blocker to `ensure_runtime_ready` / runtime component initialization. DPO remains not ready; no DPO/SDPO/Linear-DPO was run.

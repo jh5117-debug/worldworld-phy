@@ -128,6 +128,9 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
         runtime_device=str(args.runtime_device),
         gradient_checkpointing=True,
     )
+    cfg["dpo_policy_loader_mode"] = str(getattr(args, "loader_mode", "stage1_helper"))
+    if cfg["dpo_policy_loader_mode"] == "safe_wan_policy_only":
+        cfg["dpo_safe_loader_heartbeat_path"] = str(progress_path.with_name(progress_path.stem + "_safe_loader.jsonl"))
     _progress(progress_path, stage="before_backend_load", device=device)
     backend = LingBotFastDpoEnergy(cfg, device=device, prefix_len=int(args.prefix_len))
     _progress(progress_path, stage="after_policy_load", **cuda_stats())
@@ -338,6 +341,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--width", type=int, default=832)
     parser.add_argument("--target_sigma", type=float, default=0.35)
     parser.add_argument("--seed", type=int, default=1234)
+    parser.add_argument("--loader_mode", default="stage1_helper", choices=["stage1_helper", "safe_wan_policy_only"])
     args = parser.parse_args(argv)
     if str(args.future_only).lower() not in {"1", "true", "yes"}:
         raise ValueError("future_only must be true")
