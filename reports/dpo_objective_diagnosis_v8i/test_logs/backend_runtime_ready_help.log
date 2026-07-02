@@ -1,0 +1,44 @@
+usage: backend_runtime_ready_debug.py [-h] --pair_manifest PAIR_MANIFEST
+                                      [--gpu GPU]
+                                      [--loader_mode {safe_wan_policy_only,stage1_helper}]
+                                      [--prefix_len PREFIX_LEN]
+                                      [--prediction_start_frame PREDICTION_START_FRAME]
+                                      [--used_window_frames USED_WINDOW_FRAMES]
+                                      [--cache_level CACHE_LEVEL] --output
+                                      OUTPUT [--output_root OUTPUT_ROOT]
+                                      [--cache_report CACHE_REPORT]
+                                      [--heartbeat_seconds HEARTBEAT_SECONDS]
+                                      [--stage_timeout_seconds STAGE_TIMEOUT_SECONDS]
+                                      [--config CONFIG]
+                                      [--repo_root REPO_ROOT]
+                                      [--runtime_device RUNTIME_DEVICE]
+                                      [--height HEIGHT] [--width WIDTH]
+                                      [--target_sigma TARGET_SIGMA]
+                                      [--seed SEED] [--diagnostic_skip_text]
+                                      [--diagnostic_skip_vae]
+
+Split v8i backend runtime readiness before cache first-row build.
+
+options:
+  -h, --help            show this help message and exit
+  --pair_manifest PAIR_MANIFEST
+  --gpu GPU
+  --loader_mode {safe_wan_policy_only,stage1_helper}
+  --prefix_len PREFIX_LEN
+  --prediction_start_frame PREDICTION_START_FRAME
+  --used_window_frames USED_WINDOW_FRAMES
+  --cache_level CACHE_LEVEL
+  --output OUTPUT
+  --output_root OUTPUT_ROOT
+  --cache_report CACHE_REPORT
+  --heartbeat_seconds HEARTBEAT_SECONDS
+  --stage_timeout_seconds STAGE_TIMEOUT_SECONDS
+  --config CONFIG
+  --repo_root REPO_ROOT
+  --runtime_device RUNTIME_DEVICE
+  --height HEIGHT
+  --width WIDTH
+  --target_sigma TARGET_SIGMA
+  --seed SEED
+  --diagnostic_skip_text
+  --diagnostic_skip_vae
