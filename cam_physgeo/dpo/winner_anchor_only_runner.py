@@ -7,6 +7,7 @@ import math
 import os
 import time
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import torch
@@ -251,9 +252,245 @@ def _status(rows: list[dict[str, Any]], requested_steps: int) -> str:
     return "WINNER_ANCHOR_1PAIR_OBJECTIVE_FAIL"
 
 
+
+def _load_cache_index(cache_root: str | Path, limit: int) -> list[dict[str, Any]]:
+    root = Path(cache_root)
+    index = root / "cache_index.jsonl"
+    rows: list[dict[str, Any]] = []
+    with index.open("r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if row.get("status") == "PASS":
+                rows.append(row)
+    if limit > 0:
+        rows = rows[: int(limit)]
+    if not rows:
+        raise RuntimeError(f"no PASS cache rows found in {index}")
+    return rows
+
+
+def _tree_to_device(obj: Any, device: torch.device) -> Any:
+    if torch.is_tensor(obj):
+        return obj.to(device)
+    if isinstance(obj, dict):
+        return {k: _tree_to_device(v, device) for k, v in obj.items()}
+    if isinstance(obj, tuple):
+        return tuple(_tree_to_device(v, device) for v in obj)
+    if isinstance(obj, list):
+        return [_tree_to_device(v, device) for v in obj]
+    return obj
+
+
+def _load_prepared_from_cache(cache_root: str | Path, row: dict[str, Any], device: torch.device) -> tuple[PreparedEnergyInput, Any]:
+    payload = torch.load(Path(cache_root) / str(row["cache_tensor_path"]), map_location="cpu")
+    prepared = PreparedEnergyInput(
+        target=_tree_to_device(payload["target"], device),
+        noisy_latent=_tree_to_device(payload["noisy_latent"], device),
+        context=_tree_to_device(payload["context"], device),
+        y=_tree_to_device(payload["y"], device),
+        dit_cond=_tree_to_device(payload["dit_cond"], device),
+        seq_len=int(payload["seq_len"]),
+        latent_loss_indices=list(payload["latent_loss_indices"]),
+    )
+    timestep_tensor = payload["timestep_tensor"].to(device) if torch.is_tensor(payload["timestep_tensor"]) else torch.as_tensor(payload["timestep_tensor"], device=device)
+    ts = SimpleNamespace(
+        timestep=timestep_tensor,
+        index=int(payload["timestep_index"]),
+        sigma=float(payload["actual_sigma"]),
+        weight=float(payload["timestep_weight"]),
+    )
+    return prepared, ts
+
+
+def _cache_train_status(rows: list[dict[str, Any]], requested_steps: int) -> str:
+    pass_rows = [row for row in rows if row.get("status") == "PASS"]
+    if len(pass_rows) < int(requested_steps):
+        if rows and rows[-1].get("status") == "OOM":
+            return "WINNER_ANCHOR_CACHE10_OOM"
+        return "WINNER_ANCHOR_CACHE10_TOO_SLOW"
+    final = float(pass_rows[-1].get("winner_improvement_post", 0.0))
+    mean = sum(float(row.get("winner_improvement_post", 0.0)) for row in pass_rows) / len(pass_rows)
+    if final > 0.0 and mean > 0.0:
+        return "WINNER_ANCHOR_CACHE10_PASS"
+    return "WINNER_ANCHOR_CACHE10_OBJECTIVE_FAIL"
+
+
+def _write_cache_train_summary(path: Path, status: str, rows: list[dict[str, Any]], *, output: Path) -> None:
+    pass_rows = [row for row in rows if row.get("status") == "PASS"]
+    mean = ""
+    final = ""
+    if pass_rows:
+        vals = [float(row.get("winner_improvement_post", 0.0)) for row in pass_rows]
+        mean = sum(vals) / len(vals)
+        final = vals[-1]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "Current Status:\n"
+        f"{status}\n\n"
+        "# v8d Cache-Only Winner-Anchor Summary\n\n"
+        f"- Steps completed: {len(pass_rows)}\n"
+        f"- Mean winner_improvement_post: {mean}\n"
+        f"- Final winner_improvement_post: {final}\n"
+        f"- CSV: `{output}`\n"
+        f"- Decision: `{status}`\n",
+        encoding="utf-8",
+    )
+
+
+def run_cache_only_winner_anchor(args: argparse.Namespace) -> dict[str, Any]:
+    output = Path(args.output)
+    if output.exists():
+        output.unlink()
+    if torch.cuda.is_available():
+        torch.cuda.set_device(int(args.gpu))
+        torch.cuda.reset_peak_memory_stats()
+    device = torch.device(f"cuda:{int(args.gpu)}" if torch.cuda.is_available() else "cpu")
+    cache_rows = _load_cache_index(args.cache_root, int(args.num_pairs))
+    first_frames = int(cache_rows[0].get("used_window_frames", args.used_window_frames or 49))
+    cfg = _cfg(args.config, frames=first_frames, height=int(args.height), width=int(args.width), runtime_device="cpu", gradient_checkpointing=bool(args.gradient_checkpointing))
+    backend = LingBotFastDpoEnergy(cfg, device=str(device), prefix_len=int(args.prefix_len))
+    params = backend.trainable_parameters()
+    optimizer = torch.optim.AdamW(params, lr=float(args.learning_rate), betas=(0.9, 0.95), weight_decay=float(args.weight_decay))
+    fieldnames = [
+        "step", "used_window_frames", "pair_id", "timestep", "timestep_index", "actual_sigma",
+        "E_ref_winner_cached", "E_policy_winner_pre_update", "E_policy_winner_post_update",
+        "winner_improvement_pre", "winner_improvement_post", "loss", "grad_norm", "update_norm",
+        "lora_param_norm", "lr", "allocated_gb", "reserved_gb", "max_allocated_gb", "max_reserved_gb",
+        "step_time", "finite", "status", "error_reason",
+    ]
+    rows: list[dict[str, Any]] = []
+    for step in range(int(args.steps)):
+        step_start = time.time()
+        cache_row = cache_rows[step % len(cache_rows)]
+        pair_id = str(cache_row.get("pair_id"))
+        used_frames = int(cache_row.get("used_window_frames", first_frames))
+        ref_energy = float(cache_row["E_ref_winner_cached"])
+        try:
+            prepared, ts = _load_prepared_from_cache(args.cache_root, cache_row, device)
+            optimizer.zero_grad(set_to_none=True)
+            with torch.no_grad():
+                pre_energy = backend.energy(prepared, ts).detach()
+            loss = backend.energy(prepared, ts)
+            finite = bool(torch.isfinite(loss).all().item())
+            if not finite:
+                raise FloatingPointError("nonfinite cache-only winner-anchor loss")
+            loss.backward()
+            grad_norm = _grad_norm(params)
+            before = [param.detach().float().cpu().clone() for param in params]
+            optimizer.step()
+            update_norm = _param_update_norm(before, params)
+            optimizer.zero_grad(set_to_none=True)
+            with torch.no_grad():
+                post_energy = backend.energy(prepared, ts).detach()
+            row = {
+                "step": step + 1,
+                "used_window_frames": used_frames,
+                "pair_id": pair_id,
+                "timestep": float(ts.timestep.detach().flatten()[0].item()) if hasattr(ts.timestep, "detach") else float(ts.timestep),
+                "timestep_index": int(ts.index),
+                "actual_sigma": float(ts.sigma),
+                "E_ref_winner_cached": ref_energy,
+                "E_policy_winner_pre_update": _scalar(pre_energy),
+                "E_policy_winner_post_update": _scalar(post_energy),
+                "winner_improvement_pre": ref_energy - _scalar(pre_energy),
+                "winner_improvement_post": ref_energy - _scalar(post_energy),
+                "loss": _scalar(loss.detach()),
+                "grad_norm": grad_norm,
+                "update_norm": update_norm,
+                "lora_param_norm": _param_norm(params),
+                "lr": float(args.learning_rate),
+                **cuda_stats(),
+                "step_time": time.time() - step_start,
+                "finite": finite,
+                "status": "PASS",
+                "error_reason": "",
+            }
+            _append_csv(output, row, fieldnames)
+            rows.append(row)
+            del prepared, ts, pre_energy, post_energy, loss, before
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except torch.cuda.OutOfMemoryError as exc:
+            row = {
+                "step": step + 1,
+                "used_window_frames": used_frames,
+                "pair_id": pair_id,
+                "timestep": "",
+                "timestep_index": "",
+                "actual_sigma": "",
+                "E_ref_winner_cached": ref_energy,
+                "E_policy_winner_pre_update": "",
+                "E_policy_winner_post_update": "",
+                "winner_improvement_pre": "",
+                "winner_improvement_post": "",
+                "loss": "",
+                "grad_norm": "",
+                "update_norm": "",
+                "lora_param_norm": "",
+                "lr": float(args.learning_rate),
+                **cuda_stats(),
+                "step_time": time.time() - step_start,
+                "finite": False,
+                "status": "OOM",
+                "error_reason": repr(exc),
+            }
+            _append_csv(output, row, fieldnames)
+            rows.append(row)
+            break
+        except Exception as exc:  # noqa: BLE001
+            row = {
+                "step": step + 1,
+                "used_window_frames": used_frames,
+                "pair_id": pair_id,
+                "timestep": "",
+                "timestep_index": "",
+                "actual_sigma": "",
+                "E_ref_winner_cached": ref_energy,
+                "E_policy_winner_pre_update": "",
+                "E_policy_winner_post_update": "",
+                "winner_improvement_pre": "",
+                "winner_improvement_post": "",
+                "loss": "",
+                "grad_norm": "",
+                "update_norm": "",
+                "lora_param_norm": "",
+                "lr": float(args.learning_rate),
+                **cuda_stats(),
+                "step_time": time.time() - step_start,
+                "finite": False,
+                "status": "ERROR",
+                "error_reason": repr(exc),
+            }
+            _append_csv(output, row, fieldnames)
+            rows.append(row)
+            break
+    final_status = _cache_train_status(rows, int(args.steps))
+    summary_path = output.with_name(output.stem + "_summary.md")
+    _write_cache_train_summary(summary_path, final_status, rows, output=output)
+    pass_rows = [row for row in rows if row.get("status") == "PASS"]
+    vals = [float(row.get("winner_improvement_post", 0.0)) for row in pass_rows]
+    result = {
+        "status": final_status,
+        "output": str(output),
+        "summary": str(summary_path),
+        "steps_completed": len(pass_rows),
+        "mean_winner_improvement_post": sum(vals) / len(vals) if vals else None,
+        "final_winner_improvement_post": vals[-1] if vals else None,
+        "cache_root": str(args.cache_root),
+        "reference_loaded_in_training_loop": False,
+        "loser_loaded_in_training_loop": False,
+        "vae_used_in_training_loop": False,
+    }
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return result
+
 def run_winner_anchor(args: argparse.Namespace) -> dict[str, Any]:
+    if str(args.mode) == "cache_only_policy_train":
+        return run_cache_only_winner_anchor(args)
     if str(args.mode) != "policy_only_cached_latents":
-        raise ValueError("only policy_only_cached_latents is supported")
+        raise ValueError("only policy_only_cached_latents and cache_only_policy_train are supported")
     output = Path(args.output)
     if output.exists():
         output.unlink()
@@ -397,7 +634,8 @@ def run_winner_anchor(args: argparse.Namespace) -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Memory-safe winner-anchor-only runner for v8c.")
-    parser.add_argument("--pair_manifest", required=True)
+    parser.add_argument("--pair_manifest", default="")
+    parser.add_argument("--cache_root", default="")
     parser.add_argument("--num_pairs", type=int, default=1)
     parser.add_argument("--steps", type=int, default=5)
     parser.add_argument("--gpu", type=int, default=0)
