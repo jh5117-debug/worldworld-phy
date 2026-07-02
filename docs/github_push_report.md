@@ -19,3 +19,14 @@ PASS
 - At correction time, H20 GPU4-7 were occupied by existing Python jobs, so no GPU runtime-ready/cache/training command was launched.
 - No DPO, SDPO, Linear-DPO, Safe-linear, StageB, GRPO, full-data StageA, or broad-LoRA was run.
 - No checkpoint/data deletion and no videos/weights pushed.
+
+## 2026-07-02 v8e GPU Policy Update H20 0-3 Authorized
+
+Current Status:
+PASS
+
+- Updated v8e GPU policy after user authorization: H20 GPU0-3 may be used for this task.
+- H20 GPU0-3 were checked and remain occupied by existing root FastWAM jobs using about 66 GB per GPU, so no v8e command was launched.
+- PAI GPU0/1 was not used in this update.
+- No DPO, SDPO, Linear-DPO, Safe-linear, StageB, GRPO, full-data StageA, or broad-LoRA was run.
+- No checkpoint/data deletion and no videos/weights pushed.

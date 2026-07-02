@@ -3,14 +3,14 @@ GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
 
 ### GPU Policy Correction
 
-The previous v8e GPU policy correction was itself wrong. Correct policy: use H20 physical GPU4-7 only for this task. Do not use H20 GPU0-3, and do not use PAI GPU0/1. If H20 GPU4-7 are occupied, v8e remains blocked rather than falling back to other GPUs.
+The v8e GPU policy has been updated after user authorization: H20 physical GPU0-3 may be used for this task. Do not use PAI GPU0/1 unless separately authorized again. If H20 GPU0-3 are occupied, v8e remains blocked rather than killing or displacing existing jobs.
 
 # Actual Result 2026-07-02 10:28 CST
 
 - PRD was committed and pushed before execution.
 - Runtime-ready diagnostic code was implemented and pushed.
-- GPU preflight was not run because physical GPU4-7 were occupied by existing Python jobs.
-- GPU0-3 and PAI GPU0/1 are not authorized for this task and were not used.
+- GPU preflight was not run because the previously authorized physical GPU4-7 were occupied by existing Python jobs.
+- User later authorized H20 GPU0-3, but they were also occupied by existing root FastWAM jobs, so no v8e command was launched.
 - one-pair minimal_no_ref, with_ref, cache10, validation, and training were not run.
 - Decision: `GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN`.
 
@@ -48,10 +48,10 @@ Runtime-ready must be split into bounded stages with heartbeat output. Building 
 
 ## GPU Policy
 
-- Use H20 physical GPU4-7 only for v8e.
-- Do not use H20 physical GPU0-3.
-- Do not use PAI GPU0/1 for this task.
-- Prefer an actually free H20 GPU among 4-7; if all are occupied, do not launch.
+- H20 physical GPU0-3 are now authorized for v8e.
+- Do not use PAI GPU0/1 unless separately authorized again.
+- Prefer an actually free H20 GPU among 0-3; if all are occupied, do not launch.
+- Do not kill or displace existing jobs.
 
 ## Method
 

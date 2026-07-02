@@ -1,16 +1,16 @@
 Current Status:
-GPU_POLICY_CORRECTED_H20_4_7_ONLY
+GPU_POLICY_UPDATED_H20_0_3_AUTHORIZED_BLOCKED_BUSY
 
 ## 2026-07-02 v8e GPU Policy Correction
 
-The v8e GPU policy has been corrected again after user clarification: use H20 physical GPU4-7 only. Do not use H20 GPU0-3 and do not use PAI GPU0/1 for this task. At correction time, H20 GPU4-7 were occupied by existing Python jobs, so no GPU run was launched.
+The v8e GPU policy has been updated after user authorization: H20 physical GPU0-3 may be used for this task. At the latest check, GPU0-3 were occupied by existing root FastWAM jobs, so no GPU run was launched. PAI GPU0/1 is not used unless separately authorized again.
 
 Current Status:
 GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
 
 ## 2026-07-02 v8e Status
 
-Runtime-ready diagnostics were implemented, but GPU4-7 were occupied, so runtime preflight/cache build/training were not run. DPO remains blocked.
+Runtime-ready diagnostics were implemented, but the currently authorized H20 GPU0-3 were occupied, so runtime preflight/cache build/training were not run. DPO remains blocked.
 
 Current Status:
 BLOCKED_CACHE_BUILD_RUNTIME_READY_TIMEOUT
@@ -52,7 +52,7 @@ Sampler-only sigma and 1-pair real-energy smoke both separated low/mid/high sigm
 - v7 tiny SDPO-anchor smoke is engineering PASS but objective-signal FAIL: final winner improvement is negative and final winner contribution ratio is 0.0.
 - v8 will not rerun the same SDPO-anchor objective as a scale path. It first checks low/mid/high sigma mapping, then runs winner-anchor-only. If winner-anchor-only fails, the remaining objective variants stop early.
 - Pair factory v8 is scoped to recovering reviewed GT>C pairs only; no unreviewed C loser may enter any DPO-ready manifest.
-- Authorized GPU scope remains physical GPU4-7 only unless explicitly blocked.
+- Authorized GPU scope has been updated to H20 physical GPU0-3 after user authorization; launch only if an authorized GPU is actually free.
 - Explicitly not run in v8 PRD stage: large DPO, StageB, GRPO, full-data StageA, broad-LoRA, checkpoint deletion, data/weight/video push.
 
 
@@ -74,9 +74,9 @@ Updated: 2026-07-01 16:05:00 CST
 - Visual audit policy and v7 PRDs were committed and pushed before experiment work.
 - Tiny smoke subset is ready: 10 reviewed GT>C pairs, loser reward mean 0.759517, reward margin mean 0.240483.
 - Loser visual audit is complete for the smoke subset: 10 / 10 reviewed and DPO-ready.
-- DPO smoke training did not start because authorized GPU4-7 were occupied at launch time; GPU0-3 and PAI GPU0/1 were not used.
+- DPO smoke training did not start because the authorized H20 GPUs were occupied at launch time; no PAI GPU was used.
 - Pair factory condition expansion from existing v6b candidate rows produced 21 unique runnable conditions, below the 80 target.
-- Pair factory rollout did not start because GPU4-7 were occupied and more condition recovery is still needed.
+- Pair factory rollout did not start because authorized H20 GPUs were occupied and more condition recovery is still needed.
 - No large-scale DPO, StageB, GRPO, full-data StageA, broad-LoRA, checkpoint deletion, or checkpoint modification was run.
 <!-- /dpo_smoke_pair_factory_v7_update -->
 <!-- targeted_BC_loser_mining_v6b_update -->

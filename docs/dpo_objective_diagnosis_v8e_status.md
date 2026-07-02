@@ -3,7 +3,7 @@ GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
 
 ## GPU Policy Correction
 
-The previous v8e GPU policy correction was itself wrong. Correct policy: use H20 physical GPU4-7 only for this task. Do not use H20 GPU0-3, and do not use PAI GPU0/1. If H20 GPU4-7 are occupied, v8e remains blocked rather than falling back to other GPUs.
+The v8e GPU policy has been updated after user authorization: H20 physical GPU0-3 may be used for this task. Do not use PAI GPU0/1 unless separately authorized again. If H20 GPU0-3 are occupied, v8e remains blocked rather than killing or displacing existing jobs.
 
 # DPO Objective Diagnosis v8e Status
 
@@ -11,7 +11,7 @@ Updated: 2026-07-02 10:28 CST
 
 ## Summary
 
-v8e PRD was committed and pushed before execution. Runtime-ready diagnostic code was implemented and pushed. The planned GPU preflight did not run because all authorized GPUs (physical GPU4-7) remained occupied by existing `/usr/bin/python3` jobs using about 66 GB per GPU, with nonzero utilization. H20 GPU0-3 and PAI GPU0/1 are not authorized for this task and were not used.
+v8e PRD was committed and pushed before execution. Runtime-ready diagnostic code was implemented and pushed. The planned GPU preflight did not run while physical GPU4-7 were occupied. User later authorized H20 GPU0-3, but GPU0-3 were also occupied by existing root FastWAM jobs using about 66 GB per GPU, so no v8e command was launched.
 
 ## v8d Readback
 
@@ -31,7 +31,7 @@ v8e PRD was committed and pushed before execution. Runtime-ready diagnostic code
 
 Status: `NOT_RUN_GPU4_7_OCCUPIED`
 
-No runtime-ready GPU command was launched because GPU4-7 were not free. Therefore no stage-level runtime result exists yet.
+No runtime-ready GPU command was launched because the currently authorized H20 GPU0-3 were not free. Therefore no stage-level runtime result exists yet.
 
 ## Cache Build
 
