@@ -103,3 +103,10 @@ No DPO, SDPO, Linear-DPO, Safe-linear, DPO scale, pair factory rollout, StageB, 
 - Commit PRD before execution.
 - Commit runtime-ready/cache diagnostic code before GPU run.
 - Commit final reports/docs after v8e run or block.
+
+## Actual Runtime-Ready Attempt 2026-07-02 17:47 CST
+
+Current Status:
+RUNTIME_READY_BLOCKED_6_LOAD_POLICY_RUNTIME_TIMEOUT
+
+The GPU7 run passed stages 0-5 and timed out inside `stage 6_load_policy_runtime`. The process was stopped after timeout. No minimal cache, with-ref cache, cache10 validation, or cache-only training was run.

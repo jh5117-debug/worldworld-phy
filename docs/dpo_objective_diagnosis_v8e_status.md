@@ -58,3 +58,14 @@ Strict SDPO / Linear-DPO should not run next. DPO cannot proceed. The immediate 
 ## Explicit Non-Runs
 
 No DPO, SDPO, Linear-DPO, Safe-linear, large DPO, StageB, GRPO, full-data StageA, broad-LoRA, pair-factory rollout, checkpoint deletion, video generation, or video/weight push was performed.
+
+## Runtime-Ready Attempt 2026-07-02 17:47 CST
+
+Current Status:
+RUNTIME_READY_BLOCKED_6_LOAD_POLICY_RUNTIME_TIMEOUT
+
+H20 GPU7 was used after GPU4-7 became free. The first runtime-ready attempt failed on missing `cv2`; subsequent dependency fixes added `opencv-python-headless`, `decord`, `easydict`, `diffusers`, `peft`, `timm`, `mpmath`, `ftfy`, and `scipy` to the user Python environment.
+
+The latest retry passed manifest parsing, pair selection, path resolution, winner video CPU decode, and window selection. It then entered `stage 6_load_policy_runtime`, produced heartbeat rows through about 266 seconds, did not allocate GPU memory, and was stopped after timeout. No cache build or training was run.
+
+Decision: `RUNTIME_READY_BLOCKED_6_LOAD_POLICY_RUNTIME_TIMEOUT`.

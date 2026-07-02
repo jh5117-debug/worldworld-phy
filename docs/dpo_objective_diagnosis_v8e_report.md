@@ -54,3 +54,19 @@ Strict SDPO / Linear-DPO should not run next. DPO cannot proceed. The immediate 
 ## Explicit Non-Runs
 
 No DPO, SDPO, Linear-DPO, Safe-linear, large DPO, StageB, GRPO, full-data StageA, broad-LoRA, pair-factory rollout, checkpoint deletion, video generation, or video/weight push was performed.
+
+## Runtime-Ready GPU7 Result 2026-07-02 17:47 CST
+
+Current Status:
+BLOCKED
+
+GPU7 runtime-ready debug was launched after H20 GPU4-7 became available. The task did not run DPO or cache training. The run exposed missing Python dependencies first, then reached the real runtime blocker:
+
+- video decode: PASS, about 29-32 seconds
+- window selection: PASS
+- policy runtime load: TIMEOUT_RUNNING after >180 seconds, heartbeats continued through about 266 seconds
+- GPU7 memory during policy runtime: stayed near idle, no model allocation observed
+
+Decision: `RUNTIME_READY_BLOCKED_6_LOAD_POLICY_RUNTIME_TIMEOUT`.
+
+Next step: split `stage 6_load_policy_runtime` into sub-stages so we can identify whether the slow point is module import, checkpoint/config resolution, text runtime, DiT/Wan runtime, LoRA adapter load, or model-to-GPU transfer.

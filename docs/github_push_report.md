@@ -30,3 +30,14 @@ PASS
 - PAI GPU0/1 was not used in this update.
 - No DPO, SDPO, Linear-DPO, Safe-linear, StageB, GRPO, full-data StageA, or broad-LoRA was run.
 - No checkpoint/data deletion and no videos/weights pushed.
+
+## 2026-07-02 v8e Runtime-Ready GPU7 Attempt
+
+Current Status:
+BLOCKED
+
+- Ran v8e runtime-ready debug on H20 GPU7 after GPU4-7 became available.
+- Fixed missing user-level Python runtime dependencies needed to reach policy runtime loading.
+- Latest retry passed stages 0-5 and blocked at `stage 6_load_policy_runtime` timeout.
+- No DPO, SDPO, Linear-DPO, cache training, StageB, GRPO, full-data StageA, or broad-LoRA was run.
+- No checkpoints/data/videos/weights were pushed.
