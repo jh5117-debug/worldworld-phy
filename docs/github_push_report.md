@@ -1,3 +1,7 @@
+Current Status Update (2026-07-02 21:58:17): V8G_RESULTS_PENDING_COMMIT
+
+v8g results are being prepared for commit/push. Large files, videos, images, checkpoints, and local_assets remain excluded.
+
 Current Status:
 V8F_PUSHED
 

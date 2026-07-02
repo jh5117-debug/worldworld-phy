@@ -1,22 +1,12 @@
-Current Status:
-PRD_READY_NOT_RUN
+Current Status: POLICY_SAFE_STANDALONE_PASS_STAGE1_HELPER_STILL_TIMEOUT
 
-# DPO Objective Diagnosis v8g Status
+# v8g Status
 
-Updated: 2026-07-02 21:30 CST
-
-## Readback
-
-v8f located the policy-only runtime blocker at `14_construct_policy_model_cpu`, specifically `WanModelFast.from_pretrained(...)`. GPU allocation stayed at approximately 0 GB, so the blocker is not CUDA forward, LoRA application, or move-to-GPU. CPU RSS climbed from roughly 0.7 GB to 20.7 GB, indicating CPU-side model construction or checkpoint shard loading.
-
-## Current Blocker
-
-`WanModelFast.from_pretrained(...)` is still a black box. It may hide config reading, model class construction, shard index parsing, safetensors metadata, tensor deserialization, state_dict injection, or filesystem stalls.
-
-## v8g Objective
-
-Split WanModelFast/diffusers `from_pretrained` and checkpoint shard loading into bounded diagnostic stages with per-shard timing and heartbeat output. This round does not run DPO, SDPO, Linear-DPO, Safe-linear, cache10 training, pair factory rollout, StageB, GRPO, full-data StageA, or broad-LoRA.
-
-## GPU Policy
-
-Use only H20 physical GPU4-7. Prefer GPU7 and use GPU6 only if GPU7 is unavailable. Do not use H20 GPU0-3.
+- v8f exact blocker was `WanModelFast.from_pretrained(...)` inside `14_construct_policy_model_cpu`.
+- v8g source discovery found WanModelFast at `/home/nvme03/workspace/lingbot-world/wan/modules/model_fast.py`.
+- checkpoint inventory found 16 safetensors shards totaling 69.08 GB; shard metadata and first3 tensor timing passed.
+- empty/meta construction passed; state-dict prefix shard loading passed.
+- standalone safe `from_pretrained` passed on CPU and GPU7 with `local_files_only=True`, `use_safetensors=True`, `low_cpu_mem_usage=True`, bf16.
+- Stage1 helper was patched to those safe args, but after-patch policy runtime still timed out at `14_construct_policy_model_cpu` around 309.8 sec.
+- one-pair cache first row was not attempted because policy runtime did not reach runtime_ready.
+- DPO / SDPO / Linear-DPO remain blocked.

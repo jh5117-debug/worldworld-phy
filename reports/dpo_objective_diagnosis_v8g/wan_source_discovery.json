@@ -1,0 +1,31 @@
+{
+  "adapter_path": null,
+  "call_stack": [
+    "LingBotFastDpoEnergy.__init__",
+    "LingBotStage1Helper.load_model",
+    "WanModelFast.from_pretrained"
+  ],
+  "checkpoint_root": "/home/nvme03/workspace/lingbot-world/lingbot-world-base-cam",
+  "class_file_path": "/home/nvme03/workspace/lingbot-world/wan/modules/model_fast.py",
+  "config_path": "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/configs/cam_physgeo/fast_stageA_v2v5_camera_r4_100step.yaml",
+  "device_map_arg": null,
+  "fast_root": "/home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast",
+  "from_pretrained_qualname": "ModelMixin.from_pretrained",
+  "from_pretrained_source_file": "/usr/local/lib/python3.10/dist-packages/huggingface_hub/utils/_validators.py",
+  "inherited_from_diffusers": true,
+  "local_files_only_arg": "not passed in current helper",
+  "low_cpu_mem_usage_arg": false,
+  "mro": [
+    "wan.modules.model_fast.WanModelFast",
+    "diffusers.models.modeling_utils.ModelMixin",
+    "torch.nn.modules.module.Module",
+    "diffusers.utils.hub_utils.PushToHubMixin",
+    "diffusers.configuration_utils.ConfigMixin",
+    "builtins.object"
+  ],
+  "signature": "(pretrained_model_name_or_path: Union[str, os.PathLike, NoneType], **kwargs)",
+  "subfolder": "lingbot_world_fast",
+  "torch_dtype_arg": "bf16 via resolve_stage1_low_precision_dtype",
+  "use_safetensors_arg": "implicit",
+  "wan_model_fast_module": "wan.modules.model_fast"
+}

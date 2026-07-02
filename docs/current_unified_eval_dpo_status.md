@@ -1,3 +1,7 @@
+Current Status Update (2026-07-02 21:58:17): V8G_POLICY_RUNTIME_HELPER_STILL_BLOCKED
+
+v8g localized the v8f blocker further. Direct safe WanModelFast.from_pretrained can load CPU and move to GPU7, but the integrated Stage1 helper policy runtime still times out at 14_construct_policy_model_cpu before runtime_ready. No DPO-family training was run; DPO remains blocked until the helper/cache path uses the proven direct safe loader or is split further.
+
 Current Status:
 POLICY_RUNTIME_LOAD_BLOCKED_14_CONSTRUCT_POLICY_MODEL_CPU
 

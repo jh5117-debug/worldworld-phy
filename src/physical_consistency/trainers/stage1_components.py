@@ -873,7 +873,9 @@ class LingBotStage1Helper:
                 checkpoint_root,
                 subfolder=subfolder,
                 torch_dtype=model_dtype,
-                low_cpu_mem_usage=False,
+                local_files_only=True,
+                use_safetensors=True,
+                low_cpu_mem_usage=True,
                 control_type=control_type,
             )
             LOGGER.info(

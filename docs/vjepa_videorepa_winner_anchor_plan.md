@@ -1,3 +1,7 @@
+Current Status Update (2026-07-02 21:58:17): V8G_MONITOR_FIRST_UPDATE
+
+The explicit LingBot-Fast winner-energy path is still bottlenecked by integrated policy runtime/cache loading. V-JEPA / VideoREPA remains monitor-first and must not be integrated into training until the policy runtime/cache path is stable. No model download or training integration was performed.
+
 Current Status:
 MONITOR_FIRST_RUNTIME_BLOCKED
 

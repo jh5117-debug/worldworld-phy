@@ -54,3 +54,15 @@ No DPO, SDPO, Linear-DPO, Safe-linear, large DPO, cache10 training, pair factory
 ## Git Checkpoint
 
 Commit and push this PRD/status before execution with `Prepare Wan from_pretrained split diagnosis v8g PRD`.
+
+## Execution Readback - v8g
+
+- Source discovery: completed; WanModelFast source path is `/home/nvme03/workspace/lingbot-world/wan/modules/model_fast.py`.
+- Checkpoint inventory: 16 shards, 69.08 GB total, largest 4.61 GB.
+- Shard metadata/tensor timing: PASS; first3 tensor loads were fast.
+- Empty model construction: PASS.
+- State-dict prefix load: PASS for first 3 shards; full injection not completed.
+- Direct safe `from_pretrained`: CPU PASS and GPU7 move PASS.
+- Stage1 helper patch: applied safe args, but integrated policy runtime still timed out at `14_construct_policy_model_cpu` near 309.8 sec.
+- Cache first row: not attempted because runtime_ready was not reached.
+- Training: not run.

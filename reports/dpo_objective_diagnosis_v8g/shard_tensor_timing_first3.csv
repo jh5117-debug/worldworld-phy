@@ -1,0 +1,7 @@
+shard_path,size_gb,metadata_time_sec,tensor_load_time_sec,num_tensors,total_tensor_gb,cpu_rss_before_gb,cpu_rss_after_gb,status,error_reason
+/home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00001-of-00016.safetensors,4.491536761634052,0.0,0.0,0,0.0,0.4487571716308594,0.0,START,
+/home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00001-of-00016.safetensors,4.491536761634052,0.0004291534423828125,0.04161977767944336,90,4.491527557373047,0.4487571716308594,0.4520416259765625,PASS,
+/home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00002-of-00016.safetensors,4.180982301943004,0.0,0.0,0,0.0,0.4520416259765625,0.0,START,
+/home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00002-of-00016.safetensors,4.180982301943004,0.00040149688720703125,0.03906369209289551,90,4.180973052978516,0.4520416259765625,0.4521827697753906,PASS,
+/home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00003-of-00016.safetensors,4.610778506845236,0.0,0.0,0,0.0,0.4521827697753906,0.0,START,
+/home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00003-of-00016.safetensors,4.610778506845236,0.0003643035888671875,0.04106950759887695,90,4.610769271850586,0.4521827697753906,0.4522285461425781,PASS,

@@ -1,0 +1,3 @@
+module cam_physgeo.dpo.wan_from_pretrained_debug
+has main True
+report dir exists True
