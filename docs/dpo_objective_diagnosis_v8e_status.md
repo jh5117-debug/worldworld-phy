@@ -1,6 +1,10 @@
 Current Status:
 GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
 
+## GPU Policy Correction
+
+The previous v8e GPU policy was wrong. Correct policy: do not use H20 GPU4-7. Use H20 GPU0-3 only, or PAI GPU0/1 only if the repo/data are available there. If the authorized GPUs are occupied, v8e remains blocked rather than falling back to H20 GPU4-7.
+
 # DPO Objective Diagnosis v8e Status
 
 Updated: 2026-07-02 10:28 CST

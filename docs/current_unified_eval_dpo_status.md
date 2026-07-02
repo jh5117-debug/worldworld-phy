@@ -1,4 +1,11 @@
 Current Status:
+GPU_POLICY_CORRECTED_H20_0_3_OR_PAI_0_1_ONLY
+
+## 2026-07-02 v8e GPU Policy Correction
+
+The v8e GPU policy has been corrected: do not use H20 GPU4-7. Use H20 GPU0-3 only, or PAI GPU0/1 if the repo/data are available there. At correction time, H20 GPU0-3 were occupied, and the active local environment was hal-9000 rather than PAI, so no GPU run was launched.
+
+Current Status:
 GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
 
 ## 2026-07-02 v8e Status

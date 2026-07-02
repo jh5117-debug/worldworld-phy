@@ -1,7 +1,11 @@
 Current Status:
 GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
 
-## Actual Result 2026-07-02 10:28 CST
+### GPU Policy Correction
+
+The previous v8e GPU policy was wrong. Correct policy: do not use H20 GPU4-7. Use H20 GPU0-3 only, or PAI GPU0/1 only if the repo/data are available there. If the authorized GPUs are occupied, v8e remains blocked rather than falling back to H20 GPU4-7.
+
+# Actual Result 2026-07-02 10:28 CST
 
 - PRD was committed and pushed before execution.
 - Runtime-ready diagnostic code was implemented and pushed.
@@ -44,10 +48,10 @@ Runtime-ready must be split into bounded stages with heartbeat output. Building 
 
 ## GPU Policy
 
-- Use GPU4-7 only.
-- Prefer physical GPU7 via CUDA_VISIBLE_DEVICES=7, so process-local --gpu 0 maps to physical GPU7.
-- If GPU7 is not free, use GPU6 only if free.
-- Do not use physical GPU0-3.
+- Use H20 physical GPU0-3 only, or PAI GPU0/1 only if the repo/data are available there.
+- Do not use H20 physical GPU4-7.
+- Prefer an actually free H20 GPU among 0-3; if all are occupied, do not launch.
+- If using PAI, use only PAI GPU0/1 and keep outputs in the approved project paths.
 
 ## Method
 
