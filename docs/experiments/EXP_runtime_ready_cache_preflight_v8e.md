@@ -3,14 +3,14 @@ GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
 
 ### GPU Policy Correction
 
-The previous v8e GPU policy was wrong. Correct policy: do not use H20 GPU4-7. Use H20 GPU0-3 only, or PAI GPU0/1 only if the repo/data are available there. If the authorized GPUs are occupied, v8e remains blocked rather than falling back to H20 GPU4-7.
+The previous v8e GPU policy correction was itself wrong. Correct policy: use H20 physical GPU4-7 only for this task. Do not use H20 GPU0-3, and do not use PAI GPU0/1. If H20 GPU4-7 are occupied, v8e remains blocked rather than falling back to other GPUs.
 
 # Actual Result 2026-07-02 10:28 CST
 
 - PRD was committed and pushed before execution.
 - Runtime-ready diagnostic code was implemented and pushed.
 - GPU preflight was not run because physical GPU4-7 were occupied by existing Python jobs.
-- GPU0-3 were not used.
+- GPU0-3 and PAI GPU0/1 are not authorized for this task and were not used.
 - one-pair minimal_no_ref, with_ref, cache10, validation, and training were not run.
 - Decision: `GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN`.
 
@@ -48,10 +48,10 @@ Runtime-ready must be split into bounded stages with heartbeat output. Building 
 
 ## GPU Policy
 
-- Use H20 physical GPU0-3 only, or PAI GPU0/1 only if the repo/data are available there.
-- Do not use H20 physical GPU4-7.
-- Prefer an actually free H20 GPU among 0-3; if all are occupied, do not launch.
-- If using PAI, use only PAI GPU0/1 and keep outputs in the approved project paths.
+- Use H20 physical GPU4-7 only for v8e.
+- Do not use H20 physical GPU0-3.
+- Do not use PAI GPU0/1 for this task.
+- Prefer an actually free H20 GPU among 4-7; if all are occupied, do not launch.
 
 ## Method
 

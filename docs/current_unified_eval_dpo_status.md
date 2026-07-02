@@ -1,9 +1,9 @@
 Current Status:
-GPU_POLICY_CORRECTED_H20_0_3_OR_PAI_0_1_ONLY
+GPU_POLICY_CORRECTED_H20_4_7_ONLY
 
 ## 2026-07-02 v8e GPU Policy Correction
 
-The v8e GPU policy has been corrected: do not use H20 GPU4-7. Use H20 GPU0-3 only, or PAI GPU0/1 if the repo/data are available there. At correction time, H20 GPU0-3 were occupied, and the active local environment was hal-9000 rather than PAI, so no GPU run was launched.
+The v8e GPU policy has been corrected again after user clarification: use H20 physical GPU4-7 only. Do not use H20 GPU0-3 and do not use PAI GPU0/1 for this task. At correction time, H20 GPU4-7 were occupied by existing Python jobs, so no GPU run was launched.
 
 Current Status:
 GPU_BLOCKED_BEFORE_RUNTIME_READY_RUN
@@ -74,7 +74,7 @@ Updated: 2026-07-01 16:05:00 CST
 - Visual audit policy and v7 PRDs were committed and pushed before experiment work.
 - Tiny smoke subset is ready: 10 reviewed GT>C pairs, loser reward mean 0.759517, reward margin mean 0.240483.
 - Loser visual audit is complete for the smoke subset: 10 / 10 reviewed and DPO-ready.
-- DPO smoke training did not start because authorized GPU4-7 were occupied at launch time; GPU0-3 were not used.
+- DPO smoke training did not start because authorized GPU4-7 were occupied at launch time; GPU0-3 and PAI GPU0/1 were not used.
 - Pair factory condition expansion from existing v6b candidate rows produced 21 unique runnable conditions, below the 80 target.
 - Pair factory rollout did not start because GPU4-7 were occupied and more condition recovery is still needed.
 - No large-scale DPO, StageB, GRPO, full-data StageA, broad-LoRA, checkpoint deletion, or checkpoint modification was run.
