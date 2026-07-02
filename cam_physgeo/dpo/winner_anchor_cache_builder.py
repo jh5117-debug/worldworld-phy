@@ -109,6 +109,9 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
         torch.cuda.reset_peak_memory_stats()
     device = f"cuda:{int(args.gpu)}" if torch.cuda.is_available() else "cpu"
     pairs = reviewed_pairs(args.pair_manifest, int(args.num_pairs))
+    cache_level = str(getattr(args, "cache_level", "with_ref_energy"))
+    if cache_level not in {"minimal_no_ref", "with_ref_energy"}:
+        raise ValueError(f"unsupported cache_level={cache_level}")
     fieldnames = [
         "pair_id", "cache_status", "cache_tensor_path", "sha256", "E_ref_winner_cached",
         "timestep", "timestep_index", "actual_sigma", "used_window_frames", "prefix_len",
@@ -188,9 +191,14 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
                 total_frames=int(args.used_window_frames),
             )
             _progress(progress_path, stage="after_prepare_winner_cached", pair_id=pair_id, pair_index=idx, **cuda_stats())
-            with torch.no_grad(), backend.reference_mode():
-                ref_energy = backend.energy(prepared, ts).detach()
-            _progress(progress_path, stage="after_ref_energy", pair_id=pair_id, pair_index=idx, E_ref_winner_cached=float(ref_energy.detach().float().cpu().item()), **cuda_stats())
+            ref_energy = None
+            if cache_level == "with_ref_energy":
+                _progress(progress_path, stage="before_ref_energy", pair_id=pair_id, pair_index=idx, **cuda_stats())
+                with torch.no_grad(), backend.reference_mode():
+                    ref_energy = backend.energy(prepared, ts).detach()
+                _progress(progress_path, stage="after_ref_energy", pair_id=pair_id, pair_index=idx, E_ref_winner_cached=float(ref_energy.detach().float().cpu().item()), **cuda_stats())
+            else:
+                _progress(progress_path, stage="skip_ref_energy_minimal_no_ref", pair_id=pair_id, pair_index=idx, **cuda_stats())
             cache_payload = {
                 "target": to_cpu(prepared.target),
                 "noisy_latent": to_cpu(prepared.noisy_latent),
@@ -204,7 +212,7 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
                 "actual_sigma": float(ts.sigma),
                 "timestep_weight": float(ts.weight),
             }
-            finite = tensor_tree_finite(cache_payload) and bool(torch.isfinite(ref_energy.float()).all().item())
+            finite = tensor_tree_finite(cache_payload) and (ref_energy is None or bool(torch.isfinite(ref_energy.float()).all().item()))
             if not finite:
                 raise FloatingPointError("nonfinite tensor or E_ref_winner")
             tensor_name = f"{idx:03d}_{pair_id.replace('/', '_')}.pt"
@@ -229,7 +237,8 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
                 "selected_raw_frame_indices": list(range(int(args.used_window_frames))),
                 "prefix_len": int(args.prefix_len),
                 "prediction_start_frame": int(args.prediction_start_frame),
-                "E_ref_winner_cached": float(ref_energy.detach().float().cpu().item()),
+                "E_ref_winner_cached": float(ref_energy.detach().float().cpu().item()) if ref_energy is not None else "",
+                "cache_level": cache_level,
                 "timestep": float(ts.timestep.detach().flatten()[0].item()) if hasattr(ts.timestep, "detach") else float(ts.timestep),
                 "timestep_index": int(ts.index),
                 "actual_sigma": float(ts.sigma),
@@ -261,7 +270,9 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
             )
             success += 1
             _progress(progress_path, stage="pair_cache_pass", pair_id=pair_id, pair_index=idx, cache_tensor_path=str(tensor_path), **cuda_stats())
-            del video, poses, intrinsics, prepared, cache_payload, ref_energy
+            del video, poses, intrinsics, prepared, cache_payload
+            if ref_energy is not None:
+                del ref_energy
         except Exception as exc:  # noqa: BLE001 - row-level cache failure must be recorded
             fail += 1
             row["error_reason"] = repr(exc)
@@ -277,6 +288,7 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
         "requested_pairs": int(args.num_pairs),
         "reviewed_pairs_loaded": len(pairs),
         "success": success,
+        "cache_level": cache_level,
         "fail": fail,
         "cache_root": str(out_root),
         "cache_index": str(index_path),
@@ -295,7 +307,8 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
         f"- Cache index: `{index_path}`\n"
         f"- Report: `{report}`\n"
         "- Loser cached: no.\n"
-        "- Reference graph cached: no; only scalar E_ref_winner_cached is stored.\n",
+        f"- Cache level: {cache_level}\n"
+        + ("- Reference graph cached: no; only scalar E_ref_winner_cached is stored.\n" if cache_level == "with_ref_energy" else "- Reference not used; E_ref_winner_cached intentionally omitted.\n"),
         encoding="utf-8",
     )
     print(json.dumps(summary, indent=2, sort_keys=True))
@@ -314,6 +327,10 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--output_root", required=True)
     parser.add_argument("--report", required=True)
     parser.add_argument("--progress", default="")
+    parser.add_argument("--cache_level", default="with_ref_energy", choices=["minimal_no_ref", "with_ref_energy"])
+    parser.add_argument("--heartbeat_seconds", type=float, default=30.0)
+    parser.add_argument("--per_stage_timeout_seconds", type=float, default=180.0)
+    parser.add_argument("--per_pair_timeout_seconds", type=float, default=600.0)
     parser.add_argument("--config", default="configs/cam_physgeo/fast_stageA_v2v5_camera_r4_100step.yaml")
     parser.add_argument("--repo_root", default=".")
     parser.add_argument("--runtime_device", default="cuda")
