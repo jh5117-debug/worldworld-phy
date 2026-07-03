@@ -49,6 +49,20 @@ def append_csv(path: Path, row: dict[str, Any], fieldnames: list[str]) -> None:
         writer.writerow(row)
 
 
+def has_loser_field(obj: Any) -> bool:
+    """Return true only for actual loser-named fields, not paths like dpo_objective."""
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if "loser" in str(key).lower():
+                return True
+            if has_loser_field(value):
+                return True
+        return False
+    if isinstance(obj, (list, tuple)):
+        return any(has_loser_field(value) for value in obj)
+    return False
+
+
 def validate_cache_root(cache_root: str | Path, output: str | Path) -> dict[str, Any]:
     root = Path(cache_root)
     out = Path(output)
@@ -79,7 +93,7 @@ def validate_cache_root(cache_root: str | Path, output: str | Path) -> dict[str,
         finite = False
         future_mask_nonempty = False
         mask_excludes_prefix = False
-        no_loser_fields = "loser" not in json.dumps(row).lower()
+        no_loser_fields = not has_loser_field(row)
         eref_finite = False
         actual_sigma_present = row.get("actual_sigma") not in {None, ""}
         try:
@@ -97,7 +111,7 @@ def validate_cache_root(cache_root: str | Path, output: str | Path) -> dict[str,
             indices = list(payload.get("latent_loss_indices", []))
             future_mask_nonempty = len(indices) > 0
             mask_excludes_prefix = future_mask_nonempty and min(int(x) for x in indices) >= 2
-            no_loser_fields = no_loser_fields and "loser" not in json.dumps(sorted(payload.keys())).lower()
+            no_loser_fields = no_loser_fields and not has_loser_field(payload)
             eref = float(row.get("E_ref_winner_cached"))
             eref_finite = math.isfinite(eref)
             if int(row.get("used_window_frames", -1)) != 49:
@@ -116,6 +130,8 @@ def validate_cache_root(cache_root: str | Path, output: str | Path) -> dict[str,
                 errors.append("nonfinite_E_ref")
             if not actual_sigma_present:
                 errors.append("missing_actual_sigma")
+            if not no_loser_fields:
+                errors.append("loser_field_present")
             if duplicate:
                 errors.append("duplicate_pair_id")
         except Exception as exc:  # noqa: BLE001
