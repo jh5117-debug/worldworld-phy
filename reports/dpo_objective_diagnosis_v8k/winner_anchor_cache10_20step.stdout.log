@@ -1,0 +1,29 @@
+PC_FORCE_SDPA_FALLBACK=1 but wan.modules.attention has no _sdpa_fallback; cannot patch flash_attention
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00001-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00002-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00003-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00004-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00005-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00006-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00007-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00008-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00009-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00010-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00011-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00012-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00013-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00014-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00015-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00016-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+{
+  "cache_root": "local_assets/dpo_objective_cache_v8j/gt_c_10_window49",
+  "final_winner_improvement_post": 8.058547973632812e-05,
+  "loser_loaded_in_training_loop": false,
+  "mean_winner_improvement_post": 1.239776611328125e-05,
+  "output": "reports/dpo_objective_diagnosis_v8k/winner_anchor_cache10_20step.csv",
+  "reference_loaded_in_training_loop": false,
+  "status": "WINNER_ANCHOR_CACHE10_PASS",
+  "steps_completed": 20,
+  "summary": "reports/dpo_objective_diagnosis_v8k/winner_anchor_cache10_20step_summary.md",
+  "vae_used_in_training_loop": false
+}
