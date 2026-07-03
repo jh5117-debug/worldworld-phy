@@ -352,7 +352,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--steps", type=int, default=20)
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--output", required=True)
-    parser.add_argument("--config", default="configs/lingbot_fast_dpo.yaml")
+    parser.add_argument("--config", default="configs/cam_physgeo/fast_stageA_v2v5_camera_r4_100step.yaml")
     parser.add_argument("--height", type=int, default=480)
     parser.add_argument("--width", type=int, default=832)
     parser.add_argument("--used_window_frames", type=int, default=49)
