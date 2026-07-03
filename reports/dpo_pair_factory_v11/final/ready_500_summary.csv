@@ -1,0 +1,5 @@
+metric,count
+total_candidates,931
+ready_before_balancing,612
+ready_selected,500
+rejected,319
