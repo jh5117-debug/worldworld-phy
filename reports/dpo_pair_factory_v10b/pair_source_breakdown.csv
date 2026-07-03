@@ -1,0 +1,11 @@
+field,value,count
+pair_source,synthetic_controlled,63
+pair_source,rollout_derived,15
+pair_source,typeA_plus_controlled,3
+pair_type,TypeM_v10_synthetic_visible,63
+pair_type,GT_C,15
+pair_type,TypeA_plus,3
+is_synthetic,True,63
+is_synthetic,False,18
+is_rollout_derived,False,66
+is_rollout_derived,True,15

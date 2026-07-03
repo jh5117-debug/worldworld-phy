@@ -1,0 +1,20 @@
+{
+  "caveat": "real rollout-derived subset remains small; expansion still needed",
+  "failure_counts": {
+    "collision_event_failure": 1,
+    "collision_extra_objects": 1,
+    "containment_extra_objects": 2,
+    "containment_failure": 3,
+    "event_extra_objects": 1,
+    "event_missing_or_fragments": 1,
+    "foreground_identity_event": 1,
+    "foreground_identity_extra_objects": 2,
+    "physical_event_fragments": 1,
+    "roll_identity_event": 2
+  },
+  "rejected_count": 0,
+  "rollout_diagnostic_only_count": 0,
+  "rollout_total_count": 15,
+  "rollout_trainable_count": 15,
+  "status": "ROLLOUT_QUALITY_READY"
+}

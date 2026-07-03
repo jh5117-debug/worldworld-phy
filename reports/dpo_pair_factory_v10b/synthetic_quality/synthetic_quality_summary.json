@@ -1,0 +1,14 @@
+{
+  "caveat": "controlled synthetic, not rollout",
+  "failure_counts": {
+    "foreground_identity_color_shift": 20,
+    "local_patch_drift": 16,
+    "local_patch_freeze": 14,
+    "local_temporal_jump": 13
+  },
+  "rejected_count": 0,
+  "status": "SYNTHETIC_QUALITY_READY",
+  "synthetic_diagnostic_only_count": 0,
+  "synthetic_total_count": 63,
+  "synthetic_trainable_count": 63
+}

@@ -1,0 +1,24 @@
+{
+  "diagnostic_only_count": 0,
+  "rejected_count": 0,
+  "source_counts": {
+    "rollout_derived": 15,
+    "synthetic_controlled": 63,
+    "typeA_plus_controlled": 3
+  },
+  "status": "PAIR_FACTORY_V10B_READY_FREEZE",
+  "status_counts": {
+    "ready_strict": 81
+  },
+  "strict_ready_count": 81,
+  "subset_counts": {
+    "all_ready": 81,
+    "ppt_subset": 5,
+    "rollout_only": 15,
+    "synthetic_controlled": 66,
+    "top20_demo": 20,
+    "top50_balanced": 50
+  },
+  "total_pairs": 81,
+  "trainable_count": 81
+}

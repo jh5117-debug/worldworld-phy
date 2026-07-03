@@ -1,0 +1,8 @@
+field,value,count
+status,ready_strict,81
+trainable,True,81
+diagnostic_only,False,81
+localdpo_ready,True,66
+localdpo_ready,False,15
+time_mask_ready,True,66
+time_mask_ready,False,15
