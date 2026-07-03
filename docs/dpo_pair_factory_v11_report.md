@@ -1,3 +1,15 @@
+Current Status: MIXED
+
+## 2026-07-04 Ready500 Loser Quality and Metrics Backend Update
+
+- Re-audited all 500 v11 ready pairs for LOSE trainability.
+- 497/500 are training-usable after loser quality audit.
+- 3 TypeA_plus pairs are rejected/review-only due `too_subtle_metric`.
+- Use `manifests/dpo_pair_factory_v11_ready500_trainable_after_loser_audit.jsonl` for any next tiny DPO data pass.
+- LPIPS backend is now available and smoke-tested.
+- FVD remains blocked by missing real temporal FVD backend/local I3D weights.
+- VBench package/CLI is available but real scoring requires explicit project config and checkpoint/cache policy.
+
 Current Status: PAIR_FACTORY_V11_READY_500
 
 # DPO Pair Factory v11 Scale-500 Report

@@ -1,0 +1,53 @@
+usage: vbench evaluate [-h] [--ngpus NGPUS] [--output_path OUTPUT_PATH]
+                       [--full_json_dir FULL_JSON_DIR] --videos_path
+                       VIDEOS_PATH --dimension DIMENSION
+                       [--load_ckpt_from_local LOAD_CKPT_FROM_LOCAL]
+                       [--read_frame READ_FRAME]
+                       [--mode {custom_input,vbench_standard,vbench_category}]
+                       [--prompt PROMPT] [--prompt_file PROMPT_FILE]
+                       [--category CATEGORY]
+                       [--imaging_quality_preprocessing_mode IMAGING_QUALITY_PREPROCESSING_MODE]
+
+options:
+  -h, --help            show this help message and exit
+  --ngpus NGPUS         Number of GPUs to run evaluation on
+  --output_path OUTPUT_PATH
+                        output path to save the evaluation results
+  --full_json_dir FULL_JSON_DIR
+                        path to save the json file that contains the prompt and dimension information
+  --videos_path VIDEOS_PATH
+                        folder that contains the sampled videos
+  --dimension DIMENSION
+                        list of evaluation dimensions, usage: --dimension <dim_1> <dim_2>
+  --load_ckpt_from_local LOAD_CKPT_FROM_LOCAL
+                        whether load checkpoints from local default paths (assuming you have downloaded the checkpoints locally
+  --read_frame READ_FRAME
+                        whether directly read frames, or directly read videos
+  --mode {custom_input,vbench_standard,vbench_category}
+                        This flags determine the mode of evaluations, choose one of the following:
+                                1. "custom_input": receive input prompt from either --prompt/--prompt_file flags or the filename
+                                2. "vbench_standard": evaluate on standard prompt suite of VBench
+                                3. "vbench_category": evaluate on specific category
+                                
+  --prompt PROMPT       Specify the input prompt
+                                If not specified, filenames will be used as input prompts
+                                * Mutually exclusive to --prompt_file.
+                                ** This option must be used with --mode=custom_input flag
+                                
+  --prompt_file PROMPT_FILE
+                        Specify the path of the file that contains prompt lists
+                                If not specified, filenames will be used as input prompts
+                                * Mutually exclusive to --prompt.
+                                ** This option must be used with --mode=custom_input flag
+                                
+  --category CATEGORY   This is for mode=='vbench_category'
+                                The category to evaluate on, usage: --category=animal.
+                                
+  --imaging_quality_preprocessing_mode IMAGING_QUALITY_PREPROCESSING_MODE
+                        This is for setting preprocessing in imaging_quality
+                                1. 'shorter': if the shorter side is more than 512, the image is resized so that the shorter side is 512.
+                                2. 'longer': if the longer side is more than 512, the image is resized so that the longer side is 512.
+                                3. 'shorter_centercrop': if the shorter side is more than 512, the image is resized so that the shorter side is 512. 
+                                Then the center 512 x 512 after resized is used for evaluation.
+                                4. 'None': no preprocessing
+                                

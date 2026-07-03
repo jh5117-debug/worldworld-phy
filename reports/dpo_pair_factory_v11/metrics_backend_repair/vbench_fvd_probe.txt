@@ -1,0 +1,40 @@
+==== vbench help ====
+usage: vbench [-h] {evaluate,static_filter} ...
+
+options:
+  -h, --help            show this help message and exit
+
+vbench subcommands:
+  {evaluate,static_filter}
+==== local fvd/vbench weight search ====
+./reports/candidate_generator_v2/fvd_summary.csv
+./reports/candidate_generator_v2/vbench_summary.csv
+./reports/dpo_pair_factory_v11/metrics_backend_repair/pip_install_lpips_fvd_vbench.log
+./reports/dpo_pair_factory_v11/metrics_backend_repair/vbench_fvd_probe.txt
+./docs/experiments/EXP_metrics_backend_fvd_vbench.md
+./cam_physgeo/eval/metrics_vbench.py
+./cam_physgeo/eval/__pycache__/metrics_vbench.cpython-310.pyc
+./cam_physgeo/eval/__pycache__/metrics_fvd.cpython-310.pyc
+./cam_physgeo/eval/metrics_fvd.py
+./tests/test_vbench_wrapper.py
+./tests/__pycache__/test_fvd_wrapper.cpython-310.pyc
+./tests/__pycache__/test_vbench_wrapper.cpython-310.pyc
+./tests/__pycache__/test_fvd_wrapper.cpython-310-pytest-9.1.1.pyc
+./tests/__pycache__/test_vbench_wrapper.cpython-310-pytest-9.1.1.pyc
+./tests/test_fvd_wrapper.py
+/home/nvme04/code_sync/H20_Video_inpainting_DPO_from_pai_20260527_164734/tools/summarize_vbench_results.py
+/home/nvme04/code_sync/H20_Video_inpainting_DPO_from_pai_20260527_164734/tools/videodpo_prepare_vbench_standard.py
+/home/nvme04/code_sync/H20_Video_inpainting_DPO_from_pai_20260527_164734/tools/vbench_named_side_by_side.py
+/home/nvme04/code_sync/H20_Video_inpainting_DPO_from_pai_20260527_164734/tools/vbench_make_paper_table.py
+/home/nvme04/code_sync/H20_Video_inpainting_DPO_from_pai_20260527_164734/tools/generate_diffueraser_fullmask_vbench.py
+/home/nvme04/code_sync/H20_Video_inpainting_DPO_from_pai_20260527_164734/tools/select_best_vbench_checkpoint.py
+/home/nvme04/code_sync/H20_Video_inpainting_DPO_from_pai_20260527_164734/DPO_finetune/scripts/h20_diffueraser_fullmask_vbench.sh
+/home/nvme04/code_sync/H20_Video_inpainting_DPO_from_pai_20260527_164734/DPO_finetune/scripts/sc_videodpo_vc2_vbench.sbatch
+/home/nvme04/code_sync/H20_active_code_backup_before_promote_20260529_112635/tools/summarize_vbench_results.py
+/home/nvme04/code_sync/H20_active_code_backup_before_promote_20260529_112635/tools/videodpo_prepare_vbench_standard.py
+/home/nvme04/code_sync/H20_active_code_backup_before_promote_20260529_112635/tools/vbench_named_side_by_side.py
+/home/nvme04/code_sync/H20_active_code_backup_before_promote_20260529_112635/tools/vbench_make_paper_table.py
+/home/nvme04/code_sync/H20_active_code_backup_before_promote_20260529_112635/tools/generate_diffueraser_fullmask_vbench.py
+/home/nvme04/code_sync/H20_active_code_backup_before_promote_20260529_112635/tools/select_best_vbench_checkpoint.py
+/home/nvme04/code_sync/H20_active_code_backup_before_promote_20260529_112635/DPO_finetune/scripts/h20_diffueraser_fullmask_vbench.sh
+/home/nvme04/code_sync/H20_active_code_backup_before_promote_20260529_112635/DPO_finetune/scripts/sc_videodpo_vc2_vbench.sbatch

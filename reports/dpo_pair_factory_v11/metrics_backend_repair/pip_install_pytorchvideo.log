@@ -1,0 +1,28 @@
+Collecting pytorchvideo
+  Downloading pytorchvideo-0.1.5.tar.gz (132 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 132.7/132.7 KB 780.8 kB/s eta 0:00:00
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: fvcore in /home/ubuntu/.local/lib/python3.10/site-packages (from pytorchvideo) (0.1.5.post20221221)
+Requirement already satisfied: av in /usr/local/lib/python3.10/dist-packages (from pytorchvideo) (16.0.1)
+Collecting parameterized
+  Downloading parameterized-0.9.0-py2.py3-none-any.whl (20 kB)
+Requirement already satisfied: iopath in /home/ubuntu/.local/lib/python3.10/site-packages (from pytorchvideo) (0.1.10)
+Requirement already satisfied: networkx in /home/ubuntu/.local/lib/python3.10/site-packages (from pytorchvideo) (3.4.2)
+Requirement already satisfied: tqdm in /usr/local/lib/python3.10/dist-packages (from fvcore->pytorchvideo) (4.66.5)
+Requirement already satisfied: pyyaml>=5.1 in /usr/lib/python3/dist-packages (from fvcore->pytorchvideo) (5.4.1)
+Requirement already satisfied: yacs>=0.1.6 in /home/ubuntu/.local/lib/python3.10/site-packages (from fvcore->pytorchvideo) (0.1.8)
+Requirement already satisfied: Pillow in /usr/local/lib/python3.10/dist-packages (from fvcore->pytorchvideo) (12.0.0)
+Requirement already satisfied: numpy in /usr/local/lib/python3.10/dist-packages (from fvcore->pytorchvideo) (1.26.4)
+Requirement already satisfied: tabulate in /home/ubuntu/.local/lib/python3.10/site-packages (from fvcore->pytorchvideo) (0.10.0)
+Requirement already satisfied: termcolor>=1.1 in /usr/local/lib/python3.10/dist-packages (from fvcore->pytorchvideo) (2.5.0)
+Requirement already satisfied: portalocker in /home/ubuntu/.local/lib/python3.10/site-packages (from iopath->pytorchvideo) (3.2.0)
+Requirement already satisfied: typing_extensions in /home/ubuntu/.local/lib/python3.10/site-packages (from iopath->pytorchvideo) (4.15.0)
+Building wheels for collected packages: pytorchvideo
+  Building wheel for pytorchvideo (setup.py): started
+  Building wheel for pytorchvideo (setup.py): finished with status 'done'
+  Created wheel for pytorchvideo: filename=pytorchvideo-0.1.5-py3-none-any.whl size=188756 sha256=837a9040277cbdbe7448f3b79736abcb4b2f982391f06b54a835a0a34ed8c28a
+  Stored in directory: /tmp/pip-ephem-wheel-cache-arij_p1o/wheels/ff/4e/81/0f72a543be9ed7eb737c95bfc5da4025e73226b44368074ece
+Successfully built pytorchvideo
+Installing collected packages: parameterized, pytorchvideo
+Successfully installed parameterized-0.9.0 pytorchvideo-0.1.5

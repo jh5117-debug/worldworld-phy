@@ -45,3 +45,17 @@ A dedicated loser-quality audit over the 500 contact sheets and loser videos can
 ## What Is Not Run
 
 No DPO, no training, no SDPO, no Linear-DPO, no winner-anchor, no StageA/StageB/GRPO, no checkpoint modifications.
+
+
+## Result Update
+
+
+### 2026-07-04 04:10:15
+
+- Ready500 loser quality audit completed for 500/500 rows.
+- 497 pairs remain training-usable after stricter loser audit.
+- 3 TypeA_plus pairs are marked `REJECT_OR_REVIEW` due `too_subtle_metric`.
+- LPIPS backend repaired and real alex smoke passed.
+- FVD remains blocked by missing real temporal FVD backend/local I3D weights; image FID is not substituted.
+- VBench package and CLI are available, but actual scoring is blocked until project-local dimensions, input folder convention, and checkpoint/cache policy are configured.
+- No DPO/training/StageA/StageB/GRPO was run.

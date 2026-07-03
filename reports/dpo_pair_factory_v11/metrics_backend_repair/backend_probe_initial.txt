@@ -1,0 +1,11 @@
+python /usr/bin/python3 3.10.6 (main, Aug 10 2022, 11:40:04) [GCC 11.3.0]
+IMPORT torch PASS 2.7.1+cu128
+IMPORT torchvision PASS 0.22.1+cu128
+IMPORT cv2 PASS 4.10.0
+IMPORT numpy PASS 1.26.4
+IMPORT lpips FAIL ModuleNotFoundError("No module named 'lpips'")
+IMPORT torchmetrics FAIL ModuleNotFoundError("No module named 'torchmetrics'")
+IMPORT pytorch_fid FAIL ModuleNotFoundError("No module named 'pytorch_fid'")
+IMPORT vbench FAIL ModuleNotFoundError("No module named 'vbench'")
+IMPORT scipy PASS 1.15.3
+torch cuda True 12.8 8

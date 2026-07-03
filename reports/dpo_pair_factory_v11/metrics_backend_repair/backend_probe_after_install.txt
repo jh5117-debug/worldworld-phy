@@ -1,0 +1,18 @@
+python /usr/bin/python3 3.10.6 (main, Aug 10 2022, 11:40:04) [GCC 11.3.0]
+IMPORT torch PASS 2.7.1+cu128 /usr/local/lib/python3.10/dist-packages/torch/__init__.py
+IMPORT torchvision PASS 0.22.1+cu128 /usr/local/lib/python3.10/dist-packages/torchvision/__init__.py
+IMPORT cv2 PASS 4.11.0 /home/ubuntu/.local/lib/python3.10/site-packages/cv2/__init__.py
+IMPORT numpy PASS 1.26.4 /usr/local/lib/python3.10/dist-packages/numpy/__init__.py
+IMPORT lpips PASS  /home/ubuntu/.local/lib/python3.10/site-packages/lpips/__init__.py
+IMPORT torchmetrics PASS 1.9.0 /home/ubuntu/.local/lib/python3.10/site-packages/torchmetrics/__init__.py
+IMPORT pytorch_fid PASS 0.3.0 /home/ubuntu/.local/lib/python3.10/site-packages/pytorch_fid/__init__.py
+IMPORT vbench PASS  /home/ubuntu/.local/lib/python3.10/site-packages/vbench/__init__.py
+IMPORT piq PASS 0.8.0 /home/ubuntu/.local/lib/python3.10/site-packages/piq/__init__.py
+IMPORT transformers PASS 4.33.2 /home/ubuntu/.local/lib/python3.10/site-packages/transformers/__init__.py
+--- smoke ---
+LPIPS_SMOKE PASS 0.25512897968292236 mode=pnet_rand_no_download
+PYTORCH_FID_IMPORT PASS pytorch_fid.fid_score
+TORCHMETRICS_NAMES []
+TORCHMETRICS_FID_IMPORT PASS
+TORCHMETRICS_FVD_IMPORT FAIL ImportError("cannot import name 'FrechetVideoDistance' from 'torchmetrics.video' (/home/ubuntu/.local/lib/python3.10/site-packages/torchmetrics/video/__init__.py)")
+VBENCH_IMPORT PASS /home/ubuntu/.local/lib/python3.10/site-packages/vbench/__init__.py

@@ -1,0 +1,5 @@
+backend,status,import_status,runtime_smoke,details,remaining_blocker
+LPIPS,AVAILABLE,PASS,PASS_REAL_ALEX,lpips installed; real LPIPS alex smoke completed without using fake metric.,none for pair-level LPIPS; still need batch recompute if desired
+ImageFID_pytorch_fid,AVAILABLE_DIAGNOSTIC_ONLY,PASS,IMPORT_PASS,pytorch-fid installed and imports; this is image FID only.,must not be reported as video FVD
+FVD,BLOCKED_BY_ENV_TEMPORAL_BACKBONE,PARTIAL,NO_REAL_FVD_CLASS,torchmetrics has no FrechetVideoDistance; pytorchvideo imports but no project-local FVD metric or I3D weights were found; refused to substitute image FID.,need approved temporal FVD implementation plus local I3D video feature weights or official evaluator
+VBench,PACKAGE_CLI_AVAILABLE_CONFIG_BLOCKED,PASS,CLI_HELP_PASS,vbench package imports and CLI help and evaluate help work after install.,"project-local VBench dimensions, videos path, and checkpoint cache policy must be configured before real scoring"
