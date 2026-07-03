@@ -158,3 +158,20 @@ Commit PRD before execution:
 `Prepare DPO pair factory v10 PRD`
 
 Follow-up commits should separate condition recovery, existing pair audit, rollout/scoring, pair construction, and final documentation.
+
+## Milestone Readback
+
+### 2026-07-03 Condition Inventory
+- Runnable prefix5 conditions recovered: 102.
+- Status: CONDITION_INVENTORY_READY_100.
+- Output manifest: `manifests/dpo_pair_factory_v10_conditions.jsonl`.
+- Recovered videos are stored under `local_assets/dpo_pair_factory_v10/recovered_conditions/` and are not committed.
+
+### 2026-07-03 Existing Pair Audit
+- Total existing pairs checked: 195.
+- Strict DPO-ready existing pairs: 18.
+- Ready types: GT_C 15, TypeA_plus 3.
+- Old v1/v2/v3 pairs are marked review-required due subtle-risk, not counted as ready.
+- Output manifest: `manifests/dpo_pair_factory_v10_existing_ready_pairs.jsonl`.
+- Next step: expanded pair mining from the 102 recovered runnable conditions.
+

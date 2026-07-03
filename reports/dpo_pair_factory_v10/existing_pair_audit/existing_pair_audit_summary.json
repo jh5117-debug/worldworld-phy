@@ -1,0 +1,17 @@
+{
+  "dpo_ready_existing_strict": 18,
+  "ready_manifest": "manifests/dpo_pair_factory_v10_existing_ready_pairs.jsonl",
+  "ready_pair_types": {
+    "GT_C": 15,
+    "TypeA_plus": 3
+  },
+  "rule": "Only v6b reviewed GT>C or v5 human-visible pairs are strict-ready; old v1/v2/v3 broad TypeA pairs are review-required, not counted.",
+  "status": "EXISTING_PAIR_AUDIT_READY",
+  "status_counts": {
+    "DPO_READY_EXISTING_STRICT": 18,
+    "REJECT_TECHNICAL_OR_LABEL_GATE": 4,
+    "REVIEW_REQUIRED_OLD_SUBTLE_RISK": 134,
+    "REVIEW_REQUIRED_UNMAPPED_AUDIT": 39
+  },
+  "total_pairs_checked": 195
+}

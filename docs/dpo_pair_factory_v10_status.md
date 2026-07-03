@@ -1,30 +1,35 @@
 Current Status:
-DPO_PAIR_FACTORY_V10_PRD_READY
+PAIR_FACTORY_V10_CONDITION_READY_EXISTING_PAIRS_INSUFFICIENT
 
 # DPO Pair Factory v10 Status
 
-Updated: 2026-07-03 16:15 CST
+## Priority
+The current priority is DPO preference pair data, not objective debugging or DPO training. v10 focuses on condition recovery, existing pair re-audit, medium-hard loser mining, metrics, reward scoring, and PPT-ready visualization.
 
-The active H20-2 priority has changed from DPO objective diagnosis to DPO preference-pair data construction. v7/v8 objective work remains diagnostic only and must not drive the next experiment. The immediate blocker is pair data volume and label purity, not optimizer plumbing.
+## Completed Milestones
+- PRD created and pushed in `e3f9e2a`.
+- Prefix5 condition inventory/recovery completed and pushed in `8da89c2`.
+- Runnable prefix5 conditions recovered: 102.
+- Template coverage: collision 36, containment 27, drop 17, roll 22.
+- Camera coverage: orbit_left_44 27, orbit_left_72 17, orbit_right_60 22, orbit_right_64 30, strafe_left_180 6.
+- Existing pair strict re-audit completed.
+- Existing strict DPO-ready pairs: 18 total, including 15 GT>C and 3 TypeA_plus.
 
-Known data state at v10 start:
+## Existing Pair Audit Result
+Strict ready pairs are limited to v6b reviewed GT>C pairs and v5 human-visible pairs. Old v1/v2/v3 broad TypeA pairs are not counted as DPO-ready because later visual alignment showed many reward-selected/local-corruption pairs are too subtle for human-visible medium-hard preference learning.
 
-- v6 targeted B/C loser mining recovered only 5 runnable prefix5 conditions and 4 DPO-ready GT>C pairs, which is insufficient.
-- v6b recovered 32 runnable prefix5 conditions, ran B/C rollout, selected 16 C medium-hard candidates, and produced 15 DPO-ready GT>C pairs.
-- Protocol v1 contains 66 historical pairs, but its gates were broad and all old pairs require strict re-audit before use.
-- Protocol v4 produced 42 reward-selected pairs, but strict visual alignment found only 3 human-visible/ready pairs and 39 too-subtle pairs.
-- v8m/v8n cache/objective outputs are not the current focus; they prove training is still blocked and do not expand pair data.
+Status counts:
+- DPO_READY_EXISTING_STRICT: 18
+- REVIEW_REQUIRED_OLD_SUBTLE_RISK: 134
+- REVIEW_REQUIRED_UNMAPPED_AUDIT: 39
+- REJECT_TECHNICAL_OR_LABEL_GATE: 4
 
-v10 objective:
+## Decision
+Existing pairs alone are insufficient for the v10 target of 50+ reviewed DPO-ready pairs. The next required step is to use the 102 runnable prefix5 condition pool for expanded B/C loser mining and/or clearly visible synthetic medium-hard negative construction, followed by metric scoring and Codex visual audit.
 
-- Recover all runnable prefix5/V2V-5 conditions.
-- Re-audit all old pairs under strict visual gates.
-- Reuse or generate rollout candidates from Original Fast, B camera-r8, and C camera+self-temporal-r4.
-- Construct GT>C, GT>controlled-corruption, B>C, teacher/failure, and diagnostic-only self-rollout candidates where valid.
-- Require reward/metrics/quality checks plus Codex visual review for every DPO-ready loser.
-- Produce at least 50 reviewed DPO-ready pairs, with 100 as stretch.
-
-Current decision:
-
-- Do not run DPO, SDPO, Linear-DPO, Safe-linear, winner-anchor, StageA, StageB, GRPO, or broad-LoRA in this experiment.
-- DPO training remains blocked until the pair factory produces a clean reviewed dataset.
+## Not Run
+- No DPO / SDPO / Linear-DPO / Safe-linear training.
+- No large DPO.
+- No StageA / StageB / GRPO / broad-LoRA.
+- No checkpoint or weight modification.
+- No media files pushed.
