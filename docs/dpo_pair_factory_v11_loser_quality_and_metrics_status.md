@@ -35,3 +35,14 @@ Environment caveat: VBench installation added user-site `transformers==4.33.2`, 
 - No StageA / StageB / GRPO / broad-LoRA run.
 - No checkpoint deletion.
 - No videos or weights pushed.
+
+
+## Repaired Exact-500 Manifest
+
+After the stricter loser audit, 3 original TypeA_plus pairs were marked review-only due `too_subtle_metric`. They were replaced from the already reviewed v11 candidate pool, producing an exact 500-row repaired manifest:
+
+- `manifests/dpo_pair_factory_v11_ready_500_after_loser_audit_repaired.jsonl`
+- Replacement summary: `reports/dpo_pair_factory_v11/loser_quality/ready500_repaired_manifest_summary.md`
+- Replacement CSV: `reports/dpo_pair_factory_v11/loser_quality/ready500_replacement_pairs.csv`
+
+Use this repaired manifest when an exact 500-pair training candidate set is required.

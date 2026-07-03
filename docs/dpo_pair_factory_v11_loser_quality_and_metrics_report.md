@@ -72,3 +72,14 @@ Artifacts:
 - `python3 -m compileall cam_physgeo src tests`: PASS
 - `python3 -m pytest ...`: NOT_RUN / unavailable because current Python still reports `No module named pytest`.
 - Direct backend smoke: LPIPS PASS, VBench import/CLI PASS, FVD structured BLOCKED status PASS.
+
+
+## Repaired Exact-500 Manifest
+
+After the stricter loser audit, 3 original TypeA_plus pairs were marked review-only due `too_subtle_metric`. They were replaced from the already reviewed v11 candidate pool, producing an exact 500-row repaired manifest:
+
+- `manifests/dpo_pair_factory_v11_ready_500_after_loser_audit_repaired.jsonl`
+- Replacement summary: `reports/dpo_pair_factory_v11/loser_quality/ready500_repaired_manifest_summary.md`
+- Replacement CSV: `reports/dpo_pair_factory_v11/loser_quality/ready500_replacement_pairs.csv`
+
+Use this repaired manifest when an exact 500-pair training candidate set is required.

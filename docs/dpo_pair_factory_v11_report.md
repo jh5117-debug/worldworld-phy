@@ -80,3 +80,14 @@ Important caveat: controlled synthetic negatives dominate v11. They are appropri
 ## Decision
 
 PAIR_FACTORY_V11_READY_500. This is enough for anchored tiny DPO data once the objective side is authorized. It is not enough to claim real rollout DPO is solved, because real rollout-derived pairs remain at 15. Next real rollout work should fix WanI2VFast/V2V-5 runtime expansion and target 50-100 rollout-derived pairs.
+
+
+## Repaired Exact-500 Manifest
+
+After the stricter loser audit, 3 original TypeA_plus pairs were marked review-only due `too_subtle_metric`. They were replaced from the already reviewed v11 candidate pool, producing an exact 500-row repaired manifest:
+
+- `manifests/dpo_pair_factory_v11_ready_500_after_loser_audit_repaired.jsonl`
+- Replacement summary: `reports/dpo_pair_factory_v11/loser_quality/ready500_repaired_manifest_summary.md`
+- Replacement CSV: `reports/dpo_pair_factory_v11/loser_quality/ready500_replacement_pairs.csv`
+
+Use this repaired manifest when an exact 500-pair training candidate set is required.
