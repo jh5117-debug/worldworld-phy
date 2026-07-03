@@ -1,3 +1,9 @@
+<!-- V8M_VJEPA_PLAN:START -->
+## v8m Update
+
+The explicit energy path now has a validated winner+loser pair cache for 10 reviewed GT>C pairs. V-JEPA / VideoREPA should remain monitor-first until tiny objectives demonstrate winner-preserving behavior on this cache; no model download or training integration is authorized here.
+<!-- V8M_VJEPA_PLAN:END -->
+
 <!-- V8L_VJEPA_PLAN:START -->
 ## v8l Update
 

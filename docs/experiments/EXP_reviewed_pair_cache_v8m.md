@@ -1,6 +1,6 @@
 # EXP reviewed pair cache v8m
 
-Current Status: PLANNED
+Current Status: PASS
 
 Generated: 2026-07-03T01:55:20.644150+00:00
 
@@ -67,3 +67,32 @@ A dual-branch cache can be built from `manifests/dpo_smoke_v7_gt_c_10.jsonl` bec
 - no pair rollout
 - no checkpoint deletion
 - no video / weight push
+
+
+## Actual Results (2026-07-03T02:38:45.438241+00:00)
+Current Status: PASS
+
+### Commands Run
+- `python3 -m cam_physgeo.dpo.pair_cache_builder_v8m --num_pairs 1 ...`
+- `python3 -m cam_physgeo.dpo.pair_cache_validate_v8m --cache_root local_assets/dpo_pair_cache_v8m/one_pair_window49 ...`
+- `python3 -m cam_physgeo.dpo.pair_cache_builder_v8m --num_pairs 10 ...`
+- `python3 -m cam_physgeo.dpo.pair_cache_validate_v8m --cache_root local_assets/dpo_pair_cache_v8m/gt_c_10_window49 ...`
+
+### Outputs
+- Build CSV: `reports/dpo_objective_diagnosis_v8m/pair_cache_build_10pair.csv`
+- Validation CSV: `reports/dpo_objective_diagnosis_v8m/pair_cache_validation_10pair.csv`
+- Cache root, not committed: `local_assets/dpo_pair_cache_v8m/gt_c_10_window49`
+
+### Metrics
+- build PASS rows: 10 / 10
+- validation PASS rows: 10 / 10
+- Delta_ref positive: 8 / 10
+- Delta_ref non-positive: 2 / 10
+- Delta_ref mean: 0.10330507159233093
+- Delta_ref min/max: -0.0973658561706543 / 0.2931232452392578
+
+### Decision
+`PAIR_CACHE10_VALIDATED_FOR_TINY_OBJECTIVE`
+
+### Next Action
+Run a tiny objective diagnosis only, using pair weighting/filtering because 2/10 reviewed pairs have non-positive `Delta_ref` under this energy backend.

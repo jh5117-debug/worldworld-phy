@@ -1,0 +1,10 @@
+{
+  "build_pass": 10,
+  "delta_ref_max": 0.2931232452392578,
+  "delta_ref_mean": 0.10330507159233093,
+  "delta_ref_min": -0.0973658561706543,
+  "delta_ref_nonpositive": 2,
+  "delta_ref_positive": 8,
+  "status": "PASS",
+  "validation_pass": 10
+}

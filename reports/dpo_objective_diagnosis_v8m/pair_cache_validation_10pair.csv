@@ -1,0 +1,11 @@
+pair_id,status,tensor_exists,sha256_match,payload_loads,winner_present,loser_present,winner_finite,loser_finite,E_ref_winner_finite,E_ref_loser_finite,same_seed_noise_id_present,actual_sigma_present,used_window_frames,prefix_len,prediction_start_frame,future_mask_nonempty,reviewed,error_reason
+v6b_GT_C_001_01014_drop_orbit_left_72_seed40014,PASS,True,True,True,True,True,True,True,True,True,True,True,49,5,5,True,True,
+v6b_GT_C_009_01032_drop_orbit_left_72_seed40032,PASS,True,True,True,True,True,True,True,True,True,True,True,49,5,5,True,True,
+v6b_GT_C_008_01029_drop_orbit_left_72_seed40029,PASS,True,True,True,True,True,True,True,True,True,True,True,49,5,5,True,True,
+v6b_GT_C_012_02284_collision_orbit_right_64_seed41284,PASS,True,True,True,True,True,True,True,True,True,True,True,49,5,5,True,True,
+v6b_GT_C_011_02276_collision_orbit_right_64_seed41276,PASS,True,True,True,True,True,True,True,True,True,True,True,49,5,5,True,True,
+v6b_GT_C_014_03437_roll_orbit_right_60_seed42437,PASS,True,True,True,True,True,True,True,True,True,True,True,49,5,5,True,True,
+v6b_GT_C_013_03435_roll_orbit_right_60_seed42435,PASS,True,True,True,True,True,True,True,True,True,True,True,49,5,5,True,True,
+v6b_GT_C_003_03418_roll_orbit_right_60_seed42418,PASS,True,True,True,True,True,True,True,True,True,True,True,49,5,5,True,True,
+v6b_GT_C_004_04204_containment_orbit_left_44_seed43204,PASS,True,True,True,True,True,True,True,True,True,True,True,49,5,5,True,True,
+v6b_GT_C_007_04228_containment_orbit_left_44_seed43228,PASS,True,True,True,True,True,True,True,True,True,True,True,49,5,5,True,True,

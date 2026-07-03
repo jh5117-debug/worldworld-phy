@@ -1,0 +1,2 @@
+pair_id,status,tensor_exists,sha256_match,payload_loads,winner_present,loser_present,winner_finite,loser_finite,E_ref_winner_finite,E_ref_loser_finite,same_seed_noise_id_present,actual_sigma_present,used_window_frames,prefix_len,prediction_start_frame,future_mask_nonempty,reviewed,error_reason
+v6b_GT_C_001_01014_drop_orbit_left_72_seed40014,PASS,True,True,True,True,True,True,True,True,True,True,True,49,5,5,True,True,

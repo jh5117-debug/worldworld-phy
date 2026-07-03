@@ -1,3 +1,9 @@
+<!-- V8M_GIT:START -->
+## v8m Git Checkpoint
+
+Built and validated reviewed pair cache v8m. Commit pending at generation time. Cache tensors remain under `local_assets/` and are not staged.
+<!-- V8M_GIT:END -->
+
 <!-- V8L_GIT:START -->
 ## v8l Git Checkpoint
 

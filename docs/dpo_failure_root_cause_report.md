@@ -1,3 +1,11 @@
+<!-- V8M_ROOT_CAUSE:START -->
+## v8m Pair Cache (2026-07-03T02:38:45.438241+00:00)
+
+Status: `PAIR_CACHE10_VALIDATED_FOR_TINY_OBJECTIVE`.
+
+Built and validated a reviewed 10-pair winner+loser cache from `manifests/dpo_smoke_v7_gt_c_10.jsonl`. Build PASS: 10/10. Validation PASS: 10/10. Delta_ref positive: 8/10; non-positive: 2/10. Next stage may run tiny objective diagnostics with filtering/weighting, but large DPO remains blocked.
+<!-- V8M_ROOT_CAUSE:END -->
+
 <!-- V8L_ROOT_CAUSE:START -->
 ## v8l Objective Preflight (2026-07-03T01:50:54.681158+00:00)
 
