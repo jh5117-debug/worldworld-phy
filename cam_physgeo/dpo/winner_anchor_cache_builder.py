@@ -92,6 +92,30 @@ def _progress(path: Path, **row: Any) -> None:
         f.flush()
 
 
+def patch_t5_checkpoint_init(progress_path: Path | None = None) -> None:
+    """Avoid expensive random init for checkpoint-covered UMT5 params."""
+    import importlib
+
+    mod = importlib.import_module("wan.modules.t5")
+
+    def _no_init_weights(_module: object) -> None:
+        return None
+
+    mod.init_weights = _no_init_weights
+
+    def _noop_reset(self: object) -> None:
+        return None
+
+    patched: list[str] = []
+    for cls_name in ("Linear", "Embedding", "LayerNorm"):
+        cls = getattr(torch.nn, cls_name, None)
+        if cls is not None and hasattr(cls, "reset_parameters"):
+            cls.reset_parameters = _noop_reset
+            patched.append(cls_name)
+    if progress_path is not None:
+        _progress(progress_path, stage="t5_fast_init_patch", patched=",".join(patched))
+
+
 def build_cache(args: argparse.Namespace) -> dict[str, Any]:
     out_root = Path(args.output_root)
     out_root.mkdir(parents=True, exist_ok=True)
@@ -134,6 +158,8 @@ def build_cache(args: argparse.Namespace) -> dict[str, Any]:
     _progress(progress_path, stage="before_backend_load", device=device)
     backend = LingBotFastDpoEnergy(cfg, device=device, prefix_len=int(args.prefix_len))
     _progress(progress_path, stage="after_policy_load", **cuda_stats())
+    patch_t5_checkpoint_init(progress_path)
+    _progress(progress_path, stage="before_runtime_ready_fastinit", **cuda_stats())
     ensure_runtime_ready(backend)
     _progress(progress_path, stage="after_runtime_ready", **cuda_stats())
     success = 0

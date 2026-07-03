@@ -1,3 +1,15 @@
+Current Status Update (2026-07-03T08:48:33): V8I_T5_FAST_INIT_RESOLVED_FIRST_ROW
+
+v8i split `ensure_runtime_ready` and resolved the T5 runtime bottleneck with a checkpoint fast-init patch. A full-condition one-pair minimal cache row was written with text and VAE enabled. Cache10 is not yet validated, so DPO remains blocked until v8j/v8k pass.
+
+Current Status Update (2026-07-03T08:48:18): V8I_T5_FAST_INIT_RESOLVED_FIRST_ROW
+
+v8i split `ensure_runtime_ready` and resolved the T5 runtime bottleneck with a checkpoint fast-init patch. A full-condition one-pair minimal cache row was written with text and VAE enabled. Cache10 is not yet validated, so DPO remains blocked until v8j/v8k pass.
+
+Current Status Update (2026-07-03T08:47:32): V8I_T5_FAST_INIT_RESOLVED_FIRST_ROW
+
+v8i split `ensure_runtime_ready` and resolved the T5 runtime bottleneck with a checkpoint fast-init patch. A full-condition one-pair minimal cache row was written with text and VAE enabled. Cache10 is not yet validated, so DPO remains blocked until v8j/v8k pass.
+
 Current Status Update (2026-07-02 21:58:17): V8G_FROM_PRETRAINED_SAFE_PASS_HELPER_TIMEOUT
 
 v8g localized the v8f blocker further. Direct safe WanModelFast.from_pretrained can load CPU and move to GPU7, but the integrated Stage1 helper policy runtime still times out at 14_construct_policy_model_cpu before runtime_ready. No DPO-family training was run; DPO remains blocked until the helper/cache path uses the proven direct safe loader or is split further.

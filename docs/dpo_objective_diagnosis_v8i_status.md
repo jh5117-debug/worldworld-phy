@@ -1,4 +1,43 @@
 Current Status:
+ENSURE_RUNTIME_READY_PASS_FIRST_ROW_PASS
+
+## 2026-07-03T08:48:33 v8i Result
+
+- Safe policy loader PASS.
+- T5 text encoder load PASS after fast-init patch.
+- Prompt encode PASS.
+- VAE load and winner latent encode PASS.
+- Camera/prefix/future-mask/latent-index/cache-write PASS.
+- Cache row written: `reports/dpo_objective_diagnosis_v8i/cache_build_one_pair_minimal_no_ref_fastinit.csv`.
+- No DPO/SDPO/Linear-DPO/training run.
+
+Current Status:
+ENSURE_RUNTIME_READY_PASS_FIRST_ROW_PASS
+
+## 2026-07-03T08:48:18 v8i Result
+
+- Safe policy loader PASS.
+- T5 text encoder load PASS after fast-init patch.
+- Prompt encode PASS.
+- VAE load and winner latent encode PASS.
+- Camera/prefix/future-mask/latent-index/cache-write PASS.
+- Cache row written: `reports/dpo_objective_diagnosis_v8i/cache_build_one_pair_minimal_no_ref_fastinit.csv`.
+- No DPO/SDPO/Linear-DPO/training run.
+
+Current Status:
+ENSURE_RUNTIME_READY_PASS_FIRST_ROW_PASS
+
+## 2026-07-03T08:47:32 v8i Result
+
+- Safe policy loader PASS.
+- T5 text encoder load PASS after fast-init patch.
+- Prompt encode PASS.
+- VAE load and winner latent encode PASS.
+- Camera/prefix/future-mask/latent-index/cache-write PASS.
+- Cache row written: `reports/dpo_objective_diagnosis_v8i/cache_build_one_pair_minimal_no_ref_fastinit.csv`.
+- No DPO/SDPO/Linear-DPO/training run.
+
+Current Status:
 DIAGNOSTIC_ONLY
 
 # DPO Objective Diagnosis v8i Status

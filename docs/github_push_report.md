@@ -1,3 +1,15 @@
+Current Status Update (2026-07-03T08:48:33): V8I_RESULTS_PENDING_COMMIT
+
+v8i fast-init/full-condition first-row cache PASS. Preparing code/docs/small-report commit; local_assets and media/checkpoint files remain excluded.
+
+Current Status Update (2026-07-03T08:48:18): V8I_RESULTS_PENDING_COMMIT
+
+v8i fast-init/full-condition first-row cache PASS. Preparing code/docs/small-report commit; local_assets and media/checkpoint files remain excluded.
+
+Current Status Update (2026-07-03T08:47:32): V8I_RESULTS_PENDING_COMMIT
+
+v8i fast-init/full-condition first-row cache PASS. Preparing code/docs/small-report commit; local_assets and media/checkpoint files remain excluded.
+
 Current Status Update (2026-07-02 22:03:10): V8G_COMMIT_READY_FOR_PUSH
 
 - v8g result commit: `bef97c7` (`Run Wan from_pretrained split diagnosis v8g`).

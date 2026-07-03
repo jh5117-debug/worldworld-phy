@@ -1,3 +1,15 @@
+Current Status Update (2026-07-03T08:48:33): V8I_MONITOR_FIRST_CACHE_PATH_PROGRESS
+
+v8i split `ensure_runtime_ready` and resolved the T5 runtime bottleneck with a checkpoint fast-init patch. A full-condition one-pair minimal cache row was written with text and VAE enabled. Cache10 is not yet validated, so DPO remains blocked until v8j/v8k pass.
+
+Current Status Update (2026-07-03T08:48:18): V8I_MONITOR_FIRST_CACHE_PATH_PROGRESS
+
+v8i split `ensure_runtime_ready` and resolved the T5 runtime bottleneck with a checkpoint fast-init patch. A full-condition one-pair minimal cache row was written with text and VAE enabled. Cache10 is not yet validated, so DPO remains blocked until v8j/v8k pass.
+
+Current Status Update (2026-07-03T08:47:32): V8I_MONITOR_FIRST_CACHE_PATH_PROGRESS
+
+v8i split `ensure_runtime_ready` and resolved the T5 runtime bottleneck with a checkpoint fast-init patch. A full-condition one-pair minimal cache row was written with text and VAE enabled. Cache10 is not yet validated, so DPO remains blocked until v8j/v8k pass.
+
 Current Status Update (2026-07-02 21:58:17): V8G_MONITOR_FIRST_UPDATE
 
 The explicit LingBot-Fast winner-energy path is still bottlenecked by integrated policy runtime/cache loading. V-JEPA / VideoREPA remains monitor-first and must not be integrated into training until the policy runtime/cache path is stable. No model download or training integration was performed.

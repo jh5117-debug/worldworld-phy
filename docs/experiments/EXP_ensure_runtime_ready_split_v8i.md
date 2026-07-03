@@ -1,4 +1,37 @@
 Current Status:
+PASS
+
+## 2026-07-03T08:48:33 Result Update
+
+- Decision: `ENSURE_RUNTIME_READY_PASS_FIRST_ROW_PASS`.
+- Full-condition fast-init run reached `28_final_empty_cache`.
+- One-pair minimal cache row written with `diagnostic_skip_text=False` and `diagnostic_skip_vae=False`.
+- T5 fast-init patch resolved the stage 13 timeout without modifying official LingBot source.
+- Next action: v8j cache10 build + validation.
+
+Current Status:
+PASS
+
+## 2026-07-03T08:48:18 Result Update
+
+- Decision: `ENSURE_RUNTIME_READY_PASS_FIRST_ROW_PASS`.
+- Full-condition fast-init run reached `28_final_empty_cache`.
+- One-pair minimal cache row written with `diagnostic_skip_text=False` and `diagnostic_skip_vae=False`.
+- T5 fast-init patch resolved the stage 13 timeout without modifying official LingBot source.
+- Next action: v8j cache10 build + validation.
+
+Current Status:
+PASS
+
+## 2026-07-03T08:47:32 Result Update
+
+- Decision: `ENSURE_RUNTIME_READY_PASS_FIRST_ROW_PASS`.
+- Full-condition fast-init run reached `28_final_empty_cache`.
+- One-pair minimal cache row written with `diagnostic_skip_text=False` and `diagnostic_skip_vae=False`.
+- T5 fast-init patch resolved the stage 13 timeout without modifying official LingBot source.
+- Next action: v8j cache10 build + validation.
+
+Current Status:
 DIAGNOSTIC_ONLY
 
 # EXP Ensure Runtime Ready Split v8i

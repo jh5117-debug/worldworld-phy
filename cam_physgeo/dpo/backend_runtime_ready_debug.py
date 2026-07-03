@@ -141,6 +141,37 @@ def finite_tensor(name: str, tensor: torch.Tensor) -> None:
         raise FloatingPointError(f"nonfinite tensor: {name}")
 
 
+def patch_t5_checkpoint_init(logger: StageLogger | None = None, *, stage: str = "", pair_id: str = "") -> None:
+    """Avoid wasting minutes randomly initializing checkpoint-covered UMT5 params."""
+    import importlib
+
+    mod = importlib.import_module("wan.modules.t5")
+
+    def _no_init_weights(_module: object) -> None:
+        return None
+
+    mod.init_weights = _no_init_weights
+    nn = torch.nn
+
+    def _noop_reset(self: object) -> None:
+        return None
+
+    patched: list[str] = []
+    for cls_name in ("Linear", "Embedding", "LayerNorm"):
+        cls = getattr(nn, cls_name, None)
+        if cls is not None and hasattr(cls, "reset_parameters"):
+            cls.reset_parameters = _noop_reset
+            patched.append(cls_name)
+    if logger is not None:
+        logger.write(
+            stage=stage or "t5_fast_init_patch",
+            event="t5_fast_init_patch",
+            status="INFO",
+            pair_id=pair_id,
+            notes="patched wan.modules.t5.init_weights and reset_parameters for " + ",".join(patched),
+        )
+
+
 def load_condition_arrays(
     pair: dict[str, Any],
     *,
@@ -286,6 +317,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             if args.diagnostic_skip_text:
                 logger.write(stage="13_load_or_skip_t5_text_encoder", event="diagnostic_skip", status="SKIPPED", pair_id=pair_id, notes="diagnostic_skip_text=true")
             elif getattr(backend.helper, "t5", None) is None:
+                patch_t5_checkpoint_init(logger, stage="13_load_or_skip_t5_text_encoder", pair_id=pair_id)
                 backend.helper.t5 = backend.helper.T5EncoderModel(
                     text_len=512,
                     dtype=torch.bfloat16,
