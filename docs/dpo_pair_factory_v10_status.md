@@ -39,3 +39,10 @@ The v10 synthetic visible negatives pass the 50-pair data gate when combined wit
 - No StageA / StageB / GRPO / broad-LoRA.
 - No checkpoint or weight modification.
 - No media files pushed.
+
+## PPT Showcase
+- H.264 MP4 generated locally: `reports/ppt_winlose_showcase_latest/dpo_pair_factory_v10_ready_showcase.mp4`.
+- Selected pair CSV: `reports/ppt_winlose_showcase_latest/dpo_pair_factory_v10_selected_pairs.csv`.
+- Notes: `reports/ppt_winlose_showcase_latest/dpo_pair_factory_v10_notes.md`.
+- The MP4 is intentionally not committed.
+
