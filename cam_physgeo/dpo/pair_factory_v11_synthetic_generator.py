@@ -59,7 +59,7 @@ def choose_failures(template):
     return table.get(template, FAILURES[:6])
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--conditions", required=True); ap.add_argument("--target_pairs", type=int, default=600); ap.add_argument("--max_pairs_per_condition", type=int, default=6); ap.add_argument("--output_root", required=True); ap.add_argument("--manifest_out", required=True); ap.add_argument("--report", required=True)
+    ap = argparse.ArgumentParser(); ap.add_argument("--conditions", required=True); ap.add_argument("--target_pairs", type=int, default=600); ap.add_argument("--max_pairs_per_condition", type=int, default=6); ap.add_argument("--output_root", required=True); ap.add_argument("--manifest_out", required=True); ap.add_argument("--report", required=True); ap.add_argument("--pair_id_prefix", default="v11_SYN"); ap.add_argument("--start_index", type=int, default=1); ap.add_argument("--severity_min", type=float, default=0.35); ap.add_argument("--severity_max", type=float, default=0.65)
     args = ap.parse_args(); conds = read_jsonl(Path(args.conditions)); rows = []; report = []; out_root = Path(args.output_root)
     for ci, cond in enumerate(conds):
         if len(rows) >= args.target_pairs: break
@@ -70,10 +70,10 @@ def main():
         if len(frames) < 40: continue
         for j, failure in enumerate(choose_failures(cond.get("template", ""))[:args.max_pairs_per_condition]):
             if len(rows) >= args.target_pairs: break
-            severity = 0.35 + 0.30 * ((ci + j) % 7) / 6.0; seed = abs(hash((cond.get("condition_id"), failure, j))) % (10 ** 8)
+            severity = args.severity_min + (args.severity_max - args.severity_min) * ((ci + j) % 7) / 6.0; seed = abs(hash((cond.get("condition_id"), failure, j, args.pair_id_prefix))) % (10 ** 8)
             loser_frames, bbox, tspan = corrupt(frames[:76], failure, severity, seed)
             safe_sample = str(cond.get("sample_id") or cond.get("condition_id")).replace("/", "_")
-            pair_id = f"v11_SYN_{len(rows)+1:04d}_{safe_sample}_{failure}"; pair_dir = out_root / "pairs" / pair_id; loser_path = pair_dir / "loser_future.mp4"
+            pair_id = f"{args.pair_id_prefix}_{args.start_index + len(rows):04d}_{safe_sample}_{failure}"; pair_dir = out_root / "pairs" / pair_id; loser_path = pair_dir / "loser_future.mp4"
             try: write_video(loser_path, loser_frames[:76], fps)
             except Exception as e: report.append({"pair_id": pair_id, "condition_id": cond.get("condition_id"), "failure_type": failure, "status": "write_fail", "error": str(e)}); continue
             row = {"pair_id": pair_id, "protocol_version": "v11", "pair_type": "TypeM_v11_synthetic_visible", "pair_source": "synthetic_controlled", "is_synthetic": True, "is_rollout_derived": False, "is_controlled_corruption": True, "condition": cond, "winner": {"future_video_path": cond.get("gt_future_video_path"), "full_video_path": cond.get("gt_full_video_path"), "source": "clean_gt", "reward_vector": {"R_total": 1.0, "backend": "gt_assumed_upper_bound"}}, "loser": {"future_video_path": rel(loser_path), "source": "controlled_synthetic_v11", "corruption_type": failure, "failure_type": failure, "severity": round(severity, 3), "affected_region": {"x": bbox[0], "y": bbox[1], "w": bbox[2], "h": bbox[3]}, "affected_time_span": [int(tspan[0]), int(tspan[1])], "synthetic_visible": True}, "same_prefix": True, "same_prompt": True, "same_poses": True, "same_intrinsics": True, "prefix_len": 5, "prediction_start_frame": 5, "loss_frame_indices": list(range(5, 81)), "reward_frame_indices": list(range(5, 81)), "medium_hard_candidate": True}

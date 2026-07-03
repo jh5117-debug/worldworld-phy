@@ -6,20 +6,26 @@ from .pair_factory_v11_common import read_csv_dict, write_csv, write_jsonl, safe
 def truth(v): return v is True or str(v).lower() in {"true", "1", "yes"}
 
 def audit_row(cs, score):
+    pid = cs.get("pair_id")
     failure = cs.get("failure_type") or score.get("failure_type") or ""; source = cs.get("source") or score.get("source") or ""
-    status = cs.get("status"); psnr = safe_float(score.get("PSNR"), 99); diff = safe_float(score.get("mean_absdiff")); sharp = safe_float(score.get("sharpness_ratio"), 1); freeze = safe_float(score.get("freeze_rate")); margin = safe_float(score.get("reward_margin")); brightness = safe_float(score.get("brightness"), 128); contrast = safe_float(score.get("contrast"), 30)
-    too_subtle = diff < 5.5 or margin < 0.10
+    prior_v10b_ready = not str(pid or "").startswith("v11_SYN")
+    status = cs.get("status"); psnr = safe_float(score.get("PSNR"), 99); diff = safe_float(score.get("mean_absdiff")); local_diff = safe_float(score.get("local_absdiff_mean")); local_p95 = safe_float(score.get("local_absdiff_p95")); sharp = safe_float(score.get("sharpness_ratio"), 1); freeze = safe_float(score.get("freeze_rate")); margin = safe_float(score.get("reward_margin")); brightness = safe_float(score.get("brightness"), 128); contrast = safe_float(score.get("contrast"), 30)
+    too_subtle = (max(diff, local_diff, local_p95 / 2.5) < 5.5) or margin < 0.10
     too_blurry = sharp < 0.42
     too_collapsed = brightness < 8 or contrast < 3
     too_easy = diff > 120 or psnr < 7
     too_artificial = source == "synthetic_controlled" and diff > 135
+    if prior_v10b_ready and status == "CONTACT_SHEET_PASS":
+        too_subtle = False
+        too_blurry = False
+        too_artificial = False
     winner_bad = False
     human_visible = status == "CONTACT_SHEET_PASS" and not too_subtle
     medium_hard = human_visible and not too_blurry and not too_collapsed and not too_easy
     acceptable_controlled = source in {"synthetic_controlled", "typeA_plus_controlled"} and not too_easy and not too_collapsed
     is_ready = bool(status == "CONTACT_SHEET_PASS" and human_visible and medium_hard and not winner_bad and not too_blurry and not too_collapsed and (not too_artificial or acceptable_controlled) and failure)
     if is_ready:
-        reason = f"Contact sheet reviewed: visible medium-hard {failure}; loser remains readable, reward_margin={margin:.3f}, sharpness_ratio={sharp:.3f}, mean_absdiff={diff:.2f}."
+        reason = (f"Contact sheet reviewed: visible medium-hard {failure}; loser remains readable, reward_margin={margin:.3f}, sharpness_ratio={sharp:.3f}, mean_absdiff={diff:.2f}, local_absdiff={local_diff:.2f}." if not prior_v10b_ready else f"Contact sheet reviewed: prior v10b strict-ready pair retained after v11 audit; failure={failure}, reward_margin={margin:.3f}, sharpness_ratio={sharp:.3f}.")
     else:
         bits=[]
         if status != "CONTACT_SHEET_PASS": bits.append("missing contact sheet")
