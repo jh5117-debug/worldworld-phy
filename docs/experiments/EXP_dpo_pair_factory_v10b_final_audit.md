@@ -1,3 +1,21 @@
+<!-- RUN_RESULTS:START -->
+## Run Results
+
+Current Status: PASS
+
+- Total v10 pairs audited: 81.
+- Strict ready / trainable: 81.
+- Diagnostic-only: 0.
+- Rejected: 0.
+- Rollout-derived trainable: 15.
+- Synthetic controlled trainable: 63.
+- TypeA_plus controlled: 3.
+- Top50 balanced manifest: `manifests/dpo_pair_factory_v10b_top50_balanced.jsonl`.
+- Data card: `docs/dpo_pair_factory_v10b_data_card.md`.
+- PPT slide notes: `reports/ppt_winlose_showcase_latest/dpo_pair_factory_v10b_slide_notes.md`.
+- No training, DPO, SDPO, Linear-DPO, winner-anchor, rollout, StageA, StageB, GRPO, or broad-LoRA was run.
+<!-- RUN_RESULTS:END -->
+
 Current Status:
 PAIR_FACTORY_V10B_PRD_READY
 

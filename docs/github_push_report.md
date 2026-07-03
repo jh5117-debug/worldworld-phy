@@ -1,3 +1,12 @@
+<!-- DPO_PAIR_FACTORY_V10B_PUSH:START -->
+## DPO Pair Factory v10b Final Audit
+
+- Commit scope: docs, audit script/tests, small CSV/JSON/JSONL manifests, data card, slide notes.
+- Excluded: MP4/JPG/PNG/local_assets/checkpoints/weights/large logs.
+- Ready pairs: 81.
+- Top50 manifest: `manifests/dpo_pair_factory_v10b_top50_balanced.jsonl`.
+<!-- DPO_PAIR_FACTORY_V10B_PUSH:END -->
+
 # GitHub Push Report: v8n tiny objective diagnosis
 
 Current Status:
