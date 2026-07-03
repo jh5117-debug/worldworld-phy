@@ -1,0 +1,20 @@
+{
+  "camera_motions": {
+    "orbit_left_44": 27,
+    "orbit_left_72": 17,
+    "orbit_right_60": 22,
+    "orbit_right_64": 30,
+    "strafe_left_180": 6
+  },
+  "manifest_count": 114,
+  "recoverable_rows": 288,
+  "recovered_runnable_conditions": 102,
+  "status": "CONDITION_INVENTORY_READY_100",
+  "target_manifest": "manifests/dpo_pair_factory_v10_conditions.jsonl",
+  "templates": {
+    "collision": 36,
+    "containment": 27,
+    "drop": 17,
+    "roll": 22
+  }
+}
