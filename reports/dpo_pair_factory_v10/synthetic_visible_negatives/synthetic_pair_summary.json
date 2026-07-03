@@ -1,0 +1,20 @@
+{
+  "combined_manifest": "manifests/dpo_pair_factory_v10_ready_pairs.jsonl",
+  "combined_ready_pairs": 81,
+  "conditions_attempted": 80,
+  "corruption_counts": {
+    "foreground_identity_color_shift": 20,
+    "local_patch_drift": 16,
+    "local_patch_freeze": 14,
+    "local_temporal_jump": 13
+  },
+  "existing_ready_pairs": 18,
+  "media_root": "local_assets/dpo_pair_factory_v10/synthetic_visible_negatives",
+  "status": "PAIR_FACTORY_V10_READY_50",
+  "status_counts": {
+    "DPO_READY_SYNTHETIC_VISIBLE_V10": 63,
+    "REJECT_SYNTHETIC_GATE": 17
+  },
+  "synthetic_manifest": "manifests/dpo_pair_factory_v10_synthetic_visible_pairs.jsonl",
+  "synthetic_ready_pairs": 63
+}

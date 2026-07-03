@@ -72,3 +72,18 @@ The v8f result commit includes docs, source/test update, small JSONL/markdown/CS
 ## v8h Update - 2026-07-03T06:46:04
 
 Prepared v8h PRD in commit `815588e`. Added safe Wan policy loader instrumentation and v8h runtime/cache reports locally; final code/report commit pending after verification. No media/checkpoint/weights intended for commit.
+
+
+<!-- dpo_pair_factory_v10_update -->
+## DPO Pair Factory v10 Update
+
+Current Status: PAIR_FACTORY_V10_READY_50_SYNTHETIC_MIXED
+
+- Runnable prefix5 conditions recovered: 102.
+- Existing strict DPO-ready pairs: 18.
+- Synthetic visible TypeM-v10 ready pairs: 63.
+- Combined ready pairs: 81.
+- Combined manifest: `manifests/dpo_pair_factory_v10_ready_pairs.jsonl`.
+- Caveat: 63 new pairs are controlled synthetic visible negatives, not true rollout TypeB losers.
+- No DPO / SDPO / Linear-DPO / StageA / StageB / GRPO / broad-LoRA was run.
+<!-- /dpo_pair_factory_v10_update -->

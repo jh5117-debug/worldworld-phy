@@ -379,3 +379,18 @@ The DPO trainer can now compute real energy and update LoRA. However the probe s
 ## v8h Update - 2026-07-03T06:46:04
 
 Policy runtime safe loader now reaches runtime-ready on H20 physical GPU7. The first-row cache smoke then blocks after `after_policy_load` and before `after_runtime_ready`, localizing the next blocker to `ensure_runtime_ready` / runtime component initialization. DPO remains not ready; no DPO/SDPO/Linear-DPO was run.
+
+
+<!-- dpo_pair_factory_v10_update -->
+## DPO Pair Factory v10 Update
+
+Current Status: PAIR_FACTORY_V10_READY_50_SYNTHETIC_MIXED
+
+- Runnable prefix5 conditions recovered: 102.
+- Existing strict DPO-ready pairs: 18.
+- Synthetic visible TypeM-v10 ready pairs: 63.
+- Combined ready pairs: 81.
+- Combined manifest: `manifests/dpo_pair_factory_v10_ready_pairs.jsonl`.
+- Caveat: 63 new pairs are controlled synthetic visible negatives, not true rollout TypeB losers.
+- No DPO / SDPO / Linear-DPO / StageA / StageB / GRPO / broad-LoRA was run.
+<!-- /dpo_pair_factory_v10_update -->

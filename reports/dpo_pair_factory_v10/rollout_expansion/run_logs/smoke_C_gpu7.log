@@ -1,0 +1,7 @@
+[v2v5] run start
+[v2v5] import wan
+[v2v5] wan imported
+[v2v5] instantiate WanI2VFast
+[2026-07-03 16:40:18,606] INFO: loading /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/models_t5_umt5-xxl-enc-bf16.pth
+[2026-07-03 16:41:12,101] INFO: loading /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/Wan2.1_VAE.pth
+[2026-07-03 16:41:14,008] INFO: Creating WanModelFast from /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam

@@ -175,3 +175,14 @@ Follow-up commits should separate condition recovery, existing pair audit, rollo
 - Output manifest: `manifests/dpo_pair_factory_v10_existing_ready_pairs.jsonl`.
 - Next step: expanded pair mining from the 102 recovered runnable conditions.
 
+### 2026-07-03 Synthetic Visible Pair Factory
+- v10 rollout smoke on GPU7 did not reach shard/GPU generation during the bounded observation window; no expanded rollout was launched.
+- Controlled synthetic visible TypeM-v10 negatives were generated from recovered GT futures.
+- Conditions attempted: 80.
+- Synthetic ready pairs: 63.
+- Existing strict ready pairs included: 18.
+- Combined ready pairs: 81.
+- Combined manifest: `manifests/dpo_pair_factory_v10_ready_pairs.jsonl`.
+- Synthetic manifest: `manifests/dpo_pair_factory_v10_synthetic_visible_pairs.jsonl`.
+- Caveat: synthetic negatives are not true rollout TypeB losers and must remain separately labeled.
+- No DPO, SDPO, Linear-DPO, StageA, StageB, GRPO, broad-LoRA, or checkpoint modification was run.
