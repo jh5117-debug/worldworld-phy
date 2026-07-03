@@ -1,3 +1,11 @@
+<!-- DPO_PAIR_FACTORY_V11_PUSH:START -->
+## DPO Pair Factory v11 Scale-500
+
+- Scope: docs, source/tests, manifest JSONL, CSV/JSON/MD summaries.
+- Excluded: MP4/JPG/PNG/contact sheet images/local_assets/checkpoints/weights.
+- Ready500 manifest: `manifests/dpo_pair_factory_v11_ready_500.jsonl`.
+<!-- DPO_PAIR_FACTORY_V11_PUSH:END -->
+
 <!-- DPO_PAIR_FACTORY_V10B_PUSH:START -->
 ## DPO Pair Factory v10b Final Audit
 

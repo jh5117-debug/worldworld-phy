@@ -1,3 +1,18 @@
+<!-- RUN_RESULTS:START -->
+Current Status: PAIR_FACTORY_V11_READY_500
+
+## DPO Pair Factory v11 Scale-500
+
+- Ready pairs: 500
+- Train/val/test: 400 / 50 / 50
+- Reviewed contact sheets: 931
+- Source breakdown: `{'rollout_derived': 15, 'TypeA_plus': 3, 'synthetic_controlled': 482}`
+- Data card: `docs/dpo_pair_factory_v11_data_card.md`
+- Ready manifest: `manifests/dpo_pair_factory_v11_ready_500.jsonl`
+- Caveat: controlled synthetic negatives dominate; real rollout DPO still needs rollout expansion.
+- No DPO/training was run.
+<!-- RUN_RESULTS:END -->
+
 Current Status: PLANNED
 
 # EXP: DPO Pair Factory v11 Scale-to-500
