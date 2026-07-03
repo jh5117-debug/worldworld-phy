@@ -28,3 +28,11 @@ Action: stop our own v8i diagnostic process, then rerun with diagnostic_skip_tex
 - Stage: 13_load_or_skip_t5_text_encoder
 - Resolution: fast-init patch for checkpoint-covered UMT5/T5 parameters.
 - Result: full-condition one-pair minimal cache row PASS; no user intervention required.
+
+## 2026-07-03T01:50:54.681158+00:00 - PAIR_CACHE_WITH_LOSER_MISSING
+
+- phase: v8l tiny objective after cache preflight
+- classification: CACHE_BUILD
+- symptom: validated cache is winner-only; no loser tensors or E_ref_loser
+- decision: do not run SDPO / Linear-DPO from this cache
+- next action: v8m reviewed winner+loser pair cache

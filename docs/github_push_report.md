@@ -1,3 +1,9 @@
+<!-- V8L_GIT:START -->
+## v8l Git Checkpoint
+
+Prepared v8l objective preflight. Decision: `V8L_BLOCKED_WINNER_ONLY_CACHE_NO_LOSER_ENERGY`. Commit pending at generation time.
+<!-- V8L_GIT:END -->
+
 Current Status Update (2026-07-03T09:42:30): V8K_RESULTS_PENDING_COMMIT
 
 v8k cache-only winner-anchor PASS; preparing docs/small CSV/log commit. No checkpoint/video/weights are staged.

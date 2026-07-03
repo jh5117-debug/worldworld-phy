@@ -1,3 +1,11 @@
+<!-- V8L_STATUS:START -->
+## v8l Objective Preflight (2026-07-03T01:50:54.681158+00:00)
+
+Status: `V8L_BLOCKED_WINNER_ONLY_CACHE_NO_LOSER_ENERGY`.
+
+v8k passed cache-only winner-anchor for 10 pairs / 20 steps, but v8l found the reusable cache is winner-only. It has no loser latent tensor and no `E_ref_loser`, while SDPO / Linear-DPO require loser energies. No DPO objective was run. Next required step is v8m reviewed winner+loser cache construction before any Strict SDPO / Linear-DPO run.
+<!-- V8L_STATUS:END -->
+
 Current Status Update (2026-07-03T09:42:30): V8K_WINNER_ANCHOR_CACHE10_PASS
 
 v8k cache-only winner-anchor completed 20/20 steps on 10 reviewed GT>C pairs. Mean and final post-update winner improvement were positive. This permits only tiny v8l objective diagnosis; DPO is not yet scale-ready.

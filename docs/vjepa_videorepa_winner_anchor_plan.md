@@ -1,3 +1,9 @@
+<!-- V8L_VJEPA_PLAN:START -->
+## v8l Update
+
+Explicit winner-energy anchor is now runnable through cache10, but pairwise DPO is blocked because the current cache is winner-only. V-JEPA / VideoREPA should remain monitor-first until the explicit winner+loser cache path is stable. No model download or training integration is authorized here.
+<!-- V8L_VJEPA_PLAN:END -->
+
 Current Status Update (2026-07-03T09:42:30): V8K_EXPLICIT_ENERGY_ANCHOR_PASS_MONITOR_STILL_FIRST
 
 v8k cache-only winner-anchor completed 20/20 steps on 10 reviewed GT>C pairs. Mean and final post-update winner improvement were positive. This permits only tiny v8l objective diagnosis; DPO is not yet scale-ready.
