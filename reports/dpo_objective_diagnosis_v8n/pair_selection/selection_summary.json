@@ -1,0 +1,9 @@
+{
+  "nonpositive_delta_ref": 2,
+  "output_dir": "reports/dpo_objective_diagnosis_v8n/pair_selection",
+  "positive_delta_ref": 8,
+  "positive_delta_ref_mean": 0.14324559271335602,
+  "status": "PAIR_SELECTION_PASS",
+  "total_rows": 10,
+  "valid_rows": 10
+}

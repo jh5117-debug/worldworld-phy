@@ -1,0 +1,12 @@
+{
+  "final_winner_improvement_post": -6.175041198730469e-05,
+  "mean_loser_degradation_post": -4.4941902160644535e-06,
+  "mean_winner_contribution_ratio_post": 0.2,
+  "mean_winner_improvement_post": -5.207061767578125e-05,
+  "objective": "winner_anchor_repeat",
+  "output": "reports/dpo_objective_diagnosis_v8n/winner_anchor_repeat_pos8_5step.csv",
+  "rows_written": 5,
+  "seconds": 489.7733037471771,
+  "status": "WINNER_ANCHOR_REPEAT_FAIL",
+  "steps_requested": 5
+}

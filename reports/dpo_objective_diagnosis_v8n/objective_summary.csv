@@ -1,0 +1,8 @@
+stage,status,rows,positive_delta_ref,nonpositive_delta_ref,mean_winner_improvement_post,final_winner_improvement_post,notes
+pair_selection,PAIR_SELECTION_PASS,10,8,2,,,8 positive-Delta_ref pairs selected; 2 nonpositive diagnostic only
+forward_sanity_pos8,FORWARD_SANITY_PASS,8,,,0.0,0.0,no optimizer; winner/loser energy cache readable
+winner_anchor_repeat_pos8_5step,WINNER_ANCHOR_REPEAT_FAIL,5,,,-5.207061767578125e-05,-6.175041198730469e-05,runtime pass but objective signal fail; do not continue to 20-step or SDPO/Linear
+strict_sdpo,NOT_RUN_BLOCKED_BY_WINNER_ANCHOR_REPEAT_FAIL,,,,,,requires winner-anchor repeat pass
+linear_dpo_anchor,NOT_RUN_BLOCKED_BY_WINNER_ANCHOR_REPEAT_FAIL,,,,,,requires winner-anchor repeat pass
+safe_linear,NOT_RUN_BLOCKED_BY_WINNER_ANCHOR_REPEAT_FAIL,,,,,,requires winner-anchor repeat pass
+standard_dpo_baseline,NOT_RUN_BLOCKED_BY_WINNER_ANCHOR_REPEAT_FAIL,,,,,,diagnostic baseline skipped after winner-anchor failure

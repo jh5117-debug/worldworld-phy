@@ -1,0 +1,43 @@
+{
+  "dpo_can_proceed": false,
+  "exact_blocker": "Winner-anchor-only signal is not stable across 8 positive-Delta_ref pairs: mean and final post-update winner improvement are negative.",
+  "forward_sanity": {
+    "final_winner_improvement_post": 0.0,
+    "mean_loser_degradation_post": 0.0,
+    "mean_winner_contribution_ratio_post": 0.0,
+    "mean_winner_improvement_post": 0.0,
+    "objective": "forward_sanity",
+    "output": "reports/dpo_objective_diagnosis_v8n/forward_sanity_pos8.csv",
+    "rows_written": 8,
+    "seconds": 216.84384965896606,
+    "status": "FORWARD_SANITY_PASS",
+    "steps_requested": 0
+  },
+  "linear_dpo_anchor": "NOT_RUN",
+  "pair_selection": {
+    "nonpositive_delta_ref": 2,
+    "output_dir": "reports/dpo_objective_diagnosis_v8n/pair_selection",
+    "positive_delta_ref": 8,
+    "positive_delta_ref_mean": 0.14324559271335602,
+    "status": "PAIR_SELECTION_PASS",
+    "total_rows": 10,
+    "valid_rows": 10
+  },
+  "safe_linear": "NOT_RUN",
+  "standard_dpo_baseline": "NOT_RUN",
+  "status": "V8N_BLOCKED_WINNER_ANCHOR_REPEAT_SIGNAL_FAIL",
+  "strict_sdpo": "NOT_RUN",
+  "v8o_checkpoint_eval": "NOT_RUN_BLOCKED_BY_V8N",
+  "winner_anchor_repeat_5step": {
+    "final_winner_improvement_post": -6.175041198730469e-05,
+    "mean_loser_degradation_post": -4.4941902160644535e-06,
+    "mean_winner_contribution_ratio_post": 0.2,
+    "mean_winner_improvement_post": -5.207061767578125e-05,
+    "objective": "winner_anchor_repeat",
+    "output": "reports/dpo_objective_diagnosis_v8n/winner_anchor_repeat_pos8_5step.csv",
+    "rows_written": 5,
+    "seconds": 489.7733037471771,
+    "status": "WINNER_ANCHOR_REPEAT_FAIL",
+    "steps_requested": 5
+  }
+}

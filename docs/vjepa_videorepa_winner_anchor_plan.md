@@ -152,3 +152,10 @@ v8b did not authorize V-JEPA/VideoREPA training integration. Sigma mapping is no
 ## v8h Update - 2026-07-03T06:46:04
 
 Policy runtime safe loader now reaches runtime-ready on H20 physical GPU7. The first-row cache smoke then blocks after `after_policy_load` and before `after_runtime_ready`, localizing the next blocker to `ensure_runtime_ready` / runtime component initialization. DPO remains not ready; no DPO/SDPO/Linear-DPO was run.
+
+## v8n Update
+
+Current Status:
+VJEPA_VIDEOREPA_MONITOR_FIRST
+
+v8n winner-anchor repeat failed on the 8 positive-Delta_ref pair cache subset despite runtime success. V-JEPA / VideoREPA remains monitor-first and should not be integrated into training until the explicit winner-energy objective has a stable multi-pair signal.

@@ -1,0 +1,12 @@
+{
+  "final_winner_improvement_post": 0.0,
+  "mean_loser_degradation_post": 0.0,
+  "mean_winner_contribution_ratio_post": 0.0,
+  "mean_winner_improvement_post": 0.0,
+  "objective": "forward_sanity",
+  "output": "reports/dpo_objective_diagnosis_v8n/forward_sanity_pos8.csv",
+  "rows_written": 8,
+  "seconds": 216.84384965896606,
+  "status": "FORWARD_SANITY_PASS",
+  "steps_requested": 0
+}
