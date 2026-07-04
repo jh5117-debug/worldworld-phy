@@ -13,7 +13,7 @@ import torch
 import torch.nn.functional as F
 
 from cam_physgeo.dpo.anchored_dpo_trainer import _grad_norm
-from cam_physgeo.dpo.lingbot_fast_energy import LingBotFastDpoEnergy, PreparedEnergyInput
+from cam_physgeo.dpo.lingbot_fast_energy import LingBotFastDpoEnergy, PreparedEnergyInput, extract_lora_state
 from cam_physgeo.dpo.lora_scope_config_v12 import apply_scope_to_cfg
 from cam_physgeo.dpo.winner_anchor_only_runner import _cfg, _param_norm, _param_update_norm, cuda_stats
 
@@ -100,6 +100,28 @@ def _safe_float(value: Any) -> float:
     if torch.is_tensor(value):
         return float(value.detach().float().mean().cpu())
     return float(value)
+
+
+def _parse_checkpoint_steps(raw: str) -> set[int]:
+    steps: set[int] = set()
+    for part in str(raw or '').split(','):
+        part = part.strip()
+        if not part:
+            continue
+        steps.add(int(part))
+    return steps
+
+
+def _write_checkpoint_manifest(root: Path, rows: list[dict[str, Any]]) -> None:
+    root.mkdir(parents=True, exist_ok=True)
+    (root / 'checkpoint_manifest.json').write_text(json.dumps(rows, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+
+def _save_lora_checkpoint(backend: LingBotFastDpoEnergy, root: Path, *, objective: str, scope: str, step: int) -> dict[str, Any]:
+    root.mkdir(parents=True, exist_ok=True)
+    ckpt = root / f'{objective}_{scope}_step{step:03d}_lora_state.pt'
+    torch.save(extract_lora_state(backend.model), ckpt)
+    return {'step': int(step), 'objective': objective, 'scope': scope, 'path': str(ckpt), 'kind': 'lora_state'}
 
 
 def _metrics(ref_w: float, ref_l: float, pol_w: torch.Tensor | float, pol_l: torch.Tensor | float) -> dict[str, float]:
@@ -193,6 +215,12 @@ def run_objective(args: argparse.Namespace) -> dict[str, Any]:
     backend = _make_backend(args, output)
     params = backend.trainable_parameters()
     optim = torch.optim.AdamW(params, lr=float(args.lr))
+    checkpoint_steps = _parse_checkpoint_steps(getattr(args, 'checkpoint_steps', ''))
+    checkpoint_root = Path(args.checkpoint_root) if getattr(args, 'checkpoint_root', '') else None
+    checkpoint_rows: list[dict[str, Any]] = []
+    if checkpoint_root is not None and 0 in checkpoint_steps and str(args.objective) != 'forward_sanity':
+        checkpoint_rows.append(_save_lora_checkpoint(backend, checkpoint_root, objective=str(args.objective), scope=str(getattr(args, 'scope', '')), step=0))
+        _write_checkpoint_manifest(checkpoint_root, checkpoint_rows)
     history_winner_positive: list[bool] = []
     written: list[dict[str, Any]] = []
     start_all = time.time()
@@ -305,6 +333,15 @@ def run_objective(args: argparse.Namespace) -> dict[str, Any]:
             })
             _append(output, result)
             written.append(result)
+            completed_step = int(step) + 1
+            if (
+                result.get('status') == 'PASS'
+                and checkpoint_root is not None
+                and completed_step in checkpoint_steps
+                and str(args.objective) != 'forward_sanity'
+            ):
+                checkpoint_rows.append(_save_lora_checkpoint(backend, checkpoint_root, objective=str(args.objective), scope=str(getattr(args, 'scope', '')), step=completed_step))
+                _write_checkpoint_manifest(checkpoint_root, checkpoint_rows)
         except torch.cuda.OutOfMemoryError as exc:
             result = {**base, "status": "OOM", "finite": False, "error_reason": repr(exc), "step_time": time.time() - start, **cuda_stats()}
             _append(output, result)
@@ -330,6 +367,8 @@ def run_objective(args: argparse.Namespace) -> dict[str, Any]:
         "mean_loser_degradation_post": _mean([r.get("loser_degradation_post") for r in written if r.get("status") == "PASS"]),
         "mean_winner_contribution_ratio_post": _mean([r.get("winner_contribution_ratio_post") for r in written if r.get("status") == "PASS"]),
         "output": str(output),
+        "checkpoint_manifest": str(checkpoint_root / 'checkpoint_manifest.json') if checkpoint_root is not None and checkpoint_rows else "",
+        "checkpoints_saved": len(checkpoint_rows),
     }
     output.with_suffix(".summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     output.with_suffix(".summary.md").write_text(
@@ -365,6 +404,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--u_clip", type=float, default=1.0)
     parser.add_argument("--lambda_winner_anchor", type=float, default=1.0)
     parser.add_argument("--max_lambda_loser", type=float, default=0.25)
+    parser.add_argument("--checkpoint_root", default="")
+    parser.add_argument("--checkpoint_steps", default="0,5,10,20")
     parser.add_argument("--gradient_checkpointing", action="store_true", default=True)
     args = parser.parse_args(argv)
     run_objective(args)
