@@ -2,6 +2,26 @@ Current Status: PASS
 
 # GitHub Push Report Update
 
+Updated: 2026-07-04 12:45:00
+
+Latest pushed commits on `research/quant-small-lora-dpo-probe-20260624`:
+
+- `59ff5d7 Prepare repaired ready500 manifest and metric backend verification PRD`
+- `cf02804 Freeze repaired ready500 manifest as canonical`
+- `e8ee278 Verify repaired ready500 metric backends`
+
+Push status: PASS.
+
+Canonical repaired manifest: `manifests/dpo_pair_factory_v11_ready_500_canonical.jsonl`.
+Repaired splits: train400 / val50 / test50 / top50 demo regenerated from the repaired manifest.
+Metric backend verification: LPIPS real smoke PASS; VBench real smoke PASS for temporal_flickering; FVD real I3D smoke PASS with scope caveat.
+
+Large-file safety: no MP4/JPG/PNG/local_assets/checkpoints/weights were included in the pushed commits.
+
+Current Status: PASS
+
+# GitHub Push Report Update
+
 Updated: 2026-07-04 04:17:06
 
 Latest commit pushed: `40992cf Repair ready500 manifest after loser quality audit`
