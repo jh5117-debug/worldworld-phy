@@ -1,0 +1,5 @@
+pair_id,source,failure_tag,in_canonical_ready500,in_v12b_report,in_s_fail,reviewed,written_reason_nonempty,medium_hard,prefix_len,prediction_start_frame,prefix_exists,winner_path_exists,loser_path_exists,future_only_indices_present,affected_region,affected_time_span,status
+v6b_GT_C_007_04228_containment_orbit_left_44_seed43228,rollout,containment_failure,True,True,False,True,True,True,5,5,True,True,True,False,False,False,READY
+v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift,synthetic,foreground_identity_color_shift,True,True,False,True,True,True,5,5,True,True,True,True,True,True,READY
+v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift,synthetic,foreground_identity_color_shift,True,True,False,True,True,True,5,5,True,True,True,True,True,True,READY
+v10_TypeM_039_04214_containment_orbit_left_44_seed43214_foreground_identity_color_shift,synthetic,foreground_identity_color_shift,True,True,False,True,True,True,5,5,True,True,True,True,True,True,READY

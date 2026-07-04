@@ -13,7 +13,7 @@ import torch
 import torch.nn.functional as F
 
 from cam_physgeo.dpo.anchored_dpo_trainer import _grad_norm
-from cam_physgeo.dpo.lingbot_fast_energy import LingBotFastDpoEnergy, PreparedEnergyInput, extract_lora_state
+from cam_physgeo.dpo.lingbot_fast_energy import LingBotFastDpoEnergy, PreparedEnergyInput, extract_lora_state, load_lora_state
 from cam_physgeo.dpo.lora_scope_config_v12 import apply_scope_to_cfg
 from cam_physgeo.dpo.winner_anchor_only_runner import _cfg, _param_norm, _param_update_norm, cuda_stats
 
@@ -24,7 +24,7 @@ FIELDNAMES = [
     "winner_improvement_pre", "winner_improvement_post", "loser_degradation_pre", "loser_degradation_post",
     "reference_relative_margin_pre", "reference_relative_margin_post", "winner_contribution_ratio_pre",
     "winner_contribution_ratio_post", "u_raw_pre", "u_raw_post", "u_clipped", "lambda_loser",
-    "lambda_winner_anchor", "dpo_loss", "objective_loss", "grad_norm", "update_norm", "lora_param_norm",
+    "lambda_winner_anchor", "lambda_pref", "dpo_loss", "objective_loss", "grad_norm", "update_norm", "lora_param_norm",
     "lr", "allocated_gb", "reserved_gb", "max_allocated_gb", "step_time", "finite", "status", "error_reason",
 ]
 
@@ -193,6 +193,12 @@ def decide_status(objective: str, rows: list[dict[str, Any]], steps_requested: i
     mean_ratio = _mean([r.get("winner_contribution_ratio_post") for r in pass_rows])
     if objective == "winner_anchor_repeat":
         return "WINNER_ANCHOR_REPEAT_PASS" if mean_wi != "" and float(mean_wi) > 0.0 and final_wi > 0.0 else "WINNER_ANCHOR_REPEAT_FAIL"
+    if objective == "winner_detached_preference":
+        return "WINNER_DETACHED_PREFERENCE_PASS" if mean_wi != "" and float(mean_wi) > 0.0 and final_wi > 0.0 else "WINNER_DETACHED_PREFERENCE_SIGNAL_FAIL"
+    if objective == "tiny_loser_gradient_preference":
+        return "TINY_LOSER_GRADIENT_PREFERENCE_PASS" if mean_wi != "" and float(mean_wi) > 0.0 and final_wi > 0.0 and mean_ratio != "" and float(mean_ratio) >= 0.30 else "TINY_LOSER_GRADIENT_PREFERENCE_SIGNAL_FAIL"
+    if objective == "linear_winner_detached":
+        return "LINEAR_WINNER_DETACHED_PASS" if mean_wi != "" and float(mean_wi) > 0.0 and final_wi > 0.0 else "LINEAR_WINNER_DETACHED_SIGNAL_FAIL"
     if objective == "standard_dpo_baseline":
         return "STANDARD_DPO_BASELINE_DIAGNOSTIC_COMPLETE"
     if mean_wi != "" and float(mean_wi) > 0.0 and final_wi > 0.0 and mean_ratio != "" and float(mean_ratio) >= 0.30:
@@ -213,6 +219,10 @@ def run_objective(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError(f"empty pair subset: {args.pair_subset}")
     steps = len(rows) if str(args.objective) == "forward_sanity" else int(args.steps)
     backend = _make_backend(args, output)
+    init_lora_state = str(getattr(args, "init_lora_state", "") or "")
+    if init_lora_state:
+        state = torch.load(init_lora_state, map_location="cpu")
+        load_lora_state(backend.model, state)
     params = backend.trainable_parameters()
     optim = torch.optim.AdamW(params, lr=float(args.lr))
     checkpoint_steps = _parse_checkpoint_steps(getattr(args, 'checkpoint_steps', ''))
@@ -234,6 +244,8 @@ def run_objective(args: argparse.Namespace) -> dict[str, Any]:
         lambda_loser = 0.0
         if str(args.objective) in {"strict_sdpo", "linear_dpo_anchor", "safe_linear"} and len(history_winner_positive) >= 3 and all(history_winner_positive[-3:]):
             lambda_loser = float(args.max_lambda_loser)
+        if str(args.objective) == "tiny_loser_gradient_preference" and len(history_winner_positive) >= 3 and all(history_winner_positive[-3:]):
+            lambda_loser = min(float(args.max_lambda_loser), 0.01)
         base = {
             "step": step,
             "pair_id": row.get("pair_id", ""),
@@ -248,6 +260,7 @@ def run_objective(args: argparse.Namespace) -> dict[str, Any]:
             "Delta_ref": delta_ref,
             "lambda_loser": lambda_loser,
             "lambda_winner_anchor": float(args.lambda_winner_anchor),
+            "lambda_pref": float(getattr(args, "lambda_pref", 1.0)),
             "lr": float(args.lr),
         }
         try:
@@ -282,6 +295,19 @@ def run_objective(args: argparse.Namespace) -> dict[str, Any]:
                 elif args.objective == "strict_sdpo":
                     safe_margin = winner_improvement_tensor + float(lambda_loser) * loser_degradation_tensor
                     dpo_loss = -F.logsigmoid(float(args.beta) * safe_margin)
+                    loss = dpo_loss + float(args.lambda_winner_anchor) * ew_loss
+                elif args.objective == "winner_detached_preference":
+                    u_winner_only = (el_loss.detach() - ew_loss) - float(delta_ref)
+                    dpo_loss = -F.logsigmoid(float(args.beta) * u_winner_only)
+                    loss = float(args.lambda_winner_anchor) * ew_loss + float(getattr(args, "lambda_pref", 0.02)) * dpo_loss
+                elif args.objective == "tiny_loser_gradient_preference":
+                    safe_margin = winner_improvement_tensor + float(lambda_loser) * loser_degradation_tensor
+                    dpo_loss = -F.logsigmoid(float(args.beta) * safe_margin)
+                    loss = float(args.lambda_winner_anchor) * ew_loss + float(getattr(args, "lambda_pref", 0.02)) * dpo_loss
+                elif args.objective == "linear_winner_detached":
+                    u_winner_only = (el_loss.detach() - ew_loss) - float(delta_ref)
+                    utility = torch.clamp(u_winner_only, -float(args.u_clip), float(args.u_clip))
+                    dpo_loss = -float(pair_weight) * utility
                     loss = dpo_loss + float(args.lambda_winner_anchor) * ew_loss
                 elif args.objective in {"linear_dpo_anchor", "safe_linear"}:
                     safe_margin = winner_improvement_tensor + float(lambda_loser) * loser_degradation_tensor
@@ -390,7 +416,7 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Run tiny v8n objectives on validated v8m winner+loser pair cache.")
     parser.add_argument("--cache_root", required=True)
     parser.add_argument("--pair_subset", required=True)
-    parser.add_argument("--objective", required=True, choices=["forward_sanity", "winner_anchor_repeat", "strict_sdpo", "linear_dpo_anchor", "safe_linear", "standard_dpo_baseline"])
+    parser.add_argument("--objective", required=True, choices=["forward_sanity", "winner_anchor_repeat", "strict_sdpo", "linear_dpo_anchor", "safe_linear", "standard_dpo_baseline", "winner_detached_preference", "tiny_loser_gradient_preference", "linear_winner_detached"])
     parser.add_argument("--steps", type=int, default=20)
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--output", required=True)
@@ -403,7 +429,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--beta", type=float, default=1.0)
     parser.add_argument("--u_clip", type=float, default=1.0)
     parser.add_argument("--lambda_winner_anchor", type=float, default=1.0)
+    parser.add_argument("--lambda_pref", type=float, default=1.0)
     parser.add_argument("--max_lambda_loser", type=float, default=0.25)
+    parser.add_argument("--init_lora_state", default="")
     parser.add_argument("--checkpoint_root", default="")
     parser.add_argument("--checkpoint_steps", default="0,5,10,20")
     parser.add_argument("--gradient_checkpointing", action="store_true", default=True)
