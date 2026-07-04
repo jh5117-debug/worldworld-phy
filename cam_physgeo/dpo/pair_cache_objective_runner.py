@@ -14,10 +14,11 @@ import torch.nn.functional as F
 
 from cam_physgeo.dpo.anchored_dpo_trainer import _grad_norm
 from cam_physgeo.dpo.lingbot_fast_energy import LingBotFastDpoEnergy, PreparedEnergyInput
+from cam_physgeo.dpo.lora_scope_config_v12 import apply_scope_to_cfg
 from cam_physgeo.dpo.winner_anchor_only_runner import _cfg, _param_norm, _param_update_norm, cuda_stats
 
 FIELDNAMES = [
-    "step", "pair_id", "objective", "used_window_frames", "timestep", "actual_sigma", "pair_weight",
+    "step", "pair_id", "scope", "objective", "used_window_frames", "timestep", "actual_sigma", "pair_weight",
     "E_ref_winner_cached", "E_ref_loser_cached", "Delta_ref", "E_policy_winner_pre", "E_policy_loser_pre",
     "Delta_policy_pre", "E_policy_winner_post", "E_policy_loser_post", "Delta_policy_post",
     "winner_improvement_pre", "winner_improvement_post", "loser_degradation_pre", "loser_degradation_post",
@@ -129,6 +130,7 @@ def _make_backend(args: argparse.Namespace, output: Path) -> LingBotFastDpoEnerg
         runtime_device="cpu",
         gradient_checkpointing=bool(args.gradient_checkpointing),
     )
+    cfg = apply_scope_to_cfg(cfg, str(getattr(args, "scope", "L0_camera_r4")))
     cfg["dpo_policy_loader_mode"] = "safe_wan_policy_only"
     cfg["dpo_safe_loader_heartbeat_path"] = str(output.with_name(output.stem + "_safe_loader.jsonl"))
     return LingBotFastDpoEnergy(cfg, device=f"cuda:{int(args.gpu)}" if torch.cuda.is_available() else "cpu", prefix_len=5)
@@ -207,6 +209,7 @@ def run_objective(args: argparse.Namespace) -> dict[str, Any]:
         base = {
             "step": step,
             "pair_id": row.get("pair_id", ""),
+            "scope": getattr(args, "scope", "L0_camera_r4"),
             "objective": args.objective,
             "used_window_frames": args.used_window_frames,
             "timestep": row.get("timestep", ""),
@@ -352,6 +355,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--steps", type=int, default=20)
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--scope", default="L0_camera_r4")
     parser.add_argument("--config", default="configs/cam_physgeo/fast_stageA_v2v5_camera_r4_100step.yaml")
     parser.add_argument("--height", type=int, default=480)
     parser.add_argument("--width", type=int, default=832)
