@@ -464,3 +464,11 @@ Use this repaired manifest when an exact 500-pair training candidate set is requ
 ## DPO Training Sanity v12
 
 Tiny guarded SDPO on S1 was stopped at step10: mean winner improvement turned negative and DPO loss remained near 0.693. Decision: `DPO_V12_FAILED_WINNER_WORSE_NO_SIGNAL`. Large DPO remains blocked.
+
+<!-- V12B_OBJECTIVE_REPAIR_STATUS_START -->
+
+## V12B OBJECTIVE REPAIR STATUS
+
+v12b winner-only repair completed on GPU4. Per-pair diagnosis found 4/8 S_pass; S_pass4 winner-only curriculum completed 20/20 with mean winner_improvement_post `5.76973e-05` and final `5.87106e-05`. No DPO/SDPO/Linear-DPO ran; large DPO remains blocked pending a separate guarded preference probe with video+metric audit.
+
+<!-- V12B_OBJECTIVE_REPAIR_STATUS_END -->

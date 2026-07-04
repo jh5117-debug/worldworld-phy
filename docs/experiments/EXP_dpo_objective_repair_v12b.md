@@ -76,3 +76,19 @@
 - No GPU5/6/7 fallback.
 - No checkpoint deletion.
 - No video/image/checkpoint/weight push.
+
+
+<!-- V12B_EXECUTION_RESULTS_START -->
+
+## Execution Results
+
+- Phase A subsets: ready.
+- Phase B per-pair winner-anchor diagnosis: 4 S_pass / 4 S_fail, `WINNER_ANCHOR_PER_PAIR_PASS`.
+- Phase D S_pass4 winner-only curriculum: 20/20 steps, `WINNER_ANCHOR_REPEAT_PASS`.
+- Mean winner_improvement_post: `5.76973e-05`.
+- Final winner_improvement_post: `5.87106e-05`.
+- Mean winner contribution ratio: `0.579694`.
+- Preference/DPO branch: not run in this round.
+- Updated: 2026-07-05 05:54:06.
+
+<!-- V12B_EXECUTION_RESULTS_END -->

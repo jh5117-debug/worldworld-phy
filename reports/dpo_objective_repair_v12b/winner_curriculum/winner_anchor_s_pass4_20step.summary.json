@@ -1,0 +1,14 @@
+{
+  "checkpoint_manifest": "local_assets/dpo_objective_repair_v12b/winner_curriculum/checkpoints/checkpoint_manifest.json",
+  "checkpoints_saved": 4,
+  "final_winner_improvement_post": 5.8710575103759766e-05,
+  "mean_loser_degradation_post": 1.1980533599853516e-06,
+  "mean_winner_contribution_ratio_post": 0.5796941924173122,
+  "mean_winner_improvement_post": 5.7697296142578125e-05,
+  "objective": "winner_anchor_repeat",
+  "output": "reports/dpo_objective_repair_v12b/winner_curriculum/winner_anchor_s_pass4_20step.csv",
+  "rows_written": 20,
+  "seconds": 1921.7044651508331,
+  "status": "WINNER_ANCHOR_REPEAT_PASS",
+  "steps_requested": 20
+}

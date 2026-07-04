@@ -163,3 +163,11 @@ Current Status: PAIR_FACTORY_V10_READY_50_SYNTHETIC_MIXED
 - Added checkpoint saving to cache objective runner.
 - Tiny S1 strict SDPO stopped at step10 with `DPO_V12_FAILED_WINNER_WORSE_NO_SIGNAL`.
 - No media/checkpoints/local_assets staged or pushed.
+
+<!-- V12B_OBJECTIVE_REPAIR_PUSH_NOTE_START -->
+
+## V12B OBJECTIVE REPAIR PUSH NOTE
+
+Prepared v12b reports and lightweight CSV/JSON summaries for commit/push. No media, cache tensors, checkpoint tensors, or weights are staged.
+
+<!-- V12B_OBJECTIVE_REPAIR_PUSH_NOTE_END -->
