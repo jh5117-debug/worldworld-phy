@@ -460,3 +460,7 @@ After the stricter loser audit, 3 original TypeA_plus pairs were marked review-o
 - Replacement CSV: `reports/dpo_pair_factory_v11/loser_quality/ready500_replacement_pairs.csv`
 
 Use this repaired manifest when an exact 500-pair training candidate set is required.
+
+## DPO Training Sanity v12
+
+Tiny guarded SDPO on S1 was stopped at step10: mean winner improvement turned negative and DPO loss remained near 0.693. Decision: `DPO_V12_FAILED_WINNER_WORSE_NO_SIGNAL`. Large DPO remains blocked.

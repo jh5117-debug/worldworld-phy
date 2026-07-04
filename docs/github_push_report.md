@@ -156,3 +156,10 @@ Current Status: PAIR_FACTORY_V10_READY_50_SYNTHETIC_MIXED
 - Caveat: 63 new pairs are controlled synthetic visible negatives, not true rollout TypeB losers.
 - No DPO / SDPO / Linear-DPO / StageA / StageB / GRPO / broad-LoRA was run.
 <!-- /dpo_pair_factory_v10_update -->
+
+## DPO Training Sanity v12
+
+- Prepared PRD/subsets/scope inventory and pushed commits through scope sanity.
+- Added checkpoint saving to cache objective runner.
+- Tiny S1 strict SDPO stopped at step10 with `DPO_V12_FAILED_WINNER_WORSE_NO_SIGNAL`.
+- No media/checkpoints/local_assets staged or pushed.

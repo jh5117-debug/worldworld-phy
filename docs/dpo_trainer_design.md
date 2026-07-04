@@ -100,3 +100,7 @@ The diagnostic backend is intentionally not presented as real LingBot-Fast DPO. 
 - Prefix clips use frames 0-4; winner/loser futures use frames 5-80.
 - DPO loss/reward masks are `5..80`.
 - Real DPO remains blocked until LingBot-Fast winner/loser energy backend and BF16 DDP preflight are available.
+
+## DPO Training Sanity v12
+
+Tiny guarded SDPO on S1 was stopped at step10: mean winner improvement turned negative and DPO loss remained near 0.693. Decision: `DPO_V12_FAILED_WINNER_WORSE_NO_SIGNAL`. Large DPO remains blocked.

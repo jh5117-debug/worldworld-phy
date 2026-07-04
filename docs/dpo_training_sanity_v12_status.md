@@ -1,42 +1,24 @@
-Current Status: PRD_READY_PENDING_EXECUTION
+Current Status: DPO_V12_FAILED_WINNER_WORSE_NO_SIGNAL
 
 # DPO Training Sanity v12 Status
 
-Updated: 2026-07-04 13:28 CST
+- Canonical data entry: `manifests/dpo_pair_factory_v11_ready_500_canonical.jsonl`.
+- Repaired splits used: train400 / val50 / test50 / top50.
+- S0 scope probe cache: `16/16 PASS`.
+- LoRA scope decision: only `L0_camera_r4` passed winner-anchor sanity.
+- L1 camera-r8 failed: final winner improvement negative.
+- L2 camera+temporal failed: final winner improvement non-positive.
+- L3 camera+cross failed: mean/final winner improvement negative.
+- S1 tiny DPO cache: `32/32 PASS`.
+- S1 guarded SDPO-anchor run: stopped at 11 rows / step10 due winner-worse and no-signal behavior.
+- Mean winner_improvement_post: `-7.748603820800781e-07`.
+- Final winner_improvement_post: `-0.00018405914306640625`.
+- Mean winner_contribution_ratio_post: `0.43831473876668603`.
+- Final winner_contribution_ratio_post: `0.0`.
+- DPO loss stayed near `0.6931492632085626`.
+- Checkpoints saved locally: step0/5/10 only; no videos are pushed.
+- Checkpoint video eval was not run because the energy signal already triggered early STOP; no PASS is claimed.
 
-## Data Entry
+Decision: `DPO_V12_FAILED_WINNER_WORSE_NO_SIGNAL`.
 
-Use only the repaired canonical ready500 manifest and repaired splits:
-
-- Canonical: `manifests/dpo_pair_factory_v11_ready_500_canonical.jsonl`
-- Train: `manifests/dpo_pair_factory_v11_train400_repaired.jsonl`
-- Val: `manifests/dpo_pair_factory_v11_val50_repaired.jsonl`
-- Test: `manifests/dpo_pair_factory_v11_test50_repaired.jsonl`
-- Top50 demo: `manifests/dpo_pair_factory_v11_top50_demo_repaired.jsonl`
-
-The old `manifests/dpo_pair_factory_v11_ready_500.jsonl` is deprecated because it contained three too-subtle TypeA_plus pairs.
-
-## Current Evidence
-
-- Repaired canonical count: 500.
-- Repaired train/val/test/top50: 400 / 50 / 50 / 50.
-- LPIPS real smoke: PASS.
-- VBench real scoring smoke: PASS for `temporal_flickering` only.
-- FVD real video-FVD smoke: PASS using local TorchScript I3D, with tiny-smoke caveat.
-- Metric environment warning: VBench installed user-site `transformers==4.33.2`; fastwam expects `transformers==4.49.0`.
-
-## DPO Risk
-
-Previous DPO diagnosis showed weak/no preference signal and winner preservation failures. The main risk is loser-degradation-dominant optimization. v12 is therefore a tiny sanity experiment, not a scale run.
-
-## v12 Scope
-
-This round may run:
-
-- repaired data subset construction;
-- LoRA scope inventory;
-- winner-anchor scope sanity;
-- guarded tiny DPO only if at least one scope passes winner-anchor sanity;
-- checkpoint video + metric evaluation for every tiny DPO checkpoint.
-
-This round must not run large DPO, StageB, GRPO, full-data StageA, broad-LoRA, or any checkpoint/data deletion.
+Safety: no large DPO, no StageB, no GRPO, no full-data StageA, no broad-LoRA, no checkpoint deletion, no data/weights/video pushed.

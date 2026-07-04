@@ -184,3 +184,7 @@ No large DPO, StageB, GRPO, full-data StageA, checkpoint deletion, or data/weigh
 ## v8h Update - 2026-07-03T06:46:04
 
 Policy runtime safe loader now reaches runtime-ready on H20 physical GPU7. The first-row cache smoke then blocks after `after_policy_load` and before `after_runtime_ready`, localizing the next blocker to `ensure_runtime_ready` / runtime component initialization. DPO remains not ready; no DPO/SDPO/Linear-DPO was run.
+
+## DPO Training Sanity v12
+
+Tiny guarded SDPO on S1 was stopped at step10: mean winner improvement turned negative and DPO loss remained near 0.693. Decision: `DPO_V12_FAILED_WINNER_WORSE_NO_SIGNAL`. Large DPO remains blocked.

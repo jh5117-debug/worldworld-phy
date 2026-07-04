@@ -155,3 +155,7 @@ Training artifacts, videos, and contact sheet images remain local/untracked unde
 - no broad-LoRA;
 - no checkpoint deletion;
 - no MP4/JPG/PNG/checkpoint/weight push.
+## Verification
+
+- `python3 -m compileall cam_physgeo src tests`: PASS.
+- Pytest: unavailable in `/usr/bin/python3` (`No module named pytest`); no pytest PASS is claimed.

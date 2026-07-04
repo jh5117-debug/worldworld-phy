@@ -1,0 +1,25 @@
+{
+  "checkpoint_video_eval": "NOT_RUN_EARLY_STOP_SIGNAL_FAIL",
+  "checkpoints_saved": [
+    0,
+    5,
+    10
+  ],
+  "completed_rows": 11,
+  "decision": "DPO_V12_FAILED_WINNER_WORSE_NO_SIGNAL",
+  "final_dpo_loss": 0.6931530833244324,
+  "final_loser_degradation_post": 1.1920928955078125e-05,
+  "final_winner_contribution_ratio_post": 0.0,
+  "final_winner_improvement_post": -0.00018405914306640625,
+  "lambda_loser_values": [
+    "0.0",
+    "0.25"
+  ],
+  "mean_dpo_loss": 0.6931492632085626,
+  "mean_loser_degradation_post": -2.373348582874645e-06,
+  "mean_winner_contribution_ratio_post": 0.43831473876668603,
+  "mean_winner_improvement_post": -7.748603820800781e-07,
+  "pass_rows": 11,
+  "requested_steps": 20,
+  "stop_reason": "STOP_WINNER_WORSE_NO_SIGNAL"
+}

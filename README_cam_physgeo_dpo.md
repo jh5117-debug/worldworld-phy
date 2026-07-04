@@ -375,3 +375,7 @@ The active StageA path has been corrected:
 - DPO remains later and was not run.
 
 Fast high-only preflights now pass on single GPU7, DDP GPU6/7, and DDP GPU1-7. Formal StageA is waiting for a balanced generated_v5 converted snapshot; the current converted subset is still drop/orbit_left-only.
+
+## DPO Training Sanity v12
+
+Tiny guarded SDPO on S1 was stopped at step10: mean winner improvement turned negative and DPO loss remained near 0.693. Decision: `DPO_V12_FAILED_WINNER_WORSE_NO_SIGNAL`. Large DPO remains blocked.
