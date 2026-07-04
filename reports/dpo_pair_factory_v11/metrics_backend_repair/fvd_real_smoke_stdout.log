@@ -1,0 +1,52 @@
+2026-07-04 12:31:27,411 INFO Found 4 generated videos, 4 real videos
+2026-07-04 12:31:27,422 INFO Matched 4 gen-real pairs
+2026-07-04 12:31:27,422 INFO Using 4 pairs for evaluation
+2026-07-04 12:31:27,422 INFO Loading video frames ...
+2026-07-04 12:31:32,815 INFO Frame loading done in 5.4s (gen: 304 frames, real: 304 frames)
+2026-07-04 12:31:32,826 INFO Loading I3D model ...
+2026-07-04 12:31:36,904 INFO Extracting I3D features (generated) ...
+Traceback (most recent call last):
+  File "/home/nvme03/workspace/world_model_phys/code/finetune_v3/lingbot-csgo-finetune/eval_fid_fvd.py", line 410, in <module>
+    main()
+  File "/home/nvme03/workspace/world_model_phys/code/finetune_v3/lingbot-csgo-finetune/eval_fid_fvd.py", line 376, in main
+    gen_feats = extract_i3d_features(gen_frames_list, i3d, args.device,
+  File "/usr/local/lib/python3.10/dist-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/nvme03/workspace/world_model_phys/code/finetune_v3/lingbot-csgo-finetune/eval_fid_fvd.py", line 200, in extract_i3d_features
+    feats = i3d_model(batch)  # [B, D]
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+RuntimeError: The following operation failed in the TorchScript interpreter.
+Traceback of TorchScript, serialized code (most recent call last):
+  File "code/__torch__/src/i3dpt_jit.py", line 46, in forward
+    else:
+      x2 = x0
+    out = (self.conv3d_1a_7x7).forward(x2, )
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~ <--- HERE
+    out0 = (self.maxPool3d_2a_3x3).forward(out, )
+    out1 = (self.conv3d_2b_1x1).forward(out0, )
+  File "code/__torch__/src/i3dpt_jit.py", line 109, in forward
+    else:
+      inp0 = inp
+    out = (self.conv3d).forward(inp0, )
+           ~~~~~~~~~~~~~~~~~~~~ <--- HERE
+    if self.use_bn:
+      out22 = (self.batch3d).forward(out, )
+  File "code/__torch__/torch/nn/modules/conv.py", line 20, in forward
+  def forward(self: __torch__.torch.nn.modules.conv.Conv3d,
+    input: Tensor) -> Tensor:
+    _0 = torch.conv3d(input, self.weight, self.bias, [2, 2, 2], [0, 0, 0], [1, 1, 1], 1)
+         ~~~~~~~~~~~~ <--- HERE
+    return _0
+
+Traceback of TorchScript, original code (most recent call last):
+  File "/home/skoroki/video-sg/env/lib/python3.8/site-packages/torch/nn/modules/conv.py", line 572, in forward
+                            self.weight, self.bias, self.stride, _triple(0),
+                            self.dilation, self.groups)
+        return F.conv3d(input, self.weight, self.bias, self.stride,
+               ~~~~~~~~ <--- HERE
+                        self.padding, self.dilation, self.groups)
+RuntimeError: Given groups=1, weight of size [64, 3, 7, 7, 7], expected input[4, 16, 229, 229, 8] to have 3 channels, but got 16 channels instead
+

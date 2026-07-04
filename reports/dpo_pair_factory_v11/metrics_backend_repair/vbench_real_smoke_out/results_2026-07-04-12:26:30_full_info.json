@@ -1,0 +1,29 @@
+[
+    {
+        "prompt_en": "v6b_GT_C_001_01014_drop_orbit_left_72_seed40014",
+        "dimension": [
+            "temporal_flickering"
+        ],
+        "video_list": [
+            "reports/dpo_pair_factory_v11/metrics_backend_repair/vbench_smoke_videos/v6b_GT_C_001_01014_drop_orbit_left_72_seed40014.mp4"
+        ]
+    },
+    {
+        "prompt_en": "v6b_GT_C_002_03410_roll_orbit_right_60_seed42410",
+        "dimension": [
+            "temporal_flickering"
+        ],
+        "video_list": [
+            "reports/dpo_pair_factory_v11/metrics_backend_repair/vbench_smoke_videos/v6b_GT_C_002_03410_roll_orbit_right_60_seed42410.mp4"
+        ]
+    },
+    {
+        "prompt_en": "v6b_GT_C_003_03418_roll_orbit_right_60_seed42418",
+        "dimension": [
+            "temporal_flickering"
+        ],
+        "video_list": [
+            "reports/dpo_pair_factory_v11/metrics_backend_repair/vbench_smoke_videos/v6b_GT_C_003_03418_roll_orbit_right_60_seed42418.mp4"
+        ]
+    }
+]

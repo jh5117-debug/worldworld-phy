@@ -1,0 +1,5 @@
+/home/nvme03/workspace/world_model_phys/code/finetune_v3/lingbot-csgo-finetune/eval_fid_fvd.py
+/home/nvme03/workspace/world_model_phys/code/finetune_v3/lingbot-csgo-finetune/i3d_torchscript.pt
+/home/nvme03/workspace/world_model_phys/code/finetune_v3/lingbot-csgo-finetune/run_eval_fid_fvd.sh
+/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/eval_outputs/eval_exp_stage3_vanilla_videorepa_trd_low_from_baseact_4gpu_240x416_ep5_20260521_035744_final_nofvd_4gpu_20260522_041627
+/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/tests/test_fvd_wrapper.py

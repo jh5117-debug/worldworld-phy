@@ -77,3 +77,18 @@ Generated: 2026-07-04 11:46:48
 - No checkpoint changes.
 - No video or image push.
 - No StageA / StageB / GRPO.
+
+
+## Result Update
+
+
+### 2026-07-04 12:35:32
+
+- Repaired canonical freeze: PASS.
+- Canonical count: 500; train/val/test/top50: 400/50/50/50.
+- Removed too-subtle IDs absent; replacement IDs present.
+- LPIPS real smoke: PASS.
+- VBench real scoring smoke: PASS for `temporal_flickering`.
+- FVD backend smoke: PASS with local I3D and corrected layout.
+- Full VBench/FVD benchmark scores are still future work; this round only verified small metric smoke paths.
+- No training run.

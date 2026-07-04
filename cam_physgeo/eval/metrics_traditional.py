@@ -10,6 +10,8 @@ from typing import Any, Iterable
 import cv2
 import numpy as np
 
+_LPIPS_MODEL_CACHE: dict[tuple[str, str], Any] = {}
+
 
 @dataclass(frozen=True)
 class BackendStatus:
@@ -145,7 +147,10 @@ def compute_lpips(reference: np.ndarray, prediction: np.ndarray, max_frames: int
             idx = np.linspace(0, len(ref) - 1, max_frames).round().astype(int)
             ref = ref[idx]
             pred = pred[idx]
-        loss_fn = lpips.LPIPS(net="alex", verbose=False).to(device).eval()
+        cache_key = ("alex", device)
+        if cache_key not in _LPIPS_MODEL_CACHE:
+            _LPIPS_MODEL_CACHE[cache_key] = lpips.LPIPS(net="alex", verbose=False).to(device).eval()
+        loss_fn = _LPIPS_MODEL_CACHE[cache_key]
         vals = []
         with torch.no_grad():
             for a, b in zip(ref, pred):
@@ -171,9 +176,10 @@ def compute_video_pair_metrics(
     compute_lpips_metric: bool = False,
     lpips_max_frames: int = 16,
     lpips_device: str = "cpu",
+    decode_max_frames: int | None = None,
 ) -> dict[str, Any]:
-    ref, ref_meta = read_video_rgb(reference_video_path)
-    pred, pred_meta = read_video_rgb(prediction_video_path)
+    ref, ref_meta = read_video_rgb(reference_video_path, max_frames=decode_max_frames)
+    pred, pred_meta = read_video_rgb(prediction_video_path, max_frames=decode_max_frames)
     row: dict[str, Any] = {
         "reference_video_path": str(reference_video_path),
         "prediction_video_path": str(prediction_video_path),
@@ -220,3 +226,113 @@ def write_json(path: str | Path, payload: Any) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+
+
+
+def _pair_video_path(pair: dict[str, Any], side: str) -> str:
+    item = pair.get(side) or {}
+    return str(item.get("future_video_path") or item.get("video_path") or item.get("full_video_path") or pair.get(f"{side}_video_path") or "")
+
+
+def _gt_future_path(pair: dict[str, Any]) -> str:
+    cond = pair.get("condition") or {}
+    return str(cond.get("gt_future_video_path") or cond.get("future_video_path") or cond.get("gt_video_path") or "")
+
+
+def _source_for_metric(pair: dict[str, Any]) -> str:
+    ptype = pair.get("pair_type")
+    if ptype == "GT_C" or "rollout" in str(pair.get("_manifest_source", "")):
+        return "rollout_derived"
+    if ptype == "TypeA_plus":
+        return "TypeA_plus"
+    return "synthetic_controlled"
+
+
+def _select_metric_pairs(pairs: list[dict[str, Any]], num_pairs: int) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    used: set[str] = set()
+    quotas = [("synthetic_controlled", 5), ("rollout_derived", 3)]
+    for source, quota in quotas:
+        for pair in pairs:
+            pid = str(pair.get("pair_id"))
+            if pid not in used and _source_for_metric(pair) == source:
+                selected.append(pair); used.add(pid)
+                if sum(1 for p in selected if _source_for_metric(p) == source) >= quota:
+                    break
+    for pair in pairs:
+        pid = str(pair.get("pair_id"))
+        if pid not in used:
+            selected.append(pair); used.add(pid)
+        if len(selected) >= num_pairs:
+            break
+    return selected[:num_pairs]
+
+
+def _read_pair_manifest(path: Path) -> list[dict[str, Any]]:
+    rows = []
+    with path.open() as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    return rows
+
+
+def main() -> None:
+    import argparse
+    from collections import Counter
+
+    ap = argparse.ArgumentParser(description="Traditional pair metrics smoke for DPO pair manifests")
+    ap.add_argument("--pair_manifest", required=True)
+    ap.add_argument("--num_pairs", type=int, default=10)
+    ap.add_argument("--metrics", default="psnr,ssim")
+    ap.add_argument("--output", required=True)
+    ap.add_argument("--lpips_max_frames", type=int, default=8)
+    ap.add_argument("--lpips_device", default="cpu")
+    ap.add_argument("--decode_max_frames", type=int, default=4)
+    args = ap.parse_args()
+
+    pairs = _select_metric_pairs(_read_pair_manifest(Path(args.pair_manifest)), args.num_pairs)
+    compute_lpips_metric = "lpips" in {m.strip().lower() for m in args.metrics.split(",")}
+    rows: list[dict[str, Any]] = []
+    for pair in pairs:
+        pid = str(pair.get("pair_id"))
+        winner = _pair_video_path(pair, "winner")
+        loser = _pair_video_path(pair, "loser")
+        gt = _gt_future_path(pair)
+        comparisons = [("winner_vs_loser", winner, loser)]
+        if gt:
+            comparisons.append(("winner_vs_gt", gt, winner))
+            comparisons.append(("loser_vs_gt", gt, loser))
+        for comparison, ref, pred in comparisons:
+            row = compute_video_pair_metrics(ref, pred, compute_lpips_metric=compute_lpips_metric, lpips_max_frames=args.lpips_max_frames, lpips_device=args.lpips_device, decode_max_frames=args.decode_max_frames)
+            row.update({
+                "pair_id": pid,
+                "comparison": comparison,
+                "pair_type": pair.get("pair_type", ""),
+                "source": _source_for_metric(pair),
+                "failure_type": pair.get("failure_tag") or ((pair.get("loser") or {}).get("failure_type")) or "",
+            })
+            rows.append(row)
+    write_csv(args.output, rows)
+    ok_lpips = [float(r.get("lpips", 0.0)) for r in rows if r.get("lpips_status") == "ok" and r.get("comparison") == "winner_vs_loser"]
+    status = "PASS" if len(ok_lpips) == len(pairs) else "MIXED"
+    summary = [
+        f"Current Status: {status}",
+        "",
+        "# LPIPS Real Smoke Summary",
+        "",
+        f"- Pair manifest: `{args.pair_manifest}`",
+        f"- Selected pairs: {len(pairs)}",
+        f"- Rows written: {len(rows)}",
+        f"- LPIPS winner_vs_loser rows: {len(ok_lpips)}",
+        f"- Mean LPIPS winner_vs_loser: {sum(ok_lpips)/len(ok_lpips) if ok_lpips else 'NA'}",
+        f"- Source counts: `{dict(Counter(_source_for_metric(p) for p in pairs))}`",
+        f"- Output CSV: `{args.output}`",
+    ]
+    Path(args.output).with_name(Path(args.output).stem + "_summary.md").write_text("\n".join(summary) + "\n")
+    print(json.dumps({"status": status, "pairs": len(pairs), "rows": len(rows), "lpips_rows": len(ok_lpips), "mean_lpips": (sum(ok_lpips)/len(ok_lpips) if ok_lpips else None)}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

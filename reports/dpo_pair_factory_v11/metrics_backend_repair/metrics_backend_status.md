@@ -1,19 +1,10 @@
-Current Status: MIXED
+Current Status: PASS_WITH_SCOPE_CAVEATS
 
-# Metrics Backend Repair Status
+# Metrics Backend Status After Repaired Ready500 Verification
 
-- LPIPS: AVAILABLE. Installed `lpips`; real `alex` smoke passed.
-- Image FID: AVAILABLE as diagnostic package via `pytorch-fid`, but it is not FVD.
-- FVD: still BLOCKED_BY_ENV_TEMPORAL_BACKBONE. `torchmetrics.video.FrechetVideoDistance` is absent; `pytorchvideo` imports but does not provide a ready FVD metric or local I3D weights. We did not fake FVD with image FID.
-- VBench: PACKAGE_CLI_AVAILABLE_CONFIG_BLOCKED. `vbench` imports and CLI help works; real scoring still needs explicit dimensions, videos path, and approved local checkpoint/cache policy.
+- LPIPS: REAL_SMOKE_PASS. Real `LPIPS(net=alex)` produced numeric winner-vs-loser values for 10 repaired canonical pairs.
+- VBench: REAL_SMOKE_PASS for `temporal_flickering` on 3 videos. This verifies one real VBench scoring path, not the full suite.
+- FVD: REAL_I3D_BACKEND_SMOKE_PASS. A local TorchScript I3D weight was found and a corrected-layout 4-pair FVD smoke ran successfully. This is backend verification, not a stable benchmark score.
+- Image FID: installed/importable, but remains diagnostic only and is not reported as FVD.
 
-Environment caveat: installing VBench added user-site packages including `transformers==4.33.2`, which pip reports as incompatible with the existing `fastwam` expectation of `transformers==4.49.0`. Future rollout or training commands should pin or isolate their Python environment if they rely on the newer transformers version.
-
-Artifacts:
-- `backend_probe_initial.txt`
-- `pip_install_lpips_fvd_vbench.log`
-- `pip_install_pytorchvideo.log`
-- `backend_probe_after_install.txt`
-- `lpips_real_smoke.txt`
-- `vbench_evaluate_help.txt`
-- `metrics_backend_status.csv`
+Environment caveat: VBench installation added user-site `transformers==4.33.2`, while fastwam expects `transformers==4.49.0`. Future training/rollout should isolate or pin environments.

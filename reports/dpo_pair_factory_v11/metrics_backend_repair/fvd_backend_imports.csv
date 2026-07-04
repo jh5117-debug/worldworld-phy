@@ -1,0 +1,7 @@
+module,status,version,file,error
+torchmetrics,OK,1.9.0,/home/ubuntu/.local/lib/python3.10/site-packages/torchmetrics/__init__.py,
+torchmetrics.video,OK,,/home/ubuntu/.local/lib/python3.10/site-packages/torchmetrics/video/__init__.py,
+torchmetrics.image.fid,OK,,/home/ubuntu/.local/lib/python3.10/site-packages/torchmetrics/image/fid.py,
+pytorch_fid,OK,0.3.0,/home/ubuntu/.local/lib/python3.10/site-packages/pytorch_fid/__init__.py,
+pytorchvideo,OK,0.1.5,/home/ubuntu/.local/lib/python3.10/site-packages/pytorchvideo/__init__.py,
+piq,OK,0.8.0,/home/ubuntu/.local/lib/python3.10/site-packages/piq/__init__.py,

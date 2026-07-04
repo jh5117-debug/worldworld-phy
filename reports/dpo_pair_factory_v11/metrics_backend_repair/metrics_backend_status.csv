@@ -1,5 +1,5 @@
 backend,status,import_status,runtime_smoke,details,remaining_blocker
-LPIPS,AVAILABLE,PASS,PASS_REAL_ALEX,lpips installed; real LPIPS alex smoke completed without using fake metric.,none for pair-level LPIPS; still need batch recompute if desired
-ImageFID_pytorch_fid,AVAILABLE_DIAGNOSTIC_ONLY,PASS,IMPORT_PASS,pytorch-fid installed and imports; this is image FID only.,must not be reported as video FVD
-FVD,BLOCKED_BY_ENV_TEMPORAL_BACKBONE,PARTIAL,NO_REAL_FVD_CLASS,torchmetrics has no FrechetVideoDistance; pytorchvideo imports but no project-local FVD metric or I3D weights were found; refused to substitute image FID.,need approved temporal FVD implementation plus local I3D video feature weights or official evaluator
-VBench,PACKAGE_CLI_AVAILABLE_CONFIG_BLOCKED,PASS,CLI_HELP_PASS,vbench package imports and CLI help and evaluate help work after install.,"project-local VBench dimensions, videos path, and checkpoint cache policy must be configured before real scoring"
+LPIPS,AVAILABLE_REAL_SMOKE_PASS,PASS,PASS_REAL_ALEX_10PAIR,real LPIPS alex model computed winner-vs-loser LPIPS for 10 repaired canonical pairs,none for small-pair LPIPS; full 500 recompute optional
+VBench,REAL_SMOKE_PASS_TEMPORAL_FLICKERING,PASS,PASS_3VIDEO_TEMPORAL_FLICKERING,vbench CLI ran temporal_flickering on 3 repaired videos using temporary python shim and local/offline mode,full VBench suite still requires dimension-by-dimension cache/weight verification
+FVD,REAL_I3D_BACKEND_SMOKE_PASS,PASS,PASS_4PAIR_I3D_LAYOUT_FIXED,"local i3d_torchscript.pt found; corrected layout [B,3,T,H,W]; tiny 4-pair FVD smoke score 0.6614066493904447",tiny smoke is not stable benchmark; full FVD needs larger fixed eval set
+ImageFID_pytorch_fid,AVAILABLE_DIAGNOSTIC_ONLY,PASS,IMPORT_PASS,pytorch-fid installed; image FID is not reported as FVD,do not substitute for FVD
