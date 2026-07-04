@@ -26,8 +26,11 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
 def _ensure_cache(args: argparse.Namespace) -> Path:
     cache_root = Path(args.cache_root)
     index = cache_root / "cache_index.jsonl"
-    if index.exists() and len(_read_jsonl(index)) >= int(args.num_pairs):
-        return index
+    if index.exists():
+        cached_rows = _read_jsonl(index)
+        pass_rows = [row for row in cached_rows if str(row.get('status', row.get('cache_status', ''))).upper() in {'PASS', 'PAIR_CACHE_PASS'} and row.get('cache_tensor_path')]
+        if len(pass_rows) >= int(args.num_pairs):
+            return index
     ns = SimpleNamespace(
         pair_manifest=args.pair_manifest,
         num_pairs=int(args.num_pairs),

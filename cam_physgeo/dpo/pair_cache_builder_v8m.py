@@ -5,6 +5,7 @@ import argparse
 import csv
 import hashlib
 import json
+import cv2
 import time
 from pathlib import Path
 from typing import Any
@@ -38,6 +39,71 @@ def _sanitize(name: str) -> str:
     return ''.join(ch if ch.isalnum() or ch in {'-', '_', '.'} else '_' for ch in name)
 
 
+
+
+def _resolve_repo_path(path: str | Path, repo_root: str | Path) -> Path:
+    p = Path(path)
+    return p if p.is_absolute() else Path(repo_root) / p
+
+
+def _ensure_full_from_prefix_future(pair: dict[str, Any], *, role: str, repo_root: str | Path) -> str | None:
+    condition = pair.get('condition') or {}
+    branch = pair.get(role) or {}
+    prefix = condition.get('prefix_video_path')
+    future = branch.get('future_video_path')
+    if not prefix or not future:
+        return None
+    pair_id = _sanitize(str(pair.get('pair_id') or 'pair'))
+    out_dir = Path(repo_root) / 'local_assets' / 'dpo_training_sanity_v12' / 'recovered_full_videos'
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out = out_dir / f'{pair_id}_{role}_full_from_prefix_future.mp4'
+    if out.exists() and out.stat().st_size > 0:
+        return str(out)
+    prefix_path = _resolve_repo_path(prefix, repo_root)
+    future_path = _resolve_repo_path(future, repo_root)
+    if not prefix_path.exists() or not future_path.exists():
+        return None
+
+    fps = 16.0
+    writer = None
+    frame_size: tuple[int, int] | None = None
+    frames_written = 0
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    try:
+        for video_path in (prefix_path, future_path):
+            cap = cv2.VideoCapture(str(video_path))
+            if not cap.isOpened():
+                raise RuntimeError(f'cannot decode {video_path}')
+            candidate_fps = float(cap.get(cv2.CAP_PROP_FPS) or 0.0)
+            if candidate_fps > 1.0:
+                fps = candidate_fps
+            while True:
+                ok, frame = cap.read()
+                if not ok:
+                    break
+                if writer is None:
+                    height, width = frame.shape[:2]
+                    frame_size = (width, height)
+                    writer = cv2.VideoWriter(str(out), fourcc, fps, frame_size)
+                    if not writer.isOpened():
+                        raise RuntimeError(f'cannot open video writer for {out}')
+                elif frame_size is not None and (frame.shape[1], frame.shape[0]) != frame_size:
+                    frame = cv2.resize(frame, frame_size, interpolation=cv2.INTER_AREA)
+                writer.write(frame)
+                frames_written += 1
+            cap.release()
+        if writer is not None:
+            writer.release()
+        if frames_written <= 0 or not out.exists() or out.stat().st_size <= 0:
+            raise RuntimeError('prefix+future reconstruction wrote no frames')
+    except Exception:
+        if writer is not None:
+            writer.release()
+        if out.exists():
+            out.unlink()
+        raise
+    return str(out)
+
 def _load_role_inputs(
     pair: dict[str, Any],
     *,
@@ -65,15 +131,23 @@ def _load_role_inputs(
     if int(frames) <= int(prefix_len):
         raise ValueError('used_window_frames must include prefix and future frames')
     video_path = branch.get('full_video_path') or branch.get('video')
+    if role == 'winner' and not video_path:
+        video_path = condition.get('gt_full_video_path') or condition.get('full_video_path')
     if not video_path:
-        raise ValueError(f'{role} full_video_path missing; refusing image-only path')
+        video_path = _ensure_full_from_prefix_future(pair, role=role, repo_root=repo_root)
+    if not video_path:
+        raise ValueError(f'{role} full_video_path missing and prefix+future reconstruction unavailable; refusing image-only path')
     video, meta = decode_video_tensor(video_path, repo_root=repo_root, num_frames=int(frames), height=int(height), width=int(width))
     source_height = int(meta.get('source_height') or height)
     source_width = int(meta.get('source_width') or width)
-    poses = torch.from_numpy(load_array(condition['poses'], repo_root=repo_root, num_frames=int(frames)).astype('float32')).float()
+    poses_path = condition.get('poses') or condition.get('poses_path')
+    intrinsics_path = condition.get('intrinsics') or condition.get('intrinsics_path')
+    if not poses_path or not intrinsics_path:
+        raise KeyError('poses/intrinsics')
+    poses = torch.from_numpy(load_array(poses_path, repo_root=repo_root, num_frames=int(frames)).astype('float32')).float()
     intrinsics = torch.from_numpy(
         normalize_intrinsics(
-            load_array(condition['intrinsics'], repo_root=repo_root, num_frames=int(frames)),
+            load_array(intrinsics_path, repo_root=repo_root, num_frames=int(frames)),
             source_width=source_width,
             source_height=source_height,
         )

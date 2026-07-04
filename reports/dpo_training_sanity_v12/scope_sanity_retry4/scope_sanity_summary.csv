@@ -1,0 +1,5 @@
+scope,status,rows_written,pass_rows,mean_winner_improvement_post,final_winner_improvement_post,mean_loser_degradation_post,mean_winner_contribution_ratio_post,csv
+L0_camera_r4,WINNER_ANCHOR_REPEAT_PASS,5,5,3.560781478881836e-05,0.00015497207641601562,-4.887580871582031e-06,0.6911888598020337,reports/dpo_training_sanity_v12/scope_sanity_retry4/L0_camera_r4_5step.csv
+L1_camera_r8,WINNER_ANCHOR_REPEAT_FAIL,5,5,-4.541873931884766e-06,-0.00016415119171142578,-6.37054443359375e-05,0.6122246696035243,reports/dpo_training_sanity_v12/scope_sanity_retry4/L1_camera_r8_5step.csv
+L2_camera_temporal_r4,WINNER_ANCHOR_REPEAT_FAIL,5,5,2.429485321044922e-05,-1.1920928955078125e-07,-5.754232406616211e-05,0.4,reports/dpo_training_sanity_v12/scope_sanity_retry4/L2_camera_temporal_r4_5step.csv
+L3_camera_cross_r4,WINNER_ANCHOR_REPEAT_FAIL,5,5,-1.5294551849365236e-05,-0.00019311904907226562,-1.6117095947265624e-05,0.35832923832923835,reports/dpo_training_sanity_v12/scope_sanity_retry4/L3_camera_cross_r4_5step.csv

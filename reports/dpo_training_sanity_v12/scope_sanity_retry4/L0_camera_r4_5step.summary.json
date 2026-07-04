@@ -1,0 +1,12 @@
+{
+  "final_winner_improvement_post": 0.00015497207641601562,
+  "mean_loser_degradation_post": -4.887580871582031e-06,
+  "mean_winner_contribution_ratio_post": 0.6911888598020337,
+  "mean_winner_improvement_post": 3.560781478881836e-05,
+  "objective": "winner_anchor_repeat",
+  "output": "reports/dpo_training_sanity_v12/scope_sanity_retry4/L0_camera_r4_5step.csv",
+  "rows_written": 5,
+  "seconds": 464.2332270145416,
+  "status": "WINNER_ANCHOR_REPEAT_PASS",
+  "steps_requested": 5
+}
