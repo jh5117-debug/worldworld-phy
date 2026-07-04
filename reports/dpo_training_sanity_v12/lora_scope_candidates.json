@@ -1,0 +1,107 @@
+{
+  "L0_camera_r4": {
+    "alpha": 4,
+    "block_end": null,
+    "block_start": 0,
+    "description": "camera conditioning only, rank 4",
+    "estimated_trainable_params": "6553600",
+    "exclude_patterns": [],
+    "include_patterns": [],
+    "memory_risk": "low",
+    "rank": 4,
+    "required_groups": [
+      "camera_conditioning"
+    ],
+    "target_groups": [
+      "camera_conditioning"
+    ]
+  },
+  "L1_camera_r8": {
+    "alpha": 8,
+    "block_end": null,
+    "block_start": 0,
+    "description": "camera conditioning only, rank 8",
+    "estimated_trainable_params": "13107200",
+    "exclude_patterns": [],
+    "include_patterns": [],
+    "memory_risk": "low_medium",
+    "rank": 8,
+    "required_groups": [
+      "camera_conditioning"
+    ],
+    "target_groups": [
+      "camera_conditioning"
+    ]
+  },
+  "L2_camera_temporal_r4": {
+    "alpha": 4,
+    "block_end": 3,
+    "block_start": 0,
+    "description": "camera conditioning plus limited early self/temporal attention, rank 4, max 4 blocks",
+    "estimated_trainable_params": "RUNTIME_SCOPE_SANITY_REQUIRED",
+    "exclude_patterns": [
+      "ffn",
+      "mlp",
+      "feed_forward"
+    ],
+    "include_patterns": [],
+    "memory_risk": "medium",
+    "rank": 4,
+    "required_groups": [
+      "camera_conditioning",
+      "self_attention"
+    ],
+    "target_groups": [
+      "camera_conditioning",
+      "self_attention"
+    ]
+  },
+  "L3_camera_cross_r4": {
+    "alpha": 4,
+    "block_end": 3,
+    "block_start": 0,
+    "description": "camera conditioning plus limited early cross attention, rank 4, max 4 blocks",
+    "estimated_trainable_params": "RUNTIME_SCOPE_SANITY_REQUIRED",
+    "exclude_patterns": [
+      "ffn",
+      "mlp",
+      "feed_forward"
+    ],
+    "include_patterns": [],
+    "memory_risk": "medium_high",
+    "rank": 4,
+    "required_groups": [
+      "camera_conditioning",
+      "cross_attention"
+    ],
+    "target_groups": [
+      "camera_conditioning",
+      "cross_attention"
+    ]
+  },
+  "L4_adaln_camera_mod_r4": {
+    "alpha": 4,
+    "block_end": null,
+    "block_start": 0,
+    "description": "camera / pose-conditioned AdaLN or scale-shift modulation if modules exist",
+    "estimated_trainable_params": "6553600",
+    "exclude_patterns": [
+      "ffn",
+      "mlp",
+      "feed_forward"
+    ],
+    "include_patterns": [
+      "ada",
+      "mod",
+      "scale",
+      "shift",
+      "cam"
+    ],
+    "memory_risk": "low_unknown",
+    "rank": 4,
+    "required_groups": [],
+    "target_groups": [
+      "camera_conditioning"
+    ]
+  }
+}
