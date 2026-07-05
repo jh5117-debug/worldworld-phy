@@ -1,3 +1,14 @@
+Current Status: V12D_JOB1_FAILED_TRAINING_SIGNAL_NO_SCALE
+
+## 2026-07-05 v12d Scheduler Result
+
+- Scheduler launched on H20 with physical GPU4-7 allowed and GPU0-3 forbidden.
+- First job `v12c_winner_detached_preference_s_pass4` ran on physical GPU4 only.
+- Runtime completed 10/10 rows, but final winner improvement was negative: `-8.320808410644531e-05`.
+- Mean winner improvement was `0.00011658668518066406`, mean winner contribution ratio `0.8491498668883544`.
+- Decision: `TRAINING_SIGNAL_FAIL`; no scale, no tiny loser-gradient, no train400 pilot.
+- No checkpoint video/metric/visual PASS is claimed.
+
 Current Status: V12D_SCHEDULER_LAUNCHED_JOB1_RUNNING
 
 ## 2026-07-05 DPO GPU Scheduler v12d
