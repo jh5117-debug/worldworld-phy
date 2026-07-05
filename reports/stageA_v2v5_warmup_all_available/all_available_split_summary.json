@@ -1,0 +1,13 @@
+{
+  "converted_roots": [
+    "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/generated_v5/converted_stage1_v1",
+    "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/local_assets/data/physion/generated_v5/converted_stage1_v1"
+  ],
+  "dataset_dir": "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/local_assets/stageA_v2v5_all_available_c_r4_2epoch/dataset",
+  "eval_is_mirrored_from_train": true,
+  "rejected_count": 0,
+  "status": "SPLIT_READY_ALL_AVAILABLE",
+  "test_rows": 100,
+  "train_rows": 3299,
+  "val_rows": 100
+}
