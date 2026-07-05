@@ -1,0 +1,9 @@
+allowed_physical_gpus: [4, 5, 6, 7]
+forbidden_physical_gpus: [0, 1, 2, 3]
+idle_memory_threshold_mb: 1000
+idle_util_threshold_percent: 10
+heartbeat_seconds: 60
+poll_seconds: 60
+max_retries_per_job: 1
+unknown_process_policy: skip_gpu
+kill_unknown_process: false
