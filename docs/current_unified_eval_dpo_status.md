@@ -1,3 +1,13 @@
+Current Status: V12D_SCHEDULER_LAUNCHED_JOB1_RUNNING
+
+## 2026-07-05 DPO GPU Scheduler v12d
+
+- GPU scheduler v12d launched under tmux `dpo_gpu_scheduler_v12d`.
+- Allowed GPUs: physical 4-7 only; GPU0-3 forbidden.
+- Preflight PASS.
+- `v12c_winner_detached_preference_s_pass4` started on physical GPU4.
+- This is not a DPO PASS claim; checkpoint video, metrics, and Codex visual audit are still required before any further training or scale.
+
 Current Status: PASS_WITH_SCOPE_CAVEATS
 
 ## 2026-07-04 Repaired Ready500 Canonical + Metrics Update
