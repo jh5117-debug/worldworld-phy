@@ -1,0 +1,13 @@
+{
+  "converted_roots": [
+    "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/data/physion/generated_v5/converted_stage1_v1",
+    "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/local_assets/data/physion/generated_v5/converted_stage1_v1"
+  ],
+  "rejected_count": 0,
+  "required_test": 100,
+  "required_total": 5000,
+  "required_train": 4900,
+  "shortfall": 1701,
+  "status": "BLOCKED_INSUFFICIENT_STAGE1_READY_DATA",
+  "usable_unique_stage1_ready": 3299
+}

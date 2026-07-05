@@ -200,3 +200,7 @@ Prepared v12b reports and lightweight CSV/JSON summaries for commit/push. No med
 v12c PRD/setup/code/report are pushed as lightweight files only. No local_assets, media, checkpoint, tensor, or weight files were pushed.
 
 <!-- V12C_PUSH_NOTE_END -->
+
+## 2026-07-05 StageA V2V-5 Warmup 4900x2 Data Gate
+
+Prepared a strict 4900 train / 100 test StageA V2V-5 warmup gate and GPU4-7 launcher. The gate found only 3299 unique Stage1-ready clips on disk, so the requested 4900/100 warmup was not launched. Added `PYTHONNOUSERSITE=1` to the launcher to avoid the current user-site Python initialization hang.
