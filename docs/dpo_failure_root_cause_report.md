@@ -196,3 +196,11 @@ Tiny guarded SDPO on S1 was stopped at step10: mean winner improvement turned ne
 v12 failure was not purely loader/runtime; after filtering pair conflicts, winner-anchor can improve on S_pass4. Root cause remains pair/objective interaction: half of S8 still worsens under winner-only, so unfiltered preference training is unsafe.
 
 <!-- V12B_OBJECTIVE_REPAIR_ROOT_CAUSE_UPDATE_END -->
+
+<!-- V12C_BLOCKER_UPDATE_START -->
+
+## V12C BLOCKER UPDATE
+
+v12c did not test the preference branch yet; current blocker is GPU scheduling, not objective signal. Objective signal remains to be tested once GPU4 is free.
+
+<!-- V12C_BLOCKER_UPDATE_END -->

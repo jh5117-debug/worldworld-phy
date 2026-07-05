@@ -119,3 +119,11 @@ This avoids selecting only best-looking examples for PPT or DPO. Every rollout c
 ## DPO Training Sanity v12
 
 Tiny guarded SDPO on S1 was stopped at step10: mean winner improvement turned negative and DPO loss remained near 0.693. Decision: `DPO_V12_FAILED_WINNER_WORSE_NO_SIGNAL`. Large DPO remains blocked.
+
+<!-- V12C_METRIC_PLAN_STATUS_START -->
+
+## V12C METRIC PLAN STATUS
+
+v12c checkpoint metrics were not run because the preference probe was blocked before training by GPU4 occupancy. Required metrics remain PSNR, SSIM, LPIPS, FVD smoke, VBench temporal flickering, and PhysGeo for any future step0/5/10 checkpoint eval.
+
+<!-- V12C_METRIC_PLAN_STATUS_END -->

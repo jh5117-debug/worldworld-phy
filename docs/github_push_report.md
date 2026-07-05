@@ -171,3 +171,11 @@ Current Status: PAIR_FACTORY_V10_READY_50_SYNTHETIC_MIXED
 Prepared v12b reports and lightweight CSV/JSON summaries for commit/push. No media, cache tensors, checkpoint tensors, or weights are staged.
 
 <!-- V12B_OBJECTIVE_REPAIR_PUSH_NOTE_END -->
+
+<!-- V12C_PUSH_NOTE_START -->
+
+## V12C PUSH NOTE
+
+v12c PRD/setup/code/report are pushed as lightweight files only. No local_assets, media, checkpoint, tensor, or weight files were pushed.
+
+<!-- V12C_PUSH_NOTE_END -->

@@ -104,3 +104,11 @@ The diagnostic backend is intentionally not presented as real LingBot-Fast DPO. 
 ## DPO Training Sanity v12
 
 Tiny guarded SDPO on S1 was stopped at step10: mean winner improvement turned negative and DPO loss remained near 0.693. Decision: `DPO_V12_FAILED_WINNER_WORSE_NO_SIGNAL`. Large DPO remains blocked.
+
+<!-- V12C_GUARDED_OBJECTIVE_DESIGN_START -->
+
+## V12C GUARDED OBJECTIVE DESIGN
+
+v12c adds a winner-detached preference mode: loser energy is evaluated but detached from gradient, and the loss is `lambda_winner_anchor * E_winner + lambda_pref * -logsigmoid(beta * ((stopgrad(E_loser) - E_winner) - Delta_ref))`. It also supports a gated tiny-loser-gradient mode, but it must not run until winner-detached preference passes.
+
+<!-- V12C_GUARDED_OBJECTIVE_DESIGN_END -->

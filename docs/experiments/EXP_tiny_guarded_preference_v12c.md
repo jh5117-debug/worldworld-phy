@@ -102,3 +102,18 @@ Only if winner-detached preference runtime passes but sigmoid utility is no-sign
 - No GPU5/6/7 or GPU0-3 fallback.
 - No checkpoint deletion.
 - No media, checkpoint, tensor, or weight push.
+
+
+<!-- V12C_EXECUTION_STATUS_START -->
+
+## Execution Status
+
+- Setup: `S_PASS4_READY`.
+- Warm start: loadable v12b step20 LoRA found.
+- Local mask audit: 3/4 pairs local-mask ready.
+- Code/test preparation: compileall PASS; pytest unavailable; direct smoke PASS.
+- Training status: `V12C_GPU4_BLOCKED`.
+- Blocker: physical GPU4 occupied by non-project `eval_libero_single.py gpu_id=4`; fallback GPUs are forbidden.
+- No v12c preference objective ran.
+
+<!-- V12C_EXECUTION_STATUS_END -->

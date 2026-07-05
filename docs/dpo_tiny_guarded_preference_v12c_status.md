@@ -1,12 +1,12 @@
-Current Status: V12C_PRD_READY
+Current Status: V12C_GPU4_BLOCKED
 
 # DPO Tiny Guarded Preference v12c Status
 
-- v12b winner-only repair passed on filtered S_pass4.
-- v12c will use only physical GPU4 through `CUDA_VISIBLE_DEVICES=4`.
-- v12c will not use GPU0/1/2/3/5/6/7.
-- Current task is a tiny guarded preference probe on S_pass4 only.
-- Large DPO, S1/S2/S3 scale, train400, StageA, StageB, GRPO, broad-LoRA are forbidden.
-- Canonical repaired ready500 is the metadata source; old ready500 is forbidden.
-- If GPU4 is occupied by an unknown task, v12c training must wait or stop with `GPU4_BLOCKED`.
-- Required context files missing at PRD time: none.
+- PRD is ready and pushed.
+- v12c setup completed: S_pass4 is ready and warm-start step20 LoRA is loadable.
+- LocalDPO mask audit completed: 3/4 S_pass pairs have spatial/time local mask metadata.
+- v12c implementation and direct smoke tests are ready.
+- Tiny guarded preference training has NOT started.
+- Reason: physical GPU4 is occupied by non-project `eval_libero_single.py gpu_id=4` processes across multiple polls.
+- Per hard rule, v12c cannot use GPU0/1/2/3/5/6/7 as fallback and cannot kill unknown tasks.
+- Decision: `V12C_GPU4_BLOCKED` until GPU4 is free.

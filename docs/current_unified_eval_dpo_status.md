@@ -472,3 +472,11 @@ Tiny guarded SDPO on S1 was stopped at step10: mean winner improvement turned ne
 v12b winner-only repair completed on GPU4. Per-pair diagnosis found 4/8 S_pass; S_pass4 winner-only curriculum completed 20/20 with mean winner_improvement_post `5.76973e-05` and final `5.87106e-05`. No DPO/SDPO/Linear-DPO ran; large DPO remains blocked pending a separate guarded preference probe with video+metric audit.
 
 <!-- V12B_OBJECTIVE_REPAIR_STATUS_END -->
+
+<!-- V12C_TINY_GUARDED_PREF_STATUS_START -->
+
+## V12C TINY GUARDED PREF STATUS
+
+v12c PRD/setup/code are ready, but training did not start because physical GPU4 is occupied by non-project gpu_id=4 evaluation processes. Fallback GPUs are forbidden, so status is `V12C_GPU4_BLOCKED`.
+
+<!-- V12C_TINY_GUARDED_PREF_STATUS_END -->
