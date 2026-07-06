@@ -27,3 +27,8 @@ Do not delete these directories unless the user provides an explicit whitelist o
 ## Partial Cleanup Executed - 2026-07-06 10:43 CST
 
 The Jun-22 StageA data-gate directory was not deleted wholesale, but its old optimizer `training_state.pt` files were removed. The failed v12 strict-SDPO cache directory was also removed. Remaining large candidates still require explicit confirmation.
+
+
+## Additional Cleanup Executed - 2026-07-06 10:45 CST
+
+Removed old non-current Jun-22 StageA gate checkpoint directories and old overnight rollout media. Remaining large directories are current data assets or explicit reference assets unless separately approved.

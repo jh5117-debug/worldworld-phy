@@ -329,3 +329,26 @@ Kept:
 - ready500 / pair-factory dataset assets
 - raw Physion/local condition data
 - adapter_state files from the old StageA gate
+
+
+## Old Weight/Rollout Cleanup Update - 2026-07-06 10:45 CST
+
+Deleted old non-current experiment checkpoint/adapter directories and rollout media:
+
+- Jun-22 `fast_stageA_high_only_data_gate_20260622_135505` checkpoint directories after optimizer states were already removed.
+- Old `overnight_quant_lora_dpo_20260624_overnight_test` rollout/media package.
+
+Freed approximately 9.7G more. Repo `local_assets` is now about 16G; `/home/nvme04` available space is about 345G.
+
+Deletion evidence:
+
+- `reports/cleanup_fulldata_warmup_loser_eval/old_weight_rollout_deleted_manifest.csv`
+- `reports/cleanup_fulldata_warmup_loser_eval/old_weight_rollout_deleted_manifest.md`
+- `reports/cleanup_fulldata_warmup_loser_eval/old_weight_rollout_delete_verify.txt`
+
+Still kept:
+
+- current `fulldata-lingbotfast-warmup-weights`
+- old C reference sweep `local_assets/experiments/small_lora_scope_sweep_20260624`
+- ready500 / v11 pair-factory assets
+- raw Physion/local condition data
