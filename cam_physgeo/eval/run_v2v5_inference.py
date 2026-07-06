@@ -37,6 +37,41 @@ def _install_paths(lingbot_code_dir: str) -> None:
 from cam_physgeo.eval.v2v5_generation_wrapper import generate_v2v5_fast
 
 
+def _install_safe_wan_from_pretrained_patch(*, enabled: bool, heartbeat_path: str | Path | None = None) -> None:
+    """Force WanModelFast.from_pretrained onto the v8g-proven local safe-load path."""
+    if not enabled:
+        return
+    from wan.modules.model_fast import WanModelFast
+
+    original = WanModelFast.from_pretrained
+    if getattr(original, "_cam_physgeo_safe_patch", False):
+        return
+
+    def _safe_from_pretrained(cls, pretrained_model_name_or_path, *args, **kwargs):
+        kwargs["local_files_only"] = True
+        kwargs["use_safetensors"] = True
+        kwargs["low_cpu_mem_usage"] = True
+        kwargs.setdefault("torch_dtype", torch.bfloat16)
+        if heartbeat_path:
+            out = Path(heartbeat_path)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            with out.open("a", encoding="utf-8") as f:
+                f.write(json.dumps({
+                    "event": "safe_wan_from_pretrained_call",
+                    "path": str(pretrained_model_name_or_path),
+                    "subfolder": kwargs.get("subfolder", ""),
+                    "local_files_only": kwargs.get("local_files_only"),
+                    "use_safetensors": kwargs.get("use_safetensors"),
+                    "low_cpu_mem_usage": kwargs.get("low_cpu_mem_usage"),
+                }, sort_keys=True) + "\n")
+                f.flush()
+        return original.__func__(cls, pretrained_model_name_or_path, *args, **kwargs)
+
+    patched = classmethod(_safe_from_pretrained)
+    setattr(patched, "_cam_physgeo_safe_patch", True)
+    WanModelFast.from_pretrained = patched
+
+
 def _rows(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
@@ -140,6 +175,7 @@ def run(args: argparse.Namespace) -> None:
         w, h = (int(x) for x in args.size.split("*"))
         MAX_AREA_CONFIGS[args.size] = w * h
     cfg = WAN_CONFIGS[args.task]
+    _install_safe_wan_from_pretrained_patch(enabled=bool(args.safe_wan_from_pretrained), heartbeat_path=args.safe_wan_from_pretrained_log)
     print("[v2v5] instantiate WanI2VFast", flush=True)
     pipe = wan.WanI2VFast(
         config=cfg,
@@ -304,6 +340,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--t5_cpu", action="store_true")
     p.add_argument("--offload_model", action="store_true", default=True)
     p.add_argument("--skip_existing", action="store_true")
+    p.add_argument("--safe_wan_from_pretrained", type=lambda x: str(x).lower() in {"1", "true", "yes"}, default=False)
+    p.add_argument("--safe_wan_from_pretrained_log", default="")
     return p.parse_args()
 
 

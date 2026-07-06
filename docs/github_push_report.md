@@ -204,3 +204,10 @@ v12c PRD/setup/code/report are pushed as lightweight files only. No local_assets
 ## 2026-07-05 StageA V2V-5 Warmup 4900x2 Data Gate
 
 Prepared a strict 4900 train / 100 test StageA V2V-5 warmup gate and GPU4-7 launcher. The gate found only 3299 unique Stage1-ready clips on disk, so the requested 4900/100 warmup was not launched. Added `PYTHONNOUSERSITE=1` to the launcher to avoid the current user-site Python initialization hang.
+
+## 2026-07-06 Full-data Warmup Loser Source Smoke
+
+- Added safe Wan from_pretrained option for V2V-5 inference.
+- Ran 2-condition smoke for `fulldata-lingbotfast-warmup-weights`.
+- Decision: not better than old C on first 2 reviewed conditions; 500 generation not launched.
+- Cleanup inventory written; no data/weights/checkpoints deleted.
