@@ -65,3 +65,13 @@ The search code is ready, but training must wait until GPU4 or GPU5 is idle. Do 
 - GPU4/5 are currently occupied by older overnight rollout/eval processes, so v13b checkpoint eval is waiting rather than killing unknown or non-current jobs.
 
 Current decision: `DPO_RECIPE_TRAINING_SIGNAL_ONLY`; train400 and large DPO remain blocked.
+
+## GPU4/5 Checkpoint Eval Waiter - 2026-07-06T15:45:53
+
+- A non-destructive waiter was launched for `S01_winner_detached_pref_low` checkpoint eval.
+- Script: `reports/dpo_objective_search_v13b/S01_winner_detached_pref_low/checkpoint_eval/run_s01_eval_when_gpu45_free.sh`.
+- PID file: `reports/dpo_objective_search_v13b/S01_winner_detached_pref_low/checkpoint_eval/wait_eval.pid`.
+- Heartbeat: `reports/dpo_objective_search_v13b/S01_winner_detached_pref_low/checkpoint_eval/wait_eval_state.jsonl`.
+- The waiter only permits physical GPU4/5 and waits until there are no compute PIDs and memory is below the idle threshold.
+- At launch, GPU4/5 were occupied by older overnight rollout/eval jobs, so no v13b checkpoint eval was started yet.
+- No unknown/non-current process was killed.
