@@ -1,0 +1,10 @@
+allowed_physical_gpus: [4, 5]
+forbidden_physical_gpus: [0, 1, 2, 3, 6, 7]
+idle_memory_threshold_mb: 1000
+idle_util_threshold_percent: 10
+max_parallel_jobs: 2
+steps_per_scheme: 200
+unknown_process_policy: skip_gpu
+kill_unknown_process: false
+large_dpo_allowed: false
+train400_allowed: false

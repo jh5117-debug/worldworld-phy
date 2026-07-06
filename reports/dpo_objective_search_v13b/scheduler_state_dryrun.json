@@ -1,0 +1,25 @@
+{
+  "allowed_gpus": [
+    4,
+    5
+  ],
+  "decision": "GPU4_5_BLOCKED",
+  "forbidden_gpus": [
+    0,
+    1,
+    2,
+    3,
+    6,
+    7
+  ],
+  "gpu_status": {
+    "error": {
+      "error": "",
+      "returncode": -9,
+      "source": "nvidia_smi_timeout_or_error"
+    }
+  },
+  "idle_allowed_gpus": [],
+  "jobs": [],
+  "timestamp": "2026-07-06T13:01:10+08:00"
+}

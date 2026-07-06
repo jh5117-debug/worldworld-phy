@@ -88,3 +88,11 @@ Stop a scheme if winner improvement is negative for repeated eval windows, final
 - No broad-LoRA.
 - No checkpoint/data/weight deletion.
 - No videos/images/checkpoints/weights pushed.
+
+## Post-Implementation Update (2026-07-06T13:08:17+08:00)
+
+- v13b subset builder, gap logger, objective runner, GPU4/5 scheduler, and gate checks were implemented.
+- Validation: compileall PASS; direct smokes PASS; pytest unavailable in system Python.
+- Scheduler dry-run decision: `GPU4_5_BLOCKED`; no training launched because GPU4/5 were not available / GPU query timed out conservatively.
+- No large DPO, train400, StageA, StageB, GRPO, broad-LoRA, checkpoint deletion, or video/weight push occurred.
+

@@ -501,3 +501,11 @@ v12b winner-only repair completed on GPU4. Per-pair diagnosis found 4/8 S_pass; 
 v12c PRD/setup/code are ready, but training did not start because physical GPU4 is occupied by non-project gpu_id=4 evaluation processes. Fallback GPUs are forbidden, so status is `V12C_GPU4_BLOCKED`.
 
 <!-- V12C_TINY_GUARDED_PREF_STATUS_END -->
+
+## v13b DPO Objective Search Update
+
+- Updated: 2026-07-06T13:08:17+08:00.
+- v13b objective search code and GPU4/5-only scheduler are prepared.
+- Training did not launch because GPU4/5 were occupied by existing non-v13b jobs / GPU query timed out conservatively.
+- Decision: `DPO_RECIPE_GPU_BLOCKED`; no scale, no train400, no large DPO.
+

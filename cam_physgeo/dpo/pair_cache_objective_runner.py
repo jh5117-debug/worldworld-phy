@@ -18,7 +18,8 @@ from cam_physgeo.dpo.lora_scope_config_v12 import apply_scope_to_cfg
 from cam_physgeo.dpo.winner_anchor_only_runner import _cfg, _param_norm, _param_update_norm, cuda_stats
 
 FIELDNAMES = [
-    "step", "pair_id", "scope", "objective", "used_window_frames", "timestep", "actual_sigma", "pair_weight",
+    "step", "pair_id", "scope", "objective", "used_window_frames", "timestep", "actual_sigma", "actual_sigma_bin", "pair_weight",
+    "win_gap", "lose_gap", "g_w", "g_l", "g_l_clip", "loser_dominance", "health_flags",
     "E_ref_winner_cached", "E_ref_loser_cached", "Delta_ref", "E_policy_winner_pre", "E_policy_loser_pre",
     "Delta_policy_pre", "E_policy_winner_post", "E_policy_loser_post", "Delta_policy_post",
     "winner_improvement_pre", "winner_improvement_post", "loser_degradation_pre", "loser_degradation_post",
@@ -43,6 +44,36 @@ def winner_contribution_ratio(winner_improvement: float, loser_degradation: floa
     ld = max(float(loser_degradation), 0.0)
     denom = wi + ld
     return 0.0 if denom <= 0.0 else wi / denom
+
+def normalized_gap_metrics(ref_w: float, ref_l: float, pol_w: float, pol_l: float, *, clip_loser: float = 1.0, eps: float = 1e-8) -> dict[str, float | str]:
+    win_gap = float(pol_w) - float(ref_w)
+    lose_gap = float(pol_l) - float(ref_l)
+    g_w = math.log((max(float(pol_w), 0.0) + eps) / (max(float(ref_w), 0.0) + eps))
+    g_l = math.log((max(float(pol_l), 0.0) + eps) / (max(float(ref_l), 0.0) + eps))
+    g_l_clip = min(float(g_l), float(clip_loser))
+    wi = max(-g_w, 0.0)
+    ld = max(g_l_clip, 0.0)
+    denom = wi + ld
+    loser_dominance = 0.0 if denom <= 0.0 else ld / denom
+    flags = []
+    if win_gap < 0: flags.append("WINNER_IMPROVES")
+    if win_gap >= 0: flags.append("WINNER_WORSE")
+    if lose_gap > 0: flags.append("LOSER_DEGRADES")
+    if loser_dominance > 0.70: flags.append("LOSER_DOMINANT")
+    if abs(win_gap) < 1e-8 and abs(lose_gap) < 1e-8: flags.append("NO_SIGNAL")
+    if win_gap >= 0 and lose_gap > 0: flags.append("CONFLICT")
+    return {"win_gap": win_gap, "lose_gap": lose_gap, "g_w": g_w, "g_l": g_l, "g_l_clip": g_l_clip, "loser_dominance": loser_dominance, "health_flags": ";".join(flags)}
+
+def sigma_bin(value: Any) -> str:
+    try:
+        sigma = float(value)
+    except Exception:
+        return ""
+    if sigma < 0.2:
+        return "low"
+    if sigma < 0.6:
+        return "mid"
+    return "high"
 
 
 def _to_device(value: Any, device: torch.device) -> Any:
@@ -309,6 +340,19 @@ def run_objective(args: argparse.Namespace) -> dict[str, Any]:
                     utility = torch.clamp(u_winner_only, -float(args.u_clip), float(args.u_clip))
                     dpo_loss = -float(pair_weight) * utility
                     loss = dpo_loss + float(args.lambda_winner_anchor) * ew_loss
+                elif args.objective == "no_lose_gap_normalized_win_only":
+                    gw_loss = torch.log((torch.clamp(ew_loss, min=0.0) + 1e-8) / (float(ref_w) + 1e-8))
+                    dpo_loss = F.relu(gw_loss)
+                    loss = ew_loss + float(getattr(args, "lambda_win", 0.5)) * dpo_loss
+                elif args.objective == "normalized_clipped_loser":
+                    gw_loss = torch.log((torch.clamp(ew_loss, min=0.0) + 1e-8) / (float(ref_w) + 1e-8))
+                    gl_loss = torch.log((torch.clamp(el_loss, min=0.0) + 1e-8) / (float(ref_l) + 1e-8))
+                    gl_clip = torch.clamp(gl_loss, max=float(getattr(args, "clip_loser", 1.0)))
+                    utility = -(gw_loss - float(getattr(args, "alpha_l", 0.05)) * gl_clip)
+                    dpo_loss = -F.logsigmoid(float(args.beta) * utility)
+                    loss = (float(getattr(args, "lambda_anchor", args.lambda_winner_anchor)) * ew_loss
+                            + float(getattr(args, "lambda_win", 0.5)) * F.relu(gw_loss)
+                            + dpo_loss)
                 elif args.objective in {"linear_dpo_anchor", "safe_linear"}:
                     safe_margin = winner_improvement_tensor + float(lambda_loser) * loser_degradation_tensor
                     utility = torch.clamp(safe_margin, -float(args.u_clip), float(args.u_clip))
@@ -335,7 +379,10 @@ def run_objective(args: argparse.Namespace) -> dict[str, Any]:
                     "update_norm": update_norm,
                     "lora_param_norm": _param_norm(params),
                 }
+            gap_post = normalized_gap_metrics(ref_w, ref_l, post["E_policy_winner"], post["E_policy_loser"], clip_loser=float(getattr(args, "clip_loser", 1.0)))
             result.update({
+                **gap_post,
+                "actual_sigma_bin": sigma_bin(row.get("actual_sigma", "")),
                 "E_policy_winner_pre": pre["E_policy_winner"],
                 "E_policy_loser_pre": pre["E_policy_loser"],
                 "Delta_policy_pre": pre["Delta_policy"],
@@ -416,7 +463,7 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Run tiny v8n objectives on validated v8m winner+loser pair cache.")
     parser.add_argument("--cache_root", required=True)
     parser.add_argument("--pair_subset", required=True)
-    parser.add_argument("--objective", required=True, choices=["forward_sanity", "winner_anchor_repeat", "strict_sdpo", "linear_dpo_anchor", "safe_linear", "standard_dpo_baseline", "winner_detached_preference", "tiny_loser_gradient_preference", "linear_winner_detached"])
+    parser.add_argument("--objective", required=True, choices=["forward_sanity", "winner_anchor_repeat", "strict_sdpo", "linear_dpo_anchor", "safe_linear", "standard_dpo_baseline", "winner_detached_preference", "tiny_loser_gradient_preference", "linear_winner_detached", "no_lose_gap_normalized_win_only", "normalized_clipped_loser"])
     parser.add_argument("--steps", type=int, default=20)
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--output", required=True)
@@ -431,6 +478,10 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--lambda_winner_anchor", type=float, default=1.0)
     parser.add_argument("--lambda_pref", type=float, default=1.0)
     parser.add_argument("--max_lambda_loser", type=float, default=0.25)
+    parser.add_argument("--alpha_l", type=float, default=0.05)
+    parser.add_argument("--clip_loser", type=float, default=1.0)
+    parser.add_argument("--lambda_win", type=float, default=0.5)
+    parser.add_argument("--lambda_anchor", type=float, default=1.0)
     parser.add_argument("--init_lora_state", default="")
     parser.add_argument("--checkpoint_root", default="")
     parser.add_argument("--checkpoint_steps", default="0,5,10,20")

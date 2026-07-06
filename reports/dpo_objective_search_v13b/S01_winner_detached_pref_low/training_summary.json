@@ -1,0 +1,13 @@
+{
+  "config": {
+    "beta": 0.05,
+    "lambda_pref": 0.005,
+    "lr": 1e-06,
+    "objective": "winner_detached_preference",
+    "scheme_id": "S01_winner_detached_pref_low",
+    "scope": "L0_camera_r4",
+    "steps": 200
+  },
+  "scheme_id": "S01_winner_detached_pref_low",
+  "status": "DRY_RUN"
+}

@@ -204,3 +204,11 @@ v12 failure was not purely loader/runtime; after filtering pair conflicts, winne
 v12c did not test the preference branch yet; current blocker is GPU scheduling, not objective signal. Objective signal remains to be tested once GPU4 is free.
 
 <!-- V12C_BLOCKER_UPDATE_END -->
+
+## v13b DPO Objective Search Update
+
+- Updated: 2026-07-06T13:08:17+08:00.
+- v13b objective search code and GPU4/5-only scheduler are prepared.
+- Training did not launch because GPU4/5 were occupied by existing non-v13b jobs / GPU query timed out conservatively.
+- Decision: `DPO_RECIPE_GPU_BLOCKED`; no scale, no train400, no large DPO.
+

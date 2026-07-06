@@ -1,0 +1,6 @@
+subset,path,count,local_mask_ready,pair_type,failure_tag
+s4_pass,manifests/dpo_v13b_subsets/s4_pass.jsonl,4,3,"{""GT_C"": 1, ""TypeM_v10_synthetic_visible"": 3}","{""containment_failure"": 1, ""foreground_identity_color_shift"": 3}"
+s8_pass_expand,manifests/dpo_v13b_subsets/s8_pass_expand.jsonl,8,6,"{""GT_C"": 2, ""TypeM_v10_synthetic_visible"": 4, ""TypeM_v11_synthetic_visible"": 2}","{""containment_failure"": 2, ""drop_motion_failure_synthetic"": 1, ""foreground_identity_color_shift"": 4, ""object_identity_color_shift"": 1}"
+s16_confident,manifests/dpo_v13b_subsets/s16_confident.jsonl,16,12,"{""GT_C"": 4, ""TypeM_v10_synthetic_visible"": 8, ""TypeM_v11_synthetic_visible"": 4}","{""collision_extra_objects"": 1, ""containment_extra_objects"": 1, ""containment_failure"": 2, ""drop_motion_failure_synthetic"": 1, ""foreground_identity_color_shift"": 6, ""local_patch_drift"": 1, ""local_temporal_jump"": 1, ""object_identity_color_shift"": 3}"
+s4_local_mask,manifests/dpo_v13b_subsets/s4_local_mask.jsonl,4,4,"{""TypeM_v10_synthetic_visible"": 3, ""TypeM_v11_synthetic_visible"": 1}","{""foreground_identity_color_shift"": 3, ""object_identity_color_shift"": 1}"
+val_video_4,manifests/dpo_v13b_subsets/val_video_4.jsonl,4,4,"{""TypeM_v10_synthetic_visible"": 4}","{""foreground_identity_color_shift"": 3, ""local_patch_freeze"": 1}"

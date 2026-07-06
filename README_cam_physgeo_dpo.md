@@ -387,3 +387,11 @@ Tiny guarded SDPO on S1 was stopped at step10: mean winner improvement turned ne
 v12c tiny guarded preference is prepared but blocked on physical GPU4 occupancy. Do not run on GPU0-3 or GPU5-7 for this experiment. Next run should start with winner_detached_preference on S_pass4 once GPU4 is free.
 
 <!-- V12C_STATUS_END -->
+
+## v13b DPO Objective Search Update
+
+- Updated: 2026-07-06T13:08:17+08:00.
+- v13b objective search code and GPU4/5-only scheduler are prepared.
+- Training did not launch because GPU4/5 were occupied by existing non-v13b jobs / GPU query timed out conservatively.
+- Decision: `DPO_RECIPE_GPU_BLOCKED`; no scale, no train400, no large DPO.
+

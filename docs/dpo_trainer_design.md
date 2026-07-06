@@ -112,3 +112,11 @@ Tiny guarded SDPO on S1 was stopped at step10: mean winner improvement turned ne
 v12c adds a winner-detached preference mode: loser energy is evaluated but detached from gradient, and the loss is `lambda_winner_anchor * E_winner + lambda_pref * -logsigmoid(beta * ((stopgrad(E_loser) - E_winner) - Delta_ref))`. It also supports a gated tiny-loser-gradient mode, but it must not run until winner-detached preference passes.
 
 <!-- V12C_GUARDED_OBJECTIVE_DESIGN_END -->
+
+## v13b DPO Objective Search Update
+
+- Updated: 2026-07-06T13:08:17+08:00.
+- v13b objective search code and GPU4/5-only scheduler are prepared.
+- Training did not launch because GPU4/5 were occupied by existing non-v13b jobs / GPU query timed out conservatively.
+- Decision: `DPO_RECIPE_GPU_BLOCKED`; no scale, no train400, no large DPO.
+

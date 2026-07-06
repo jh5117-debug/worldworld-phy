@@ -316,3 +316,9 @@ Added `docs/experiments/PRD_MAINTENANCE_INDEX.md` to separate active PRDs from s
 - Preserved current fulldata warmup weights, old C reference, v11 ready500 media, raw Physion/local data, and v12b repair lineage.
 - No media, checkpoints, weights, or `local_assets/` pushed.
 
+## v13b Objective Search Implementation
+
+- Updated: 2026-07-06T13:08:17+08:00.
+- Prepared v13b GPU4/5-only objective search code and reports.
+- Training blocked by GPU4/5 occupancy; no large assets staged.
+
