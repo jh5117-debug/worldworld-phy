@@ -132,6 +132,14 @@ def _patch_wan_fast_from_pretrained_safe() -> None:
         logging.warning("Could not patch WanModelFast.from_pretrained: %r", exc)
         return
     cls = model_fast.WanModelFast
+    init_weights = getattr(cls, "init_weights", None)
+    if init_weights is not None and not getattr(init_weights, "_cam_physgeo_noop_patch", False):
+        def no_init_weights(self):  # type: ignore[no-untyped-def]
+            logging.info("Skipping WanModelFast.init_weights during from_pretrained; pretrained shards will populate weights")
+            return None
+        no_init_weights._cam_physgeo_noop_patch = True  # type: ignore[attr-defined]
+        cls._cam_physgeo_original_init_weights = init_weights  # type: ignore[attr-defined]
+        cls.init_weights = no_init_weights  # type: ignore[method-assign]
     current = getattr(cls, "from_pretrained")
     if getattr(current, "_cam_physgeo_safe_patch", False):
         return
@@ -140,7 +148,7 @@ def _patch_wan_fast_from_pretrained_safe() -> None:
         kwargs["local_files_only"] = True
         kwargs["use_safetensors"] = True
         kwargs["low_cpu_mem_usage"] = True
-        logging.info("Using safe WanModelFast.from_pretrained kwargs: local_files_only=True use_safetensors=True low_cpu_mem_usage=True")
+        logging.info("Using safe WanModelFast.from_pretrained kwargs: local_files_only=True use_safetensors=True low_cpu_mem_usage=True; init_weights=noop")
         return original(*args, **kwargs)
     safe_from_pretrained._cam_physgeo_safe_patch = True  # type: ignore[attr-defined]
     cls.from_pretrained = safe_from_pretrained
