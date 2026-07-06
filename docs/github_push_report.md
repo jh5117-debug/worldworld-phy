@@ -211,3 +211,12 @@ Prepared a strict 4900 train / 100 test StageA V2V-5 warmup gate and GPU4-7 laun
 - Ran 2-condition smoke for `fulldata-lingbotfast-warmup-weights`.
 - Decision: not better than old C on first 2 reviewed conditions; 500 generation not launched.
 - Cleanup inventory written; no data/weights/checkpoints deleted.
+
+
+## 2026-07-06 Full-data Warmup Checkpoint Selection Smoke
+
+- Tested intermediate checkpoints `step_000103`, `step_000206`, `step_000309`, and `step_000412` on H20 GPU4-7.
+- Each produced one reviewed `01002` contact sheet/future video.
+- Codex visual decision: no clear improvement over old C; not suitable to scale to 500 videos.
+- The smoke runner stalled before completing `01008`; own smoke processes were terminated and GPU4-7 freed.
+- No DPO, StageA/StageB/GRPO, checkpoint deletion, or media/weights push.

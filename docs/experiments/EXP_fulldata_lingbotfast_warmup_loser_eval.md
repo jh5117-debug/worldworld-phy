@@ -36,3 +36,12 @@ Scale to 500 only if:
 - No StageA/StageB/GRPO/broad-LoRA.
 - No 500 generation unless smoke visual gate passes.
 - No deletion of data/weights/checkpoints without explicit cleanup approval.
+
+
+## Checkpoint Selection Addendum - 2026-07-06 10:26 CST
+
+The planned checkpoint comparison was partially executed. Intermediate checkpoints `step_000103`, `step_000206`, `step_000309`, and `step_000412` each generated one reviewed contact sheet on `01002`.
+
+Gate result: `FAIL_NO_CLEAR_IMPROVEMENT`.
+
+The scale-to-500 condition remains unmet. The full-data warmup checkpoints should not be used for a 500-video loser generation run until an 8/16-condition smoke shows clear visual advantage and reliable multi-condition rollout completion.

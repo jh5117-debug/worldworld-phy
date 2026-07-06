@@ -31,3 +31,17 @@ Repo-local storage summary:
 - largest candidate areas include `local_assets/dpo_training_sanity_v12`, `local_assets/experiments/fast_stageA_high_only_data_gate_20260622_135505`, old pair caches, and old objective caches.
 
 No cleanup deletion was performed because “unused” artifacts include checkpoints/adapters and generated data that may still be referenced by manifests or reports.
+
+
+## Checkpoint Selection Follow-up - 2026-07-06 10:26 CST
+
+After the final adapter failed the initial 2-condition gate, four intermediate full-data warmup checkpoints were tried on GPU4-7: `step_000103`, `step_000206`, `step_000309`, and `step_000412`.
+
+Outcome:
+
+- 4/4 checkpoints generated a contact sheet for `01002_drop_orbit_left_72_seed40002`.
+- Visual review found the same failure family as old C: readable video, but missing physical response and late object-fragment artifacts.
+- No checkpoint showed a clear quality/usefulness improvement over old C.
+- The multi-condition smoke did not advance cleanly to `01008`; it stalled after the first generated sample, so the smoke jobs were stopped.
+
+Decision remains: do not generate 500 DPO loser videos from `fulldata-lingbotfast-warmup-weights` yet.
