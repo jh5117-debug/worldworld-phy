@@ -93,3 +93,15 @@ The scheduler must still be monitored to verify any launched job uses only `CUDA
 - No broad-LoRA.
 - No checkpoint deletion.
 - No data/weights/video pushed.
+
+## Interim Result - 2026-07-06T16:47:05
+
+- GPU policy: v13b training/eval used only physical GPU4/5; forbidden GPU0/1/2/3/6/7 were not used by v13b.
+- Schemes attempted so far: S01 and S02.
+- S01 is the current best training-signal candidate, but it is not accepted as a DPO recipe until video/metrics/audit pass.
+- Safe eval loader repairs completed:
+  - force local safetensors and low CPU memory loading;
+  - no-op `WanModelFast.init_weights` during `from_pretrained`;
+  - support nested DPO pair manifest fields for checkpoint eval.
+- Current blocker is GPU4/5 occupancy by older rollout/eval jobs. The v13b waiter is non-destructive and does not kill those jobs.
+- Decision: `DPO_RECIPE_TRAINING_SIGNAL_ONLY`; train400 and large DPO remain blocked.

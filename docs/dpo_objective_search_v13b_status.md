@@ -75,3 +75,12 @@ Current decision: `DPO_RECIPE_TRAINING_SIGNAL_ONLY`; train400 and large DPO rema
 - The waiter only permits physical GPU4/5 and waits until there are no compute PIDs and memory is below the idle threshold.
 - At launch, GPU4/5 were occupied by older overnight rollout/eval jobs, so no v13b checkpoint eval was started yet.
 - No unknown/non-current process was killed.
+
+## Checkpoint Eval Schema Repair - 2026-07-06T16:47:05
+
+- Safe Wan loading reached shard load and LoRA application for S01 step050.
+- The first post-loader eval attempt failed on manifest schema: `val_video_4.jsonl` is a nested DPO pair manifest, while the eval wrapper expected flat condition rows.
+- `cam_physgeo/eval/run_fast_adapter_inference.py` now supports nested `condition.*` and `winner.*` fields directly.
+- Direct helper smoke on `manifests/dpo_v13b_subsets/val_video_4.jsonl` resolves sample id, prompt, image, poses, intrinsics, action directory, and source video.
+- A single-instance GPU4/5 waiter is running and will retry S01 step050 once GPU4 or GPU5 is actually idle.
+- Current decision remains `DPO_RECIPE_TRAINING_SIGNAL_ONLY`; checkpoint videos, metrics, and Codex visual audit are not complete.
