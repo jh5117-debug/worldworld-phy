@@ -139,3 +139,12 @@ Still kept:
 ## PRD Maintenance Update - 2026-07-06 10:47 CST
 
 Added `docs/experiments/PRD_MAINTENANCE_INDEX.md` to separate active PRDs from superseded/historical PRDs. Historical PRD markdown files are retained because they are small and preserve experiment provenance; large generated artifacts and non-current weight/cache directories were cleaned instead.
+
+## Follow-up Runtime / Cleanup Audit - 2026-07-06 10:56 CST
+
+- No 500-video generation is running; the new full-data warmup weights failed the visual loser-source gate.
+- Stopped stale `dpo_gpu_scheduler_v12d` because it was unrelated to the active loser-source objective and had already failed its tiny-DPO gate.
+- GPU4-7 are currently occupied by other/unknown Python processes; none are this fulldata warmup loser eval.
+- Cleanup remains conservative: current warmup weights, old C reference, ready500 assets, and raw Physion/local data are preserved.
+- Current remaining-asset audit: `reports/cleanup_fulldata_warmup_loser_eval/remaining_assets_current_audit.md`.
+

@@ -301,3 +301,11 @@ Still kept:
 ## PRD Maintenance Update - 2026-07-06 10:47 CST
 
 Added `docs/experiments/PRD_MAINTENANCE_INDEX.md` to separate active PRDs from superseded/historical PRDs. Historical PRD markdown files are retained because they are small and preserve experiment provenance; large generated artifacts and non-current weight/cache directories were cleaned instead.
+
+## 2026-07-06 11:05 CST - Fulldata loser-source cleanup follow-up
+
+- Stopped stale `dpo_gpu_scheduler_v12d` after its tiny-DPO training gate had failed; current objective is loser-source evaluation / cleanup, not DPO training.
+- Added current remaining asset audit under `reports/cleanup_fulldata_warmup_loser_eval/`.
+- Updated PRD maintenance index and fulldata warmup loser-source status.
+- No media, checkpoints, weights, or `local_assets/` pushed.
+

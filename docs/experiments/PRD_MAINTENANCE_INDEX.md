@@ -80,3 +80,12 @@ Cleanup evidence:
 Do not delete historical PRD markdown files solely to save space; they are small and preserve experiment provenance. Delete or archive only generated large artifacts, caches, raw rollout media, and non-current weight directories after verifying they are not active assets.
 
 If the user wants physical deletion of historical PRDs anyway, use this index to choose an explicit whitelist first.
+
+## Follow-up Audit - 2026-07-06 10:56 CST
+
+- Stopped the known stale `dpo_gpu_scheduler_v12d` tmux session after it had already failed the v12c training-signal gate. This prevents old DPO queue activity from restarting under the current loser-source cleanup objective.
+- Current GPU4-7 occupants are unknown/other `python` processes, not the fulldata warmup loser-source eval task. No unknown process was killed.
+- Current repo-local storage: `local_assets` about 16G, `reports` about 944M, `/home/nvme04` about 345G free.
+- Added current remaining-asset audit: `reports/cleanup_fulldata_warmup_loser_eval/remaining_assets_current_audit.md`.
+- No additional uncertain data/weights were deleted in this follow-up pass. Remaining non-keep GB-scale artifacts require explicit delete confirmation because they preserve DPO/v10/old rollout lineage.
+
