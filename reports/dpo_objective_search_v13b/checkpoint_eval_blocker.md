@@ -29,3 +29,7 @@ Decision remains `DPO_RECIPE_TRAINING_SIGNAL_ONLY`. No `DPO_RECIPE_FOUND_200STEP
 ## Refined blocker and patch
 
 A previous checkpoint-eval log shows the stall inside `WanModelFast.__init__ -> init_weights() -> torch.nn.init.xavier_uniform_` before pretrained shards finish loading. The eval wrapper now also monkey-patches `WanModelFast.init_weights` to a no-op during `from_pretrained`, because the pretrained shards should populate model parameters and the random initialization is unnecessary for this inference-only load path.
+
+## Pair manifest schema repair
+
+After safe Wan loading succeeded, the first v13b eval attempt failed because `val_video_4.jsonl` uses DPO pair schema (`condition.*`, `winner.*`) while the eval wrapper originally expected flat condition rows. `cam_physgeo/eval/run_fast_adapter_inference.py` now supports nested pair rows directly: `condition.sample_id`, `condition.image_path`, `condition.prompt(_path)`, `condition.poses_path`, `condition.intrinsics_path`, and `winner.full_video_path` / `winner.future_video_path`.

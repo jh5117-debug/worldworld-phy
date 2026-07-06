@@ -37,24 +37,57 @@ def _safe_text(value: Any) -> str:
     return str(value or "").strip()
 
 
+def _nested(row: dict[str, Any], *path: str) -> Any:
+    cur: Any = row
+    for key in path:
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(key)
+    return cur
+
+
 def _sample_id(row: dict[str, Any]) -> str:
-    for key in ("sample_id", "clip_name", "id", "stem"):
-        value = _safe_text(row.get(key))
+    for value in (
+        row.get("sample_id"),
+        row.get("clip_name"),
+        row.get("id"),
+        row.get("stem"),
+        _nested(row, "condition", "sample_id"),
+        row.get("condition_id"),
+        row.get("pair_id"),
+    ):
+        value = _safe_text(value)
         if value:
             return value
-    for key in ("target_mp4", "target_video", "video_path", "videopath", "video", "clip_path"):
-        value = _safe_text(row.get(key))
+    for value in (
+        row.get("target_mp4"), row.get("target_video"), row.get("video_path"), row.get("videopath"),
+        row.get("video"), row.get("clip_path"), _nested(row, "winner", "full_video_path"),
+        _nested(row, "winner", "future_video_path"), _nested(row, "condition", "gt_full_video_path"),
+    ):
+        value = _safe_text(value)
         if value:
             path = Path(value)
             return path.parent.name if path.suffix else path.name
     raise ValueError(f"Could not infer sample_id from row keys={sorted(row)}")
 
 
-def _video_path(row: dict[str, Any]) -> Path:
-    for key in ("target_mp4", "target_video", "reference_videopath", "video_path", "videopath", "video"):
-        value = _safe_text(row.get(key))
+def _path_from_values(*values: Any) -> Path | None:
+    for value in values:
+        value = _safe_text(value)
         if value:
             return Path(value)
+    return None
+
+
+def _video_path(row: dict[str, Any]) -> Path:
+    path = _path_from_values(
+        row.get("target_mp4"), row.get("target_video"), row.get("reference_videopath"),
+        row.get("video_path"), row.get("videopath"), row.get("video"),
+        _nested(row, "winner", "full_video_path"), _nested(row, "winner", "future_video_path"),
+        _nested(row, "condition", "gt_full_video_path"), _nested(row, "condition", "prefix_video_path"),
+    )
+    if path is not None:
+        return path
     clip = _safe_text(row.get("clip_path"))
     if clip:
         path = Path(clip)
@@ -63,8 +96,57 @@ def _video_path(row: dict[str, Any]) -> Path:
 
 
 def _clip_dir(row: dict[str, Any]) -> Path:
+    for value in (
+        _nested(row, "condition", "poses_path"), _nested(row, "condition", "poses"),
+        _nested(row, "condition", "intrinsics_path"), _nested(row, "condition", "intrinsics"),
+        _nested(row, "condition", "image_path"), row.get("image_path"),
+    ):
+        value = _safe_text(value)
+        if value:
+            path = Path(value)
+            return path.parent if path.suffix else path
     video = _video_path(row)
     return video.parent if video.suffix else video
+
+
+def _prompt_text(row: dict[str, Any], clip_dir: Path) -> str:
+    prompt = _safe_text(row.get("prompt"))
+    cond_prompt = _safe_text(_nested(row, "condition", "prompt"))
+    cond_prompt_path = _safe_text(_nested(row, "condition", "prompt_path"))
+    for value in (prompt, cond_prompt, cond_prompt_path):
+        if value:
+            path = Path(value)
+            if path.exists() and path.is_file():
+                return path.read_text(encoding="utf-8").strip()
+            return value
+    prompt_path = clip_dir / "prompt.txt"
+    if prompt_path.exists():
+        return prompt_path.read_text(encoding="utf-8").strip()
+    return "Synthetic indoor physical scene with camera motion."
+
+
+def _image_path(row: dict[str, Any], clip_dir: Path, *, height: int, width: int) -> Path:
+    path = _path_from_values(row.get("image_path"), _nested(row, "condition", "image_path"))
+    if path is not None and path.exists():
+        return path
+    return _ensure_image(clip_dir, height=height, width=width)
+
+
+def _camera_paths(row: dict[str, Any], clip_dir: Path) -> tuple[Path, Path]:
+    poses = _path_from_values(_nested(row, "condition", "poses_path"), _nested(row, "condition", "poses"), clip_dir / "poses.npy")
+    intrinsics = _path_from_values(_nested(row, "condition", "intrinsics_path"), _nested(row, "condition", "intrinsics"), clip_dir / "intrinsics.npy")
+    if poses is None or not poses.exists():
+        raise FileNotFoundError(f"Missing poses for {_sample_id(row)}: {poses}")
+    if intrinsics is None or not intrinsics.exists():
+        raise FileNotFoundError(f"Missing intrinsics for {_sample_id(row)}: {intrinsics}")
+    return poses, intrinsics
+
+
+def _action_dir(row: dict[str, Any], clip_dir: Path) -> Path:
+    poses, intrinsics = _camera_paths(row, clip_dir)
+    if poses.parent == intrinsics.parent:
+        return poses.parent
+    return clip_dir
 
 
 def _ensure_image(clip_dir: Path, *, height: int, width: int) -> Path:
@@ -234,17 +316,15 @@ def run(args: argparse.Namespace) -> None:
     manifest_rows=[]
     for index, row in enumerate(rows):
         sample_id = _sample_id(row); clip_dir = _clip_dir(row); source_video = _video_path(row)
-        prompt = _safe_text(row.get("prompt")) or ((clip_dir / "prompt.txt").read_text(encoding="utf-8").strip() if (clip_dir / "prompt.txt").exists() else "Synthetic indoor physical scene with camera motion.")
-        image_path = _ensure_image(clip_dir, height=args.height, width=args.width)
-        for required in (clip_dir / "poses.npy", clip_dir / "intrinsics.npy"):
-            if not required.exists():
-                raise FileNotFoundError(f"Missing camera file for {sample_id}: {required}")
+        prompt = _prompt_text(row, clip_dir)
+        image_path = _image_path(row, clip_dir, height=args.height, width=args.width)
+        action_dir = _action_dir(row, clip_dir)
         save_path = videos_dir / f"{sample_id}_{args.model_label}.mp4"
         if not (save_path.exists() and args.skip_existing):
             logging.info("[%s/%s] generating %s", index + 1, len(rows), sample_id)
             img = Image.open(image_path).convert("RGB"); start = time.time()
             video = pipe.generate(
-                prompt, img, action_path=str(clip_dir) + "/", chunk_size=args.chunk_size,
+                prompt, img, action_path=str(action_dir) + "/", chunk_size=args.chunk_size,
                 max_area=MAX_AREA_CONFIGS[args.size], frame_num=args.frame_num,
                 shift=args.sample_shift, seed=args.seed, offload_model=bool(args.offload_model),
                 max_attention_size=args.max_attention_size,
@@ -256,12 +336,13 @@ def run(args: argparse.Namespace) -> None:
             del video; torch.cuda.empty_cache()
         manifest_rows.append({
             "sample_id": sample_id,
-            "template": row.get("template", ""),
-            "camera_variant": row.get("camera_variant", row.get("camera_motion", "")),
+            "template": row.get("template", _nested(row, "condition", "template") or ""),
+            "camera_variant": row.get("camera_variant", row.get("camera_motion", _nested(row, "condition", "camera_motion") or "")),
             "model_label": args.model_label,
             "prompt": prompt,
             "source_video": str(source_video),
             "clip_dir": str(clip_dir),
+            "action_dir": str(action_dir),
             "image_path": str(image_path),
             "generated_video": str(save_path),
             "seed": args.seed,
