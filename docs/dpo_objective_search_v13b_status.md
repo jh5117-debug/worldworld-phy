@@ -87,4 +87,7 @@ Current decision: `DPO_RECIPE_TRAINING_SIGNAL_ONLY`; train400 and large DPO rema
 ## Final v13b Update - 2026-07-07
 
 Status: COMPLETE - DPO_RECIPE_NOT_FOUND. Only physical GPU4/GPU5 were used for v13b jobs; GPU0-3/6/7 were not used. S07 had the best training signal but failed the checkpoint metric gate because VBench temporal_flickering worsened. S03/S06/S09 were winner-positive and non-loser-dominant, but DPO loss stayed near 0.693 and preference utility stayed near zero. S10 camera+temporal LoRA timed out before first row. Scale remains blocked: no S16/S32/S64/train400.
+## S10 Correction - 2026-07-07
+
+S10 wrote `S10_lora_camera_temporal_winner_detached_100step.csv` with 18 rows. The corrected classification is DPO_RECIPE_TRAINING_SIGNAL_FAIL_WINNER_FINAL_NEGATIVE, not zero-row runtime-only. Final winner_improvement_post was negative and DPO loss remained near 0.693. Scale remains blocked.
 

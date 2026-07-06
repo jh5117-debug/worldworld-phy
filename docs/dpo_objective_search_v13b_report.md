@@ -108,4 +108,7 @@ The scheduler must still be monitored to verify any launched job uses only `CUDA
 ## Final v13b Decision - 2026-07-07
 
 Decision: DPO_RECIPE_NOT_FOUND. This round did not find a 200-step DPO recipe that passes both training signal and checkpoint video/metric gates. S07 is the best training-signal candidate, but failed VBench temporal_flickering. S03/S06/S09 confirm the recurring pattern: winner-anchor movement exists, loser degradation is not dominant, but the preference branch is effectively no-signal with dpo_loss near 0.693. S10 did not establish the broader camera+temporal LoRA hypothesis because it blocked before first row. Next step should be offline preference utility/gap-scale calibration before any further training scale.
+## S10 Correction - 2026-07-07
+
+After reviewing the correct 100-step CSV path, S10 is reclassified: it produced 18 rows, but final winner_improvement_post was negative and DPO loss stayed near 0.693. The broader camera+temporal LoRA scope therefore did not provide a valid DPO recipe in this run.
 
