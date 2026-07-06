@@ -105,3 +105,7 @@ The scheduler must still be monitored to verify any launched job uses only `CUDA
   - support nested DPO pair manifest fields for checkpoint eval.
 - Current blocker is GPU4/5 occupancy by older rollout/eval jobs. The v13b waiter is non-destructive and does not kill those jobs.
 - Decision: `DPO_RECIPE_TRAINING_SIGNAL_ONLY`; train400 and large DPO remain blocked.
+## Final v13b Decision - 2026-07-07
+
+Decision: DPO_RECIPE_NOT_FOUND. This round did not find a 200-step DPO recipe that passes both training signal and checkpoint video/metric gates. S07 is the best training-signal candidate, but failed VBench temporal_flickering. S03/S06/S09 confirm the recurring pattern: winner-anchor movement exists, loser degradation is not dominant, but the preference branch is effectively no-signal with dpo_loss near 0.693. S10 did not establish the broader camera+temporal LoRA hypothesis because it blocked before first row. Next step should be offline preference utility/gap-scale calibration before any further training scale.
+

@@ -1,0 +1,9 @@
+{
+  "scheme_id": "S10_lora_camera_temporal_winner_detached",
+  "scope": "L2_camera_temporal_r4",
+  "decision": "DPO_RECIPE_RUNTIME_BLOCKED_FIRST_ROW_TIMEOUT",
+  "csv_rows": 0,
+  "blocked_stage": "before_first_training_row_or_first_step_output",
+  "reason": "S10 used GPU4 for about 30 minutes but did not write the first metrics CSV row; log remained at model shard loading warnings. Stopped to avoid black-box GPU burn.",
+  "allowed_gpu": "physical GPU4 only"
+}

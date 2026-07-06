@@ -1,0 +1,15 @@
+# Training Gate Summary
+
+- scheme_id: S06_normalized_clipped_loser_alpha010
+- rows: 53
+- last_step: 52
+- winner_improvement_post_mean50: 0.0005299139022827148
+- winner_improvement_post_final: 0.0013907551765441895
+- loser_degradation_post_mean50: -0.000468829870223999
+- winner_contribution_ratio_post_mean50: 0.9490855159589933
+- loser_dominance_mean50: 0.010710903117801672
+- dpo_loss_mean50: 0.6931165599822998
+- dpo_loss_final: 0.6930621862411499
+- u_clipped_mean50: 6.108403205871582e-05
+- decision: DPO_RECIPE_TRAINING_SIGNAL_ONLY_NO_SIGNAL_PREF_BRANCH
+- reason: winner anchor improves and loser is not dominant, but DPO loss remains near 0.693 and preference utility is near zero over 50 rows; not eligible for checkpoint eval or scaling.

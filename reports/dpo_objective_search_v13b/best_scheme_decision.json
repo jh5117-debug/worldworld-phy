@@ -1,6 +1,8 @@
 {
-  "best_training_signal_scheme": "S01_winner_detached_pref_low",
-  "decision": "TRAINING_SIGNAL_PASS_NEEDS_VIDEO_METRICS",
-  "valid_dpo_recipe": false,
-  "reason": "S01 has stronger positive winner improvement and contribution ratio, but checkpoint video/metrics/audit are not complete."
+  "decision": "DPO_RECIPE_NOT_FOUND",
+  "best_training_signal": "S07_linear_winner_detached",
+  "best_training_signal_caveat": "S07 had the strongest winner-positive/non-loser-dominant gap signal, but checkpoint VBench temporal_flickering worsened; visual audit did not show obvious degradation, yet metric gate failed.",
+  "diagnostic_positive": "S04/S06/S09/S03 show winner-anchor movement but preference branch remains near 0.693/no-signal.",
+  "runtime_blocker": "S10 L2 camera_temporal did not produce a first training row after about 30 minutes and was stopped.",
+  "scale_permission": "NO_TRAIN400_NO_S32_NO_S64"
 }

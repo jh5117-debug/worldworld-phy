@@ -1,0 +1,15 @@
+# Training Gate Summary
+
+- scheme_id: S09_local_time_mask_winner_detached
+- rows: 53
+- last_step: 52
+- winner_improvement_post_mean50: 0.0006031632423400879
+- winner_improvement_post_final: 0.0015161633491516113
+- loser_degradation_post_mean50: -0.0005163621902465821
+- winner_contribution_ratio_post_mean50: 0.9743948467442717
+- loser_dominance_mean50: 0.00543140771850564
+- dpo_loss_mean50: 0.6931459355354309
+- dpo_loss_final: 0.6931403279304504
+- u_clipped_mean50: 8.680105209350586e-05
+- decision: DPO_RECIPE_TRAINING_SIGNAL_ONLY_NO_SIGNAL_PREF_BRANCH
+- reason: winner anchor improves and loser is not dominant, but DPO loss remains near 0.693 and preference utility is near zero over 50 rows; not eligible for checkpoint eval or scaling.

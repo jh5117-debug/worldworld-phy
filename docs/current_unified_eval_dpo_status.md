@@ -508,4 +508,7 @@ v12c PRD/setup/code are ready, but training did not start because physical GPU4 
 - v13b objective search code and GPU4/5-only scheduler are prepared.
 - Training did not launch because GPU4/5 were occupied by existing non-v13b jobs / GPU query timed out conservatively.
 - Decision: `DPO_RECIPE_GPU_BLOCKED`; no scale, no train400, no large DPO.
+## DPO Objective Search v13b Update
+
+Status: DPO_RECIPE_NOT_FOUND. v13b used only H20 physical GPU4/GPU5 and did not use GPU0-3/6/7. Ten tiny schemes were attempted or bounded. S07 was the best training-signal candidate but failed the checkpoint metric gate because VBench temporal_flickering worsened. S03/S06/S09 were winner-positive but DPO preference utility stayed near zero and dpo_loss stayed near 0.693. S10 camera+temporal LoRA blocked before first row. No S16/S32/S64/train400 scaling is allowed.
 

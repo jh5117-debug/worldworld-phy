@@ -321,4 +321,7 @@ Added `docs/experiments/PRD_MAINTENANCE_INDEX.md` to separate active PRDs from s
 - Updated: 2026-07-06T13:08:17+08:00.
 - Prepared v13b GPU4/5-only objective search code and reports.
 - Training blocked by GPU4/5 occupancy; no large assets staged.
+## v13b Objective Search Push Note
+
+Prepared v13b objective-search summaries and decision docs for push. Only lightweight docs, CSV, JSON, and logs are included. Large artifacts, videos, images, local_assets, checkpoints, and weights are excluded.
 

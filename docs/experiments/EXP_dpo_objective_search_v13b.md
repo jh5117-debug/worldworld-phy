@@ -99,3 +99,7 @@ Stop a scheme if winner improvement is negative for repeated eval windows, final
 ## Interim Execution Note - 2026-07-06T15:32:53
 
 S01/S02 have training-signal-only evidence on GPU4/5. The run is intentionally paused before further schemes while checkpoint video/metrics/audit gates are attempted. Safe WanModelFast eval loading was patched in the project wrapper because eval stalled at CPU-side `WanModelFast.from_pretrained` before any V2V-5 video was generated. No recipe is marked PASS until real checkpoint videos, metrics, and Codex visual audit pass.
+## Final Update
+
+v13b completed with DPO_RECIPE_NOT_FOUND. S01/S05/S07 reached video/metric evaluation but failed gates. S03/S06/S09 showed winner-positive, non-loser-dominant training-only signals with DPO loss still near 0.693. S10 runtime-blocked before first row. No large DPO, train400, S32, or S64 is allowed from this result.
+

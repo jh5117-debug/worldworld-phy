@@ -211,4 +211,7 @@ v12c did not test the preference branch yet; current blocker is GPU scheduling, 
 - v13b objective search code and GPU4/5-only scheduler are prepared.
 - Training did not launch because GPU4/5 were occupied by existing non-v13b jobs / GPU query timed out conservatively.
 - Decision: `DPO_RECIPE_GPU_BLOCKED`; no scale, no train400, no large DPO.
+## v13b Objective Search Root Cause Update
+
+v13b did not find a valid DPO recipe. The dominant pattern is not loser degradation; instead, several schemes improve winner energy while preference utility remains too small to move the DPO loss away from ~0.693. This points to preference gap scale / reference normalization / beta-lambda calibration as the next blocker. Broader L2 camera+temporal LoRA was not proven because S10 timed out before first row.
 

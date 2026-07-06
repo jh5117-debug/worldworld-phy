@@ -1,0 +1,8 @@
+IMPORT_OK cam_physgeo.dpo.gap_metrics_v13b
+IMPORT_OK cam_physgeo.dpo.dpo_objective_search_v13b
+IMPORT_OK cam_physgeo.orchestration.gpu_scheduler_v13b
+IMPORT_OK cam_physgeo.orchestration.gate_checks_v13b
+FILE reports/dpo_objective_search_v13b/search_summary.csv True 5138
+FILE reports/dpo_objective_search_v13b/search_summary.md True 3164
+FILE reports/dpo_objective_search_v13b/best_scheme_decision.json True 624
+DIRECT_SMOKE_PASS

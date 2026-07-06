@@ -1,0 +1,15 @@
+# Training Gate Summary
+
+- scheme_id: S03
+- rows: 61
+- last_step: 60
+- winner_improvement_post_mean50: 0.0008210718631744384
+- winner_improvement_post_final: 0.0018996596336364746
+- loser_degradation_post_mean50: -0.0007587933540344239
+- winner_contribution_ratio_post_mean50: 1.0
+- loser_dominance_mean50: 0.0
+- dpo_loss_mean50: 0.6931453728675843
+- dpo_loss_final: 0.6931397914886475
+- u_clipped_mean50: 6.227850914001464e-05
+- decision: DPO_RECIPE_TRAINING_SIGNAL_ONLY_NO_SIGNAL_PREF_BRANCH
+- reason: S03 reached the 50-row gate with positive winner anchor and low loser dominance, but DPO loss stayed near 0.693 and preference utility remained near zero. Not eligible for checkpoint eval or scaling.

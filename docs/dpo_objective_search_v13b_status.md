@@ -84,3 +84,7 @@ Current decision: `DPO_RECIPE_TRAINING_SIGNAL_ONLY`; train400 and large DPO rema
 - Direct helper smoke on `manifests/dpo_v13b_subsets/val_video_4.jsonl` resolves sample id, prompt, image, poses, intrinsics, action directory, and source video.
 - A single-instance GPU4/5 waiter is running and will retry S01 step050 once GPU4 or GPU5 is actually idle.
 - Current decision remains `DPO_RECIPE_TRAINING_SIGNAL_ONLY`; checkpoint videos, metrics, and Codex visual audit are not complete.
+## Final v13b Update - 2026-07-07
+
+Status: COMPLETE - DPO_RECIPE_NOT_FOUND. Only physical GPU4/GPU5 were used for v13b jobs; GPU0-3/6/7 were not used. S07 had the best training signal but failed the checkpoint metric gate because VBench temporal_flickering worsened. S03/S06/S09 were winner-positive and non-loser-dominant, but DPO loss stayed near 0.693 and preference utility stayed near zero. S10 camera+temporal LoRA timed out before first row. Scale remains blocked: no S16/S32/S64/train400.
+

@@ -119,4 +119,7 @@ v12c adds a winner-detached preference mode: loser energy is evaluated but detac
 - v13b objective search code and GPU4/5-only scheduler are prepared.
 - Training did not launch because GPU4/5 were occupied by existing non-v13b jobs / GPU query timed out conservatively.
 - Decision: `DPO_RECIPE_GPU_BLOCKED`; no scale, no train400, no large DPO.
+## v13b Trainer Design Note
+
+Do not select future DPO runs by winner-anchor movement alone. v13b shows that winner energy can improve while the preference branch is effectively no-signal. Future trainers should preflight normalized preference utility magnitude before optimization and should require checkpoint video + metrics before any scale.
 

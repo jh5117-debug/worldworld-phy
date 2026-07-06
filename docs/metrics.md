@@ -134,4 +134,7 @@ v12c checkpoint metrics were not run because the preference probe was blocked be
 - v13b objective search code and GPU4/5-only scheduler are prepared.
 - Training did not launch because GPU4/5 were occupied by existing non-v13b jobs / GPU query timed out conservatively.
 - Decision: `DPO_RECIPE_GPU_BLOCKED`; no scale, no train400, no large DPO.
+## v13b Metric Gate Note
+
+For v13b, S05 and S07 passed enough training signal to run checkpoint evaluation, but both failed the strict metric gate due VBench temporal_flickering worsening from step000 to step050. Visual audit did not show obvious collapse, but the metric gate remains binding. No fake FVD/VBench values were used.
 
