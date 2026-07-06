@@ -390,8 +390,9 @@ v12c tiny guarded preference is prepared but blocked on physical GPU4 occupancy.
 
 ## v13b DPO Objective Search Update
 
-- Updated: 2026-07-06T13:08:17+08:00.
-- v13b objective search code and GPU4/5-only scheduler are prepared.
-- Training did not launch because GPU4/5 were occupied by existing non-v13b jobs / GPU query timed out conservatively.
-- Decision: `DPO_RECIPE_GPU_BLOCKED`; no scale, no train400, no large DPO.
-
+- Updated: 2026-07-07T02:58:00+08:00.
+- v13b objective search ran on H20 physical GPU4/GPU5 only; GPU0-3/6/7 were not used by v13b jobs.
+- Ten bounded schemes were attempted: S01-S10. S07 had the best training signal, but failed the checkpoint metric gate because VBench temporal_flickering worsened.
+- S03/S06/S09 showed winner-positive, non-loser-dominant movement, but DPO loss stayed near 0.693 and preference utility stayed near zero.
+- S10 camera+temporal LoRA produced 18 rows but final winner_improvement_post was negative, so the broader scope did not yield a valid recipe.
+- Decision: `DPO_RECIPE_NOT_FOUND`; no S16/S32/S64/train400, no large DPO.
