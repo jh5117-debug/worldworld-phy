@@ -55,3 +55,25 @@ Removed only failed-eval transient local media:
 - `local_assets/dpo_pair_factory_v11/new_c_warmup_loser_smoke` (21M)
 
 Potential large reclaim candidates are documented but not deleted because they may contain checkpoints, pair-factory data, old C references, or ready500 assets. See `reports/cleanup_fulldata_warmup_loser_eval/large_cleanup_candidates_requires_approval.md`.
+
+
+## Cache-Only Cleanup Update - 2026-07-06 10:38 CST
+
+Deleted old regenerated cache tensor directories only:
+
+- `local_assets/dpo_pair_cache_v8m` (3.0G)
+- `local_assets/dpo_objective_cache_v8j` (1.4G)
+- `local_assets/dpo_training_sanity_v12/scope_sanity_cache_s0_window49` (2.2G)
+- `local_assets/dpo_training_sanity_v12/scope_sanity_cache_s0_window49_retry2` (2.2G)
+- `local_assets/dpo_training_sanity_v12/scope_sanity_cache_s0_window49_retry4` (4.3G)
+- `local_assets/dpo_objective_cache_v8i` (271M)
+- `local_assets/dpo_objective_cache_v8d` (12K)
+
+Freed approximately 13G. `/home/nvme04` available space increased to about 316G.
+
+Deletion manifest:
+
+- `reports/cleanup_fulldata_warmup_loser_eval/cache_deleted_manifest.csv`
+- `reports/cleanup_fulldata_warmup_loser_eval/cache_deleted_manifest.md`
+
+No raw data, model weights, adapters/checkpoints, ready500 assets, old C reference assets, or full-data warmup weights were deleted.
