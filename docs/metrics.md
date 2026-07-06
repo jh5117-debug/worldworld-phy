@@ -138,3 +138,6 @@ v12c checkpoint metrics were not run because the preference probe was blocked be
 
 For v13b, S05 and S07 passed enough training signal to run checkpoint evaluation, but both failed the strict metric gate due VBench temporal_flickering worsening from step000 to step050. Visual audit did not show obvious collapse, but the metric gate remains binding. No fake FVD/VBench values were used.
 
+## v14 Latent Monitor Status
+
+V-JEPA/VideoREPA/TRD are monitor-first only. v14 found local backend candidates but did not produce valid TRD/VJEPA scores, so no latent auxiliary loss is enabled.

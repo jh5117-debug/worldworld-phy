@@ -325,3 +325,9 @@ Added `docs/experiments/PRD_MAINTENANCE_INDEX.md` to separate active PRDs from s
 
 Prepared v13b objective-search summaries and decision docs for push. Only lightweight docs, CSV, JSON, and logs are included. Large artifacts, videos, images, local_assets, checkpoints, and weights are excluded.
 
+## v14 Utility Calibration Push
+
+- Prepared and ran v14 pair inventory, beta/loss response, latent backend audit, and normalization design.
+- Real all500 LingBot energy remains blocked by 1-pair runtime initialization timeout; no fake energy values were committed.
+- Committed only lightweight docs/source/tests/manifests/CSV/JSON summaries.
+- Did not push local_assets, videos, images, checkpoints, weights, HDF5/NPY/NPZ/PT/PTH/safetensors, or large logs.

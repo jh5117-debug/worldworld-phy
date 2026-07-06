@@ -123,3 +123,6 @@ v12c adds a winner-detached preference mode: loser energy is evaluated but detac
 
 Do not select future DPO runs by winner-anchor movement alone. v13b shows that winner energy can improve while the preference branch is effectively no-signal. Future trainers should preflight normalized preference utility magnitude before optimization and should require checkpoint video + metrics before any scale.
 
+## v14 Calibrated Utility Design
+
+Future DPO probes should not use arbitrary beta=0.1. Use empirical utility calibration, prefer `u_log`, keep loser detached or clipped initially, preserve explicit winner anchor, and require winner contribution ratio/video/metric gates before scale.

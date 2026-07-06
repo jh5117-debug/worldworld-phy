@@ -4,38 +4,23 @@ Updated: 2026-07-07 CST
 
 ## Current State
 
-- Canonical repaired ready500 exists and remains the required data entry. The old `manifests/dpo_pair_factory_v11_ready_500.jsonl` is not used.
+- Canonical repaired ready500 remains the required data entry.
 - v13b completed with `DPO_RECIPE_NOT_FOUND`.
-- Best v13b training-signal candidate was `S07_linear_winner_detached`, but it failed checkpoint metric gate due VBench temporal_flickering worsening.
-- S03/S06/S09 were winner-positive and non-loser-dominant, but DPO loss stayed near 0.693 and preference utility stayed near 1e-4.
-- S10 camera+temporal LoRA produced 18 rows but final winner_improvement_post was negative.
-- Current blocker is preference utility / gap scale, not pair count.
+- v14 PRD was committed in `57ba7dd`.
+- Pair inventory completed: all500=500, rollout/other=15, synthetic_controlled=485, local_mask=485, stratified100=100, S_pass=4, S_fail=0.
+- One-pair real LingBot energy smoke on GPU4 timed out after 300 seconds before writing a row.
+- Therefore `energy_utility_*.csv` files currently mark `MISSING_REAL_ENERGY`; they are coverage/blocker files, not real all500 energy calibration.
+- Beta/loss response was computed from v13b real training CSVs.
+- Recommended utility from v13b evidence: `u_log`.
+- Recommended beta from v13b evidence: `1000` with median |beta*u| `0.20455321269580987`.
+- Latent monitor audit found backend candidates but did not produce TRD/VJEPA scores; decision `LATENT_MONITOR_BACKEND_FOUND_NEEDS_SCORING`.
 
-## v14 Goal
+## Current Blockers
 
-v14 will perform offline utility calibration, beta/lambda response analysis, and latent monitor audit before any new DPO search. The run must explain why utility is near 1e-4 and identify whether normalization, reduction mode, local mask, sigma-bin normalization, pair source, or beta scale is the main blocker.
+1. Real all500 LingBot energy calibration is blocked by runtime/model initialization timeout.
+2. V-JEPA/VideoREPA/TRD monitor is not validated; no latent scores have been produced.
+3. A calibrated DPO scheme is designed but not yet run in this v14 phase.
 
-## GPU Rule
+## Decision
 
-Only H20 physical GPU4 and GPU5 are allowed for v14 energy, latent-monitor, eval, and training jobs. GPU0/1/2/3/6/7 are forbidden for this experiment.
-
-## Scope
-
-Allowed:
-- offline energy / utility calibration;
-- V-JEPA / VideoREPA / TRD monitor if local backend exists;
-- up to 10 small calibrated DPO objective schemes, each <=200 steps;
-- checkpoint video + metrics + Codex audit only for promising schemes.
-
-Forbidden:
-- train400;
-- large DPO;
-- S32/S64;
-- StageA / StageB / GRPO;
-- broad-LoRA;
-- checkpoint/data/weight deletion;
-- pushing videos/images/checkpoints/local_assets.
-
-## Initial Decision
-
-Proceed with v14 PRD, pair inventory, offline utility calibration, beta response sweep, latent monitor backend audit, and calibrated scheme design. Do not start large training.
+Do not run train400 or large DPO. The next safe training probe, after the user accepts the blocker/scale diagnosis, is a tiny guarded `calibrated_winner_detached_log` run on S_pass/S8 with beta around 1000, loser detached, explicit winner anchor, checkpoint video, metrics, and Codex audit.

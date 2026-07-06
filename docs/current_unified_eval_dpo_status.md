@@ -515,3 +515,9 @@ Status: DPO_RECIPE_NOT_FOUND. v13b used only H20 physical GPU4/GPU5 and did not 
 
 S10 produced 18 rows in its 100step CSV; final winner_improvement_post was negative and DPO loss remained near 0.693. No scale permission changes.
 
+## v14 Utility Calibration Update
+
+- v13b ended with `DPO_RECIPE_NOT_FOUND`.
+- v14 beta response from real v13b CSVs shows beta=0.1 was under-scaled; `u_log` recommends beta around 1000.
+- all500 real-energy calibration is still blocked by LingBot runtime init timeout.
+- No train400 or large DPO is allowed yet.

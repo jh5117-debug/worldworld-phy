@@ -1,0 +1,5 @@
+allowed_physical_gpus: [4, 5]
+forbidden_physical_gpus: [0, 1, 2, 3, 6, 7]
+max_steps_per_scheme: 200
+max_subset: S16
+requires_recommended_scale: true

@@ -1,0 +1,8 @@
+utility_type: u_log
+beta: null
+clip_loser: 1.0
+loser_alpha: 0.02
+lambda_winner: 1.0
+lambda_pref: 0.005
+normalization: empirical_from_v14
+local_mask: if_available

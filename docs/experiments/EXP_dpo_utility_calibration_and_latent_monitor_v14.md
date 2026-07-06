@@ -86,3 +86,13 @@ No train400, no large DPO, no S32/S64, no StageA, no StageB, no GRPO, no broad-L
 - `configs/cam_physgeo/dpo_objective_v14_normalized.yaml`
 - `configs/cam_physgeo/dpo_search_v14.yaml`
 - `configs/cam_physgeo/dpo_v14_scheduler.yaml`
+
+## Post-Run Update 2026-07-07
+
+- Pair inventory completed for canonical ready500 and v14 subsets.
+- Real LingBot energy smoke on one S_pass pair timed out after 300 seconds before writing a row, so all500 real-energy calibration remains blocked.
+- v14 `energy_utility_*.csv` files currently mark `MISSING_REAL_ENERGY`; they are not real energy evidence.
+- Beta/loss response from v13b real training CSVs shows beta=0.1 was under-scaled: median |beta*u_log| was about 2e-5 and near-zero ratio was 1.0.
+- Recommended first calibrated tiny probe is log utility with beta around 1000, loser detached, explicit winner anchor, and mandatory video/metric/Codex audit.
+- Latent monitor backend audit found local candidates but did not produce TRD/VJEPA scores; no latent auxiliary loss is enabled.
+- No train400, large DPO, StageA, StageB, GRPO, or broad-LoRA was run.

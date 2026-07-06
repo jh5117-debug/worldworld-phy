@@ -1,0 +1,5 @@
+allowed_physical_gpus: [4, 5]
+forbidden_physical_gpus: [0, 1, 2, 3, 6, 7]
+max_concurrent_jobs: 2
+unknown_process_policy: skip_gpu
+kill_unknown_process: false

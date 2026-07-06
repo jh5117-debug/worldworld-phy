@@ -215,3 +215,6 @@ v12c did not test the preference branch yet; current blocker is GPU scheduling, 
 
 v13b did not find a valid DPO recipe. The dominant pattern is not loser degradation; instead, several schemes improve winner energy while preference utility remains too small to move the DPO loss away from ~0.693. This points to preference gap scale / reference normalization / beta-lambda calibration as the next blocker. Broader L2 camera+temporal LoRA was not proven because S10 timed out before first row.
 
+## v14 Gap Scale Root Cause
+
+The DPO preference branch in v13b was under-scaled: median |u_log| was about 2e-4, so beta=0.1 produced near-zero logits and loss around 0.693. v14 recommends calibrated log utility around beta=1000 only for a guarded tiny probe; all500 real energy remains blocked by runtime init timeout.

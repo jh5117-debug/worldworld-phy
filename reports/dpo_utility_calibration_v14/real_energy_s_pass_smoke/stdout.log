@@ -1,0 +1,1 @@
+PC_FORCE_SDPA_FALLBACK=1 but wan.modules.attention has no _sdpa_fallback; cannot patch flash_attention
