@@ -296,3 +296,8 @@ Still kept:
 - old C reference sweep `local_assets/experiments/small_lora_scope_sweep_20260624`
 - ready500 / v11 pair-factory assets
 - raw Physion/local condition data
+
+
+## PRD Maintenance Update - 2026-07-06 10:47 CST
+
+Added `docs/experiments/PRD_MAINTENANCE_INDEX.md` to separate active PRDs from superseded/historical PRDs. Historical PRD markdown files are retained because they are small and preserve experiment provenance; large generated artifacts and non-current weight/cache directories were cleaned instead.
