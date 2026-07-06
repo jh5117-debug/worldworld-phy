@@ -89,3 +89,15 @@ If the user wants physical deletion of historical PRDs anyway, use this index to
 - Added current remaining-asset audit: `reports/cleanup_fulldata_warmup_loser_eval/remaining_assets_current_audit.md`.
 - No additional uncertain data/weights were deleted in this follow-up pass. Remaining non-keep GB-scale artifacts require explicit delete confirmation because they preserve DPO/v10/old rollout lineage.
 
+## Additional Stale Media Cleanup - 2026-07-06 11:12 CST
+
+Removed old superseded local media/cache directories including v10 local pair-factory media, old StageA v2v5 pilot outputs, targeted BC loser mining local rollouts, early protocol media, old DPO smoke/sanity media, and old V2V5 rollout media.
+
+Preserved current active assets: fulldata warmup retry1 weights, old C reference sweep, v11 ready500 media, raw Physion/local condition data, and v12b repair lineage.
+
+Evidence:
+
+- `reports/cleanup_fulldata_warmup_loser_eval/additional_stale_media_delete_manifest.md`
+- `reports/cleanup_fulldata_warmup_loser_eval/additional_stale_media_deleted_manifest.md`
+- `reports/cleanup_fulldata_warmup_loser_eval/remaining_assets_after_additional_cleanup.md`
+

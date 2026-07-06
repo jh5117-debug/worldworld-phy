@@ -309,3 +309,10 @@ Added `docs/experiments/PRD_MAINTENANCE_INDEX.md` to separate active PRDs from s
 - Updated PRD maintenance index and fulldata warmup loser-source status.
 - No media, checkpoints, weights, or `local_assets/` pushed.
 
+## 2026-07-06 11:12 CST - Additional stale media cleanup
+
+- Removed additional old superseded local media/cache directories from `local_assets/`, including v10 media, old StageA v2v5 outputs, targeted BC local rollout media, early DPO protocol media, and old V2V5 rollout media.
+- `local_assets` reduced to about 11G; `/home/nvme04` free space increased to about 350G.
+- Preserved current fulldata warmup weights, old C reference, v11 ready500 media, raw Physion/local data, and v12b repair lineage.
+- No media, checkpoints, weights, or `local_assets/` pushed.
+

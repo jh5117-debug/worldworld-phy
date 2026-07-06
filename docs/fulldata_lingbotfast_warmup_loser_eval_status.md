@@ -148,3 +148,10 @@ Added `docs/experiments/PRD_MAINTENANCE_INDEX.md` to separate active PRDs from s
 - Cleanup remains conservative: current warmup weights, old C reference, ready500 assets, and raw Physion/local data are preserved.
 - Current remaining-asset audit: `reports/cleanup_fulldata_warmup_loser_eval/remaining_assets_current_audit.md`.
 
+## Additional Stale Media Cleanup - 2026-07-06 11:12 CST
+
+- Deleted old superseded `local_assets/` media/cache directories after preserving reports/manifests/docs.
+- Kept current warmup weights, old C reference, v11 ready500 media, raw Physion/local condition data, and v12b repair lineage.
+- No 500-video generation was started because the fulldata warmup weights did not pass Codex visual loser-source gate.
+- Evidence: `reports/cleanup_fulldata_warmup_loser_eval/additional_stale_media_deleted_manifest.md`.
+
