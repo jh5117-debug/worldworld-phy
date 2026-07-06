@@ -33,3 +33,7 @@ A previous checkpoint-eval log shows the stall inside `WanModelFast.__init__ -> 
 ## Pair manifest schema repair
 
 After safe Wan loading succeeded, the first v13b eval attempt failed because `val_video_4.jsonl` uses DPO pair schema (`condition.*`, `winner.*`) while the eval wrapper originally expected flat condition rows. `cam_physgeo/eval/run_fast_adapter_inference.py` now supports nested pair rows directly: `condition.sample_id`, `condition.image_path`, `condition.prompt(_path)`, `condition.poses_path`, `condition.intrinsics_path`, and `winner.full_video_path` / `winner.future_video_path`.
+
+## GPU race / retry handling
+
+The first schema-repaired step050 eval reached real generation, but OOMed because another process consumed about 35GB on the selected physical GPU after the waiter had selected it. The waiter now retries each checkpoint up to three times, re-selecting GPU4/5 immediately before every attempt and returning to the wait queue after OOM or any nonzero exit.
