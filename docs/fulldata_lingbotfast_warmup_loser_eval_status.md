@@ -50,3 +50,18 @@ Intermediate checkpoints `step_000103`, `step_000206`, `step_000309`, and `step_
 - 500-video generation was not launched.
 
 Audit path: `reports/dpo_pair_factory_v11/new_c_warmup_loser_checkpoint_select/checkpoint_selection_visual_audit.md`.
+
+
+## Cleanup Update - 2026-07-06 10:35 CST
+
+Safe transient cleanup performed:
+
+- Deleted `local_assets/dpo_pair_factory_v11/new_c_warmup_loser_checkpoint_select` (33M), failed checkpoint-selection local media.
+- Deleted `local_assets/dpo_pair_factory_v11/new_c_warmup_loser_smoke` (21M), failed final-adapter local media.
+
+Large cleanup candidates requiring explicit whitelist were recorded at:
+
+- `reports/cleanup_fulldata_warmup_loser_eval/large_cleanup_candidates_requires_approval.md`
+- `reports/cleanup_fulldata_warmup_loser_eval/large_cleanup_candidates_requires_approval.csv`
+
+No checkpoints, raw data, training weights, ready500 dataset assets, or old C reference assets were deleted automatically.

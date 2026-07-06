@@ -220,3 +220,10 @@ Prepared a strict 4900 train / 100 test StageA V2V-5 warmup gate and GPU4-7 laun
 - Codex visual decision: no clear improvement over old C; not suitable to scale to 500 videos.
 - The smoke runner stalled before completing `01008`; own smoke processes were terminated and GPU4-7 freed.
 - No DPO, StageA/StageB/GRPO, checkpoint deletion, or media/weights push.
+
+
+## 2026-07-06 Safe Cleanup After Full-data Warmup Gate
+
+- Deleted failed full-data warmup loser-eval transient local media only: 54M total.
+- Wrote large cleanup candidate manifest requiring explicit approval before deleting checkpoint/data/weight lineage.
+- No ready500 assets, old C reference adapters, checkpoints, raw data, or weights were deleted.

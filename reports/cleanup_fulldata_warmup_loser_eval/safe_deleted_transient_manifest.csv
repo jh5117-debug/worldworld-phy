@@ -1,0 +1,3 @@
+path,size,reason,action
+local_assets/dpo_pair_factory_v11/new_c_warmup_loser_checkpoint_select,33M,failed_full_data_warmup_loser_smoke_local_media,delete_now
+local_assets/dpo_pair_factory_v11/new_c_warmup_loser_smoke,21M,failed_full_data_warmup_loser_smoke_local_media,delete_now

@@ -45,3 +45,13 @@ Outcome:
 - The multi-condition smoke did not advance cleanly to `01008`; it stalled after the first generated sample, so the smoke jobs were stopped.
 
 Decision remains: do not generate 500 DPO loser videos from `fulldata-lingbotfast-warmup-weights` yet.
+
+
+## Cleanup Follow-up - 2026-07-06 10:35 CST
+
+Removed only failed-eval transient local media:
+
+- `local_assets/dpo_pair_factory_v11/new_c_warmup_loser_checkpoint_select` (33M)
+- `local_assets/dpo_pair_factory_v11/new_c_warmup_loser_smoke` (21M)
+
+Potential large reclaim candidates are documented but not deleted because they may contain checkpoints, pair-factory data, old C references, or ready500 assets. See `reports/cleanup_fulldata_warmup_loser_eval/large_cleanup_candidates_requires_approval.md`.

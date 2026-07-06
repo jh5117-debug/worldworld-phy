@@ -273,3 +273,13 @@ Filesystem      Size  Used Avail Use% Mounted on
 - KEEP: base LingBot weights, current full-data warmup checkpoints, v10b/v11 canonical manifests, ready500 repaired data, generated prefix/future condition assets, any adapter used by accepted pair manifests.
 - NEEDS_USER_APPROVAL: old DPO smoke checkpoints, old StageA adapters, old rollout videos/contact sheets, synthetic pair videos.
 - DO_NOT_DELETE_AUTOMATICALLY: /home/nvme03/workspace/lingbot-world weights, canonical datasets, checkpoints referenced by reports/manifests, current final adapter.
+
+
+## Safe Cleanup Performed - 2026-07-06 10:35 CST
+
+Deleted only failed full-data warmup loser-source transient local media:
+
+- `local_assets/dpo_pair_factory_v11/new_c_warmup_loser_checkpoint_select` (33M)
+- `local_assets/dpo_pair_factory_v11/new_c_warmup_loser_smoke` (21M)
+
+Large checkpoint/data/weight candidates were not deleted automatically. See `large_cleanup_candidates_requires_approval.md`.
