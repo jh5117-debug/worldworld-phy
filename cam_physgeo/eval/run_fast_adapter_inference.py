@@ -123,6 +123,30 @@ def _select_balanced(rows: list[dict[str, Any]], *, max_samples: int, per_templa
     return selected
 
 
+def _patch_wan_fast_from_pretrained_safe() -> None:
+    """Force local safetensors streaming for WanModelFast construction."""
+    try:
+        from wan.modules import model_fast
+        import wan.image2video_fast as image2video_fast
+    except Exception as exc:
+        logging.warning("Could not patch WanModelFast.from_pretrained: %r", exc)
+        return
+    cls = model_fast.WanModelFast
+    current = getattr(cls, "from_pretrained")
+    if getattr(current, "_cam_physgeo_safe_patch", False):
+        return
+    original = current
+    def safe_from_pretrained(*args, **kwargs):
+        kwargs["local_files_only"] = True
+        kwargs["use_safetensors"] = True
+        kwargs["low_cpu_mem_usage"] = True
+        logging.info("Using safe WanModelFast.from_pretrained kwargs: local_files_only=True use_safetensors=True low_cpu_mem_usage=True")
+        return original(*args, **kwargs)
+    safe_from_pretrained._cam_physgeo_safe_patch = True  # type: ignore[attr-defined]
+    cls.from_pretrained = safe_from_pretrained
+    image2video_fast.WanModelFast.from_pretrained = safe_from_pretrained
+
+
 def _load_adapter(pipe: Any, adapter_dir: Path) -> dict[str, Any]:
     from physical_consistency.trainers.stage1_components import apply_lora_to_wan_model, load_lora_state_dict
     metadata_path, adapter_path = adapter_dir / "adapter_metadata.json", adapter_dir / "adapter_state.pt"
@@ -184,6 +208,7 @@ def run(args: argparse.Namespace) -> None:
     if args.size not in MAX_AREA_CONFIGS:
         w, h = (int(x) for x in args.size.split("*")); MAX_AREA_CONFIGS[args.size] = w * h
     cfg = WAN_CONFIGS[args.task]
+    _patch_wan_fast_from_pretrained_safe()
     visible = os.environ.get("CUDA_VISIBLE_DEVICES", "").split(",")[0].strip()
     if visible == "0" and not args.allow_gpu0:
         raise RuntimeError("Refusing to run Fast inference with physical GPU0 visible first without --allow_gpu0")

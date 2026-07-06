@@ -1,0 +1,6 @@
+{
+  "best_training_signal_scheme": "S01_winner_detached_pref_low",
+  "decision": "TRAINING_SIGNAL_PASS_NEEDS_VIDEO_METRICS",
+  "valid_dpo_recipe": false,
+  "reason": "S01 has stronger positive winner improvement and contribution ratio, but checkpoint video/metrics/audit are not complete."
+}

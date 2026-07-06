@@ -51,3 +51,17 @@ The search code is ready, but training must wait until GPU4 or GPU5 is idle. Do 
 - No broad-LoRA.
 - No checkpoint/data/weight deletion.
 - No videos or weights pushed.
+
+## Interim Update - 2026-07-06T15:32:53
+
+- S01 and S02 were run only with physical GPU4/5 via explicit `CUDA_VISIBLE_DEVICES=4` / `CUDA_VISIBLE_DEVICES=5`.
+- No v13b process used GPU0/1/2/3/6/7.
+- S01/S02 reached an early healthy training-signal window and were stopped before launching more schemes so checkpoint video/metrics/audit gates can be evaluated.
+- Current best training-signal candidate: `S01_winner_detached_pref_low`.
+- Evidence is summarized in `reports/dpo_objective_search_v13b/search_summary.md` and `reports/dpo_objective_search_v13b/gap_health_by_scheme.csv`.
+- This is not a valid DPO recipe yet: checkpoint V2V-5 videos, metrics, and Codex visual audit are pending.
+- Checkpoint eval hit the known WanI2VFast / `WanModelFast.from_pretrained` initialization bottleneck before videos were produced.
+- `cam_physgeo/eval/run_fast_adapter_inference.py` now patches `WanModelFast.from_pretrained` to force local safetensors / low CPU memory loading for future eval attempts.
+- GPU4/5 are currently occupied by older overnight rollout/eval processes, so v13b checkpoint eval is waiting rather than killing unknown or non-current jobs.
+
+Current decision: `DPO_RECIPE_TRAINING_SIGNAL_ONLY`; train400 and large DPO remain blocked.
