@@ -249,3 +249,27 @@ Deletion manifest:
 - `reports/cleanup_fulldata_warmup_loser_eval/cache_deleted_manifest.md`
 
 No raw data, model weights, adapters/checkpoints, ready500 assets, old C reference assets, or full-data warmup weights were deleted.
+
+
+## Old Experiment State Cleanup - 2026-07-06 10:43 CST
+
+Deleted additional old experiment artifacts:
+
+- Old Jun-22 StageA data-gate optimizer `training_state.pt` files only, leaving adapter states/manifests/log lineage in place.
+- Failed v12 strict-SDPO regenerated latent cache `local_assets/dpo_training_sanity_v12/guarded_sdpo_anchor_s1/cache_s1_window49_run1`.
+
+Freed approximately 20G more. Repo `local_assets` is now about 25G; `/home/nvme04` available space is about 336G.
+
+Deletion evidence:
+
+- `reports/cleanup_fulldata_warmup_loser_eval/old_experiment_deleted_manifest.csv`
+- `reports/cleanup_fulldata_warmup_loser_eval/old_experiment_deleted_manifest.md`
+- `reports/cleanup_fulldata_warmup_loser_eval/old_experiment_delete_verify.txt`
+
+Kept:
+
+- current `fulldata-lingbotfast-warmup-weights`
+- old C reference adapter assets
+- ready500 / pair-factory dataset assets
+- raw Physion/local condition data
+- adapter_state files from the old StageA gate

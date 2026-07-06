@@ -22,3 +22,8 @@ The failed full-data warmup loser-source local media was deleted separately. The
 ## Deletion Rule
 
 Do not delete these directories unless the user provides an explicit whitelist or confirms that the named lineage is no longer needed. This avoids deleting old C references, ready500 assets, checkpoints, or recoverable pair-factory data by accident.
+
+
+## Partial Cleanup Executed - 2026-07-06 10:43 CST
+
+The Jun-22 StageA data-gate directory was not deleted wholesale, but its old optimizer `training_state.pt` files were removed. The failed v12 strict-SDPO cache directory was also removed. Remaining large candidates still require explicit confirmation.
