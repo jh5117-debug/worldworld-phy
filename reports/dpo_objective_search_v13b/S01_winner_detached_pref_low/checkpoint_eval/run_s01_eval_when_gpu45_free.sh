@@ -11,6 +11,12 @@ SCHEME=S01_winner_detached_pref_low
 BASE_OUT=local_assets/dpo_objective_search_v13b/$SCHEME/rollouts
 REPORT=reports/dpo_objective_search_v13b/$SCHEME/checkpoint_eval
 mkdir -p "$BASE_OUT" "$REPORT"
+LOCK="$REPORT/wait_eval.lock"
+exec 9>"$LOCK"
+if ! flock -n 9; then
+  echo "[$(date -Is)] another v13b S01 checkpoint eval waiter already holds $LOCK" | tee -a "$SESSION_LOG"
+  exit 0
+fi
 log(){ echo "[$(date -Is)] $*" | tee -a "$SESSION_LOG"; }
 gpu_busy_count(){ local gpu="$1"; timeout 10s nvidia-smi pmon -c 1 2>/dev/null | awk -v g="$gpu" '$1==g && $2!="-" {c++} END{print c+0}'; }
 gpu_mem(){ local gpu="$1"; timeout 10s nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits -i "$gpu" 2>/dev/null | awk 'NR==1{print int($1)}'; }
