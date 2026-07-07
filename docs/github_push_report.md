@@ -384,3 +384,11 @@ Prepared lightweight report updates for E01/E06 20-step training signal and E06 
 - Clarified blockers: all500 energy rows are `MISSING_REAL_ENERGY`; latent monitor is `LATENT_MONITOR_BLOCKED`; E09/E10 remain scalar-signal-only with visual gate failures.
 - Scale permission remains `NO_SCALE`; train400 remains blocked.
 - No local_assets, videos, images, checkpoints, weights, or large logs were pushed.
+
+## v14 Scheduler Artifact Push (2026-07-07T18:26:25Z)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit pushed: `62c44e2` (`Add conservative GPU scheduler artifact for v14`)
+- Added conservative GPU4/5-only scheduler artifact: `cam_physgeo/orchestration/gpu_scheduler_v14.py`, `scripts/launch_dpo_v14_scheduler.sh`, and `tests/test_gpu_scheduler_v14.py`.
+- Scheduler smoke wrote `reports/dpo_utility_calibration_v14/scheduler_state.json` with `scheduler_decision=NO_TRAINING_NO_SCALE` and no training command after `DPO_RECIPE_NOT_FOUND_V14`.
+- No videos, images, checkpoints, weights, local_assets, or large logs were pushed.
