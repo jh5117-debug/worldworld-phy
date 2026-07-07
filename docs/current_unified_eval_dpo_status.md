@@ -521,3 +521,7 @@ S10 produced 18 rows in its 100step CSV; final winner_improvement_post was negat
 - v14 beta response from real v13b CSVs shows beta=0.1 was under-scaled; `u_log` recommends beta around 1000.
 - all500 real-energy calibration is still blocked by LingBot runtime init timeout.
 - No train400 or large DPO is allowed yet.
+
+## v14 E02 Smoke10
+
+`E02_smoke10` shows calibrated beta helps DPO loss leave 0.693, but final winner improvement is negative. Decision: `TRAINING_SIGNAL_FAIL_WINNER`. Train400 and large DPO remain blocked.

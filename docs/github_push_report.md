@@ -335,3 +335,7 @@ Prepared v13b objective-search summaries and decision docs for push. Only lightw
 ## v14 Objective Runner Scaffold Push
 
 Added a calibrated v14 objective wrapper and log-normalized winner-detached objective support. No training was launched and no checkpoint/video/local_assets files were pushed.
+
+## v14 E02 Smoke10 Push
+
+Committed only lightweight E02 smoke CSV/summary and docs. Did not push local checkpoint files, local_assets, videos, images, or weights.

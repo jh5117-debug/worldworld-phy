@@ -78,3 +78,18 @@ Tiny calibrated DPO can be considered next, but only as a guarded probe. Train40
 ## v14 Objective Runner Scaffold
 
 `cam_physgeo.dpo.dpo_objective_search_v14` now supports a dry-run E02 calibrated winner-detached-log scheme using the recommended beta from `recommended_dpo_scale.json`. Training was not launched yet because runtime early-stop plus checkpoint video/metrics gate still needs to be connected before a 200-step job is safe.
+
+## E02 Smoke10 Training Signal
+
+A bounded 10-step `E02_smoke10` run was launched on physical GPU4 only with `CUDA_VISIBLE_DEVICES=4`.
+
+- Objective: `calibrated_winner_detached_log`
+- Beta: `1000`
+- Scope: `L0_camera_r4`
+- Rows: `10`
+- Mean winner_improvement_post: `8.374452590942383e-05`
+- Final winner_improvement_post: `-4.172325134277344e-05`
+- Mean WCR: `0.6669103726560174`
+- Decision: `TRAINING_SIGNAL_FAIL_WINNER`
+
+This confirms beta calibration fixes the 0.693 no-signal issue, but E02 still fails because the final winner improvement flips negative. No checkpoint video/metrics gate was run for this failed training signal. Next safe probe is lower LR / best-step early-stop, not scale.

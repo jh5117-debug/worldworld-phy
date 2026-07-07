@@ -24,3 +24,11 @@ Updated: 2026-07-07 CST
 ## Decision
 
 Do not run train400 or large DPO. The next safe training probe, after the user accepts the blocker/scale diagnosis, is a tiny guarded `calibrated_winner_detached_log` run on S_pass/S8 with beta around 1000, loser detached, explicit winner anchor, checkpoint video, metrics, and Codex audit.
+
+## E02 Smoke10 Update
+
+- `E02_smoke10` ran 10/10 steps on physical GPU4 only.
+- Mean winner improvement was positive, and DPO loss moved away from 0.693.
+- Final winner improvement flipped negative: `-4.172325134277344e-05`.
+- Decision: `TRAINING_SIGNAL_FAIL_WINNER`.
+- Do not scale; next probe should test lower LR / best-step early stop.

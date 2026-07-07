@@ -218,3 +218,7 @@ v13b did not find a valid DPO recipe. The dominant pattern is not loser degradat
 ## v14 Gap Scale Root Cause
 
 The DPO preference branch in v13b was under-scaled: median |u_log| was about 2e-4, so beta=0.1 produced near-zero logits and loss around 0.693. v14 recommends calibrated log utility around beta=1000 only for a guarded tiny probe; all500 real energy remains blocked by runtime init timeout.
+
+## v14 E02 Smoke10 Root Cause Update
+
+Beta scaling addressed the no-signal branch, but final-step winner degradation remains. The next root-cause test is optimizer/update stability: lower LR or best-step early stopping, not more data or larger DPO.
