@@ -31,3 +31,10 @@ The calibrated DPO/winner-anchor objectives can lower winner energy and avoid lo
 - large DPO: blocked.
 
 Next work should add a rollout-quality/latent visual monitor or stronger visual regularization before further DPO scaling.
+
+
+## v14 Final Test Status
+
+- `python3 -m compileall cam_physgeo src tests`: PASS.
+- Targeted pytest suite: NOT RUN because `pytest` is unavailable in the active H20 shell. No pytest PASS is claimed.
+- Test status path: `reports/dpo_utility_calibration_v14/test_status.md`.

@@ -178,3 +178,10 @@ Scale decision:
 - Do not run train400.
 - Do not run large DPO.
 - Next safe direction is to add a rollout-quality/latent monitor or regularizer that detects these artifacts before or during DPO updates.
+
+
+## v14 Final Test Status
+
+- `python3 -m compileall cam_physgeo src tests`: PASS.
+- Targeted pytest suite: NOT RUN because `pytest` is unavailable in the active H20 shell. No pytest PASS is claimed.
+- Test status path: `reports/dpo_utility_calibration_v14/test_status.md`.
