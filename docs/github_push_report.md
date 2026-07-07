@@ -401,3 +401,7 @@ Prepared lightweight report updates for E01/E06 20-step training signal and E06 
 - Added direct import smoke summary: `reports/dpo_utility_calibration_v14/direct_import_smoke_v14.md`.
 - The retry script defaults to dry-run and requires `RUN_V14_BLOCKER_RETRY=1` plus GPU4/5 only before execution.
 - No training, rollout, checkpoint deletion, videos/images/weights/local_assets push, train400, or large DPO was performed.
+
+## v14 Real-Energy Blocker Retry Pending Push
+
+Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkpoints, weights, or raw large logs should be staged.

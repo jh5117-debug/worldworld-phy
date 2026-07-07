@@ -1,0 +1,15 @@
+{
+  "decision": "REAL_ENERGY_CALIBRATION_BLOCKED_FORWARD_TIMEOUT",
+  "dpo_decision_unchanged": "DPO_RECIPE_NOT_FOUND_V14",
+  "final_blocker": "one_pair_energy_vae_forward_timeout_before_first_real_energy_row",
+  "final_exit_code": 124,
+  "forbidden_gpu_used": false,
+  "generated": "2026-07-08T03:30:22",
+  "gpu_used": [
+    4
+  ],
+  "python_env_repaired_with_usrbin_python3": true,
+  "raw_stdout_not_for_commit": "reports/dpo_utility_calibration_v14/blocker_retry/real_energy_asset_complete_onepair_usrbin_stdout.txt",
+  "scale_permission": "NO_SCALE",
+  "schema_adapter_passed": true
+}

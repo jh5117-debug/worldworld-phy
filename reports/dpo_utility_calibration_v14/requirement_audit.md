@@ -90,3 +90,11 @@ Do not continue ordinary DPO scaling. Add a rollout-quality or latent visual mon
 - Added config: `configs/cam_physgeo/dpo_v14_blocker_retry.yaml`.
 - Added direct import smoke log: `reports/dpo_utility_calibration_v14/test_logs/direct_import_smoke_v14.log`.
 - These artifacts do not launch training and do not change `NO_SCALE`.
+
+## Real-Energy Retry Audit Addendum
+
+- Original S_pass smoke produced a failed row due schema/assets mismatch.
+- Asset-complete adapter manifest passed prefix5 schema validation.
+- `/usr/bin/python3` avoids the Python 3.13 transformers/huggingface-hub conflict.
+- The repaired one-pair smoke loaded LingBot shards and entered VAE, then timed out at 900 seconds before first real-energy row.
+- Offline all500 real energy remains `BLOCKED`; no real all500 energy calibration is claimed.

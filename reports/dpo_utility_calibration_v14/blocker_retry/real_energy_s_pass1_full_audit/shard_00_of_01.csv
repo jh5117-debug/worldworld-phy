@@ -1,0 +1,2 @@
+pair_index,pair_id,pair_type,corruption_type,reward_margin,seed,device,shard_index,num_shards,energy_seconds,status,error_reason
+0,v6b_GT_C_007_04228_containment_orbit_left_44_seed43228,GT_C,,0.0,91400,cuda,0,1,0.0008542537689208984,failed,"ValueError: invalid prefix5 pair v6b_GT_C_007_04228_containment_orbit_left_44_seed43228: ['loss_indices_not_5_80', 'reward_indices_not_5_80', 'missing_condition_prefix_video_path', 'missing_condition_image', 'missing_winner_future_video_path', 'missing_loser_full_video_path', 'missing_loser_future_video_path']"

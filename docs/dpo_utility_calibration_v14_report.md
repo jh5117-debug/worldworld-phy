@@ -209,3 +209,11 @@ Scale decision:
 - Added config: `configs/cam_physgeo/dpo_v14_blocker_retry.yaml`.
 - Added direct import smoke log: `reports/dpo_utility_calibration_v14/test_logs/direct_import_smoke_v14.log`.
 - These artifacts do not launch training and do not change `NO_SCALE`.
+
+## Real-Energy Blocker Retry After Adapter Repair
+
+A follow-up retry built `manifests/dpo_v14_subsets/asset_complete_prefix5_onepair_for_energy.jsonl` from an asset-complete synthetic controlled pair. Temporary reconstructed videos were written only under `local_assets/dpo_utility_calibration_v14/blocker_retry/` and are not for git.
+
+The adapted manifest passed `prefix5_schema_errors`. Running `full_real_energy_audit` with the active conda Python failed because user-site Transformers/HuggingFace Hub versions are incompatible. Re-running with `/usr/bin/python3` fixed imports and loaded all 16 LingBot shards, then entered the VAE path, but hit the 900 second timeout before the first energy row.
+
+Current blocker: `REAL_ENERGY_CALIBRATION_BLOCKED_FORWARD_TIMEOUT`. This does not change the DPO decision: no v14 recipe passed both scalar and true-video gates.

@@ -62,3 +62,12 @@ Next work should add a rollout-quality/latent visual monitor or stronger visual 
 - Added config: `configs/cam_physgeo/dpo_v14_blocker_retry.yaml`.
 - Added direct import smoke log: `reports/dpo_utility_calibration_v14/test_logs/direct_import_smoke_v14.log`.
 - These artifacts do not launch training and do not change `NO_SCALE`.
+
+## v14 Real-Energy Blocker Retry Update
+
+- Retry summary: `reports/dpo_utility_calibration_v14/blocker_retry/real_energy_retry_summary.md`.
+- Original S_pass real-energy row failed because the v14 nested manifest did not satisfy `Prefix5DpoDataset` schema and old v6b rollout video assets were missing.
+- A one-pair asset-complete prefix5 adapter was built from a synthetic controlled pair and passed schema validation.
+- Conda Python 3.13 failed due transformers/huggingface-hub conflict; `/usr/bin/python3` imported the real energy stack successfully.
+- The `/usr/bin/python3` retry loaded 16 LingBot shards and entered the VAE path, but timed out after 900 seconds before writing the first real-energy row.
+- Decision remains `DPO_RECIPE_NOT_FOUND_V14`; S16/S32/train400 remain blocked.

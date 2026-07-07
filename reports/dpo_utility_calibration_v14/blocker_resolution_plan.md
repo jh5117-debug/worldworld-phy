@@ -61,3 +61,7 @@ Next bounded action:
 - No train400, no large DPO, no StageA/StageB/GRPO, no broad-LoRA.
 - No checkpoint/data/weight deletion.
 - No videos/images/checkpoints/weights pushed.
+
+## Retry script correction
+
+The retry script now calls `cam_physgeo.dpo.full_real_energy_audit run-shard --limit 1`, which is the real LingBot-Fast energy audit path. It no longer calls the planning-only `utility_calibration_v14.py` CLI for real energy.
