@@ -364,3 +364,14 @@ Prepared lightweight report updates for E05 checkpoint metrics and Codex visual 
 ## v14 E01/E06 Screen Push (2026-07-07T06:06:00.444732Z)
 
 Prepared lightweight report updates for E01/E06 20-step training signal and E06 checkpoint eval blocker. No local_assets, videos, images, checkpoints, or weights are intended for commit.
+
+
+## v14 DPO Objective Search Visual Gate Decision Push (2026-07-07T18:02:47Z)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit pushed: `2f38301` (`Document v14 DPO objective search visual gate failures`)
+- Decision: `DPO_RECIPE_NOT_FOUND_V14`
+- Summary: E09 and E10 had healthy scalar/gap training signals but failed true V2V-5 visual gates; no S16/S32/train400/large DPO is allowed from these recipes.
+- Pushed artifacts: lightweight docs, CSV/JSON/MD summaries, fixed validation manifests, and Codex video audit CSV/MD.
+- Not pushed: local_assets, MP4/JPG/PNG/contact sheets, checkpoints, weights, safetensors, NPY/NPZ/HDF5, and large logs.
+- GPU constraint respected for v14 documented jobs: only H20 physical GPU4/GPU5 were used; GPU0-3/6/7 were not used by these v14 objective-search jobs.
