@@ -375,3 +375,12 @@ Prepared lightweight report updates for E01/E06 20-step training signal and E06 
 - Pushed artifacts: lightweight docs, CSV/JSON/MD summaries, fixed validation manifests, and Codex video audit CSV/MD.
 - Not pushed: local_assets, MP4/JPG/PNG/contact sheets, checkpoints, weights, safetensors, NPY/NPZ/HDF5, and large logs.
 - GPU constraint respected for v14 documented jobs: only H20 physical GPU4/GPU5 were used; GPU0-3/6/7 were not used by these v14 objective-search jobs.
+
+## v14 Requirement Audit Push (2026-07-07T18:12:56Z)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit pushed: `84bd863` (`Add v14 requirement audit and blocker evidence`)
+- Added audit: `reports/dpo_utility_calibration_v14/requirement_audit.md` and `.json`.
+- Clarified blockers: all500 energy rows are `MISSING_REAL_ENERGY`; latent monitor is `LATENT_MONITOR_BLOCKED`; E09/E10 remain scalar-signal-only with visual gate failures.
+- Scale permission remains `NO_SCALE`; train400 remains blocked.
+- No local_assets, videos, images, checkpoints, weights, or large logs were pushed.
