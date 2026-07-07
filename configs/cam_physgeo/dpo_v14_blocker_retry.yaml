@@ -1,0 +1,21 @@
+# v14 blocker retry plan. This config is intentionally conservative.
+allowed_physical_gpus: [4, 5]
+forbidden_physical_gpus: [0, 1, 2, 3, 6, 7]
+default_gpu: 4
+real_energy:
+  first_subset: manifests/dpo_v14_subsets/s_pass.jsonl
+  fallback_subset: manifests/dpo_v14_subsets/stratified100.jsonl
+  first_limit_pairs: 1
+  bounded_limit_pairs: 4
+  stage_timeout_seconds: 180
+  total_timeout_seconds: 900
+  required_output: reports/dpo_utility_calibration_v14/blocker_retry/real_energy_s_pass1.csv
+latent_monitor:
+  subset: manifests/dpo_v14_subsets/s_pass.jsonl
+  no_download: true
+  required_output: reports/dpo_utility_calibration_v14/blocker_retry/latent_monitor_s_pass.csv
+execution:
+  default_dry_run: true
+  require_env_flag: RUN_V14_BLOCKER_RETRY=1
+  no_training: true
+  no_large_dpo: true

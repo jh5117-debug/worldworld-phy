@@ -201,3 +201,11 @@ Scale decision:
 - Added `tests/test_gpu_scheduler_v14.py`.
 - Smoke output path: `reports/dpo_utility_calibration_v14/scheduler_state.json` and `scheduler_state_summary.md`.
 - Scheduler decision: `NO_TRAINING_NO_SCALE`; it records GPU/state evidence and does not launch training after `DPO_RECIPE_NOT_FOUND_V14`.
+
+## v14 Blocker Retry Plan Update
+
+- Added blocker resolution plan: `reports/dpo_utility_calibration_v14/blocker_resolution_plan.md`.
+- Added conservative dry-run command generator: `scripts/plan_v14_blocker_retry.sh`.
+- Added config: `configs/cam_physgeo/dpo_v14_blocker_retry.yaml`.
+- Added direct import smoke log: `reports/dpo_utility_calibration_v14/test_logs/direct_import_smoke_v14.log`.
+- These artifacts do not launch training and do not change `NO_SCALE`.

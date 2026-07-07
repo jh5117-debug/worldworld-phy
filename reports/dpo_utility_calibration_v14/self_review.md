@@ -32,3 +32,11 @@ Safeguards: no large DPO, no train400, no StageA/StageB/GRPO, no checkpoint dele
 - All500 energy CSVs are coverage/blocker files with `MISSING_REAL_ENERGY`, not real energy calibration evidence.
 - Latent monitor is `LATENT_MONITOR_BLOCKED` because no TRD/VJEPA margins were produced.
 - Best scalar candidates E09/E10 failed true V2V-5 visual gates, so S16/S32/train400 remain blocked.
+
+## v14 Blocker Retry Plan Update
+
+- Added blocker resolution plan: `reports/dpo_utility_calibration_v14/blocker_resolution_plan.md`.
+- Added conservative dry-run command generator: `scripts/plan_v14_blocker_retry.sh`.
+- Added config: `configs/cam_physgeo/dpo_v14_blocker_retry.yaml`.
+- Added direct import smoke log: `reports/dpo_utility_calibration_v14/test_logs/direct_import_smoke_v14.log`.
+- These artifacts do not launch training and do not change `NO_SCALE`.
