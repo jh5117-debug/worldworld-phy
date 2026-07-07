@@ -442,3 +442,14 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Decision: calibration path is now proven beyond one pair, but `DPO_RECIPE_NOT_FOUND_V14` remains and S16/S32/train400/large DPO remain blocked.
 - Artifact policy: pushed source/docs/small manifest/CSV/JSON/JSONL/MD only. Did not push reconstructed local_assets videos, stdout logs, checkpoints, weights, images, or large files.
 
+## v14 Real-Energy Gap Scale Push
+
+- Updated: `2026-07-07T21:54:55Z`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `8fecfd2 Calibrate v14 real-energy gap scale on four pairs`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Summary: completed the asset-complete calibration4 run with 4/4 real LingBot energy rows using `--runtime_device cuda` on physical GPU4/GPU5, fixed beta-loss response to avoid fake recommendations for zero utility, and wrote real-energy gap-scale summaries.
+- Key finding: at policy=reference init, `reference_relative_margin` is zero for all rows, while pair `Delta_ref` varies from `-8.203e-05` to `0.02073`; if training utility is about `1e-4`, beta must be about `1000` for `beta*u ~= 0.1`.
+- Decision: `DPO_RECIPE_NOT_FOUND_V14` remains; S16/S32/train400/large DPO remain blocked.
+- Artifact policy: pushed only source/tests/docs and small CSV/JSON/JSONL/MD evidence. Did not push local_assets, reconstructed videos, stdout logs, checkpoints, weights, images, or large files.
+
