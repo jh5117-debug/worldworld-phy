@@ -453,3 +453,13 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Decision: `DPO_RECIPE_NOT_FOUND_V14` remains; S16/S32/train400/large DPO remain blocked.
 - Artifact policy: pushed only source/tests/docs and small CSV/JSON/JSONL/MD evidence. Did not push local_assets, reconstructed videos, stdout logs, checkpoints, weights, images, or large files.
 
+## v14 Latent Monitor Backend Audit Push
+
+- Updated: `2026-07-07T22:01:44Z`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `21261c7 Refine v14 latent monitor backend audit`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Summary: refined the latent monitor backend audit to distinguish local model code from real local weight candidates, reran a bounded search, and found VJEPA2/DINOv2 local weight candidates without downloading anything.
+- Decision: `LATENT_MONITOR_BACKEND_FOUND_NEEDS_SCORING`, not latent-monitor PASS; no TRD/VJEPA margin values have been produced yet.
+- Artifact policy: pushed source/tests/docs and small backend-audit JSON/MD only. Did not push local_assets, weights, videos, images, checkpoints, stdout logs, or large files.
+
