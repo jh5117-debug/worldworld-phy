@@ -514,3 +514,15 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Blocker: old rollout/v10 loser local_assets are missing for 59 rows; errors are recorded, not faked.
 - Scope: monitor-only. No DPO training, no S16/S32/train400 scale, no large DPO.
 - Artifact policy: stage only source/tests/docs and small CSV/JSON/MD summaries.
+
+
+## v14 Broad V-JEPA2 Latent Coverage Push
+
+- Updated: `2026-07-07T23:08:19Z`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `f486c19 Expand v14 V-JEPA latent monitor coverage`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Result: `LATENT_MONITOR_PASS_VJEPA2_SMOKE_WITH_ASSET_BLOCKERS`; combined 133 rows, 74 ok rows, and 74/74 positive token-relation margins among available WIN/LOSE videos.
+- Blocker: 59 rows failed due missing old rollout/v10 local_assets videos; no fake scores were written.
+- Scope: monitor-only. No DPO training, no S16/S32/train400, no large DPO.
+- Artifact policy: pushed source/tests/docs and small CSV/JSON/MD summaries only. Did not push local_assets, videos, images, checkpoints, weights, or large logs.
