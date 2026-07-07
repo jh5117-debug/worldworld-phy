@@ -356,3 +356,7 @@ Prepared lightweight audit/docs for E02_best7. Large local assets, videos, conta
 - E05_screen5 (`normalized_clipped_loser`, alpha_l=0.02) training signal PASS: mean winner improvement `0.00012555122375488282`, final `0.00012230873107910156`, WCR `0.8220`, slight loser degradation.
 - E04 checkpoint videos generated: `8` true V2V-5 videos. Codex visual audit FAIL: step005 worsens object count/identity in multiple samples.
 - Decision remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400.
+
+## v14 E05 Audit Push (2026-07-07T05:04:09.871964Z)
+
+Prepared lightweight report updates for E05 checkpoint metrics and Codex visual audit. No local_assets, videos, images, checkpoints, or weights are intended for commit.

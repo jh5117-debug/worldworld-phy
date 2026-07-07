@@ -138,3 +138,13 @@ Relevant paths:
 - E05_screen5 (`normalized_clipped_loser`, alpha_l=0.02) training signal PASS: mean winner improvement `0.00012555122375488282`, final `0.00012230873107910156`, WCR `0.8220`, slight loser degradation.
 - E04 checkpoint videos generated: `8` true V2V-5 videos. Codex visual audit FAIL: step005 worsens object count/identity in multiple samples.
 - Decision remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400.
+
+## E05 Screen5 Checkpoint Audit Update (2026-07-07T05:04:09.871964Z)
+
+E05 tested `normalized_clipped_loser` with `L0_camera_r4` for 5 steps. Training signal was healthy: mean winner improvement post was `0.00012555122375488282`, final winner improvement post was `0.00012230873107910156`, and mean winner contribution ratio was `0.8245008192953873`.
+
+Checkpoint evaluation generated true V2V-5 videos for step000 and step005 on the 4-sample validation set. PSNR/SSIM/LPIPS ran successfully for `8/8` rows. FVD remains blocked in the current wrapper by missing real video-FVD backend dependencies/weights; VBench imports but real project-local scoring remains unconfigured in this wrapper.
+
+Codex visual audit failed the gate: `2/4` samples were worse at step005. The dominant visible failures were new foreground fragments, object duplication, floating object artifacts, and object-count drift. Therefore E05 is only a training-signal candidate, not a valid DPO recipe.
+
+Current final decision remains `DPO_RECIPE_NOT_FOUND_V14`; train400 and large DPO remain blocked.

@@ -1,0 +1,9 @@
+{
+  "scheme_id": "E05_screen5",
+  "reviewed": 4,
+  "worse_than_step0": 2,
+  "not_worse": 2,
+  "decision": "VISUAL_GATE_FAIL_FINAL_CHECKPOINT_WORSE",
+  "reviewer": "codex",
+  "timestamp": "2026-07-07T05:03:21.484644Z"
+}
