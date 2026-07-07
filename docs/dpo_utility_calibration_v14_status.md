@@ -38,3 +38,11 @@ Next work should add a rollout-quality/latent visual monitor or stronger visual 
 - `python3 -m compileall cam_physgeo src tests`: PASS.
 - Targeted pytest suite: NOT RUN because `pytest` is unavailable in the active H20 shell. No pytest PASS is claimed.
 - Test status path: `reports/dpo_utility_calibration_v14/test_status.md`.
+
+## v14 Requirement Audit (2026-07-07T18:10:35Z)
+
+- Requirement audit path: `reports/dpo_utility_calibration_v14/requirement_audit.md`.
+- Final decision remains `DPO_RECIPE_NOT_FOUND_V14`.
+- All500 energy CSVs are coverage/blocker files with `MISSING_REAL_ENERGY`, not real energy calibration evidence.
+- Latent monitor is `LATENT_MONITOR_BLOCKED` because no TRD/VJEPA margins were produced.
+- Best scalar candidates E09/E10 failed true V2V-5 visual gates, so S16/S32/train400 remain blocked.

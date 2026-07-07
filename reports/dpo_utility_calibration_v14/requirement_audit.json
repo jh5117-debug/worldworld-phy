@@ -1,0 +1,209 @@
+{
+  "decision": "DPO_RECIPE_NOT_FOUND_V14",
+  "energy": {
+    "energy_utility_all500.csv": {
+      "rows": 500,
+      "status_counts": {
+        "MISSING_REAL_ENERGY": 500
+      }
+    },
+    "energy_utility_local_mask.csv": {
+      "rows": 485,
+      "status_counts": {
+        "MISSING_REAL_ENERGY": 485
+      }
+    },
+    "energy_utility_rollout_only.csv": {
+      "rows": 15,
+      "status_counts": {
+        "MISSING_REAL_ENERGY": 15
+      }
+    },
+    "energy_utility_s_fail.csv": {
+      "rows": 0,
+      "status_counts": {}
+    },
+    "energy_utility_s_pass.csv": {
+      "rows": 4,
+      "status_counts": {
+        "MISSING_REAL_ENERGY": 4
+      }
+    },
+    "energy_utility_stratified100.csv": {
+      "rows": 100,
+      "status_counts": {
+        "MISSING_REAL_ENERGY": 100
+      }
+    },
+    "energy_utility_synthetic.csv": {
+      "rows": 485,
+      "status_counts": {
+        "MISSING_REAL_ENERGY": 485
+      }
+    }
+  },
+  "generated": "2026-07-07T18:10:35Z",
+  "requirements": [
+    {
+      "evidence": "Committed v14 runs/reports document H20 repo branch and GPU4/5-only execution; final GPU query shows GPU4/5 idle and no v14 jobs on forbidden GPUs.",
+      "requirement": "SSH/repo/GPU rule",
+      "status": "PASS"
+    },
+    {
+      "evidence": "docs/experiments/EXP_dpo_utility_calibration_and_latent_monitor_v14.md exists with post-run updates.",
+      "requirement": "PRD written before experiment",
+      "status": "PASS"
+    },
+    {
+      "evidence": "reports/dpo_utility_calibration_v14/pair_inventory_summary.md and manifests/dpo_v14_subsets/* exist.",
+      "requirement": "Pair inventory/subsets",
+      "status": "PASS"
+    },
+    {
+      "evidence": "Coverage CSVs exist but every row is MISSING_REAL_ENERGY; one-pair LingBot energy smoke timed out before first row.",
+      "requirement": "Offline all500 real energy calibration",
+      "status": "BLOCKED"
+    },
+    {
+      "evidence": "beta_loss_response_summary.md recommends u_log and beta around 1000 from real v13b training CSVs.",
+      "requirement": "Beta/loss response",
+      "status": "PASS"
+    },
+    {
+      "evidence": "gap_scale_root_cause.md documents u\u22481e-4/2e-4 and near-zero beta*u at beta=0.1.",
+      "requirement": "Gap scale root cause",
+      "status": "PASS"
+    },
+    {
+      "evidence": "Backend audit found local candidates but produced no TRD/VJEPA margins; no latent auxiliary enabled.",
+      "requirement": "Latent VJEPA/VideoREPA/TRD monitor",
+      "status": "BLOCKED"
+    },
+    {
+      "evidence": "normalization_regularization_design.md and dpo_objective_v14_normalized.yaml document calibrated components.",
+      "requirement": "Normalization/regularization design",
+      "status": "PASS"
+    },
+    {
+      "evidence": "E01-E10 were attempted as screens/full runs; several reached scalar training signal, but none passed required video/metric gate.",
+      "requirement": "10-scheme objective search",
+      "status": "PARTIAL_PASS_NO_RECIPE"
+    },
+    {
+      "evidence": "E02/E04/E05/E07/E09/E10 produced true V2V-5 checkpoint evaluations or audits where promoted; E09/E10 latest audits failed visual gate.",
+      "requirement": "Checkpoint video and Codex audit for promising schemes",
+      "status": "PASS_FOR_PROMISING_SCHEMES"
+    },
+    {
+      "evidence": "Metric gates existed for selected schemes; E09/E10 latest decision relies on visual gate failure. VBench/FVD full integration remains incomplete for this wrapper.",
+      "requirement": "Metrics gate",
+      "status": "PARTIAL"
+    },
+    {
+      "evidence": "best_scheme_decision.json says DPO_RECIPE_NOT_FOUND_V14, NO_SCALE, no train400.",
+      "requirement": "Decision labels and scale permission",
+      "status": "PASS"
+    },
+    {
+      "evidence": "compileall PASS; pytest NOT RUN because pytest is unavailable in active H20 shell. No pytest PASS claimed.",
+      "requirement": "Tests",
+      "status": "PARTIAL"
+    },
+    {
+      "evidence": "Only docs/CSV/JSON/MD were pushed. No local_assets, videos, images, checkpoints, weights, logs, NPY/NPZ/HDF5 pushed.",
+      "requirement": "Git / forbidden artifacts",
+      "status": "PASS"
+    }
+  ],
+  "scale_permission": "NO_SCALE",
+  "schemes": [
+    {
+      "audit_path": "",
+      "final_winner_improvement": 0.0002976655960083008,
+      "mean_wcr": 0.903795999637663,
+      "scheme": "E01_screen20",
+      "training_status": "CALIBRATED_WINNER_DETACHED_RAW_SIGNAL_HEALTHY",
+      "video_audit": "NOT_EVALUATED"
+    },
+    {
+      "audit_path": "reports/dpo_utility_calibration_v14/objective_search/E02_best7/checkpoint_eval/video_audit_summary.md",
+      "final_winner_improvement": 0.00033855438232421875,
+      "mean_wcr": 0.6667287038434788,
+      "scheme": "E02_best7",
+      "training_status": "CALIBRATED_WINNER_DETACHED_LOG_SIGNAL_HEALTHY",
+      "video_audit": "FAIL"
+    },
+    {
+      "audit_path": "",
+      "final_winner_improvement": -4.172325134277344e-05,
+      "mean_wcr": 0.6669103726560174,
+      "scheme": "E02_smoke10",
+      "training_status": "CALIBRATED_WINNER_DETACHED_LOG_SIGNAL_FAIL",
+      "video_audit": "NOT_EVALUATED"
+    },
+    {
+      "audit_path": "",
+      "final_winner_improvement": -8.20159912109375e-05,
+      "mean_wcr": 0.5,
+      "scheme": "E03_smoke10",
+      "training_status": "EARLY_STOP_WINNER_WORSE",
+      "video_audit": "NOT_EVALUATED"
+    },
+    {
+      "audit_path": "reports/dpo_utility_calibration_v14/objective_search/E04_screen5/checkpoint_eval/video_audit_summary.md",
+      "final_winner_improvement": 0.00013786554336547852,
+      "mean_wcr": 0.7916118421052631,
+      "scheme": "E04_screen5",
+      "training_status": "NO_LOSE_GAP_NORMALIZED_WIN_ONLY_SIGNAL_HEALTHY",
+      "video_audit": "FAIL"
+    },
+    {
+      "audit_path": "reports/dpo_utility_calibration_v14/objective_search/E05_screen5/checkpoint_eval/video_audit_summary.md",
+      "final_winner_improvement": 0.00012230873107910156,
+      "mean_wcr": 0.8219769835932469,
+      "scheme": "E05_screen5",
+      "training_status": "NORMALIZED_CLIPPED_LOSER_SIGNAL_HEALTHY",
+      "video_audit": "FAIL"
+    },
+    {
+      "audit_path": "",
+      "final_winner_improvement": 0.00028055906295776367,
+      "mean_wcr": 0.8173402562032311,
+      "scheme": "E06_screen20",
+      "training_status": "NORMALIZED_CLIPPED_LOSER_SIGNAL_HEALTHY",
+      "video_audit": "NOT_EVALUATED"
+    },
+    {
+      "audit_path": "reports/dpo_utility_calibration_v14/objective_search/E07_screen200/checkpoint_eval/video_audit_summary.md",
+      "final_winner_improvement": 0.016121745109558105,
+      "mean_wcr": 0.985,
+      "scheme": "E07_screen200",
+      "training_status": "LINEAR_WINNER_DETACHED_PASS",
+      "video_audit": "FAIL"
+    },
+    {
+      "audit_path": "",
+      "final_winner_improvement": 0.01444697380065918,
+      "mean_wcr": 0.9794931332986636,
+      "scheme": "E08_screen200",
+      "training_status": "CALIBRATED_WINNER_DETACHED_LOG_SIGNAL_HEALTHY",
+      "video_audit": "NOT_EVALUATED"
+    },
+    {
+      "audit_path": "reports/dpo_utility_calibration_v14/objective_search/E09_screen200/checkpoint_eval/video_audit_summary.md",
+      "final_winner_improvement": 0.0012439489364624023,
+      "mean_wcr": null,
+      "scheme": "E09_screen200",
+      "training_status": "TRAINING_SIGNAL_PASS_EARLY_STOPPED_FOR_VIDEO_EVAL",
+      "video_audit": "FAIL"
+    },
+    {
+      "audit_path": "reports/dpo_utility_calibration_v14/objective_search/E10_screen100/checkpoint_eval/video_audit_summary.md",
+      "final_winner_improvement": 0.00040417909622192383,
+      "mean_wcr": 0.8241835090048764,
+      "scheme": "E10_screen100",
+      "training_status": "CALIBRATED_WINNER_DETACHED_LOG_SIGNAL_HEALTHY",
+      "video_audit": "FAIL"
+    }
+  ]
+}

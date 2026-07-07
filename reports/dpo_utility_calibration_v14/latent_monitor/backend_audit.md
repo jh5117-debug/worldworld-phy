@@ -1,6 +1,6 @@
 # Latent Relation Monitor Backend Audit
 
-Decision: `LATENT_MONITOR_BACKEND_FOUND_NEEDS_SCORING`
+Decision: `LATENT_MONITOR_BLOCKED`
 
 Search meta: `{'visited_dirs': 5000, 'elapsed_seconds': 5.439, 'stop_reason': 'max_dirs', 'max_dirs': 5000, 'max_seconds': 20.0}`
 
@@ -33,3 +33,7 @@ Search meta: `{'visited_dirs': 5000, 'elapsed_seconds': 5.439, 'stop_reason': 'm
 - `/home/nvme03/workspace/world_model_phys/scripts/test_vjepa_load.py`
 
 No V-JEPA / VideoREPA / TRD values are produced by this audit. If no backend is available, v14 must report `LATENT_MONITOR_BLOCKED`; fake latent scores are forbidden.
+
+## v14 Requirement Audit Update
+
+No TRD/VJEPA winner-vs-loser margin was produced. Local files/import candidates are not sufficient evidence for monitor validity. v14 therefore records `LATENT_MONITOR_BLOCKED`; no latent auxiliary loss is enabled.

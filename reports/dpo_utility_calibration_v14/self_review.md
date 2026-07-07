@@ -24,3 +24,11 @@ Continue objective search with a stronger visual regularizer / shorter best-step
 - Decision remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400.
 
 Safeguards: no large DPO, no train400, no StageA/StageB/GRPO, no checkpoint deletion, no videos/weights staged.
+
+## v14 Requirement Audit (2026-07-07T18:10:35Z)
+
+- Requirement audit path: `reports/dpo_utility_calibration_v14/requirement_audit.md`.
+- Final decision remains `DPO_RECIPE_NOT_FOUND_V14`.
+- All500 energy CSVs are coverage/blocker files with `MISSING_REAL_ENERGY`, not real energy calibration evidence.
+- Latent monitor is `LATENT_MONITOR_BLOCKED` because no TRD/VJEPA margins were produced.
+- Best scalar candidates E09/E10 failed true V2V-5 visual gates, so S16/S32/train400 remain blocked.

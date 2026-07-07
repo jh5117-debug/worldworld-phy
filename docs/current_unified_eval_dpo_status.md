@@ -570,3 +570,11 @@ E01 and E06 passed 20-step training signal on GPU4/5, but no DPO recipe is valid
 ## v14 Objective Search Update (2026-07-08 CST)
 
 Decision: `DPO_RECIPE_NOT_FOUND_V14`. E07/E09/E10 all passed scalar training-signal gates but failed true V2V-5 visual gates. E08 remains training-signal-only without video audit. Large DPO, train400, and S16/S32 scaling remain blocked.
+
+## v14 Requirement Audit (2026-07-07T18:10:35Z)
+
+- Requirement audit path: `reports/dpo_utility_calibration_v14/requirement_audit.md`.
+- Final decision remains `DPO_RECIPE_NOT_FOUND_V14`.
+- All500 energy CSVs are coverage/blocker files with `MISSING_REAL_ENERGY`, not real energy calibration evidence.
+- Latent monitor is `LATENT_MONITOR_BLOCKED` because no TRD/VJEPA margins were produced.
+- Best scalar candidates E09/E10 failed true V2V-5 visual gates, so S16/S32/train400 remain blocked.
