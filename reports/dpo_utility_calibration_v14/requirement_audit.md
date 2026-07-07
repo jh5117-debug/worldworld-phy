@@ -151,3 +151,12 @@ Do not continue ordinary DPO scaling. Add a rollout-quality or latent visual mon
 - Result: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS` for 4/4 calibration pairs.
 - Requirement status: partial progress for latent monitor. Full V-JEPA/TRD margin scoring remains incomplete, and no latent auxiliary loss was trained.
 - Scale status: unchanged `NO_SCALE`; DPO recipe remains blocked by true video degradation.
+
+
+## v14 Requirement Audit Addendum - V-JEPA2 Monitor (2026-07-07T22:32:50Z)
+
+- Requirement `V-JEPA / VideoREPA / TRD distance can distinguish WIN / LOSE`: PARTIAL PASS via local V-JEPA2 token-relation smoke on 4 calibration pairs.
+- Evidence: `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_summary.md` and `trd_vjepa_monitor.csv`.
+- No fake values, no download, no training.
+- Remaining limitation: only 4 asset-complete synthetic controlled pairs were scored; stratified100/rollout-only latent scoring remains future work.
+- DPO scale remains blocked by video degradation, not by lack of latent monitor backend.

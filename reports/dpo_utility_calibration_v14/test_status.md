@@ -12,3 +12,11 @@
 - Direct smoke for `tests/test_latent_relation_monitor_v14.py`: PASS for audit no-fake-values, code-only blocker, local weight detection, DINOv2 qkv mapping, and future-frame sampling.
 - `pytest -q tests/test_latent_relation_monitor_v14.py`: NOT RUN because `pytest` is unavailable in the active H20 shell (`exit 127`). No pytest PASS is claimed.
 - DINOv2 frame smoke: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS` with 4/4 ok rows.
+
+
+## v14 V-JEPA2 Latent Monitor Test Update (2026-07-07T22:33:45Z)
+
+- `python3 -m compileall cam_physgeo/dpo/latent_relation_monitor_v14.py tests/test_latent_relation_monitor_v14.py`: PASS.
+- Direct smoke for latent monitor tests: PASS.
+- V-JEPA2 video/token relation smoke: `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_PASS`, 4/4 ok rows.
+- `pytest` remains unavailable in the active H20 shell; no pytest PASS is claimed.

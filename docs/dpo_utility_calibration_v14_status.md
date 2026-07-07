@@ -137,3 +137,25 @@ Next work should add a rollout-quality/latent visual monitor or stronger visual 
 - Direct smoke for `tests/test_latent_relation_monitor_v14.py`: PASS for audit no-fake-values, code-only blocker, local weight detection, DINOv2 qkv mapping, and future-frame sampling.
 - `pytest -q tests/test_latent_relation_monitor_v14.py`: NOT RUN because `pytest` is unavailable in the active H20 shell (`exit 127`). No pytest PASS is claimed.
 - DINOv2 frame smoke: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS` with 4/4 ok rows.
+
+
+## v14 V-JEPA2 Latent Monitor Smoke Update (2026-07-07T22:32:50Z)
+
+- V-JEPA2 smoke CSV: `reports/dpo_utility_calibration_v14/latent_monitor/vjepa2_video_smoke.csv`.
+- Required summary path: `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_summary.md`.
+- Required monitor path: `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_monitor.csv`.
+- Backend: local V-JEPA2.1 ViT-B EMA encoder from `vjepa2_1_vitb_dist_vitG_384.pt`; no model download.
+- Device: `CUDA_VISIBLE_DEVICES=4`, process `cuda:0` mapping to physical GPU4.
+- Result: `LATENT_MONITOR_PASS_VJEPA2_SMOKE` / `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_PASS` on 4/4 asset-complete calibration pairs.
+- Positive V-JEPA embedding margin rows: 4/4.
+- Positive token-relation margin rows: 4/4.
+- This supports a v15 monitor/regularizer direction for catching artifact amplification, but it is still monitor-only and not an auxiliary-loss training integration.
+- DPO recipe decision remains `DPO_RECIPE_NOT_FOUND_V14`; S16/S32/train400/large DPO remain blocked because previous DPO checkpoint videos degraded.
+
+
+## v14 V-JEPA2 Latent Monitor Test Update (2026-07-07T22:33:45Z)
+
+- `python3 -m compileall cam_physgeo/dpo/latent_relation_monitor_v14.py tests/test_latent_relation_monitor_v14.py`: PASS.
+- Direct smoke for latent monitor tests: PASS.
+- V-JEPA2 video/token relation smoke: `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_PASS`, 4/4 ok rows.
+- `pytest` remains unavailable in the active H20 shell; no pytest PASS is claimed.

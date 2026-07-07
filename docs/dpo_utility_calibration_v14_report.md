@@ -279,3 +279,19 @@ Result: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS`. All 4 rows completed with finite
 Limitations: this is not full V-JEPA/VideoREPA/TRD training integration. The clean winner is used as the local reference for synthetic controlled pairs, so the winner-reference distance is trivially zero and the useful quantities are loser-to-winner frame distance and loser/winner temporal-relation distance. It should be used as a v15 monitor candidate, not as permission to scale v14 DPO.
 
 Decision remains `DPO_RECIPE_NOT_FOUND_V14`: scalar DPO schemes can improve energy/gap metrics, but validated checkpoint videos still degrade. No S16/S32/train400/large DPO is allowed from this evidence alone.
+
+
+## V-JEPA2 Token-Relation Monitor Smoke (2026-07-07T22:32:50Z)
+
+A real local V-JEPA2.1 ViT-B EMA encoder monitor was run on the 4 asset-complete calibration pairs using 8 sparse future frames at 224px. The model was built from the local torch hub checkout and loaded strict from `/home/nvme04/workspace/world_model_phys/PHYS/weight/vjepa2_1/vjepa2_1_vitb_dist_vitG_384.pt` with 0 missing and 0 unexpected keys. No download and no training occurred.
+
+Evidence:
+
+- `reports/dpo_utility_calibration_v14/latent_monitor/vjepa2_video_smoke.csv`
+- `reports/dpo_utility_calibration_v14/latent_monitor/vjepa2_video_smoke_summary.md`
+- `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_monitor.csv`
+- `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_summary.md`
+
+Result: `LATENT_MONITOR_PASS_VJEPA2_SMOKE`. All 4 rows completed and all 4 had positive V-JEPA embedding margins plus positive token-relation margins. Per-pair token-relation margins were approximately `0.0388`, `0.0382`, `0.0408`, and `0.0422`.
+
+Interpretation: the requested latent monitor direction is viable as a monitor on this small controlled set. It does not rescue v14 DPO because E07/E09/E10 still failed true checkpoint video gates; instead it gives the next safe v15 action: add V-JEPA2/DINO rollout-quality monitoring or regularization before any further DPO scale.

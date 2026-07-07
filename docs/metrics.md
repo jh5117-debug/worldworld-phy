@@ -176,3 +176,17 @@ Relevant paths:
 - Output: `reports/dpo_utility_calibration_v14/latent_monitor/dinov2_frame_smoke.csv`.
 - Decision: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS` on 4/4 calibration pairs.
 - This is not a replacement for full V-JEPA/VideoREPA/TRD, but it is a real no-download latent visual score that detects controlled loser differences.
+
+
+## v14 V-JEPA2 Latent Monitor Smoke Update (2026-07-07T22:32:50Z)
+
+- V-JEPA2 smoke CSV: `reports/dpo_utility_calibration_v14/latent_monitor/vjepa2_video_smoke.csv`.
+- Required summary path: `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_summary.md`.
+- Required monitor path: `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_monitor.csv`.
+- Backend: local V-JEPA2.1 ViT-B EMA encoder from `vjepa2_1_vitb_dist_vitG_384.pt`; no model download.
+- Device: `CUDA_VISIBLE_DEVICES=4`, process `cuda:0` mapping to physical GPU4.
+- Result: `LATENT_MONITOR_PASS_VJEPA2_SMOKE` / `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_PASS` on 4/4 asset-complete calibration pairs.
+- Positive V-JEPA embedding margin rows: 4/4.
+- Positive token-relation margin rows: 4/4.
+- This supports a v15 monitor/regularizer direction for catching artifact amplification, but it is still monitor-only and not an auxiliary-loss training integration.
+- DPO recipe decision remains `DPO_RECIPE_NOT_FOUND_V14`; S16/S32/train400/large DPO remain blocked because previous DPO checkpoint videos degraded.

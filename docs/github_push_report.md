@@ -482,3 +482,13 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Result: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS` on 4/4 asset-complete calibration pairs using local DINOv2 ViT-S/14 weights and physical GPU4 via `CUDA_VISIBLE_DEVICES=4`.
 - Scope: monitor-only. No DPO training, no V-JEPA/TRD auxiliary loss, no S16/S32/train400 scale.
 - Artifact policy: pushed source/tests/docs and small CSV/JSON/MD/log evidence only. Did not push local_assets, weights, videos, images, checkpoints, or large logs.
+
+
+## v14 V-JEPA2 Latent Monitor Smoke Pending Push
+
+- Updated: `2026-07-07T22:32:50Z`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Summary: added and ran local V-JEPA2.1 ViT-B EMA encoder video/token-relation monitor smoke on the 4 asset-complete calibration pairs.
+- Result: `LATENT_MONITOR_PASS_VJEPA2_SMOKE`, 4/4 positive V-JEPA margins and 4/4 positive token-relation margins.
+- Scope: monitor-only; no DPO training, no auxiliary loss integration, no S16/S32/train400 scale.
+- Artifact policy: stage only source/docs/tests and small CSV/JSON/MD summaries. Do not stage local_assets, weights, videos, images, checkpoints, or large logs.
