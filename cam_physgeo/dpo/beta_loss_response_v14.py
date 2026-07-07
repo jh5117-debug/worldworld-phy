@@ -117,13 +117,22 @@ def sweep(args: argparse.Namespace) -> dict[str, Any]:
         fieldnames = list(rows[0].keys()) if rows else ["utility_type", "count", "beta"]
         w = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
         w.writeheader(); w.writerows(rows)
-    rec = {
-        "recommended_utility_type": best.get("utility_type") if best else "NONE",
-        "recommended_beta": best.get("beta") if best else None,
-        "recommended_median_abs_beta_u": best.get("median_abs_beta_u") if best else None,
-        "reason": "Choose utility/beta with median |beta*u| in 0.1-1.0 and high effective ratio." if best else "No finite utility values found.",
-        "input_csv": args.input_csv,
-    }
+    if best and float(best.get("median_abs_beta_u") or 0.0) == 0.0 and float(best.get("effective_ratio") or 0.0) == 0.0:
+        rec = {
+            "recommended_utility_type": "NONE_ZERO_UTILITY",
+            "recommended_beta": None,
+            "recommended_median_abs_beta_u": 0.0,
+            "reason": "All observed utility values are zero at policy=reference; beta cannot create preference signal without a nonzero policy-reference utility change.",
+            "input_csv": args.input_csv,
+        }
+    else:
+        rec = {
+            "recommended_utility_type": best.get("utility_type") if best else "NONE",
+            "recommended_beta": best.get("beta") if best else None,
+            "recommended_median_abs_beta_u": best.get("median_abs_beta_u") if best else None,
+            "reason": "Choose utility/beta with median |beta*u| in 0.1-1.0 and high effective ratio." if best else "No finite utility values found.",
+            "input_csv": args.input_csv,
+        }
     Path(args.recommendation).parent.mkdir(parents=True, exist_ok=True)
     Path(args.recommendation).write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
     md = ["# Beta Loss Response Summary", "", f"Recommended utility: `{rec['recommended_utility_type']}`", f"Recommended beta: `{rec['recommended_beta']}`", "", "This sweep is only as real as its input utility CSVs. Rows marked `PROXY_NOT_REAL_ENERGY` must not be treated as real LingBot energy evidence."]

@@ -1,0 +1,19 @@
+{
+  "beta_for_1e_minus4_to_logit_0p1": 1000.0,
+  "beta_for_median_abs_delta_ref_to_logit_0p1": 22.26433249325229,
+  "decision": "REAL_ENERGY_GAP_SCALE_CALIBRATION4_DONE",
+  "delta_ref_values": [
+    0.02072979509830475,
+    0.00031509879045188427,
+    -8.203089237213135e-05,
+    0.008667878806591034
+  ],
+  "interpretation": "At policy=reference, DPO utility u_raw is exactly zero; beta cannot create signal until policy moves. Pair energy margins vary by orders of magnitude and one row is negative, so source/sigma/pair normalization is required before objective scaling.",
+  "max_abs_delta_ref": 0.02072979509830475,
+  "median_abs_delta_ref": 0.004491488798521459,
+  "min_abs_delta_ref": 8.203089237213135e-05,
+  "negative_delta_ref_count": 1,
+  "policy_equals_reference_init": true,
+  "positive_delta_ref_count": 3,
+  "rows": 4
+}
