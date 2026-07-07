@@ -1,0 +1,33 @@
+{
+  "config": {
+    "beta": 1000.0,
+    "lambda_pref": 0.005,
+    "lambda_winner_anchor": 1.0,
+    "lr": 1e-06,
+    "objective": "calibrated_winner_detached_log",
+    "scheme_id": "E02",
+    "scope": "L0_camera_r4",
+    "steps": 200,
+    "utility_type": "u_log"
+  },
+  "scale": {
+    "input_csv": [
+      "reports/dpo_objective_search_v13b/S01_winner_detached_pref_low/S01_winner_detached_pref_low_200step.csv",
+      "reports/dpo_objective_search_v13b/S02_winner_detached_pref_lower_lr/S02_winner_detached_pref_lower_lr_200step.csv",
+      "reports/dpo_objective_search_v13b/S03/S03_200step.csv",
+      "reports/dpo_objective_search_v13b/S04_no_lose_gap_normalized_win_only/S04_no_lose_gap_normalized_win_only_200step.csv",
+      "reports/dpo_objective_search_v13b/S05_normalized_clipped_loser_alpha005/S05_normalized_clipped_loser_alpha005_200step.csv",
+      "reports/dpo_objective_search_v13b/S06_normalized_clipped_loser_alpha010/S06_normalized_clipped_loser_alpha010_200step.csv",
+      "reports/dpo_objective_search_v13b/S07_linear_winner_detached/S07_linear_winner_detached_200step.csv",
+      "reports/dpo_objective_search_v13b/S08_delayed_loser_gradient_tiny/S08_delayed_loser_gradient_tiny_200step.csv",
+      "reports/dpo_objective_search_v13b/S09_local_time_mask_winner_detached/S09_local_time_mask_winner_detached_200step.csv",
+      "reports/dpo_objective_search_v13b/S10_lora_camera_temporal_winner_detached/S10_lora_camera_temporal_winner_detached_100step.csv"
+    ],
+    "reason": "Choose utility/beta with median |beta*u| in 0.1-1.0 and high effective ratio.",
+    "recommended_beta": 1000,
+    "recommended_median_abs_beta_u": 0.20455321269580987,
+    "recommended_utility_type": "u_log"
+  },
+  "scheme_id": "E02",
+  "status": "DRY_RUN"
+}

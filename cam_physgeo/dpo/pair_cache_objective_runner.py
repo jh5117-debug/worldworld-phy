@@ -331,6 +331,16 @@ def run_objective(args: argparse.Namespace) -> dict[str, Any]:
                     u_winner_only = (el_loss.detach() - ew_loss) - float(delta_ref)
                     dpo_loss = -F.logsigmoid(float(args.beta) * u_winner_only)
                     loss = float(args.lambda_winner_anchor) * ew_loss + float(getattr(args, "lambda_pref", 0.02)) * dpo_loss
+                elif args.objective == "calibrated_winner_detached_raw":
+                    u_winner_only = (el_loss.detach() - ew_loss) - float(delta_ref)
+                    dpo_loss = -F.logsigmoid(float(args.beta) * u_winner_only)
+                    loss = float(args.lambda_winner_anchor) * ew_loss + float(getattr(args, "lambda_pref", 0.005)) * dpo_loss
+                elif args.objective == "calibrated_winner_detached_log":
+                    gw_loss = torch.log((torch.clamp(ew_loss, min=0.0) + 1e-8) / (float(ref_w) + 1e-8))
+                    gl_loss = torch.log((torch.clamp(el_loss.detach(), min=0.0) + 1e-8) / (float(ref_l) + 1e-8))
+                    u_log = gl_loss - gw_loss
+                    dpo_loss = -F.logsigmoid(float(args.beta) * u_log)
+                    loss = float(args.lambda_winner_anchor) * ew_loss + float(getattr(args, "lambda_pref", 0.005)) * dpo_loss
                 elif args.objective == "tiny_loser_gradient_preference":
                     safe_margin = winner_improvement_tensor + float(lambda_loser) * loser_degradation_tensor
                     dpo_loss = -F.logsigmoid(float(args.beta) * safe_margin)
@@ -463,7 +473,7 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Run tiny v8n objectives on validated v8m winner+loser pair cache.")
     parser.add_argument("--cache_root", required=True)
     parser.add_argument("--pair_subset", required=True)
-    parser.add_argument("--objective", required=True, choices=["forward_sanity", "winner_anchor_repeat", "strict_sdpo", "linear_dpo_anchor", "safe_linear", "standard_dpo_baseline", "winner_detached_preference", "tiny_loser_gradient_preference", "linear_winner_detached", "no_lose_gap_normalized_win_only", "normalized_clipped_loser"])
+    parser.add_argument("--objective", required=True, choices=["forward_sanity", "winner_anchor_repeat", "strict_sdpo", "linear_dpo_anchor", "safe_linear", "standard_dpo_baseline", "winner_detached_preference", "tiny_loser_gradient_preference", "linear_winner_detached", "no_lose_gap_normalized_win_only", "normalized_clipped_loser", "calibrated_winner_detached_raw", "calibrated_winner_detached_log"])
     parser.add_argument("--steps", type=int, default=20)
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--output", required=True)

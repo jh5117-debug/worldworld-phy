@@ -74,3 +74,7 @@ Tiny calibrated DPO can be considered next, but only as a guarded probe. Train40
 - No checkpoint/data/weight deletion.
 - No videos/images/checkpoints pushed.
 - GPU4 was used only for the bounded real-energy smoke; GPU0/1/2/3/6/7 were not used by v14 commands.
+
+## v14 Objective Runner Scaffold
+
+`cam_physgeo.dpo.dpo_objective_search_v14` now supports a dry-run E02 calibrated winner-detached-log scheme using the recommended beta from `recommended_dpo_scale.json`. Training was not launched yet because runtime early-stop plus checkpoint video/metrics gate still needs to be connected before a 200-step job is safe.

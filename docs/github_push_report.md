@@ -331,3 +331,7 @@ Prepared v13b objective-search summaries and decision docs for push. Only lightw
 - Real all500 LingBot energy remains blocked by 1-pair runtime initialization timeout; no fake energy values were committed.
 - Committed only lightweight docs/source/tests/manifests/CSV/JSON summaries.
 - Did not push local_assets, videos, images, checkpoints, weights, HDF5/NPY/NPZ/PT/PTH/safetensors, or large logs.
+
+## v14 Objective Runner Scaffold Push
+
+Added a calibrated v14 objective wrapper and log-normalized winner-detached objective support. No training was launched and no checkpoint/video/local_assets files were pushed.
