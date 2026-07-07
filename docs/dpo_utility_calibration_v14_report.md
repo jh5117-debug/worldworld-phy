@@ -314,3 +314,11 @@ Required latent monitor artifacts are now populated:
 - `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_coverage_summary.csv`
 
 Conclusion: V-JEPA2 is viable as a v15 monitor/regularizer candidate for available videos. The remaining limitation is asset coverage for old rollout/v10 pairs, plus the unchanged v14 DPO failure that scalar-improved checkpoints degrade real V2V-5 video.
+
+
+## v14 Missing Rollout Asset Search Update (2026-07-07T23:09:58Z)
+
+- Search report: `reports/dpo_utility_calibration_v14/latent_monitor/missing_rollout_asset_search.md`.
+- Bounded search over `/home/nvme03` and `/home/nvme04` did not find representative missing S_pass/rollout loser MP4 files.
+- This confirms the S_pass4 and rollout15 V-JEPA2 failures are asset-coverage blockers, not latent-backend failures.
+- Available synthetic/v11 rows remain `LATENT_MONITOR_PASS_VJEPA2_SMOKE_WITH_ASSET_BLOCKERS` with 74/74 positive token-relation margins among ok rows.

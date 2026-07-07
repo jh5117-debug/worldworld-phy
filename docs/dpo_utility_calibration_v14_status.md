@@ -182,3 +182,11 @@ Next work should add a rollout-quality/latent visual monitor or stronger visual 
 - Broad V-JEPA2 monitor: calibration4/synthetic10/stratified100/S_pass4/rollout15 completed with explicit ok/error rows.
 - Combined result: 133 rows, 74 ok, 74/74 positive token-relation margins among available videos.
 - `pytest` is still unavailable in the active shell, so no pytest PASS is claimed.
+
+
+## v14 Missing Rollout Asset Search Update (2026-07-07T23:09:58Z)
+
+- Search report: `reports/dpo_utility_calibration_v14/latent_monitor/missing_rollout_asset_search.md`.
+- Bounded search over `/home/nvme03` and `/home/nvme04` did not find representative missing S_pass/rollout loser MP4 files.
+- This confirms the S_pass4 and rollout15 V-JEPA2 failures are asset-coverage blockers, not latent-backend failures.
+- Available synthetic/v11 rows remain `LATENT_MONITOR_PASS_VJEPA2_SMOKE_WITH_ASSET_BLOCKERS` with 74/74 positive token-relation margins among ok rows.

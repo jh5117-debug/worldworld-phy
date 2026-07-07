@@ -169,3 +169,11 @@ Do not continue ordinary DPO scaling. Add a rollout-quality or latent visual mon
 - Missing coverage: S_pass and rollout-only old loser videos are absent from local_assets, producing 19 explicit missing-asset failures; other v10 asset misses appear inside stratified/synthetic subsets.
 - No values were faked; unavailable rows remain errors.
 - No training was run.
+
+
+## v14 Missing Rollout Asset Search Update (2026-07-07T23:09:58Z)
+
+- Search report: `reports/dpo_utility_calibration_v14/latent_monitor/missing_rollout_asset_search.md`.
+- Bounded search over `/home/nvme03` and `/home/nvme04` did not find representative missing S_pass/rollout loser MP4 files.
+- This confirms the S_pass4 and rollout15 V-JEPA2 failures are asset-coverage blockers, not latent-backend failures.
+- Available synthetic/v11 rows remain `LATENT_MONITOR_PASS_VJEPA2_SMOKE_WITH_ASSET_BLOCKERS` with 74/74 positive token-relation margins among ok rows.

@@ -619,3 +619,11 @@ Decision: `DPO_RECIPE_NOT_FOUND_V14`. E07/E09/E10 all passed scalar training-sig
 - S_pass4 and rollout15 currently have 0 ok rows because their loser rollout video assets are missing from local_assets; this is recorded as an asset coverage blocker, not a latent-backend failure.
 - Decision: `LATENT_MONITOR_PASS_VJEPA2_SMOKE_WITH_ASSET_BLOCKERS`.
 - DPO recipe decision remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO scale is allowed until checkpoint video quality passes.
+
+
+## v14 Missing Rollout Asset Search Update (2026-07-07T23:09:58Z)
+
+- Search report: `reports/dpo_utility_calibration_v14/latent_monitor/missing_rollout_asset_search.md`.
+- Bounded search over `/home/nvme03` and `/home/nvme04` did not find representative missing S_pass/rollout loser MP4 files.
+- This confirms the S_pass4 and rollout15 V-JEPA2 failures are asset-coverage blockers, not latent-backend failures.
+- Available synthetic/v11 rows remain `LATENT_MONITOR_PASS_VJEPA2_SMOKE_WITH_ASSET_BLOCKERS` with 74/74 positive token-relation margins among ok rows.
