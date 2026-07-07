@@ -1,0 +1,7 @@
+{
+  "decision": "DPO_RECIPE_NOT_FOUND_V14",
+  "latest_checked_scheme": "E06_screen20",
+  "latest_eval_note": "E06 normalized clipped loser alpha=0.05 passed 20-step training signal and true V2V-5 smoke after .pt LoRA eval patch, but step20 visual quality worsened versus step0.",
+  "latest_eval_status": "VISUAL_GATE_FAIL_STEP20_WORSE",
+  "scale_permission": "NO_SCALE"
+}

@@ -193,10 +193,23 @@ def run(args: argparse.Namespace) -> None:
     if getattr(pipe, "control_type", None) != "cam":
         raise RuntimeError(f"expected camera-control Fast checkpoint, got {getattr(pipe, 'control_type', None)}")
     adapter_info: dict[str, Any] = {"adapter_loaded": False}
+    adapter_state_for_hash = ""
+    if args.adapter_path and getattr(args, "lora_state", ""):
+        raise ValueError("Use only one of --adapter_path or --lora_state for a single eval run.")
+    lora_state = getattr(args, "lora_state", "") or ""
     if args.adapter_path:
-        from cam_physgeo.eval.run_fast_adapter_inference import _load_adapter
-        adapter_info = _load_adapter(pipe, Path(args.adapter_path))
-        adapter_info["adapter_loaded"] = True
+        adapter_path = Path(args.adapter_path)
+        if adapter_path.is_file() and adapter_path.suffix in {".pt", ".pth"}:
+            lora_state = str(adapter_path)
+        else:
+            from cam_physgeo.eval.run_fast_adapter_inference import _load_adapter
+            adapter_info = _load_adapter(pipe, adapter_path)
+            adapter_info["adapter_loaded"] = True
+    if lora_state:
+        from cam_physgeo.eval.run_fast_adapter_inference import _load_lora_state_checkpoint
+        adapter_state_path = Path(lora_state)
+        adapter_info = _load_lora_state_checkpoint(pipe, adapter_state_path, args)
+        adapter_state_for_hash = str(adapter_state_path)
 
     generated: list[dict[str, Any]] = []
     for index, row in enumerate(rows):
@@ -288,7 +301,7 @@ def run(args: argparse.Namespace) -> None:
             "inference_steps": "native_fast_4",
             "scheduler": "FlowUniPC/native_fast",
             "model_fingerprint": args.ckpt_dir,
-            "adapter_sha256": _sha256(Path(args.adapter_path) / "adapter_state.pt") if args.adapter_path and (Path(args.adapter_path) / "adapter_state.pt").exists() else "",
+            "adapter_sha256": _sha256(Path(adapter_state_for_hash)) if adapter_state_for_hash and Path(adapter_state_for_hash).exists() else (_sha256(Path(args.adapter_path) / "adapter_state.pt") if args.adapter_path and (Path(args.adapter_path) / "adapter_state.pt").exists() else ""),
             "status": status,
             "error_reason": error_reason,
             "generation_seconds": time.time() - start,
@@ -318,6 +331,16 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--manifest", required=True)
     p.add_argument("--model", default="original_fast")
     p.add_argument("--adapter_path", default="")
+    p.add_argument("--lora_state", default="")
+    p.add_argument("--lora_rank", type=int, default=4)
+    p.add_argument("--lora_alpha", type=int, default=4)
+    p.add_argument("--lora_dropout", type=float, default=0.0)
+    p.add_argument("--lora_block_start", type=int, default=0)
+    p.add_argument("--lora_block_end", type=int, default=None)
+    p.add_argument("--lora_chunk_size", type=int, default=1024)
+    p.add_argument("--lora_target_prefixes", default="blocks")
+    p.add_argument("--lora_target_groups", default="camera_conditioning")
+    p.add_argument("--lora_merge_mode", default="out_of_place")
     p.add_argument("--output_root", required=True)
     p.add_argument("--repo_root", default=".")
     p.add_argument("--ckpt_dir", default=DEFAULT_FAST_ROOT)
