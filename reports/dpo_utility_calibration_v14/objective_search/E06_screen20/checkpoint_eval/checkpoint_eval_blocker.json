@@ -1,0 +1,13 @@
+{
+  "scheme_id": "E06_screen20",
+  "checkpoint": "step020",
+  "decision": "CHECKPOINT_EVAL_BLOCKED_WANI2VFAST_INIT",
+  "attempts": [
+    "parallel step000/step020 eval: both stalled at instantiate WanI2VFast with no GPU allocation and 0 videos",
+    "single step020 eval: stalled at instantiate WanI2VFast for >6 minutes with GPU5 memory ~4 MiB and 0 videos"
+  ],
+  "videos_generated": 0,
+  "gpu_rule": "CUDA_VISIBLE_DEVICES=5, physical GPU5 only for single retry",
+  "reason": "V2V-5 checkpoint eval did not progress past WanI2VFast initialization, so the required video/metric/Codex audit gate is missing. Scheme cannot be called a valid recipe despite training signal PASS.",
+  "timestamp": "2026-07-07T06:06:00.444732Z"
+}

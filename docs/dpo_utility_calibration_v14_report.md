@@ -148,3 +148,11 @@ Checkpoint evaluation generated true V2V-5 videos for step000 and step005 on the
 Codex visual audit failed the gate: `2/4` samples were worse at step005. The dominant visible failures were new foreground fragments, object duplication, floating object artifacts, and object-count drift. Therefore E05 is only a training-signal candidate, not a valid DPO recipe.
 
 Current final decision remains `DPO_RECIPE_NOT_FOUND_V14`; train400 and large DPO remain blocked.
+
+## E01/E06 20-Step Screen Update (2026-07-07T06:06:00.444732Z)
+
+Two additional v14 schemes were run under the GPU4/5 constraint. `E01_screen20` used calibrated raw winner-detached utility and passed training signal over 20 steps: mean winner improvement post `0.00014046728610992432`, final winner improvement post `0.0002976655960083008`, and mean WCR `0.9046868415246985`. `E06_screen20` used normalized clipped loser with alpha=0.05 and also passed training signal: mean winner improvement post `0.0001410573720932007`, final winner improvement post `0.00028055906295776367`, and mean WCR `0.8179387603935927`.
+
+However, E06 checkpoint video evaluation did not pass. A parallel step000/step020 eval and then a single step020 retry stalled at `instantiate WanI2VFast`; GPU memory stayed essentially unallocated and no MP4 videos were produced. Therefore E06 is only a training-signal candidate, not a valid DPO recipe. E01 has not passed video/metric/Codex audit either.
+
+Current decision remains `DPO_RECIPE_NOT_FOUND_V14`; no scale is allowed.

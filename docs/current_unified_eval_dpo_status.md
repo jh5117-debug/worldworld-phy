@@ -562,3 +562,7 @@ Relevant paths:
 Current decision: `DPO_RECIPE_NOT_FOUND_V14`.
 
 E05 (`normalized_clipped_loser`) is the best DPO-like training-signal candidate so far, but it failed checkpoint visual audit: `2/4` validation samples became worse at step005. No scale is allowed. The next step should focus on fixing video degradation despite positive winner-gap metrics, likely via stronger visual/rollout gate, better local masks, or a less artifact-prone scope/objective.
+
+## v14 E01/E06 Update (2026-07-07T06:06:00.444732Z)
+
+E01 and E06 passed 20-step training signal on GPU4/5, but no DPO recipe is validated. E06 checkpoint eval is blocked at WanI2VFast initialization before video generation; previous visually evaluated candidates failed visual gates. DPO scale remains blocked.

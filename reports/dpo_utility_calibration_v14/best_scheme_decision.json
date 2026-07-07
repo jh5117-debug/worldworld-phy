@@ -1,7 +1,7 @@
 {
   "decision": "DPO_RECIPE_NOT_FOUND_V14",
-  "best_training_signal": "E05_screen5 for DPO-like normalized clipped loser; E04_screen5 for winner-only backbone",
+  "best_training_signal": "E06_screen20 and E01_screen20 both pass 20-step training signal; E06 is the best DPO-like clipped-loser candidate by training metrics.",
   "best_final_recipe": "NONE",
   "scale_permission": "NO_SCALE",
-  "reason": "No scheme has passed both training signal and checkpoint video/Codex audit. E05 training signal is healthy but visual gate fails on 2/4 samples."
+  "reason": "No scheme has passed training signal plus checkpoint video plus metrics/Codex audit. E06 training signal passed but checkpoint eval is blocked at WanI2VFast initialization; E05/E04/E02_best7 failed visual gates."
 }

@@ -1,41 +1,32 @@
 # DPO Utility Calibration v14 Status
 
-Updated: `2026-07-07T05:04:09.871964Z`
+Updated: `2026-07-07T06:06:00.444732Z`
 
 ## Current Decision
 
 `DPO_RECIPE_NOT_FOUND_V14`
 
-## What Ran
+## New Progress
 
-- E02_smoke10: calibrated winner-detached log objective, training signal failed because final winner improvement flipped negative.
-- E03_smoke10: lower-LR calibrated objective, stopped early for winner worse.
-- E02_best7: training signal passed, but checkpoint video audit failed.
-- E04_screen5: no-lose-gap normalized winner-only backbone passed training signal, but checkpoint video audit failed.
-- E05_screen5: normalized clipped loser objective passed training signal, but checkpoint video audit failed.
+- `E01_screen20` ran on physical GPU4 for 20 steps and passed training signal.
+- `E06_screen20` ran on physical GPU5 for 20 steps and passed training signal.
+- `E06_screen20` checkpoint eval was attempted but blocked at `WanI2VFast` initialization before any videos were generated.
 
-## Latest E05 Result
+## Best Training-Signal Candidates
 
-- Objective: `normalized_clipped_loser`
-- Steps: `5`
-- Mean winner improvement post: `0.00012555122375488282`
-- Final winner improvement post: `0.00012230873107910156`
-- Mean winner contribution ratio: `0.8245008192953873`
-- Checkpoint videos: `8` true V2V-5 videos generated for step000/step005
-- Metrics: `8/8` PSNR/SSIM/LPIPS rows OK
-- Visual audit: `2/4` samples worse at step005
-- Decision: `VISUAL_GATE_FAIL_FINAL_CHECKPOINT_WORSE`
+- `E06_screen20`: normalized clipped loser alpha=0.05, mean winner improvement post `0.0001410573720932007`, final `0.00028055906295776367`, WCR `0.8179387603935927`.
+- `E01_screen20`: raw calibrated winner-detached, mean winner improvement post `0.00014046728610992432`, final `0.0002976655960083008`, WCR `0.9046868415246985`.
 
-## Interpretation
+## Why This Is Not Solved
 
-E05 is the best DPO-like training-signal candidate so far, but it is not a solved recipe because the final checkpoint still worsens real videos. Per the project gate, training gaps alone do not permit scale.
+The v14 final gate requires training signal plus checkpoint videos plus metrics plus Codex visual audit. E06 could not complete checkpoint video generation because V2V-5 eval stalled at `instantiate WanI2VFast` with no GPU allocation and 0 MP4 outputs. Earlier E02_best7, E04, and E05 generated videos but failed visual gates.
 
 ## Scale Permission
 
-- S32/S64: blocked
-- train400: blocked
-- large DPO: blocked
+- S16/S32/S64: blocked until a scheme passes video/metrics/Codex audit.
+- train400: blocked.
+- large DPO: blocked.
 
 ## Constraints Honored
 
-No large DPO, no train400, no StageA/StageB/GRPO, no broad-LoRA, no checkpoint deletion, and no videos/weights pushed.
+This update used only physical GPU4/5 for the new E01/E06 screen. No train400, no large DPO, no StageA/StageB/GRPO, no broad-LoRA, no checkpoint deletion, and no videos/weights pushed.

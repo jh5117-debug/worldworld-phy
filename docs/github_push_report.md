@@ -360,3 +360,7 @@ Prepared lightweight audit/docs for E02_best7. Large local assets, videos, conta
 ## v14 E05 Audit Push (2026-07-07T05:04:09.871964Z)
 
 Prepared lightweight report updates for E05 checkpoint metrics and Codex visual audit. No local_assets, videos, images, checkpoints, or weights are intended for commit.
+
+## v14 E01/E06 Screen Push (2026-07-07T06:06:00.444732Z)
+
+Prepared lightweight report updates for E01/E06 20-step training signal and E06 checkpoint eval blocker. No local_assets, videos, images, checkpoints, or weights are intended for commit.
