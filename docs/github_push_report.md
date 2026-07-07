@@ -492,3 +492,15 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Result: `LATENT_MONITOR_PASS_VJEPA2_SMOKE`, 4/4 positive V-JEPA margins and 4/4 positive token-relation margins.
 - Scope: monitor-only; no DPO training, no auxiliary loss integration, no S16/S32/train400 scale.
 - Artifact policy: stage only source/docs/tests and small CSV/JSON/MD summaries. Do not stage local_assets, weights, videos, images, checkpoints, or large logs.
+
+
+## v14 V-JEPA2 Latent Monitor Smoke Push
+
+- Updated: `2026-07-07T22:34:55Z`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `68400e4 Run v14 V-JEPA2 latent monitor smoke`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Result: `LATENT_MONITOR_PASS_VJEPA2_SMOKE` / `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_PASS`, 4/4 positive V-JEPA embedding margins and 4/4 positive token-relation margins.
+- Required artifacts: `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_monitor.csv` and `trd_vjepa_summary.md`.
+- Scope: monitor-only. No DPO training, no auxiliary loss integration, no S16/S32/train400 scale.
+- Artifact policy: pushed source/docs and small CSV/JSON/MD summaries only. Did not push local_assets, weights, videos, images, checkpoints, or large logs.
