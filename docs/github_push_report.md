@@ -339,3 +339,7 @@ Added a calibrated v14 objective wrapper and log-normalized winner-detached obje
 ## v14 E02 Smoke10 Push
 
 Committed only lightweight E02 smoke CSV/summary and docs. Did not push local checkpoint files, local_assets, videos, images, or weights.
+
+## v14 E03 Smoke10 Push
+
+Committed lightweight E03 partial CSV/summary only. The own E03 process was stopped after winner-worse gate failure. No checkpoint/video/local_assets files were pushed.

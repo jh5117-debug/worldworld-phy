@@ -1,0 +1,17 @@
+{
+  "decision": "TRAINING_SIGNAL_FAIL_WINNER",
+  "final_dpo_loss": 0.857638955116272,
+  "final_grad_norm": 0.48755570922228436,
+  "final_update_norm": 0.0011802584997102753,
+  "final_winner_contribution_ratio_post": 0.0,
+  "final_winner_improvement_post": -8.20159912109375e-05,
+  "mean_dpo_loss": 0.7448401749134064,
+  "mean_grad_norm": 0.4279174924857336,
+  "mean_update_norm": 0.001213202306217517,
+  "mean_winner_contribution_ratio_post": 0.5,
+  "mean_winner_improvement_post": 4.3332576751708984e-05,
+  "rows": 2,
+  "status": "EARLY_STOP_WINNER_WORSE",
+  "stopped_reason": "Winner improvement became negative at step 1; stopped own E03 process instead of hard training.",
+  "winner_worse_rows": 1
+}

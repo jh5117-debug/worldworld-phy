@@ -32,3 +32,10 @@ Do not run train400 or large DPO. The next safe training probe, after the user a
 - Final winner improvement flipped negative: `-4.172325134277344e-05`.
 - Decision: `TRAINING_SIGNAL_FAIL_WINNER`.
 - Do not scale; next probe should test lower LR / best-step early stop.
+
+## E03 Smoke10 Update
+
+- `E03_smoke10` used physical GPU5 only.
+- It was stopped early after `2` rows because winner improvement became negative.
+- Decision: `TRAINING_SIGNAL_FAIL_WINNER`.
+- Next safe direction: E02 best-step early stop / stronger winner protection, not scale.

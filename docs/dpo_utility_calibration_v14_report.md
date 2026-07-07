@@ -93,3 +93,7 @@ A bounded 10-step `E02_smoke10` run was launched on physical GPU4 only with `CUD
 - Decision: `TRAINING_SIGNAL_FAIL_WINNER`
 
 This confirms beta calibration fixes the 0.693 no-signal issue, but E02 still fails because the final winner improvement flips negative. No checkpoint video/metrics gate was run for this failed training signal. Next safe probe is lower LR / best-step early-stop, not scale.
+
+## E03 Smoke10 Early Stop
+
+`E03_smoke10` was launched on physical GPU5 only with lower LR/lambda_pref. It produced `2` rows and hit `WINNER_WORSE` by step 1, so the own E03 process was stopped early according to the gate policy. Decision: `TRAINING_SIGNAL_FAIL_WINNER`. Lower LR alone did not solve winner instability.

@@ -525,3 +525,7 @@ S10 produced 18 rows in its 100step CSV; final winner_improvement_post was negat
 ## v14 E02 Smoke10
 
 `E02_smoke10` shows calibrated beta helps DPO loss leave 0.693, but final winner improvement is negative. Decision: `TRAINING_SIGNAL_FAIL_WINNER`. Train400 and large DPO remain blocked.
+
+## v14 E03 Smoke10
+
+`E03_smoke10` lower LR/lambda_pref did not fix winner instability and was stopped early after `2` rows. Large DPO remains blocked.
