@@ -81,3 +81,11 @@ Next work should add a rollout-quality/latent visual monitor or stronger visual 
 - The run then timed out at `7_encode_winner_probe`; no real-energy row was produced.
 - Current exact blocker: `REAL_ENERGY_STAGE_DEBUG_TIMEOUT_ENCODE_WINNER_PROBE`.
 - DPO decision remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400 scale is allowed.
+
+## v14 Real-Energy CUDA Runtime Update
+
+- CUDA runtime summary: `reports/dpo_utility_calibration_v14/blocker_retry/real_energy_cuda_runtime_pass_summary.md`.
+- The CPU runtime stage debug timed out at `7_encode_winner_probe`.
+- Re-running the same asset-complete one-pair audit with `--runtime_device cuda` produced a real `status=ok` energy row.
+- Energy seconds: `212.4425`; CUDA peak memory about `50.43GB`.
+- This repairs the one-pair real-energy path but does not change the DPO recipe decision: `DPO_RECIPE_NOT_FOUND_V14`; S16/S32/train400 remain blocked.

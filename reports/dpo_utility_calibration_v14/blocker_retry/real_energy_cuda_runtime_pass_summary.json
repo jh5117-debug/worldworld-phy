@@ -1,0 +1,17 @@
+{
+  "cuda_peak_memory_gb": "50.43468189239502",
+  "decision": "REAL_ENERGY_ONEPAIR_CUDA_RUNTIME_PASS",
+  "dpo_decision_unchanged": "DPO_RECIPE_NOT_FOUND_V14",
+  "energy_seconds": "212.44250082969666",
+  "generated": "2026-07-08T04:39:56",
+  "pair_id": "v11_SYN_0017_02215_collision_strafe_left_180_seed41215_background_drift_visible",
+  "policy_loser_energy": "0.15526923537254333",
+  "policy_winner_energy": "0.13607239723205566",
+  "previous_cpu_runtime_blocker": "REAL_ENERGY_STAGE_DEBUG_TIMEOUT_ENCODE_WINNER_PROBE",
+  "ref_loser_energy": "0.15526923537254333",
+  "ref_winner_energy": "0.13607239723205566",
+  "scale_permission": "NO_SCALE",
+  "sigma": "0.9540635943412781",
+  "status": "ok",
+  "timestep_index": "325"
+}

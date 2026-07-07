@@ -1,0 +1,10 @@
+{
+  "decision": "REAL_ENERGY_STAGE_DEBUG_PASS",
+  "pair_id": "v11_SYN_0017_02215_collision_strafe_left_180_seed41215_background_drift_visible",
+  "policy_loser": 0.1100781112909317,
+  "policy_winner": 0.10943755507469177,
+  "ref_loser": 0.1100781112909317,
+  "ref_winner": 0.10943755507469177,
+  "sigma": 0.9716293811798096,
+  "timestep_index": 226
+}
