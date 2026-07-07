@@ -413,3 +413,10 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Commit: `6fd335a Record v14 real-energy blocker retry result`
 - Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
 - Artifact policy: pushed only docs/scripts/small manifest/CSV/JSON/MD. Did not push local_assets videos, checkpoints, weights, raw stdout logs, images, or large files.
+
+## v14 Real-Energy Stage Debug Pending Push
+
+- Updated: `2026-07-08T04:01:39`
+- Commit: `067086d Add v14 real-energy stage debug evidence`
+- Summary: added stage heartbeat diagnostic and evidence that the one-pair real-energy path times out at `7_encode_winner_probe` after runtime init/decode.
+- Artifact policy: only source/docs/small JSONL/JSON/MD staged; no local_assets videos, checkpoints, weights, images, or raw stdout logs.
