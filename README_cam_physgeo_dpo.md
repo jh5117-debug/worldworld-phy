@@ -431,3 +431,12 @@ Relevant paths:
 - E10 (, L2 camera-temporal r4) completed 100/100 steps with final winner improvement  and mean WCR . True V2V-5 audit failed: step100 was worse on 2/4 samples and not decisively better on the rest, with duplicate green balls, object identity clutter, and foreground fragments.
 - Current decision: . The scalar no-signal / beta-scale issue is partially repaired, but energy/gap improvement does not yet predict rollout visual quality.
 - Scale permission: ; no S16/S32/train400/large DPO from these recipes. Next direction is a rollout-quality or latent visual monitor/regularizer before further DPO scaling.
+
+
+## v14 Final Requirement Audit Update (2026-07-07T23:12:51Z)
+
+- Current authoritative audit: `reports/dpo_utility_calibration_v14/requirement_audit.md`.
+- Final decision remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`.
+- V-JEPA2 monitor status is now `PASS_WITH_ASSET_BLOCKERS`, not backend-only blocked: 74/74 available rows have positive token-relation margins.
+- Remaining blockers are true-video degradation for scalar-positive DPO schemes, missing old rollout loser assets, and all500 real-energy runtime/cache cost.
+- No S16/S32/train400/large DPO is allowed from v14.

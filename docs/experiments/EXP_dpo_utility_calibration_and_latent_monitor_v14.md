@@ -112,3 +112,12 @@ No train400, no large DPO, no S32/S64, no StageA, no StageB, no GRPO, no broad-L
 - Added `tests/test_gpu_scheduler_v14.py`.
 - Smoke output path: `reports/dpo_utility_calibration_v14/scheduler_state.json` and `scheduler_state_summary.md`.
 - Scheduler decision: `NO_TRAINING_NO_SCALE`; it records GPU/state evidence and does not launch training after `DPO_RECIPE_NOT_FOUND_V14`.
+
+
+## v14 Final Requirement Audit Update (2026-07-07T23:12:51Z)
+
+- Current authoritative audit: `reports/dpo_utility_calibration_v14/requirement_audit.md`.
+- Final decision remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`.
+- V-JEPA2 monitor status is now `PASS_WITH_ASSET_BLOCKERS`, not backend-only blocked: 74/74 available rows have positive token-relation margins.
+- Remaining blockers are true-video degradation for scalar-positive DPO schemes, missing old rollout loser assets, and all500 real-energy runtime/cache cost.
+- No S16/S32/train400/large DPO is allowed from v14.

@@ -1,42 +1,30 @@
-# v14 Self Review Update
+# v14 Self Review
 
-Timestamp: `2026-07-07T02:37:56.080956Z`
+Updated: `2026-07-07T23:12:51Z`
 
-E02_best7 found a real training-signal improvement, but the visual audit failed. The final checkpoint step007 introduces visible object duplication/fragments and foreground identity/count drift on validation contact sheets. This is not a scalable DPO recipe.
+## What Improved
 
-Safeguards observed:
-- No large DPO.
-- No train400.
-- No StageA/StageB/GRPO/broad-LoRA.
-- No checkpoint deletion.
-- No large files staged.
-- No videos/weights pushed.
+- The beta/no-signal root cause is now understood: old beta=0.1 was far too small for observed utility scale.
+- CUDA runtime repaired the one-pair real-energy path and calibration4 produced 4/4 real LingBot energy rows.
+- DINOv2 and V-JEPA2 local latent monitors now produce real scores without downloads.
+- V-JEPA2 distinguishes every available WIN/LOSE pair in broad monitor coverage: 74/74 positive token-relation margins.
 
-Next recommendation:
-Continue objective search with a stronger visual regularizer / shorter best-step selection and require video gate before any scale.
+## What Still Fails
 
-## v14 Objective Search Update (2026-07-07T03:56:37.931118Z)
+- v14 did not find a DPO recipe that passes both scalar and true-video gates.
+- Scalar-improving schemes still degrade V2V-5 checkpoint videos.
+- E07/E09/E10 are not valid recipes despite good winner/gap metrics.
+- S_pass and rollout-only latent scoring are blocked by missing old loser video assets.
+- all500 real LingBot energy is still blocked by runtime/cache cost and asset completeness.
 
-- Added E04_screen5 and E05_screen5 screening runs on physical GPU4/GPU5 only.
-- E04_screen5 (`no_lose_gap_normalized_win_only`) training signal PASS: mean winner improvement `0.00012879371643066407`, final `0.00013786554336547852`, WCR `0.7916`, loser degradation negative.
-- E05_screen5 (`normalized_clipped_loser`, alpha_l=0.02) training signal PASS: mean winner improvement `0.00012555122375488282`, final `0.00012230873107910156`, WCR `0.8220`, slight loser degradation.
-- E04 checkpoint videos generated: `8` true V2V-5 videos. Codex visual audit FAIL: step005 worsens object count/identity in multiple samples.
-- Decision remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400.
+## Decision
 
-Safeguards: no large DPO, no train400, no StageA/StageB/GRPO, no checkpoint deletion, no videos/weights staged.
+`DPO_RECIPE_NOT_FOUND_V14` and `NO_SCALE` remain correct. Do not run S16/S32/train400/large DPO from v14.
 
-## v14 Requirement Audit (2026-07-07T18:10:35Z)
+## Next Safe Action
 
-- Requirement audit path: `reports/dpo_utility_calibration_v14/requirement_audit.md`.
-- Final decision remains `DPO_RECIPE_NOT_FOUND_V14`.
-- All500 energy CSVs are coverage/blocker files with `MISSING_REAL_ENERGY`, not real energy calibration evidence.
-- Latent monitor is `LATENT_MONITOR_BLOCKED` because no TRD/VJEPA margins were produced.
-- Best scalar candidates E09/E10 failed true V2V-5 visual gates, so S16/S32/train400 remain blocked.
+Start v15 as a monitor/regularizer experiment: use V-JEPA2/DINO latent margins to gate or penalize artifact amplification before another tiny calibrated DPO search.
 
-## v14 Blocker Retry Plan Update
+## Artifact Hygiene
 
-- Added blocker resolution plan: `reports/dpo_utility_calibration_v14/blocker_resolution_plan.md`.
-- Added conservative dry-run command generator: `scripts/plan_v14_blocker_retry.sh`.
-- Added config: `configs/cam_physgeo/dpo_v14_blocker_retry.yaml`.
-- Added direct import smoke log: `reports/dpo_utility_calibration_v14/test_logs/direct_import_smoke_v14.log`.
-- These artifacts do not launch training and do not change `NO_SCALE`.
+Only source/tests/docs and small CSV/JSON/MD summaries were pushed. No videos, images, local_assets, checkpoints, weights, or large logs were pushed.

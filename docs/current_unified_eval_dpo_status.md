@@ -576,7 +576,7 @@ Decision: `DPO_RECIPE_NOT_FOUND_V14`. E07/E09/E10 all passed scalar training-sig
 - Requirement audit path: `reports/dpo_utility_calibration_v14/requirement_audit.md`.
 - Final decision remains `DPO_RECIPE_NOT_FOUND_V14`.
 - All500 energy CSVs are coverage/blocker files with `MISSING_REAL_ENERGY`, not real energy calibration evidence.
-- Latent monitor is `LATENT_MONITOR_BLOCKED` because no TRD/VJEPA margins were produced.
+- Superseded latent-monitor status: later DINO/V-JEPA2 runs produced real margins; current status is `PASS_WITH_ASSET_BLOCKERS` with 74/74 positive V-JEPA2 token-relation margins among available videos.
 - Best scalar candidates E09/E10 failed true V2V-5 visual gates, so S16/S32/train400 remain blocked.
 
 
@@ -627,3 +627,12 @@ Decision: `DPO_RECIPE_NOT_FOUND_V14`. E07/E09/E10 all passed scalar training-sig
 - Bounded search over `/home/nvme03` and `/home/nvme04` did not find representative missing S_pass/rollout loser MP4 files.
 - This confirms the S_pass4 and rollout15 V-JEPA2 failures are asset-coverage blockers, not latent-backend failures.
 - Available synthetic/v11 rows remain `LATENT_MONITOR_PASS_VJEPA2_SMOKE_WITH_ASSET_BLOCKERS` with 74/74 positive token-relation margins among ok rows.
+
+
+## v14 Final Requirement Audit Update (2026-07-07T23:12:51Z)
+
+- Current authoritative audit: `reports/dpo_utility_calibration_v14/requirement_audit.md`.
+- Final decision remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`.
+- V-JEPA2 monitor status is now `PASS_WITH_ASSET_BLOCKERS`, not backend-only blocked: 74/74 available rows have positive token-relation margins.
+- Remaining blockers are true-video degradation for scalar-positive DPO schemes, missing old rollout loser assets, and all500 real-energy runtime/cache cost.
+- No S16/S32/train400/large DPO is allowed from v14.

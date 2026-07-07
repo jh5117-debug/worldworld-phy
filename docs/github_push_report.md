@@ -526,3 +526,11 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Blocker: 59 rows failed due missing old rollout/v10 local_assets videos; no fake scores were written.
 - Scope: monitor-only. No DPO training, no S16/S32/train400, no large DPO.
 - Artifact policy: pushed source/tests/docs and small CSV/JSON/MD summaries only. Did not push local_assets, videos, images, checkpoints, weights, or large logs.
+
+
+## v14 Final Requirement Audit Pending Push
+
+- Updated: `2026-07-07T23:12:51Z`
+- Summary: rewrote the v14 requirement audit with current evidence, including V-JEPA2 broad monitor coverage and remaining blockers.
+- Decision: `DPO_RECIPE_NOT_FOUND_V14`, `NO_SCALE`.
+- Scope: docs/audit only; no training or scale.
