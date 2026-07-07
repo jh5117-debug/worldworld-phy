@@ -471,3 +471,14 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Summary: extended `latent_relation_monitor_v14.py` with a local DINOv2 ViT-S/14 frame/relation smoke, mapped the local DINOv2 weights without download, and produced 4/4 finite positive WIN/LOSE latent margins.
 - Decision: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS` for this bounded fallback smoke; full V-JEPA/TRD scoring remains future work; `DPO_RECIPE_NOT_FOUND_V14` remains.
 - Artifact policy: stage only source/tests/docs and small CSV/JSON/MD summaries. Do not stage local_assets, weights, videos, images, checkpoints, or large logs.
+
+
+## v14 DINOv2 Frame Latent Monitor Smoke Push
+
+- Updated: `2026-07-07T22:21:19Z`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `d020041 Add v14 DINO frame latent monitor smoke`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Result: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS` on 4/4 asset-complete calibration pairs using local DINOv2 ViT-S/14 weights and physical GPU4 via `CUDA_VISIBLE_DEVICES=4`.
+- Scope: monitor-only. No DPO training, no V-JEPA/TRD auxiliary loss, no S16/S32/train400 scale.
+- Artifact policy: pushed source/tests/docs and small CSV/JSON/MD/log evidence only. Did not push local_assets, weights, videos, images, checkpoints, or large logs.
