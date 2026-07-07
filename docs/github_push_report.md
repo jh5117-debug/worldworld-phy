@@ -420,3 +420,14 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Commit: `067086d Add v14 real-energy stage debug evidence`
 - Summary: added stage heartbeat diagnostic and evidence that the one-pair real-energy path times out at `7_encode_winner_probe` after runtime init/decode.
 - Artifact policy: only source/docs/small JSONL/JSON/MD staged; no local_assets videos, checkpoints, weights, images, or raw stdout logs.
+
+## v14 CUDA Runtime Real-Energy Pass Push
+
+- Updated: `2026-07-07T20:46:28Z`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `e3f129d Record v14 CUDA runtime real-energy pass`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Summary: reran the repaired asset-complete one-pair real-energy path with `--runtime_device cuda`; CPU runtime had timed out at `7_encode_winner_probe`, while CUDA runtime produced a real `status=ok` energy row in `212.4425s` with peak CUDA memory about `50.43GB`.
+- Decision: this repairs the one-pair calibration path only; `DPO_RECIPE_NOT_FOUND_V14` remains and S16/S32/train400/large DPO remain blocked.
+- Artifact policy: pushed only docs and small CSV/JSON/JSONL/MD evidence. Did not push local_assets, videos, images, checkpoints, weights, raw stdout logs, or large files.
+
