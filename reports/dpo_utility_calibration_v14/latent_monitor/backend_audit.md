@@ -1,8 +1,8 @@
 # Latent Relation Monitor Backend Audit
 
-Decision: `LATENT_MONITOR_BLOCKED`
+Decision: `LATENT_MONITOR_BACKEND_FOUND_NEEDS_SCORING`
 
-Search meta: `{'visited_dirs': 5000, 'elapsed_seconds': 5.439, 'stop_reason': 'max_dirs', 'max_dirs': 5000, 'max_seconds': 20.0}`
+Search meta: `{'visited_dirs': 174, 'elapsed_seconds': 0.061, 'stop_reason': 'completed', 'max_dirs': 5000, 'max_seconds': 20.0}`
 
 ## Imports
 - vjepa: False
@@ -16,24 +16,25 @@ Search meta: `{'visited_dirs': 5000, 'elapsed_seconds': 5.439, 'stop_reason': 'm
 
 ## Candidate Local Files
 
-- `/home/nvme03/workspace/world_model_phys/.conda_envs/phys-videophy/lib/python3.10/site-packages/transformers/models/videomae/configuration_videomae.py`
-- `/home/nvme03/workspace/world_model_phys/.conda_envs/phys-videophy/lib/python3.10/site-packages/transformers/models/videomae/convert_videomae_to_pytorch.py`
-- `/home/nvme03/workspace/world_model_phys/.conda_envs/phys-videophy/lib/python3.10/site-packages/transformers/models/videomae/feature_extraction_videomae.py`
-- `/home/nvme03/workspace/world_model_phys/.conda_envs/phys-videophy/lib/python3.10/site-packages/transformers/models/videomae/image_processing_videomae.py`
-- `/home/nvme03/workspace/world_model_phys/.conda_envs/phys-videophy/lib/python3.10/site-packages/transformers/models/videomae/modeling_videomae.py`
-- `/home/nvme03/workspace/world_model_phys/code/finetune_v3/lingbot-csgo-finetune/i3d_torchscript.pt`
-- `/home/nvme03/workspace/world_model_phys/external/Depth-Anything-V2/depth_anything_v2/dinov2.py`
-- `/home/nvme03/workspace/world_model_phys/external/Depth-Anything-V2/metric_depth/depth_anything_v2/dinov2.py`
+- `/home/nvme03/.cache/torch/hub/facebookresearch_vjepa2_main/assets/architecture_vjepa2_1.jpg`
+- `/home/nvme03/.cache/torch/hub/facebookresearch_vjepa2_main/assets/vjepa2-abstract-new.png`
+- `/home/nvme03/.cache/torch/hub/facebookresearch_vjepa2_main/assets/vjepa2-ac-abstract-new.png`
+- `/home/nvme03/.cache/torch/hub/facebookresearch_vjepa2_main/notebooks/vjepa2_demo.ipynb`
+- `/home/nvme03/.cache/torch/hub/facebookresearch_vjepa2_main/notebooks/vjepa2_demo.py`
+- `/home/nvme03/.cache/torch/hub/facebookresearch_vjepa2_main/tests/datasets/test_vjepa_transforms.py`
 - `/home/nvme03/workspace/world_model_phys/external/WMReward/vjepa2/assets/vjepa2-abstract-new.png`
 - `/home/nvme03/workspace/world_model_phys/external/WMReward/vjepa2/assets/vjepa2-ac-abstract-new.png`
 - `/home/nvme03/workspace/world_model_phys/external/WMReward/vjepa2/notebooks/vjepa2_demo.ipynb`
 - `/home/nvme03/workspace/world_model_phys/external/WMReward/vjepa2/notebooks/vjepa2_demo.py`
 - `/home/nvme03/workspace/world_model_phys/external/WMReward/vjepa2/tests/datasets/test_vjepa_transforms.py`
-- `/home/nvme03/workspace/world_model_phys/logs/downloads/vjepa2_download.log`
-- `/home/nvme03/workspace/world_model_phys/scripts/test_vjepa_load.py`
+- `/home/nvme04/workspace/world_model_phys/PHYS/weight/vjepa2_1/vjepa2_1_vitb_dist_vitG_384.pt`
+- `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth`
+- `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/vjepa2/vjepa2_1_vitb_dist_vitG_384.pt`
 
-No V-JEPA / VideoREPA / TRD values are produced by this audit. If no backend is available, v14 must report `LATENT_MONITOR_BLOCKED`; fake latent scores are forbidden.
+## Candidate Local Weight Files
 
-## v14 Requirement Audit Update
+- `/home/nvme04/workspace/world_model_phys/PHYS/weight/vjepa2_1/vjepa2_1_vitb_dist_vitG_384.pt`
+- `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth`
+- `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/vjepa2/vjepa2_1_vitb_dist_vitG_384.pt`
 
-No TRD/VJEPA winner-vs-loser margin was produced. Local files/import candidates are not sufficient evidence for monitor validity. v14 therefore records `LATENT_MONITOR_BLOCKED`; no latent auxiliary loss is enabled.
+No V-JEPA / VideoREPA / TRD values are produced by this audit. `LATENT_MONITOR_BACKEND_FOUND_NEEDS_SCORING` only means local code and weight candidates exist; scoring still must run before any latent-monitor PASS. Fake latent scores are forbidden.

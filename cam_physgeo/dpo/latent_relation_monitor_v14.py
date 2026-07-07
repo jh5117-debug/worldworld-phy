@@ -11,9 +11,10 @@ from pathlib import Path
 
 CANDIDATE_IMPORTS = ["vjepa", "vijepa", "dinov2", "transformers", "torchvision", "clip", "open_clip", "pytorchvideo"]
 CANDIDATE_PATTERNS = ["*vjepa*", "*VJEPA*", "*videorepa*", "*VideoREPA*", "*videomae*", "*VideoMAE*", "*dinov2*", "*i3d*", "*trd*"]
+WEIGHT_PATTERNS = ["*.pt", "*.pth", "*.safetensors", "*.bin", "*.ckpt"]
 
 
-def find_files(roots: list[str], max_hits: int = 200, max_dirs: int = 20000, max_seconds: float = 30.0) -> tuple[list[str], dict[str, object]]:
+def find_files(roots: list[str], max_hits: int = 200, max_dirs: int = 20000, max_seconds: float = 30.0, *, weight_only: bool = False) -> tuple[list[str], dict[str, object]]:
     hits: list[str] = []
     visited_dirs = 0
     started = time.time()
@@ -35,6 +36,8 @@ def find_files(roots: list[str], max_hits: int = 200, max_dirs: int = 20000, max
             for name in filenames:
                 lower = name.lower()
                 if not any(fnmatch(name, pat) or fnmatch(lower, pat.lower()) for pat in CANDIDATE_PATTERNS):
+                    continue
+                if weight_only and not any(fnmatch(name, pat) or fnmatch(lower, pat.lower()) for pat in WEIGHT_PATTERNS):
                     continue
                 path = Path(dirpath) / name
                 try:
@@ -58,11 +61,13 @@ def audit(args: argparse.Namespace) -> dict[str, object]:
     for name in CANDIDATE_IMPORTS:
         imports[name] = importlib.util.find_spec(name) is not None
     files, search_meta = find_files(args.search_roots, max_dirs=int(args.max_dirs), max_seconds=float(args.max_seconds))
-    has_teacher = any(imports.get(k, False) for k in ("vjepa", "vijepa", "dinov2", "clip", "open_clip")) and bool(files)
+    weight_files, weight_search_meta = find_files(args.search_roots, max_hits=100, max_dirs=int(args.max_dirs), max_seconds=float(args.max_seconds), weight_only=True)
+    has_model_code = any(imports.get(k, False) for k in ("vjepa", "vijepa", "dinov2", "clip", "open_clip", "transformers", "pytorchvideo"))
+    has_teacher = has_model_code and bool(weight_files)
     decision = "LATENT_MONITOR_BACKEND_FOUND_NEEDS_SCORING" if has_teacher else "LATENT_MONITOR_BLOCKED_BY_ENV"
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    result = {"decision": decision, "imports": imports, "candidate_files": files[:100], "search_meta": search_meta, "note": "No model download attempted. Monitor only; no training."}
+    result = {"decision": decision, "imports": imports, "candidate_files": files[:100], "candidate_weight_files": weight_files[:100], "search_meta": search_meta, "weight_search_meta": weight_search_meta, "note": "No model download attempted. Monitor only; no training."}
     (out_dir / "backend_audit.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     md = ["# Latent Relation Monitor Backend Audit", "", f"Decision: `{decision}`", "", f"Search meta: `{search_meta}`", "", "## Imports"]
     for k, v in imports.items():
@@ -72,7 +77,12 @@ def audit(args: argparse.Namespace) -> dict[str, object]:
         md += [f"- `{p}`" for p in files[:50]]
     else:
         md.append("- none found")
-    md += ["", "No V-JEPA / VideoREPA / TRD values are produced by this audit. If no backend is available, v14 must report `LATENT_MONITOR_BLOCKED`; fake latent scores are forbidden."]
+    md += ["", "## Candidate Local Weight Files", ""]
+    if weight_files:
+        md += [f"- `{p}`" for p in weight_files[:50]]
+    else:
+        md.append("- none found")
+    md += ["", "No V-JEPA / VideoREPA / TRD values are produced by this audit. `LATENT_MONITOR_BACKEND_FOUND_NEEDS_SCORING` only means local code and weight candidates exist; scoring still must run before any latent-monitor PASS. Fake latent scores are forbidden."]
     (out_dir / "backend_audit.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     return result
 
