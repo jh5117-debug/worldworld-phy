@@ -1,32 +1,33 @@
 # DPO Utility Calibration v14 Status
 
-Updated: `2026-07-07T06:06:00.444732Z`
+Updated: 2026-07-08 01:50 CST
 
-## Current Decision
+Decision: `DPO_RECIPE_NOT_FOUND_V14`
 
-`DPO_RECIPE_NOT_FOUND_V14`
+## Current State
 
-## New Progress
+- Canonical repaired ready500 remains the required data entry.
+- Offline beta calibration found the prior DPO utility was under-scaled: `u_log` around 1e-4 requires beta around 1000, not beta=0.1.
+- Calibrated objectives now produce real training-gap movement; the blocker has shifted from no-signal to visual degradation in true V2V-5 checkpoint rollouts.
+- Only physical GPU4/GPU5 were used for v14 E09/E10 training/eval in this update. GPU0-3/6/7 were not used by these v14 jobs.
 
-- `E01_screen20` ran on physical GPU4 for 20 steps and passed training signal.
-- `E06_screen20` ran on physical GPU5 for 20 steps and passed training signal.
-- `E06_screen20` checkpoint eval was attempted but blocked at `WanI2VFast` initialization before any videos were generated.
+## Latest Objective Search Evidence
 
-## Best Training-Signal Candidates
+| Scheme | Training Signal | Video Gate | Decision |
+|---|---:|---:|---|
+| E07 linear winner detached | PASS at 200 steps | FAIL step200 worse 4/4 | not valid |
+| E08 calibrated local/full log | PASS at 200 steps | NOT_RUN | training-signal only |
+| E09 source weighted rollout priority | PASS early at step50 | FAIL step50 worse/not-better 4/4 | not valid |
+| E10 L2 camera-temporal r4 | PASS at 100 steps | FAIL step100 worse 2/4, not clearly better on rest | not valid |
 
-- `E06_screen20`: normalized clipped loser alpha=0.05, mean winner improvement post `0.0001410573720932007`, final `0.00028055906295776367`, WCR `0.8179387603935927`.
-- `E01_screen20`: raw calibrated winner-detached, mean winner improvement post `0.00014046728610992432`, final `0.0002976655960083008`, WCR `0.9046868415246985`.
+## Exact Current Blocker
 
-## Why This Is Not Solved
-
-The v14 final gate requires training signal plus checkpoint videos plus metrics plus Codex visual audit. E06 could not complete checkpoint video generation because V2V-5 eval stalled at `instantiate WanI2VFast` with no GPU allocation and 0 MP4 outputs. Earlier E02_best7, E04, and E05 generated videos but failed visual gates.
+The calibrated DPO/winner-anchor objectives can lower winner energy and avoid loser-dominant scalar metrics, but the LoRA updates still degrade generated videos with foreground duplication, object/fragment clutter, white/yellow line or text-like artifacts, and scene contamination.
 
 ## Scale Permission
 
-- S16/S32/S64: blocked until a scheme passes video/metrics/Codex audit.
+- S16/S32: blocked.
 - train400: blocked.
 - large DPO: blocked.
 
-## Constraints Honored
-
-This update used only physical GPU4/5 for the new E01/E06 screen. No train400, no large DPO, no StageA/StageB/GRPO, no broad-LoRA, no checkpoint deletion, and no videos/weights pushed.
+Next work should add a rollout-quality/latent visual monitor or stronger visual regularization before further DPO scaling.

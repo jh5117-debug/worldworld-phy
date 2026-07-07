@@ -1,0 +1,5 @@
+sample_id,checkpoint_a,checkpoint_b,scheme_id,reviewed,worse_than_step0,visual_quality_step0,visual_quality_step50,freeze_worse,identity_worse,background_worse,camera_worse,artifact_worse,written_reason
+04214_containment_orbit_left_44_seed43214,step000,step050,E09_screen200,true,true,1,0,false,true,true,true,true,"Step50 adds large foreground duplicate blobs and yellow/green artifacts; scene becomes more contaminated than step0."
+04279_containment_orbit_left_44_seed43279,step000,step050,E09_screen200,true,true,1,1,false,true,false,false,true,"Step50 is at best mixed and not better; crowd/fragment artifacts remain and yellow/orange floor artifact appears near late frames."
+04351_containment_orbit_left_44_seed43351,step000,step050,E09_screen200,true,true,1,0,false,true,false,false,true,"Step50 introduces larger foreground object pollution and duplicate colored balls near the camera; visual clutter increases."
+prefix5_anchored_1128e39109fc83_object_deformation,step000,step050,E09_screen200,true,true,1,0,false,true,true,false,true,"Step50 shows white text/line artifacts and extra duplicated green object regions; worse than step0 despite stable camera."

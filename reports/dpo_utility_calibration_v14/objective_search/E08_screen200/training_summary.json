@@ -1,0 +1,62 @@
+{
+  "checkpoint_manifest": "local_assets/dpo_utility_calibration_v14/objective_search/E08_screen200/checkpoints/checkpoint_manifest.json",
+  "checkpoints_saved": 4,
+  "final_winner_improvement_post": 0.01444697380065918,
+  "gap_enriched_csv": "reports/dpo_utility_calibration_v14/objective_search/E08_screen200/E08_screen200_200step_gap_enriched.csv",
+  "gap_summary": {
+    "final_health_flags": "WINNER_IMPROVES",
+    "final_win_gap": "-0.01444697380065918",
+    "final_winner_improvement_post": "0.01444697380065918",
+    "mean_g_l": -0.0067606771016606995,
+    "mean_g_w": -0.007223669181494905,
+    "mean_lose_gap": -0.00514367163181305,
+    "mean_loser_degradation_post": -0.00514367163181305,
+    "mean_loser_dominance": 0.005501849169784645,
+    "mean_win_gap": -0.005434301495552063,
+    "mean_winner_contribution_ratio": 0.9794867872266744,
+    "mean_winner_improvement_post": 0.005434301495552063,
+    "pass_rows": 200,
+    "rows": 200
+  },
+  "init_lora_state": "local_assets/dpo_objective_repair_v12b/winner_curriculum/checkpoints/winner_anchor_repeat_L0_camera_r4_step020_lora_state.pt",
+  "mean_loser_degradation_post": -0.00514367163181305,
+  "mean_winner_contribution_ratio_post": 0.9794931332986636,
+  "mean_winner_improvement_post": 0.005434301495552063,
+  "objective": "calibrated_winner_detached_log",
+  "output": "reports/dpo_utility_calibration_v14/objective_search/E08_screen200/E08_screen200_200step.csv",
+  "rows_written": 200,
+  "scale": {
+    "input_csv": [
+      "reports/dpo_objective_search_v13b/S01_winner_detached_pref_low/S01_winner_detached_pref_low_200step.csv",
+      "reports/dpo_objective_search_v13b/S02_winner_detached_pref_lower_lr/S02_winner_detached_pref_lower_lr_200step.csv",
+      "reports/dpo_objective_search_v13b/S03/S03_200step.csv",
+      "reports/dpo_objective_search_v13b/S04_no_lose_gap_normalized_win_only/S04_no_lose_gap_normalized_win_only_200step.csv",
+      "reports/dpo_objective_search_v13b/S05_normalized_clipped_loser_alpha005/S05_normalized_clipped_loser_alpha005_200step.csv",
+      "reports/dpo_objective_search_v13b/S06_normalized_clipped_loser_alpha010/S06_normalized_clipped_loser_alpha010_200step.csv",
+      "reports/dpo_objective_search_v13b/S07_linear_winner_detached/S07_linear_winner_detached_200step.csv",
+      "reports/dpo_objective_search_v13b/S08_delayed_loser_gradient_tiny/S08_delayed_loser_gradient_tiny_200step.csv",
+      "reports/dpo_objective_search_v13b/S09_local_time_mask_winner_detached/S09_local_time_mask_winner_detached_200step.csv",
+      "reports/dpo_objective_search_v13b/S10_lora_camera_temporal_winner_detached/S10_lora_camera_temporal_winner_detached_100step.csv"
+    ],
+    "reason": "Choose utility/beta with median |beta*u| in 0.1-1.0 and high effective ratio.",
+    "recommended_beta": 1000,
+    "recommended_median_abs_beta_u": 0.20455321269580987,
+    "recommended_utility_type": "u_log"
+  },
+  "scheme_config": {
+    "beta": 1000.0,
+    "lambda_pref": 0.005,
+    "lambda_winner_anchor": 1.0,
+    "lr": 1e-06,
+    "objective": "calibrated_winner_detached_log",
+    "scheme_id": "E08_screen200",
+    "scope": "L0_camera_r4",
+    "steps": 200,
+    "utility_type": "local_or_full_u_log"
+  },
+  "scheme_id": "E08_screen200",
+  "seconds": 18830.36598610878,
+  "status": "CALIBRATED_WINNER_DETACHED_LOG_SIGNAL_HEALTHY",
+  "steps_requested": 200,
+  "training_signal_decision": "TRAINING_SIGNAL_PASS"
+}

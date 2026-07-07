@@ -1,0 +1,14 @@
+{
+  "checkpoint_manifest": "local_assets/dpo_utility_calibration_v14/objective_search/E08_screen200/checkpoints/checkpoint_manifest.json",
+  "checkpoints_saved": 4,
+  "final_winner_improvement_post": 0.01444697380065918,
+  "mean_loser_degradation_post": -0.00514367163181305,
+  "mean_winner_contribution_ratio_post": 0.9794931332986636,
+  "mean_winner_improvement_post": 0.005434301495552063,
+  "objective": "calibrated_winner_detached_log",
+  "output": "reports/dpo_utility_calibration_v14/objective_search/E08_screen200/E08_screen200_200step.csv",
+  "rows_written": 200,
+  "seconds": 18830.36598610878,
+  "status": "CALIBRATED_WINNER_DETACHED_LOG_SIGNAL_HEALTHY",
+  "steps_requested": 200
+}

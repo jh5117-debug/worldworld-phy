@@ -1,7 +1,10 @@
 {
   "decision": "DPO_RECIPE_NOT_FOUND_V14",
-  "latest_checked_scheme": "E06_screen20",
-  "latest_eval_note": "E06 normalized clipped loser alpha=0.05 passed 20-step training signal and true V2V-5 smoke after .pt LoRA eval patch, but step20 visual quality worsened versus step0.",
-  "latest_eval_status": "VISUAL_GATE_FAIL_STEP20_WORSE",
-  "scale_permission": "NO_SCALE"
+  "latest_checked_scheme": "E10_screen100",
+  "latest_eval_note": "E10 passed 100-step gap metrics but true V2V-5 step100 videos were worse on 2/4 fixed val samples and not clearly better on the rest.",
+  "latest_eval_status": "VISUAL_GATE_FAIL_STEP100_WORSE",
+  "latest_training_status": "TRAINING_SIGNAL_PASS",
+  "scale_permission": "NO_SCALE",
+  "best_training_signal_scheme": "E09_screen200_step50_or_E10_screen100",
+  "train400_permission": "NO"
 }

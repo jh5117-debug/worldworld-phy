@@ -156,3 +156,25 @@ Two additional v14 schemes were run under the GPU4/5 constraint. `E01_screen20` 
 However, E06 checkpoint video evaluation did not pass. A parallel step000/step020 eval and then a single step020 retry stalled at `instantiate WanI2VFast`; GPU memory stayed essentially unallocated and no MP4 videos were produced. Therefore E06 is only a training-signal candidate, not a valid DPO recipe. E01 has not passed video/metric/Codex audit either.
 
 Current decision remains `DPO_RECIPE_NOT_FOUND_V14`; no scale is allowed.
+
+## E07-E10 Objective Search Update (2026-07-08 CST)
+
+Decision: `DPO_RECIPE_NOT_FOUND_V14`.
+
+The later v14 schemes show that beta/utility calibration fixed the pure no-signal issue at the scalar training level, but it did not produce a valid DPO recipe because true V2V-5 checkpoint videos still degrade.
+
+Summary:
+
+- `E07_screen200` (`linear_winner_detached`, L0 camera r4) completed 200 steps with strong training signal: final winner improvement `+0.0161217451`, mean WCR `0.984991`, mean loser degradation negative. True V2V-5 step200 videos were worse than step0 on 4/4 fixed val samples. Decision: `VISUAL_GATE_FAIL_STEP200_WORSE`.
+- `E08_screen200` (`calibrated_winner_detached_log`, L0 camera r4) completed 200 steps with strong training signal: final winner improvement `+0.0144469738`, mean WCR `0.979487`, mean loser degradation negative. It remains training-signal-only because video/metrics audit was not run.
+- `E09_screen200` (`source_weighted_rollout_priority`, L0 camera r4) was stopped after a strong step50 early-best checkpoint: winner improvement `+0.0014111996`, WCR `1.0`, loser degradation negative. True V2V-5 step50 videos were worse or not better on 4/4 samples. Decision: `VISUAL_GATE_FAIL_STEP050_WORSE`.
+- `E10_screen100` (`calibrated_winner_detached_log`, L2 camera-temporal r4) completed 100 steps with training signal: final winner improvement `+0.0004041791`, mean winner improvement `+0.0001850957`, WCR `0.824683`, mean loser degradation negative. True V2V-5 step100 videos were worse on 2/4 samples and not decisively better on the rest. Decision: `VISUAL_GATE_FAIL_STEP100_WORSE`.
+
+Current blocker: energy/gap improvements do not guarantee visual quality. The active failure mode is rollout artifact amplification: foreground duplication, object identity clutter, green/blob fragments, white/yellow line or text-like artifacts, and scene contamination.
+
+Scale decision:
+
+- Do not run S16/S32 continuation from these schemes.
+- Do not run train400.
+- Do not run large DPO.
+- Next safe direction is to add a rollout-quality/latent monitor or regularizer that detects these artifacts before or during DPO updates.

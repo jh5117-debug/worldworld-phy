@@ -1,0 +1,13 @@
+{
+  "decision_after_video": "VISUAL_GATE_FAIL_STEP050_WORSE",
+  "final_dpo_loss": 0.800617516040802,
+  "final_loser_degradation_post": -0.0012015700340270996,
+  "final_step": 51,
+  "final_winner_improvement_post": 0.0012439489364624023,
+  "mean_dpo_loss": 0.6581587258439797,
+  "mean_loser_degradation_post": -0.00048219699126023514,
+  "mean_winner_improvement_post": 0.0005244211508677556,
+  "rows": 52,
+  "scheme_id": "E09_screen200",
+  "status": "TRAINING_SIGNAL_PASS_EARLY_STOPPED_FOR_VIDEO_EVAL"
+}

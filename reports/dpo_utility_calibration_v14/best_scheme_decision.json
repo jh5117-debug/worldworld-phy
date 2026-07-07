@@ -1,7 +1,10 @@
 {
   "decision": "DPO_RECIPE_NOT_FOUND_V14",
-  "best_training_signal": "E06_screen20 and E01_screen20 both pass 20-step training signal; E06 is the best DPO-like clipped-loser candidate by training metrics.",
-  "best_final_recipe": "NONE",
+  "latest_checked_scheme": "E10_screen100",
+  "latest_eval_note": "E10 passed 100-step gap metrics but true V2V-5 step100 videos were worse on 2/4 fixed val samples and not clearly better on the rest.",
+  "latest_eval_status": "VISUAL_GATE_FAIL_STEP100_WORSE",
+  "latest_training_status": "TRAINING_SIGNAL_PASS",
   "scale_permission": "NO_SCALE",
-  "reason": "No scheme has passed training signal plus checkpoint video plus metrics/Codex audit. E06 training signal passed but checkpoint eval is blocked at WanI2VFast initialization; E05/E04/E02_best7 failed visual gates."
+  "best_training_signal_scheme": "E09_screen200_step50_or_E10_screen100",
+  "train400_permission": "NO"
 }
