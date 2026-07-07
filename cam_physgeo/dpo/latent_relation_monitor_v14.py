@@ -303,15 +303,45 @@ def cosine_distance(a: Any, b: Any) -> float:
     return float((1.0 - (aa * bb).sum(dim=-1)).item())
 
 
-def pick_frame_indices(pair: dict[str, Any], max_frames: int) -> list[int]:
+def select_video_path(pair: dict[str, Any], side: str, repo_root: Path) -> tuple[Path | None, str]:
+    entry = pair.get(side, {}) if isinstance(pair.get(side, {}), dict) else {}
+    candidates = [
+        (entry.get("full_video_path"), "full"),
+        (pair.get(f"{side}_video_path"), "full"),
+        (entry.get("future_video_path"), "future"),
+    ]
+    if side == "winner":
+        condition = pair.get("condition", {}) if isinstance(pair.get("condition", {}), dict) else {}
+        candidates.extend([
+            (condition.get("gt_full_video_path"), "full"),
+            (condition.get("gt_video_path"), "full"),
+            (condition.get("gt_future_video_path"), "future"),
+        ])
+        image_path = resolve_path(condition.get("image_path") or condition.get("image"), repo_root)
+        if image_path:
+            candidates.append((str(image_path.parent / "video.mp4"), "full"))
+    for path, kind in candidates:
+        resolved = resolve_path(path, repo_root)
+        if resolved and resolved.exists():
+            return resolved, kind
+    fallback = resolve_path(entry.get("full_video_path") or pair.get(f"{side}_video_path") or entry.get("future_video_path"), repo_root)
+    return fallback, "missing"
+
+
+def pick_frame_indices(pair: dict[str, Any], max_frames: int, *, relative_to_future: bool = False) -> list[int]:
     future = pair.get("winner", {}).get("future_frame_indices") or pair.get("loss_frame_indices") or list(range(5, 81))
     future = [int(x) for x in future]
     if len(future) <= max_frames:
-        return future
-    if max_frames <= 1:
-        return [future[len(future) // 2]]
-    positions = [round(i * (len(future) - 1) / (max_frames - 1)) for i in range(max_frames)]
-    return [future[i] for i in positions]
+        selected = future
+    elif max_frames <= 1:
+        selected = [future[len(future) // 2]]
+    else:
+        positions = [round(i * (len(future) - 1) / (max_frames - 1)) for i in range(max_frames)]
+        selected = [future[i] for i in positions]
+    if relative_to_future:
+        start = int(pair.get("prediction_start_frame") or pair.get("prefix_len") or min(future))
+        selected = [max(0, idx - start) for idx in selected]
+    return selected
 
 
 def score_dinov2_frame_smoke(args: argparse.Namespace) -> dict[str, object]:
@@ -352,15 +382,16 @@ def score_dinov2_frame_smoke(args: argparse.Namespace) -> dict[str, object]:
                 "error_reason": "",
             }
             try:
-                winner_path = resolve_path(pair.get("winner", {}).get("full_video_path") or pair.get("winner", {}).get("future_video_path") or pair.get("winner_video_path"), repo_root)
-                loser_path = resolve_path(pair.get("loser", {}).get("full_video_path") or pair.get("loser", {}).get("future_video_path") or pair.get("loser_video_path"), repo_root)
+                winner_path, winner_kind = select_video_path(pair, "winner", repo_root)
+                loser_path, loser_kind = select_video_path(pair, "loser", repo_root)
                 if not winner_path or not winner_path.exists():
                     raise FileNotFoundError(f"winner video missing: {winner_path}")
                 if not loser_path or not loser_path.exists():
                     raise FileNotFoundError(f"loser video missing: {loser_path}")
-                frame_indices = pick_frame_indices(pair, int(args.max_frames))
-                winner_frames = read_video_frames(winner_path, frame_indices)
-                loser_frames = read_video_frames(loser_path, frame_indices)
+                winner_indices = pick_frame_indices(pair, int(args.max_frames), relative_to_future=(winner_kind == "future"))
+                loser_indices = pick_frame_indices(pair, int(args.max_frames), relative_to_future=(loser_kind == "future"))
+                winner_frames = read_video_frames(winner_path, winner_indices)
+                loser_frames = read_video_frames(loser_path, loser_indices)
                 n = min(len(winner_frames), len(loser_frames))
                 winner_feats = encode_frames_dinov2(model, winner_frames[:n], device)
                 loser_feats = encode_frames_dinov2(model, loser_frames[:n], device)
@@ -369,7 +400,7 @@ def score_dinov2_frame_smoke(args: argparse.Namespace) -> dict[str, object]:
                 rel_winner = 0.0
                 rel_loser = temporal_relation_distance(loser_feats, winner_feats)
                 row.update({
-                    "frame_indices": json.dumps(frame_indices[:n]),
+                    "frame_indices": json.dumps({"winner": winner_indices[:n], "loser": loser_indices[:n], "winner_kind": winner_kind, "loser_kind": loser_kind}),
                     "num_frames": n,
                     "winner_video": str(winner_path),
                     "loser_video": str(loser_path),
@@ -462,15 +493,16 @@ def score_vjepa2_video_smoke(args: argparse.Namespace) -> dict[str, object]:
                 "error_reason": "",
             }
             try:
-                winner_path = resolve_path(pair.get("winner", {}).get("full_video_path") or pair.get("winner", {}).get("future_video_path") or pair.get("winner_video_path"), repo_root)
-                loser_path = resolve_path(pair.get("loser", {}).get("full_video_path") or pair.get("loser", {}).get("future_video_path") or pair.get("loser_video_path"), repo_root)
+                winner_path, winner_kind = select_video_path(pair, "winner", repo_root)
+                loser_path, loser_kind = select_video_path(pair, "loser", repo_root)
                 if not winner_path or not winner_path.exists():
                     raise FileNotFoundError(f"winner video missing: {winner_path}")
                 if not loser_path or not loser_path.exists():
                     raise FileNotFoundError(f"loser video missing: {loser_path}")
-                frame_indices = pick_frame_indices(pair, int(args.max_frames))
-                winner_frames = read_video_frames(winner_path, frame_indices)
-                loser_frames = read_video_frames(loser_path, frame_indices)
+                winner_indices = pick_frame_indices(pair, int(args.max_frames), relative_to_future=(winner_kind == "future"))
+                loser_indices = pick_frame_indices(pair, int(args.max_frames), relative_to_future=(loser_kind == "future"))
+                winner_frames = read_video_frames(winner_path, winner_indices)
+                loser_frames = read_video_frames(loser_path, loser_indices)
                 n = min(len(winner_frames), len(loser_frames), int(args.max_frames))
                 winner_tokens = encode_video_vjepa2(encoder, winner_frames[:n], device, size=int(args.vjepa_img_size))
                 loser_tokens = encode_video_vjepa2(encoder, loser_frames[:n], device, size=int(args.vjepa_img_size))
@@ -479,7 +511,7 @@ def score_vjepa2_video_smoke(args: argparse.Namespace) -> dict[str, object]:
                 rel_winner = 0.0
                 rel_loser = token_relation_distance(loser_tokens, winner_tokens)
                 row.update({
-                    "frame_indices": json.dumps(frame_indices[:n]),
+                    "frame_indices": json.dumps({"winner": winner_indices[:n], "loser": loser_indices[:n], "winner_kind": winner_kind, "loser_kind": loser_kind}),
                     "num_frames": n,
                     "winner_video": str(winner_path),
                     "loser_video": str(loser_path),

@@ -1,21 +1,24 @@
-# TRD / V-JEPA Latent Monitor Summary
+# TRD / V-JEPA Latent Monitor Coverage Summary
 
-Decision: `LATENT_MONITOR_PASS_VJEPA2_SMOKE`
+Decision: `LATENT_MONITOR_PASS_VJEPA2_SMOKE_WITH_ASSET_BLOCKERS`
 
-This is a bounded V-JEPA2 token-relation monitor smoke, not an auxiliary-loss training integration.
+Combined rows: 133; ok rows: 74; error rows: 59
+Positive token-relation margin among ok rows: 74/74
 
-Rows: 4; ok: 4
-Positive V-JEPA margin rows: 4/4
-Positive token-relation margin rows: 4/4
-Device: `cuda:0` via `CUDA_VISIBLE_DEVICES=4`
-Weight: `/home/nvme04/workspace/world_model_phys/PHYS/weight/vjepa2_1/vjepa2_1_vitb_dist_vitG_384.pt`
+## Subset Coverage
 
-## Per-Pair Margins
-- `v11_SYN_0017_02215_collision_strafe_left_180_seed41215_background_drift_visible`: vjepa_margin=0.000923, token_relation_margin=0.038835
-- `v11_SYN_0035_02228_collision_orbit_right_64_seed41228_background_drift_visible`: vjepa_margin=0.001192, token_relation_margin=0.038212
-- `v11_SYN_0041_02239_collision_strafe_left_180_seed41239_background_drift_visible`: vjepa_margin=0.001227, token_relation_margin=0.040755
-- `v11_SYN_0047_02259_collision_strafe_left_180_seed41259_background_drift_visible`: vjepa_margin=0.000886, token_relation_margin=0.042215
+| subset | rows | ok | errors | positive_vjepa | positive_relation | decision |
+|---|---:|---:|---:|---:|---:|---|
+| calibration4 | 4 | 4 | 0 | 4 | 4 | `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_PASS` |
+| synthetic10 | 10 | 6 | 4 | 6 | 6 | `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_PASS` |
+| stratified100 | 100 | 64 | 36 | 64 | 64 | `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_PASS` |
+| s_pass4 | 4 | 0 | 4 | 0 | 0 | `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_FAIL` |
+| rollout15 | 15 | 0 | 15 | 0 | 0 | `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_FAIL` |
 
 ## Interpretation
 
-The local V-JEPA2.1 ViT-B EMA encoder distinguishes the controlled loser from the clean winner on all four asset-complete calibration pairs. This supports using a V-JEPA2/DINO latent visual monitor in v15 to catch artifact amplification before scaling DPO. It does not change the v14 DPO decision because the existing DPO checkpoint videos still degraded.
+The local V-JEPA2.1 ViT-B EMA encoder distinguishes every pair for which both WIN and LOSE videos are available: all ok rows have positive V-JEPA embedding margins and positive token-relation margins.
+
+Coverage is currently limited by missing old local_assets videos, especially rollout-derived GT>C losers and some v10 TypeM synthetic loser files. Those rows are recorded as errors rather than silently dropped or faked.
+
+This supports V-JEPA2/DINO as a v15 monitor or regularizer candidate, but it does not permit DPO scale because v14 DPO checkpoint videos still degraded.

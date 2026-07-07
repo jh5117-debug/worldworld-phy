@@ -1,0 +1,30 @@
+{
+  "decision": "LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_FAIL",
+  "backend": "vjepa2_1_vit_base_224_local_ema_encoder",
+  "repo_path": "/home/nvme03/.cache/torch/hub/facebookresearch_vjepa2_main",
+  "weight_path": "/home/nvme04/workspace/world_model_phys/PHYS/weight/vjepa2_1/vjepa2_1_vitb_dist_vitG_384.pt",
+  "device": "cuda:0",
+  "rows": 15,
+  "ok_rows": 0,
+  "positive_vjepa_margin_rows": 0,
+  "positive_token_relation_margin_rows": 0,
+  "token_relation_positive_ratio": 0.0,
+  "load_meta": {
+    "missing_keys": [],
+    "unexpected_keys": [],
+    "checkpoint_keys": [
+      "batch_size",
+      "ema_encoder",
+      "encoder",
+      "epoch",
+      "loss",
+      "lr",
+      "opt",
+      "predictor",
+      "scaler",
+      "world_size"
+    ]
+  },
+  "elapsed_seconds": 74.443,
+  "note": "V-JEPA2 monitor smoke only. No training or auxiliary loss integration was run."
+}

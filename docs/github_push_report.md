@@ -504,3 +504,13 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Required artifacts: `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_monitor.csv` and `trd_vjepa_summary.md`.
 - Scope: monitor-only. No DPO training, no auxiliary loss integration, no S16/S32/train400 scale.
 - Artifact policy: pushed source/docs and small CSV/JSON/MD summaries only. Did not push local_assets, weights, videos, images, checkpoints, or large logs.
+
+
+## v14 Broad V-JEPA2 Latent Coverage Pending Push
+
+- Updated: `2026-07-07T23:06:28Z`
+- Summary: ran V-JEPA2 monitor on calibration4, synthetic10, stratified100, S_pass4, and rollout15; combined 133 rows with 74 ok rows and 74/74 positive token-relation margins among available videos.
+- Decision: `LATENT_MONITOR_PASS_VJEPA2_SMOKE_WITH_ASSET_BLOCKERS`.
+- Blocker: old rollout/v10 loser local_assets are missing for 59 rows; errors are recorded, not faked.
+- Scope: monitor-only. No DPO training, no S16/S32/train400 scale, no large DPO.
+- Artifact policy: stage only source/tests/docs and small CSV/JSON/MD summaries.

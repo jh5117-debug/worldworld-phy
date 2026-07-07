@@ -20,3 +20,12 @@
 - Direct smoke for latent monitor tests: PASS.
 - V-JEPA2 video/token relation smoke: `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_PASS`, 4/4 ok rows.
 - `pytest` remains unavailable in the active H20 shell; no pytest PASS is claimed.
+
+
+## v14 Broad V-JEPA2 Coverage Test Update (2026-07-07T23:07:07Z)
+
+- `python3 -m compileall cam_physgeo/dpo/latent_relation_monitor_v14.py tests/test_latent_relation_monitor_v14.py`: PASS.
+- Direct smoke for path/index helpers: PASS.
+- Broad V-JEPA2 monitor: calibration4/synthetic10/stratified100/S_pass4/rollout15 completed with explicit ok/error rows.
+- Combined result: 133 rows, 74 ok, 74/74 positive token-relation margins among available videos.
+- `pytest` is still unavailable in the active shell, so no pytest PASS is claimed.

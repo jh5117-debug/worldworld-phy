@@ -3,7 +3,7 @@ from pathlib import Path
 
 import torch
 
-from cam_physgeo.dpo.latent_relation_monitor_v14 import audit, map_dinov2_vits14_state_dict, pick_frame_indices
+from cam_physgeo.dpo.latent_relation_monitor_v14 import audit, map_dinov2_vits14_state_dict, pick_frame_indices, select_video_path
 
 class Args:
     search_roots = ["/path/that/does/not/exist"]
@@ -76,3 +76,44 @@ def test_map_dinov2_qkv_keys():
 def test_pick_frame_indices_spans_future():
     pair = {"winner": {"future_frame_indices": list(range(5, 81))}}
     assert pick_frame_indices(pair, 5) == [5, 24, 43, 61, 80]
+
+
+def test_pick_frame_indices_future_relative():
+    pair = {"prediction_start_frame": 5, "winner": {"future_frame_indices": list(range(5, 81))}}
+    assert pick_frame_indices(pair, 5, relative_to_future=True) == [0, 19, 38, 56, 75]
+
+
+def test_select_video_path_prefers_existing_full_then_future(tmp_path):
+    full = tmp_path / "full.mp4"
+    future = tmp_path / "future.mp4"
+    future.write_bytes(b"x")
+    pair = {"loser": {"full_video_path": str(full), "future_video_path": str(future)}}
+    path, kind = select_video_path(pair, "loser", tmp_path)
+    assert path == future
+    assert kind == "future"
+    full.write_bytes(b"x")
+    path, kind = select_video_path(pair, "loser", tmp_path)
+    assert path == full
+    assert kind == "full"
+
+
+def test_select_video_path_uses_condition_gt_for_winner(tmp_path):
+    gt = tmp_path / "gt.mp4"
+    gt.write_bytes(b"x")
+    pair = {"winner": {"future_video_path": str(tmp_path / "missing.mp4")}, "condition": {"gt_full_video_path": str(gt)}}
+    path, kind = select_video_path(pair, "winner", tmp_path)
+    assert path == gt
+    assert kind == "full"
+
+
+def test_select_video_path_uses_image_parent_video_for_winner(tmp_path):
+    sample = tmp_path / "sample"
+    sample.mkdir()
+    image = sample / "image.jpg"
+    video = sample / "video.mp4"
+    image.write_bytes(b"x")
+    video.write_bytes(b"x")
+    pair = {"winner": {"future_video_path": str(tmp_path / "missing.mp4")}, "condition": {"image_path": str(image)}}
+    path, kind = select_video_path(pair, "winner", tmp_path)
+    assert path == video
+    assert kind == "full"

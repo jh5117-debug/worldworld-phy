@@ -159,3 +159,26 @@ Next work should add a rollout-quality/latent visual monitor or stronger visual 
 - Direct smoke for latent monitor tests: PASS.
 - V-JEPA2 video/token relation smoke: `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_PASS`, 4/4 ok rows.
 - `pytest` remains unavailable in the active H20 shell; no pytest PASS is claimed.
+
+
+## v14 Broad V-JEPA2 Latent Monitor Coverage Update (2026-07-07T23:06:28Z)
+
+- Coverage summary: `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_summary.md`.
+- Combined monitor CSV: `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_monitor.csv`.
+- Coverage table: `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_coverage_summary.csv`.
+- Ran bounded V-JEPA2 monitor on calibration4, synthetic10, stratified100, S_pass4, and rollout15 subsets.
+- Combined rows: 133; ok rows: 74; asset/path error rows: 59.
+- For every row where both WIN and LOSE videos were available, V-JEPA2 distinguished the loser: positive V-JEPA margin 74/74 and positive token-relation margin 74/74.
+- Stratified100: 64/100 ok, 64/64 positive token-relation margins. The 36 failures are missing old rollout/v10 local_assets videos.
+- S_pass4 and rollout15 currently have 0 ok rows because their loser rollout video assets are missing from local_assets; this is recorded as an asset coverage blocker, not a latent-backend failure.
+- Decision: `LATENT_MONITOR_PASS_VJEPA2_SMOKE_WITH_ASSET_BLOCKERS`.
+- DPO recipe decision remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO scale is allowed until checkpoint video quality passes.
+
+
+## v14 Broad V-JEPA2 Coverage Test Update (2026-07-07T23:07:07Z)
+
+- `python3 -m compileall cam_physgeo/dpo/latent_relation_monitor_v14.py tests/test_latent_relation_monitor_v14.py`: PASS.
+- Direct smoke for path/index helpers: PASS.
+- Broad V-JEPA2 monitor: calibration4/synthetic10/stratified100/S_pass4/rollout15 completed with explicit ok/error rows.
+- Combined result: 133 rows, 74 ok, 74/74 positive token-relation margins among available videos.
+- `pytest` is still unavailable in the active shell, so no pytest PASS is claimed.

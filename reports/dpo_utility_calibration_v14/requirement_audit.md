@@ -160,3 +160,12 @@ Do not continue ordinary DPO scaling. Add a rollout-quality or latent visual mon
 - No fake values, no download, no training.
 - Remaining limitation: only 4 asset-complete synthetic controlled pairs were scored; stratified100/rollout-only latent scoring remains future work.
 - DPO scale remains blocked by video degradation, not by lack of latent monitor backend.
+
+
+## Requirement Audit Addendum - Broad V-JEPA2 Coverage (2026-07-07T23:06:28Z)
+
+- Latent monitor requirement: PARTIAL PASS with real local V-JEPA2 scoring.
+- Evidence: 133 combined rows, 74 ok rows, 74/74 positive token-relation margins.
+- Missing coverage: S_pass and rollout-only old loser videos are absent from local_assets, producing 19 explicit missing-asset failures; other v10 asset misses appear inside stratified/synthetic subsets.
+- No values were faked; unavailable rows remain errors.
+- No training was run.

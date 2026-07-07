@@ -295,3 +295,22 @@ Evidence:
 Result: `LATENT_MONITOR_PASS_VJEPA2_SMOKE`. All 4 rows completed and all 4 had positive V-JEPA embedding margins plus positive token-relation margins. Per-pair token-relation margins were approximately `0.0388`, `0.0382`, `0.0408`, and `0.0422`.
 
 Interpretation: the requested latent monitor direction is viable as a monitor on this small controlled set. It does not rescue v14 DPO because E07/E09/E10 still failed true checkpoint video gates; instead it gives the next safe v15 action: add V-JEPA2/DINO rollout-quality monitoring or regularization before any further DPO scale.
+
+
+## Broad V-JEPA2 Coverage Result (2026-07-07T23:06:28Z)
+
+The V-JEPA2 monitor was expanded beyond the 4-pair calibration smoke. It now covers multiple v14 subsets with explicit error accounting:
+
+- calibration4: 4/4 ok, 4/4 positive relation margins.
+- synthetic10: 6/10 ok, 6/6 positive relation margins; the 4 failures are old v10 loser asset misses.
+- stratified100: 64/100 ok, 64/64 positive relation margins; failures are old rollout/v10 local_assets misses.
+- S_pass4: 0/4 ok because loser video assets are missing.
+- rollout15: 0/15 ok because rollout loser video assets are missing.
+
+Required latent monitor artifacts are now populated:
+
+- `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_monitor.csv`
+- `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_summary.md`
+- `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_coverage_summary.csv`
+
+Conclusion: V-JEPA2 is viable as a v15 monitor/regularizer candidate for available videos. The remaining limitation is asset coverage for old rollout/v10 pairs, plus the unchanged v14 DPO failure that scalar-improved checkpoints degrade real V2V-5 video.
