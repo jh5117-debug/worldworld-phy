@@ -193,3 +193,11 @@ Scale decision:
 - All500 energy CSVs are coverage/blocker files with `MISSING_REAL_ENERGY`, not real energy calibration evidence.
 - Latent monitor is `LATENT_MONITOR_BLOCKED` because no TRD/VJEPA margins were produced.
 - Best scalar candidates E09/E10 failed true V2V-5 visual gates, so S16/S32/train400 remain blocked.
+
+## v14 Scheduler Artifact Update (2026-07-07T18:24:43Z)
+
+- Added `cam_physgeo/orchestration/gpu_scheduler_v14.py`.
+- Added `scripts/launch_dpo_v14_scheduler.sh`.
+- Added `tests/test_gpu_scheduler_v14.py`.
+- Smoke output path: `reports/dpo_utility_calibration_v14/scheduler_state.json` and `scheduler_state_summary.md`.
+- Scheduler decision: `NO_TRAINING_NO_SCALE`; it records GPU/state evidence and does not launch training after `DPO_RECIPE_NOT_FOUND_V14`.

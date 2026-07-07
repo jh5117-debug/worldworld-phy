@@ -113,9 +113,15 @@
       "evidence": "Only docs/CSV/JSON/MD were pushed. No local_assets, videos, images, checkpoints, weights, logs, NPY/NPZ/HDF5 pushed.",
       "requirement": "Git / forbidden artifacts",
       "status": "PASS"
+    },
+    {
+      "evidence": "gpu_scheduler_v14.py, launch_dpo_v14_scheduler.sh, and test_gpu_scheduler_v14.py exist; scheduler smoke wrote NO_TRAINING_NO_SCALE and command none after DPO_RECIPE_NOT_FOUND_V14.",
+      "requirement": "GPU4/5 scheduler artifact",
+      "status": "PASS_CONSERVATIVE_NO_TRAINING"
     }
   ],
   "scale_permission": "NO_SCALE",
+  "scheduler_artifact_update": "2026-07-07T18:24:43Z",
   "schemes": [
     {
       "audit_path": "",

@@ -1,0 +1,96 @@
+{
+  "allowed_gpus": [
+    4,
+    5
+  ],
+  "decision_file": "reports/dpo_utility_calibration_v14/best_scheme_decision.json",
+  "forbidden_gpus": [
+    0,
+    1,
+    2,
+    3,
+    6,
+    7
+  ],
+  "gpu_status": {
+    "gpus": {
+      "0": {
+        "index": 0,
+        "memory_total_mb": 97871,
+        "memory_used_mb": 86141,
+        "utilization_percent": 100
+      },
+      "1": {
+        "index": 1,
+        "memory_total_mb": 97871,
+        "memory_used_mb": 86134,
+        "utilization_percent": 0
+      },
+      "2": {
+        "index": 2,
+        "memory_total_mb": 97871,
+        "memory_used_mb": 86134,
+        "utilization_percent": 100
+      },
+      "3": {
+        "index": 3,
+        "memory_total_mb": 97871,
+        "memory_used_mb": 86134,
+        "utilization_percent": 100
+      },
+      "4": {
+        "index": 4,
+        "memory_total_mb": 97871,
+        "memory_used_mb": 1,
+        "utilization_percent": 0
+      },
+      "5": {
+        "index": 5,
+        "memory_total_mb": 97871,
+        "memory_used_mb": 1,
+        "utilization_percent": 0
+      },
+      "6": {
+        "index": 6,
+        "memory_total_mb": 97871,
+        "memory_used_mb": 1,
+        "utilization_percent": 0
+      },
+      "7": {
+        "index": 7,
+        "memory_total_mb": 97871,
+        "memory_used_mb": 1,
+        "utilization_percent": 0
+      }
+    }
+  },
+  "idle_allowed_gpus": [
+    4,
+    5
+  ],
+  "jobs": [
+    {
+      "assigned_gpus": [],
+      "command": "none",
+      "decision": "DPO_RECIPE_NOT_FOUND_V14",
+      "job_id": "v14_decision_preflight",
+      "required_gpus": 0,
+      "status": "PASS",
+      "summary_path": "reports/dpo_utility_calibration_v14/requirement_audit.md",
+      "type": "audit"
+    }
+  ],
+  "next_action": "NO_TRAINING_RECIPE_NOT_FOUND",
+  "objective_decision": {
+    "best_training_signal_scheme": "E09_screen200_step50_or_E10_screen100",
+    "decision": "DPO_RECIPE_NOT_FOUND_V14",
+    "latest_checked_scheme": "E10_screen100",
+    "latest_eval_note": "E10 passed 100-step gap metrics but true V2V-5 step100 videos were worse on 2/4 fixed val samples and not clearly better on the rest.",
+    "latest_eval_status": "VISUAL_GATE_FAIL_STEP100_WORSE",
+    "latest_training_status": "TRAINING_SIGNAL_PASS",
+    "scale_permission": "NO_SCALE",
+    "train400_permission": "NO"
+  },
+  "scheduler_decision": "NO_TRAINING_NO_SCALE",
+  "timestamp": "2026-07-08T02:24:04+0800"
+}

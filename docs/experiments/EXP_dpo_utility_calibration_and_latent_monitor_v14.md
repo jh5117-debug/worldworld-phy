@@ -104,3 +104,11 @@ No train400, no large DPO, no S32/S64, no StageA, no StageB, no GRPO, no broad-L
 - E10 (, L2 camera-temporal r4) completed 100/100 steps with final winner improvement  and mean WCR . True V2V-5 audit failed: step100 was worse on 2/4 samples and not decisively better on the rest, with duplicate green balls, object identity clutter, and foreground fragments.
 - Current decision: . The scalar no-signal / beta-scale issue is partially repaired, but energy/gap improvement does not yet predict rollout visual quality.
 - Scale permission: ; no S16/S32/train400/large DPO from these recipes. Next direction is a rollout-quality or latent visual monitor/regularizer before further DPO scaling.
+
+## v14 Scheduler Artifact Update (2026-07-07T18:24:43Z)
+
+- Added `cam_physgeo/orchestration/gpu_scheduler_v14.py`.
+- Added `scripts/launch_dpo_v14_scheduler.sh`.
+- Added `tests/test_gpu_scheduler_v14.py`.
+- Smoke output path: `reports/dpo_utility_calibration_v14/scheduler_state.json` and `scheduler_state_summary.md`.
+- Scheduler decision: `NO_TRAINING_NO_SCALE`; it records GPU/state evidence and does not launch training after `DPO_RECIPE_NOT_FOUND_V14`.

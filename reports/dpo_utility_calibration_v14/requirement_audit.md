@@ -74,3 +74,11 @@ Interpretation: these files prove subset coverage and the real-energy blocker, n
 ## Next Safe Action
 
 Do not continue ordinary DPO scaling. Add a rollout-quality or latent visual monitor/regularizer that catches foreground duplication, object fragments, and scene contamination before checkpoint rollout, then rerun a tiny gated search.
+
+## v14 Scheduler Artifact Update (2026-07-07T18:24:43Z)
+
+- Added `cam_physgeo/orchestration/gpu_scheduler_v14.py`.
+- Added `scripts/launch_dpo_v14_scheduler.sh`.
+- Added `tests/test_gpu_scheduler_v14.py`.
+- Smoke output path: `reports/dpo_utility_calibration_v14/scheduler_state.json` and `scheduler_state_summary.md`.
+- Scheduler decision: `NO_TRAINING_NO_SCALE`; it records GPU/state evidence and does not launch training after `DPO_RECIPE_NOT_FOUND_V14`.
