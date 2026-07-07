@@ -392,3 +392,12 @@ Prepared lightweight report updates for E01/E06 20-step training signal and E06 
 - Added conservative GPU4/5-only scheduler artifact: `cam_physgeo/orchestration/gpu_scheduler_v14.py`, `scripts/launch_dpo_v14_scheduler.sh`, and `tests/test_gpu_scheduler_v14.py`.
 - Scheduler smoke wrote `reports/dpo_utility_calibration_v14/scheduler_state.json` with `scheduler_decision=NO_TRAINING_NO_SCALE` and no training command after `DPO_RECIPE_NOT_FOUND_V14`.
 - No videos, images, checkpoints, weights, local_assets, or large logs were pushed.
+
+## v14 Blocker Retry Plan Push (2026-07-07T18:31:36Z)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit pushed: `972ab38` (`Add v14 blocker retry plan`)
+- Added dry-run blocker retry plan: `reports/dpo_utility_calibration_v14/blocker_resolution_plan.md`, `configs/cam_physgeo/dpo_v14_blocker_retry.yaml`, and `scripts/plan_v14_blocker_retry.sh`.
+- Added direct import smoke summary: `reports/dpo_utility_calibration_v14/direct_import_smoke_v14.md`.
+- The retry script defaults to dry-run and requires `RUN_V14_BLOCKER_RETRY=1` plus GPU4/5 only before execution.
+- No training, rollout, checkpoint deletion, videos/images/weights/local_assets push, train400, or large DPO was performed.
