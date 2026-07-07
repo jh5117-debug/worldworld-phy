@@ -405,3 +405,11 @@ Prepared lightweight report updates for E01/E06 20-step training signal and E06 
 ## v14 Real-Energy Blocker Retry Pending Push
 
 Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkpoints, weights, or raw large logs should be staged.
+
+## v14 Real-Energy Blocker Retry Pushed
+
+- Updated: `2026-07-08T03:32:32`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `6fd335a Record v14 real-energy blocker retry result`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Artifact policy: pushed only docs/scripts/small manifest/CSV/JSON/MD. Did not push local_assets videos, checkpoints, weights, raw stdout logs, images, or large files.
