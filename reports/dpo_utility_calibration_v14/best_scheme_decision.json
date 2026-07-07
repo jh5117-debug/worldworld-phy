@@ -1,0 +1,7 @@
+{
+  "decision": "DPO_RECIPE_NOT_FOUND_V14",
+  "best_training_signal": "E04_screen5 for winner-only backbone; E05_screen5 for clipped-loser candidate pending eval",
+  "best_final_recipe": "NONE",
+  "scale_permission": "NO_SCALE",
+  "reason": "No scheme has passed training signal plus checkpoint video plus metrics/Codex audit. E02_best7 and E04_screen5 both fail visual gate."
+}

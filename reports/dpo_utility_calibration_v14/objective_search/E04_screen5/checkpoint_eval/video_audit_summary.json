@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-07-07T03:57:20.215328Z",
+  "scheme_id": "E04_screen5",
+  "training_signal_decision": "TRAINING_SIGNAL_PASS",
+  "video_rows_reviewed": 8,
+  "final_checkpoint": "step005",
+  "step005_worse_count": 3,
+  "codex_visual_audit_decision": "VISUAL_GATE_FAIL_FINAL_CHECKPOINT_WORSE",
+  "recipe_decision": "WINNER_BACKBONE_SIGNAL_ONLY_VIDEO_FAIL_V14",
+  "scale_permission": "NO_SCALE",
+  "notes": "E04 removes lose-gap and has clean training signal, but checkpoint video still adds duplicate objects/text-like artifacts on validation samples. This is not a scalable DPO recipe and not a final DPO objective because it has no preference/loser branch."
+}

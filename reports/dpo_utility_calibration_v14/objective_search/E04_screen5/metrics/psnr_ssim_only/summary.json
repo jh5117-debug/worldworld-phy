@@ -1,0 +1,23 @@
+{
+  "fvd_reason": "No real video FVD backend with local temporal feature weights is available. torchmetrics.video.FrechetVideoDistance unavailable: No module named 'dateutil' | pytorchvideo imports after lightweight install, but it does not provide an FVD metric or local I3D/FVD weights | pytorch-fid is installed, but image FID is not reported as video FVD",
+  "fvd_status": "BLOCKED_BY_ENV",
+  "lpips_reason": "",
+  "lpips_status": "AVAILABLE",
+  "mean_laplacian_sharpness_mean": 277.3418594483593,
+  "mean_laplacian_sharpness_median": 306.489417638228,
+  "metric_scope": "future_frames_5_80",
+  "mse_mean": 0.045831135706976056,
+  "mse_median": 0.04940955899655819,
+  "ok_rows": 8,
+  "pixel_l1_mean": 0.1600910760462284,
+  "pixel_l1_median": 0.16656196862459183,
+  "psnr_mean": 13.501793318792158,
+  "psnr_median": 13.061910770494112,
+  "rows": 8,
+  "ssim_mean": 0.6932549490632962,
+  "ssim_median": 0.6709673501581126,
+  "temporal_blur_proxy_mean": 0.029435325181111693,
+  "temporal_blur_proxy_median": 0.030929184518754482,
+  "vbench_reason": "vbench package imports",
+  "vbench_status": "AVAILABLE"
+}
