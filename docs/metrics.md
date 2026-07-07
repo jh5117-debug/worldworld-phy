@@ -168,3 +168,11 @@ Relevant paths:
 - E10 (, L2 camera-temporal r4) completed 100/100 steps with final winner improvement  and mean WCR . True V2V-5 audit failed: step100 was worse on 2/4 samples and not decisively better on the rest, with duplicate green balls, object identity clutter, and foreground fragments.
 - Current decision: . The scalar no-signal / beta-scale issue is partially repaired, but energy/gap improvement does not yet predict rollout visual quality.
 - Scale permission: ; no S16/S32/train400/large DPO from these recipes. Next direction is a rollout-quality or latent visual monitor/regularizer before further DPO scaling.
+
+
+## v14 Latent Monitor Metric Note (2026-07-07T22:19:25Z)
+
+- Added a local DINOv2 ViT-S/14 frame fallback monitor smoke.
+- Output: `reports/dpo_utility_calibration_v14/latent_monitor/dinov2_frame_smoke.csv`.
+- Decision: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS` on 4/4 calibration pairs.
+- This is not a replacement for full V-JEPA/VideoREPA/TRD, but it is a real no-download latent visual score that detects controlled loser differences.

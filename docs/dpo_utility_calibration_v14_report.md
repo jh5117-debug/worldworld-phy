@@ -263,3 +263,19 @@ Current blocker: `REAL_ENERGY_CALIBRATION_BLOCKED_FORWARD_TIMEOUT`. This does no
 - No model download, no training, and no fake latent scores were produced.
 - DPO decision remains `DPO_RECIPE_NOT_FOUND_V14`; S16/S32/train400/large DPO remain blocked.
 
+
+## DINOv2 Frame Latent Monitor Smoke (2026-07-07T22:19:25Z)
+
+A local DINOv2 ViT-S/14 frame fallback monitor was implemented in `cam_physgeo/dpo/latent_relation_monitor_v14.py` and run on the 4 asset-complete calibration pairs.
+
+Evidence:
+
+- `reports/dpo_utility_calibration_v14/latent_monitor/dinov2_frame_smoke.csv`
+- `reports/dpo_utility_calibration_v14/latent_monitor/dinov2_frame_smoke_summary.md`
+- `reports/dpo_utility_calibration_v14/latent_monitor/dinov2_frame_smoke_summary.json`
+
+Result: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS`. All 4 rows completed with finite positive frame cosine margins and finite positive temporal-relation margins. This provides a bounded monitor signal that can distinguish the controlled WIN/LOSE pairs better than the scalar energy-only gate in this small smoke.
+
+Limitations: this is not full V-JEPA/VideoREPA/TRD training integration. The clean winner is used as the local reference for synthetic controlled pairs, so the winner-reference distance is trivially zero and the useful quantities are loser-to-winner frame distance and loser/winner temporal-relation distance. It should be used as a v15 monitor candidate, not as permission to scale v14 DPO.
+
+Decision remains `DPO_RECIPE_NOT_FOUND_V14`: scalar DPO schemes can improve energy/gap metrics, but validated checkpoint videos still degrade. No S16/S32/train400/large DPO is allowed from this evidence alone.

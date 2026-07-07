@@ -578,3 +578,16 @@ Decision: `DPO_RECIPE_NOT_FOUND_V14`. E07/E09/E10 all passed scalar training-sig
 - All500 energy CSVs are coverage/blocker files with `MISSING_REAL_ENERGY`, not real energy calibration evidence.
 - Latent monitor is `LATENT_MONITOR_BLOCKED` because no TRD/VJEPA margins were produced.
 - Best scalar candidates E09/E10 failed true V2V-5 visual gates, so S16/S32/train400 remain blocked.
+
+
+## v14 DINOv2 Frame Latent Monitor Smoke Update (2026-07-07T22:19:25Z)
+
+- Smoke CSV: `reports/dpo_utility_calibration_v14/latent_monitor/dinov2_frame_smoke.csv`.
+- Smoke summary: `reports/dpo_utility_calibration_v14/latent_monitor/dinov2_frame_smoke_summary.md`.
+- Backend: local `dinov2_vits14_pretrain.pth` loaded through transformers `Dinov2Model` with an explicit key mapping; no download was attempted.
+- Device: `CUDA_VISIBLE_DEVICES=4`, process `cuda:0` mapping to physical GPU4.
+- Result: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS` on 4/4 asset-complete calibration pairs.
+- Positive frame cosine margin rows: 4/4.
+- Positive temporal-relation margin rows: 4/4.
+- This is a real latent/visual monitor score, but it is a DINOv2 frame fallback smoke, not a full V-JEPA/TRD auxiliary-loss PASS.
+- DPO decision remains `DPO_RECIPE_NOT_FOUND_V14`; S16/S32/train400/large DPO remain blocked until a recipe passes true checkpoint video + metrics + Codex audit.

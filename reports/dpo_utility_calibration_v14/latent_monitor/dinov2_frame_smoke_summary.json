@@ -1,0 +1,18 @@
+{
+  "decision": "LATENT_MONITOR_DINO_FRAME_SMOKE_PASS",
+  "backend": "dinov2_vits14_frame_relation_local_weight",
+  "weight_path": "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth",
+  "device": "cuda:0",
+  "rows": 4,
+  "ok_rows": 4,
+  "positive_frame_margin_rows": 4,
+  "positive_temporal_relation_margin_rows": 4,
+  "temporal_relation_positive_ratio": 1.0,
+  "load_meta": {
+    "missing_keys": [],
+    "unexpected_keys": [],
+    "mapped_keys": 223
+  },
+  "elapsed_seconds": 77.436,
+  "note": "DINOv2 frame fallback monitor only. This is not a full V-JEPA/TRD auxiliary-loss PASS and no training was run."
+}

@@ -117,3 +117,23 @@ Next work should add a rollout-quality/latent visual monitor or stronger visual 
 - No model download, no training, and no fake latent scores were produced.
 - DPO decision remains `DPO_RECIPE_NOT_FOUND_V14`; S16/S32/train400/large DPO remain blocked.
 
+
+## v14 DINOv2 Frame Latent Monitor Smoke Update (2026-07-07T22:19:25Z)
+
+- Smoke CSV: `reports/dpo_utility_calibration_v14/latent_monitor/dinov2_frame_smoke.csv`.
+- Smoke summary: `reports/dpo_utility_calibration_v14/latent_monitor/dinov2_frame_smoke_summary.md`.
+- Backend: local `dinov2_vits14_pretrain.pth` loaded through transformers `Dinov2Model` with an explicit key mapping; no download was attempted.
+- Device: `CUDA_VISIBLE_DEVICES=4`, process `cuda:0` mapping to physical GPU4.
+- Result: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS` on 4/4 asset-complete calibration pairs.
+- Positive frame cosine margin rows: 4/4.
+- Positive temporal-relation margin rows: 4/4.
+- This is a real latent/visual monitor score, but it is a DINOv2 frame fallback smoke, not a full V-JEPA/TRD auxiliary-loss PASS.
+- DPO decision remains `DPO_RECIPE_NOT_FOUND_V14`; S16/S32/train400/large DPO remain blocked until a recipe passes true checkpoint video + metrics + Codex audit.
+
+
+## v14 DINOv2 Latent Monitor Test Update (2026-07-07T22:20:16Z)
+
+- `python3 -m compileall cam_physgeo src tests`: PASS.
+- Direct smoke for `tests/test_latent_relation_monitor_v14.py`: PASS for audit no-fake-values, code-only blocker, local weight detection, DINOv2 qkv mapping, and future-frame sampling.
+- `pytest -q tests/test_latent_relation_monitor_v14.py`: NOT RUN because `pytest` is unavailable in the active H20 shell (`exit 127`). No pytest PASS is claimed.
+- DINOv2 frame smoke: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS` with 4/4 ok rows.

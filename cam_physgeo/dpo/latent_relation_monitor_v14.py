@@ -2,16 +2,24 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import importlib.util
 import json
 import os
 import time
 from fnmatch import fnmatch
 from pathlib import Path
+from typing import Any
 
 CANDIDATE_IMPORTS = ["vjepa", "vijepa", "dinov2", "transformers", "torchvision", "clip", "open_clip", "pytorchvideo"]
 CANDIDATE_PATTERNS = ["*vjepa*", "*VJEPA*", "*videorepa*", "*VideoREPA*", "*videomae*", "*VideoMAE*", "*dinov2*", "*i3d*", "*trd*"]
 WEIGHT_PATTERNS = ["*.pt", "*.pth", "*.safetensors", "*.bin", "*.ckpt"]
+DEFAULT_DINOV2_VITS14 = "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth"
+KNOWN_LOCAL_WEIGHT_CANDIDATES = [
+    DEFAULT_DINOV2_VITS14,
+    "/home/nvme04/workspace/world_model_phys/PHYS/weight/vjepa2_1/vjepa2_1_vitb_dist_vitG_384.pt",
+    "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/local_assets/weights/vjepa2/vjepa2_1_vitb_dist_vitG_384.pt",
+]
 
 
 def find_files(roots: list[str], max_hits: int = 200, max_dirs: int = 20000, max_seconds: float = 30.0, *, weight_only: bool = False) -> tuple[list[str], dict[str, object]]:
@@ -62,6 +70,12 @@ def audit(args: argparse.Namespace) -> dict[str, object]:
         imports[name] = importlib.util.find_spec(name) is not None
     files, search_meta = find_files(args.search_roots, max_dirs=int(args.max_dirs), max_seconds=float(args.max_seconds))
     weight_files, weight_search_meta = find_files(args.search_roots, max_hits=100, max_dirs=int(args.max_dirs), max_seconds=float(args.max_seconds), weight_only=True)
+    if getattr(args, "include_known_candidates", True):
+        for known in KNOWN_LOCAL_WEIGHT_CANDIDATES:
+            known_path = Path(known)
+            if known_path.exists() and known_path.stat().st_size > 0:
+                weight_files.append(str(known_path))
+    weight_files = sorted(set(weight_files))
     has_model_code = any(imports.get(k, False) for k in ("vjepa", "vijepa", "dinov2", "clip", "open_clip", "transformers", "pytorchvideo"))
     has_teacher = has_model_code and bool(weight_files)
     decision = "LATENT_MONITOR_BACKEND_FOUND_NEEDS_SCORING" if has_teacher else "LATENT_MONITOR_BLOCKED_BY_ENV"
@@ -87,13 +101,283 @@ def audit(args: argparse.Namespace) -> dict[str, object]:
     return result
 
 
+def resolve_path(path: str | None, repo_root: Path) -> Path | None:
+    if not path:
+        return None
+    p = Path(path)
+    if not p.is_absolute():
+        p = repo_root / p
+    return p
+
+
+def map_dinov2_vits14_state_dict(state_dict: dict[str, Any]) -> dict[str, Any]:
+    """Map official DINOv2 ViT-S/14 keys to transformers Dinov2Model keys."""
+    mapped: dict[str, Any] = {}
+    direct = {
+        "cls_token": "embeddings.cls_token",
+        "mask_token": "embeddings.mask_token",
+        "pos_embed": "embeddings.position_embeddings",
+        "patch_embed.proj.weight": "embeddings.patch_embeddings.projection.weight",
+        "patch_embed.proj.bias": "embeddings.patch_embeddings.projection.bias",
+        "norm.weight": "layernorm.weight",
+        "norm.bias": "layernorm.bias",
+    }
+    for src, dst in direct.items():
+        if src in state_dict:
+            mapped[dst] = state_dict[src]
+    for layer in range(12):
+        prefix = f"blocks.{layer}"
+        dst = f"encoder.layer.{layer}"
+        for src_suffix, dst_suffix in (
+            ("norm1.weight", "norm1.weight"),
+            ("norm1.bias", "norm1.bias"),
+            ("attn.proj.weight", "attention.output.dense.weight"),
+            ("attn.proj.bias", "attention.output.dense.bias"),
+            ("ls1.gamma", "layer_scale1.lambda1"),
+            ("norm2.weight", "norm2.weight"),
+            ("norm2.bias", "norm2.bias"),
+            ("mlp.fc1.weight", "mlp.fc1.weight"),
+            ("mlp.fc1.bias", "mlp.fc1.bias"),
+            ("mlp.fc2.weight", "mlp.fc2.weight"),
+            ("mlp.fc2.bias", "mlp.fc2.bias"),
+            ("ls2.gamma", "layer_scale2.lambda1"),
+        ):
+            key = f"{prefix}.{src_suffix}"
+            if key in state_dict:
+                mapped[f"{dst}.{dst_suffix}"] = state_dict[key]
+        qkv_w = state_dict.get(f"{prefix}.attn.qkv.weight")
+        qkv_b = state_dict.get(f"{prefix}.attn.qkv.bias")
+        if qkv_w is not None:
+            q_w, k_w, v_w = qkv_w.chunk(3, dim=0)
+            mapped[f"{dst}.attention.attention.query.weight"] = q_w
+            mapped[f"{dst}.attention.attention.key.weight"] = k_w
+            mapped[f"{dst}.attention.attention.value.weight"] = v_w
+        if qkv_b is not None:
+            q_b, k_b, v_b = qkv_b.chunk(3, dim=0)
+            mapped[f"{dst}.attention.attention.query.bias"] = q_b
+            mapped[f"{dst}.attention.attention.key.bias"] = k_b
+            mapped[f"{dst}.attention.attention.value.bias"] = v_b
+    return mapped
+
+
+def load_dinov2_vits14(weight_path: Path, device: str):
+    import torch
+    from transformers import Dinov2Config, Dinov2Model
+
+    cfg = Dinov2Config(
+        image_size=518,
+        patch_size=14,
+        num_channels=3,
+        hidden_size=384,
+        num_hidden_layers=12,
+        num_attention_heads=6,
+        intermediate_size=1536,
+    )
+    model = Dinov2Model(cfg)
+    raw = torch.load(weight_path, map_location="cpu")
+    mapped = map_dinov2_vits14_state_dict(raw)
+    missing, unexpected = model.load_state_dict(mapped, strict=False)
+    model.eval().to(device)
+    return model, {"missing_keys": list(missing), "unexpected_keys": list(unexpected), "mapped_keys": len(mapped)}
+
+
+def read_video_frames(video_path: Path, frame_indices: list[int]) -> list[Any]:
+    import cv2
+
+    cap = cv2.VideoCapture(str(video_path))
+    if not cap.isOpened():
+        raise RuntimeError(f"could not open video: {video_path}")
+    frames = []
+    for idx in frame_indices:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, int(idx))
+        ok, frame = cap.read()
+        if not ok or frame is None:
+            continue
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frames.append(frame)
+    cap.release()
+    if not frames:
+        raise RuntimeError(f"no requested frames decoded from {video_path}")
+    return frames
+
+
+def encode_frames_dinov2(model: Any, frames: list[Any], device: str):
+    import torch
+    import torch.nn.functional as F
+
+    tensors = []
+    mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+    std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+    for frame in frames:
+        t = torch.from_numpy(frame).permute(2, 0, 1).float() / 255.0
+        t = F.interpolate(t.unsqueeze(0), size=(518, 518), mode="bicubic", align_corners=False).squeeze(0)
+        tensors.append((t - mean) / std)
+    batch = torch.stack(tensors).to(device)
+    with torch.inference_mode():
+        out = model(pixel_values=batch)
+        feats = out.last_hidden_state[:, 0].float()
+        feats = F.normalize(feats, dim=-1)
+    return feats.cpu()
+
+
+def temporal_relation_distance(a: Any, b: Any) -> float:
+    import torch
+
+    if a.shape[0] < 2 or b.shape[0] < 2:
+        return float("nan")
+    da = torch.cdist(a, a, p=2)
+    db = torch.cdist(b, b, p=2)
+    return float((da - db).abs().mean().item())
+
+
+def cosine_distance(a: Any, b: Any) -> float:
+    import torch.nn.functional as F
+
+    aa = F.normalize(a.mean(dim=0, keepdim=True), dim=-1)
+    bb = F.normalize(b.mean(dim=0, keepdim=True), dim=-1)
+    return float((1.0 - (aa * bb).sum(dim=-1)).item())
+
+
+def pick_frame_indices(pair: dict[str, Any], max_frames: int) -> list[int]:
+    future = pair.get("winner", {}).get("future_frame_indices") or pair.get("loss_frame_indices") or list(range(5, 81))
+    future = [int(x) for x in future]
+    if len(future) <= max_frames:
+        return future
+    if max_frames <= 1:
+        return [future[len(future) // 2]]
+    positions = [round(i * (len(future) - 1) / (max_frames - 1)) for i in range(max_frames)]
+    return [future[i] for i in positions]
+
+
+def score_dinov2_frame_smoke(args: argparse.Namespace) -> dict[str, object]:
+    import torch
+
+    repo_root = Path(args.repo_root).resolve()
+    out_dir = Path(args.output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    output_csv = Path(args.output_csv) if args.output_csv else out_dir / "dinov2_frame_smoke.csv"
+    output_json = Path(args.output_json) if args.output_json else out_dir / "dinov2_frame_smoke_summary.json"
+    output_md = Path(args.output_md) if args.output_md else out_dir / "dinov2_frame_smoke_summary.md"
+    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    device = "cuda:" + str(args.gpu) if args.gpu is not None and torch.cuda.is_available() else "cpu"
+    weight_path = resolve_path(args.dinov2_weight, repo_root)
+    if not weight_path or not weight_path.exists():
+        raise FileNotFoundError(f"DINOv2 weight not found: {weight_path}")
+    started = time.time()
+    model, load_meta = load_dinov2_vits14(weight_path, device)
+    rows: list[dict[str, object]] = []
+    fields = [
+        "pair_id", "backend", "frame_indices", "num_frames", "winner_video", "loser_video",
+        "winner_distance_to_reference", "loser_distance_to_reference", "frame_cosine_margin",
+        "temporal_relation_winner", "temporal_relation_loser", "temporal_relation_margin",
+        "status", "error_reason", "seconds",
+    ]
+    with Path(args.pair_manifest).open("r", encoding="utf-8") as f, output_csv.open("w", newline="", encoding="utf-8") as cf:
+        writer = csv.DictWriter(cf, fieldnames=fields)
+        writer.writeheader()
+        for idx, line in enumerate(f):
+            if args.num_pairs and idx >= args.num_pairs:
+                break
+            pair_started = time.time()
+            pair = json.loads(line)
+            row: dict[str, object] = {
+                "pair_id": pair.get("pair_id", f"row_{idx}"),
+                "backend": "dinov2_vits14_frame_relation_local_weight",
+                "status": "ok",
+                "error_reason": "",
+            }
+            try:
+                winner_path = resolve_path(pair.get("winner", {}).get("full_video_path") or pair.get("winner", {}).get("future_video_path") or pair.get("winner_video_path"), repo_root)
+                loser_path = resolve_path(pair.get("loser", {}).get("full_video_path") or pair.get("loser", {}).get("future_video_path") or pair.get("loser_video_path"), repo_root)
+                if not winner_path or not winner_path.exists():
+                    raise FileNotFoundError(f"winner video missing: {winner_path}")
+                if not loser_path or not loser_path.exists():
+                    raise FileNotFoundError(f"loser video missing: {loser_path}")
+                frame_indices = pick_frame_indices(pair, int(args.max_frames))
+                winner_frames = read_video_frames(winner_path, frame_indices)
+                loser_frames = read_video_frames(loser_path, frame_indices)
+                n = min(len(winner_frames), len(loser_frames))
+                winner_feats = encode_frames_dinov2(model, winner_frames[:n], device)
+                loser_feats = encode_frames_dinov2(model, loser_frames[:n], device)
+                winner_dist = 0.0
+                loser_dist = cosine_distance(loser_feats, winner_feats)
+                rel_winner = 0.0
+                rel_loser = temporal_relation_distance(loser_feats, winner_feats)
+                row.update({
+                    "frame_indices": json.dumps(frame_indices[:n]),
+                    "num_frames": n,
+                    "winner_video": str(winner_path),
+                    "loser_video": str(loser_path),
+                    "winner_distance_to_reference": winner_dist,
+                    "loser_distance_to_reference": loser_dist,
+                    "frame_cosine_margin": loser_dist - winner_dist,
+                    "temporal_relation_winner": rel_winner,
+                    "temporal_relation_loser": rel_loser,
+                    "temporal_relation_margin": rel_loser - rel_winner,
+                })
+            except Exception as exc:  # noqa: BLE001 - report exact per-pair blocker and continue.
+                row.update({"status": "error", "error_reason": f"{type(exc).__name__}: {exc}"})
+            row["seconds"] = round(time.time() - pair_started, 3)
+            writer.writerow(row)
+            cf.flush()
+            rows.append(row)
+    ok = [r for r in rows if r.get("status") == "ok"]
+    positive_frame = [r for r in ok if float(r.get("frame_cosine_margin") or 0.0) > 1e-6]
+    positive_relation = [r for r in ok if float(r.get("temporal_relation_margin") or 0.0) > 1e-6]
+    ratio = len(positive_relation) / len(ok) if ok else 0.0
+    decision = "LATENT_MONITOR_DINO_FRAME_SMOKE_PASS" if ok and ratio >= 0.65 else "LATENT_MONITOR_DINO_FRAME_SMOKE_FAIL"
+    summary = {
+        "decision": decision,
+        "backend": "dinov2_vits14_frame_relation_local_weight",
+        "weight_path": str(weight_path),
+        "device": device,
+        "rows": len(rows),
+        "ok_rows": len(ok),
+        "positive_frame_margin_rows": len(positive_frame),
+        "positive_temporal_relation_margin_rows": len(positive_relation),
+        "temporal_relation_positive_ratio": ratio,
+        "load_meta": load_meta,
+        "elapsed_seconds": round(time.time() - started, 3),
+        "note": "DINOv2 frame fallback monitor only. This is not a full V-JEPA/TRD auxiliary-loss PASS and no training was run.",
+    }
+    output_json.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    md = [
+        "# DINOv2 Frame Latent Monitor Smoke",
+        "",
+        f"Decision: `{decision}`",
+        "",
+        f"Rows: {len(rows)}; ok: {len(ok)}",
+        f"Positive temporal-relation margin rows: {len(positive_relation)}/{len(ok) if ok else 0}",
+        f"Positive frame cosine margin rows: {len(positive_frame)}/{len(ok) if ok else 0}",
+        "",
+        "This uses a local DINOv2 ViT-S/14 frame fallback. It does not download models, does not train, and does not claim full V-JEPA/TRD readiness.",
+    ]
+    output_md.write_text("\n".join(md) + "\n", encoding="utf-8")
+    return summary
+
+
 def main(argv: list[str] | None = None) -> None:
     p = argparse.ArgumentParser()
+    p.add_argument("--mode", choices=["audit", "dinov2_frame_smoke"], default="audit")
     p.add_argument("--search_roots", nargs="+", default=["/home/nvme03", "/home/nvme04"])
     p.add_argument("--output_dir", default="reports/dpo_utility_calibration_v14/latent_monitor")
     p.add_argument("--max_dirs", type=int, default=20000)
     p.add_argument("--max_seconds", type=float, default=30.0)
-    print(json.dumps(audit(p.parse_args(argv)), indent=2, sort_keys=True))
+    p.add_argument("--pair_manifest", default="manifests/dpo_v14_subsets/asset_complete_prefix5_calibration4.jsonl")
+    p.add_argument("--num_pairs", type=int, default=0)
+    p.add_argument("--gpu", type=int, default=None)
+    p.add_argument("--max_frames", type=int, default=5)
+    p.add_argument("--repo_root", default=".")
+    p.add_argument("--dinov2_weight", default=DEFAULT_DINOV2_VITS14)
+    p.add_argument("--output_csv", default=None)
+    p.add_argument("--output_json", default=None)
+    p.add_argument("--output_md", default=None)
+    args = p.parse_args(argv)
+    if args.mode == "audit":
+        result = audit(args)
+    else:
+        result = score_dinov2_frame_smoke(args)
+    print(json.dumps(result, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":

@@ -463,3 +463,11 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Decision: `LATENT_MONITOR_BACKEND_FOUND_NEEDS_SCORING`, not latent-monitor PASS; no TRD/VJEPA margin values have been produced yet.
 - Artifact policy: pushed source/tests/docs and small backend-audit JSON/MD only. Did not push local_assets, weights, videos, images, checkpoints, stdout logs, or large files.
 
+
+## v14 DINOv2 Frame Latent Monitor Smoke Pending Push
+
+- Updated: `2026-07-07T22:19:25Z`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Summary: extended `latent_relation_monitor_v14.py` with a local DINOv2 ViT-S/14 frame/relation smoke, mapped the local DINOv2 weights without download, and produced 4/4 finite positive WIN/LOSE latent margins.
+- Decision: `LATENT_MONITOR_DINO_FRAME_SMOKE_PASS` for this bounded fallback smoke; full V-JEPA/TRD scoring remains future work; `DPO_RECIPE_NOT_FOUND_V14` remains.
+- Artifact policy: stage only source/tests/docs and small CSV/JSON/MD summaries. Do not stage local_assets, weights, videos, images, checkpoints, or large logs.
