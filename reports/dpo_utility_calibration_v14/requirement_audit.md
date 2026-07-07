@@ -98,3 +98,13 @@ Do not continue ordinary DPO scaling. Add a rollout-quality or latent visual mon
 - `/usr/bin/python3` avoids the Python 3.13 transformers/huggingface-hub conflict.
 - The repaired one-pair smoke loaded LingBot shards and entered VAE, then timed out at 900 seconds before first real-energy row.
 - Offline all500 real energy remains `BLOCKED`; no real all500 energy calibration is claimed.
+
+## v14 Real-Energy Stage Debug Update
+
+- Stage debug path: `reports/dpo_utility_calibration_v14/blocker_retry/stage_debug/real_energy_stage_debug_summary.md`.
+- The repaired asset-complete one-pair path passed schema/env/shard loading.
+- `4_init_energy_runtime` completed but took about 557.6 seconds.
+- `5_decode_example` completed in about 68.1 seconds.
+- The run then timed out at `7_encode_winner_probe`; no real-energy row was produced.
+- Current exact blocker: `REAL_ENERGY_STAGE_DEBUG_TIMEOUT_ENCODE_WINNER_PROBE`.
+- DPO decision remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400 scale is allowed.

@@ -1,0 +1,55 @@
+{
+  "completed_stages": [
+    {
+      "elapsed": 1.310196876525879,
+      "event": "stage_done",
+      "seconds": 0.05947446823120117,
+      "stage": "1_load_config",
+      "status": "PASS"
+    },
+    {
+      "elapsed": 1.3107869625091553,
+      "event": "stage_done",
+      "seconds": 0.0002887248992919922,
+      "stage": "2_load_dataset",
+      "status": "PASS"
+    },
+    {
+      "elapsed": 1.3247299194335938,
+      "event": "stage_done",
+      "seconds": 0.013853073120117188,
+      "stage": "3_normalize_protocol",
+      "status": "PASS"
+    },
+    {
+      "elapsed": 558.8991899490356,
+      "event": "stage_done",
+      "seconds": 557.567752122879,
+      "stage": "4_init_energy_runtime",
+      "status": "PASS"
+    },
+    {
+      "elapsed": 627.0112040042877,
+      "event": "stage_done",
+      "seconds": 68.11056971549988,
+      "stage": "5_decode_example",
+      "status": "PASS"
+    },
+    {
+      "elapsed": 627.6525280475616,
+      "event": "stage_done",
+      "seconds": 0.63926100730896,
+      "stage": "6_move_winner_video_to_device",
+      "status": "PASS"
+    }
+  ],
+  "decision": "REAL_ENERGY_STAGE_DEBUG_TIMEOUT_ENCODE_WINNER_PROBE",
+  "dpo_decision_unchanged": "DPO_RECIPE_NOT_FOUND_V14",
+  "generated": "2026-07-08T04:01:06",
+  "last_allocated_gb": 37.587993088,
+  "last_cpu_rss_gb": 49.53215026855469,
+  "last_elapsed_seconds": 871.3553779125214,
+  "last_event": "heartbeat",
+  "last_stage": "7_encode_winner_probe",
+  "scale_permission": "NO_SCALE"
+}

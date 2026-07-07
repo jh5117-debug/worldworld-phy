@@ -217,3 +217,13 @@ A follow-up retry built `manifests/dpo_v14_subsets/asset_complete_prefix5_onepai
 The adapted manifest passed `prefix5_schema_errors`. Running `full_real_energy_audit` with the active conda Python failed because user-site Transformers/HuggingFace Hub versions are incompatible. Re-running with `/usr/bin/python3` fixed imports and loaded all 16 LingBot shards, then entered the VAE path, but hit the 900 second timeout before the first energy row.
 
 Current blocker: `REAL_ENERGY_CALIBRATION_BLOCKED_FORWARD_TIMEOUT`. This does not change the DPO decision: no v14 recipe passed both scalar and true-video gates.
+
+## v14 Real-Energy Stage Debug Update
+
+- Stage debug path: `reports/dpo_utility_calibration_v14/blocker_retry/stage_debug/real_energy_stage_debug_summary.md`.
+- The repaired asset-complete one-pair path passed schema/env/shard loading.
+- `4_init_energy_runtime` completed but took about 557.6 seconds.
+- `5_decode_example` completed in about 68.1 seconds.
+- The run then timed out at `7_encode_winner_probe`; no real-energy row was produced.
+- Current exact blocker: `REAL_ENERGY_STAGE_DEBUG_TIMEOUT_ENCODE_WINNER_PROBE`.
+- DPO decision remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400 scale is allowed.
