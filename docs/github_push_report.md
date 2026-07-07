@@ -343,3 +343,8 @@ Committed only lightweight E02 smoke CSV/summary and docs. Did not push local ch
 ## v14 E03 Smoke10 Push
 
 Committed lightweight E03 partial CSV/summary only. The own E03 process was stopped after winner-worse gate failure. No checkpoint/video/local_assets files were pushed.
+
+
+## v14 E02_best7 Video Audit Update (2026-07-07T02:37:56.080956Z)
+
+Prepared lightweight audit/docs for E02_best7. Large local assets, videos, contact-sheet images, and checkpoints are intentionally not staged or pushed.

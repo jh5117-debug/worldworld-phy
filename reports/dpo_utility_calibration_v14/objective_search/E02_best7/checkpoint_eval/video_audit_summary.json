@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-07-07T02:37:27.922566Z",
+  "scheme_id": "E02_best7",
+  "training_signal_decision": "TRAINING_SIGNAL_PASS",
+  "video_rows_reviewed": 12,
+  "final_checkpoint": "step007",
+  "step005_worse_count": 0,
+  "step007_worse_count": 0,
+  "codex_visual_audit_decision": "VISUAL_GATE_FAIL_FINAL_CHECKPOINT_WORSE",
+  "recipe_decision": "DPO_RECIPE_TRAINING_SIGNAL_ONLY_VIDEO_FAIL_V14",
+  "scale_permission": "NO_SCALE",
+  "notes": "Training gap metrics improved for E02_best7, but final checkpoint generated visible object duplication/fragments and foreground drift on multiple validation samples. Do not scale to S16/S32/train400."
+}

@@ -141,3 +141,22 @@ For v13b, S05 and S07 passed enough training signal to run checkpoint evaluation
 ## v14 Latent Monitor Status
 
 V-JEPA/VideoREPA/TRD are monitor-first only. v14 found local backend candidates but did not produce valid TRD/VJEPA scores, so no latent auxiliary loss is enabled.
+
+
+## E02_best7 Checkpoint Video Audit Update (2026-07-07T02:37:56.080956Z)
+
+- Candidate: `E02_best7` / `calibrated_winner_detached_log` / `beta=1000` / `L0_camera_r4`.
+- Training signal: `TRAINING_SIGNAL_PASS`.
+- Mean winner improvement post: `0.00010894877570016044`.
+- Final winner improvement post: `0.00033855438232421875`.
+- Mean winner contribution ratio: `0.6680136300480072`.
+- True V2V-5 checkpoint videos generated: `12` (`step000`, `step005`, `step007` on 4 validation samples).
+- Codex visual audit: `FAIL`. Final `step007` is worse than `step000` on multiple samples due to duplicate objects, hallucinated blobs/fragments, and foreground object-count/identity drift.
+- Metrics: PSNR/SSIM rows `12/12`; LPIPS GPU smoke `PASS`; FVD remains `BLOCKED_BY_ENV`; VBench real checkpoint scoring not configured in this wrapper.
+- Decision: `DPO_RECIPE_TRAINING_SIGNAL_ONLY_VIDEO_FAIL_V14`.
+- Scale permission: `NO_SCALE`; do not run S16/S32/train400 from this recipe.
+
+Relevant paths:
+- `reports/dpo_utility_calibration_v14/objective_search/E02_best7/checkpoint_eval/video_audit.csv`
+- `reports/dpo_utility_calibration_v14/objective_search/E02_best7/checkpoint_eval/video_audit_summary.md`
+- `reports/dpo_utility_calibration_v14/objective_search/E02_best7/metrics/metrics_summary.md`

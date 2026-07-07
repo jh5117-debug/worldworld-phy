@@ -1,0 +1,8 @@
+{"timestamp":"2026-07-07T09:15:02+08:00","note":"start","gpu4_mem_mb":1,"gpu5_mem_mb":1,"gpu4_busy":0,"gpu5_busy":0}
+{"timestamp":"2026-07-07T09:15:10+08:00","note":"start_step000_gpu4","gpu4_mem_mb":1,"gpu5_mem_mb":1,"gpu4_busy":0,"gpu5_busy":0}
+{"timestamp":"2026-07-07T09:32:13+08:00","note":"finish_step000_exit0_mp44","gpu4_mem_mb":1,"gpu5_mem_mb":1,"gpu4_busy":0,"gpu5_busy":0}
+{"timestamp":"2026-07-07T09:32:23+08:00","note":"start_step005_gpu4","gpu4_mem_mb":1,"gpu5_mem_mb":1,"gpu4_busy":0,"gpu5_busy":0}
+{"timestamp":"2026-07-07T09:49:21+08:00","note":"finish_step005_exit0_mp44","gpu4_mem_mb":1,"gpu5_mem_mb":1,"gpu4_busy":0,"gpu5_busy":0}
+{"timestamp":"2026-07-07T09:49:29+08:00","note":"start_step007_gpu4","gpu4_mem_mb":1,"gpu5_mem_mb":1,"gpu4_busy":0,"gpu5_busy":0}
+{"timestamp":"2026-07-07T10:06:33+08:00","note":"finish_step007_exit0_mp44","gpu4_mem_mb":1,"gpu5_mem_mb":1,"gpu4_busy":0,"gpu5_busy":0}
+{"timestamp":"2026-07-07T10:07:41+08:00","note":"done","gpu4_mem_mb":1,"gpu5_mem_mb":1,"gpu4_busy":0,"gpu5_busy":0}
