@@ -1,0 +1,22 @@
+{
+  "cuda_peak_memory_gb_max": 50.43468189239502,
+  "decision": "REAL_ENERGY_CALIBRATION2_CUDA_RUNTIME_PASS",
+  "dpo_decision": "DPO_RECIPE_NOT_FOUND_V14",
+  "energy_csv": "reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration4_cuda_runtime_limit2/shard_00_of_01.csv",
+  "energy_seconds": [
+    228.92305850982666,
+    225.6800239086151
+  ],
+  "generated_at": "2026-07-07T21:19:30Z",
+  "gpu5_used": false,
+  "manifest": "manifests/dpo_v14_subsets/asset_complete_prefix5_calibration4.jsonl",
+  "ok_rows": 2,
+  "pair_ids": [
+    "v11_SYN_0017_02215_collision_strafe_left_180_seed41215_background_drift_visible",
+    "v11_SYN_0035_02228_collision_orbit_right_64_seed41228_background_drift_visible"
+  ],
+  "physical_gpu": 4,
+  "rows": 2,
+  "runtime_device": "cuda",
+  "scale_permission": "NO_S16_NO_S32_NO_TRAIN400_NO_LARGE_DPO"
+}

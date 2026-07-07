@@ -116,3 +116,13 @@ Do not continue ordinary DPO scaling. Add a rollout-quality or latent visual mon
 - Re-running the same asset-complete one-pair audit with `--runtime_device cuda` produced a real `status=ok` energy row.
 - Energy seconds: `212.4425`; CUDA peak memory about `50.43GB`.
 - This repairs the one-pair real-energy path but does not change the DPO recipe decision: `DPO_RECIPE_NOT_FOUND_V14`; S16/S32/train400 remain blocked.
+
+## v14 Bounded Real-Energy Calibration2 Update
+
+- Summary: `reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration4_cuda_runtime_limit2/real_energy_calibration2_summary.md`.
+- Adapter manifest: `manifests/dpo_v14_subsets/asset_complete_prefix5_calibration4.jsonl` contains 4 schema-valid asset-complete TypeM-v11 synthetic pairs for calibration.
+- Bounded run used physical GPU4 only with `--runtime_device cuda` and wrote 2/2 `status=ok` real energy rows.
+- Energy seconds were about `228.92s` and `225.68s`; peak CUDA memory was about `50.43GB`.
+- This proves the calibration path can move beyond one pair, but it is still too expensive for all500 without batching/cache improvements.
+- DPO decision remains `DPO_RECIPE_NOT_FOUND_V14`; S16/S32/train400/large DPO remain blocked.
+
