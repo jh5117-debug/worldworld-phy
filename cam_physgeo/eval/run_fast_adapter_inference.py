@@ -281,6 +281,60 @@ def _load_adapter(pipe: Any, adapter_dir: Path) -> dict[str, Any]:
     }
 
 
+
+def _load_lora_state_checkpoint(pipe: Any, state_path: Path, args: argparse.Namespace) -> dict[str, Any]:
+    """Load a v12/v14 DPO LoRA state dict saved by extract_lora_state.
+
+    StageA checkpoint eval historically consumed adapter directories. The DPO
+    objective probes save only the LoRA A/B tensors, so eval needs to recreate
+    the same LoRA modules before loading that state.
+    """
+    from cam_physgeo.dpo.lingbot_fast_energy import load_lora_state
+    from physical_consistency.trainers.stage1_components import apply_lora_to_wan_model
+
+    if not state_path.exists():
+        raise FileNotFoundError(f"Missing DPO LoRA state: {state_path}")
+    target_groups = tuple(x.strip() for x in str(args.lora_target_groups).split(",") if x.strip())
+    if not target_groups:
+        target_groups = ("camera_conditioning",)
+    target_prefixes = tuple(x.strip() for x in str(args.lora_target_prefixes).split(",") if x.strip())
+    if not target_prefixes:
+        target_prefixes = ("blocks",)
+    report = apply_lora_to_wan_model(
+        pipe.model,
+        model_name="fast_dpo_eval",
+        rank=int(args.lora_rank),
+        alpha=int(args.lora_alpha),
+        dropout=float(args.lora_dropout),
+        target_prefixes=target_prefixes,
+        block_start=int(args.lora_block_start),
+        block_end=args.lora_block_end,
+        target_groups=target_groups,
+        required_groups=target_groups,
+        include_patterns=(),
+        exclude_patterns=(),
+        lora_chunk_size=int(args.lora_chunk_size) if int(args.lora_chunk_size) > 0 else None,
+        merge_mode=str(args.lora_merge_mode),
+    )
+    state = torch.load(state_path, map_location="cpu", weights_only=True)
+    if not isinstance(state, dict) or not state:
+        raise ValueError(f"Expected non-empty LoRA state dict at {state_path}")
+    load_lora_state(pipe.model, state)
+    pipe.model.eval().requires_grad_(False)
+    return {
+        "adapter_loaded": True,
+        "adapter_kind": "dpo_lora_state",
+        "lora_state": str(state_path),
+        "lora_tensor_count": len(state),
+        "rank": int(args.lora_rank),
+        "alpha": int(args.lora_alpha),
+        "target_groups": list(target_groups),
+        "selected_count": report.selected_count,
+        "selected_by_group": {k: len(v) for k, v in report.selected_by_group.items()},
+        "trainable_params": report.trainable_params,
+    }
+
+
 def run(args: argparse.Namespace) -> None:
     _install_paths(args.lingbot_code_dir)
     import wan
@@ -311,8 +365,12 @@ def run(args: argparse.Namespace) -> None:
     if control_type != "cam":
         raise RuntimeError(f"Expected Fast camera-control model, got control_type={control_type}")
     adapter_info: dict[str, Any] = {"adapter_loaded": False}
+    if args.adapter_dir and args.lora_state:
+        raise ValueError("Use either --adapter_dir or --lora_state, not both")
     if args.adapter_dir:
         adapter_info = _load_adapter(pipe, Path(args.adapter_dir)); adapter_info["adapter_loaded"] = True
+    if args.lora_state:
+        adapter_info = _load_lora_state_checkpoint(pipe, Path(args.lora_state), args)
     manifest_rows=[]
     for index, row in enumerate(rows):
         sample_id = _sample_id(row); clip_dir = _clip_dir(row); source_video = _video_path(row)
@@ -366,16 +424,19 @@ def run(args: argparse.Namespace) -> None:
     }, indent=2), encoding="utf-8")
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--manifest", required=True); p.add_argument("--out", required=True); p.add_argument("--model_label", required=True)
-    p.add_argument("--ckpt_dir", default=DEFAULT_FAST_ROOT); p.add_argument("--lingbot_code_dir", default=DEFAULT_LINGBOT_CODE); p.add_argument("--adapter_dir", default="")
+    p.add_argument("--ckpt_dir", default=DEFAULT_FAST_ROOT); p.add_argument("--lingbot_code_dir", default=DEFAULT_LINGBOT_CODE); p.add_argument("--adapter_dir", default=""); p.add_argument("--lora_state", default="")
+    p.add_argument("--lora_rank", type=int, default=4); p.add_argument("--lora_alpha", type=int, default=4); p.add_argument("--lora_dropout", type=float, default=0.0)
+    p.add_argument("--lora_block_start", type=int, default=0); p.add_argument("--lora_block_end", type=int, default=None); p.add_argument("--lora_chunk_size", type=int, default=1024)
+    p.add_argument("--lora_target_prefixes", default="blocks"); p.add_argument("--lora_target_groups", default="camera_conditioning"); p.add_argument("--lora_merge_mode", default="out_of_place")
     p.add_argument("--task", default="i2v-A14B"); p.add_argument("--size", default="832*480"); p.add_argument("--height", type=int, default=480); p.add_argument("--width", type=int, default=832)
     p.add_argument("--frame_num", type=int, default=81); p.add_argument("--seed", type=int, default=123); p.add_argument("--sample_shift", type=float, default=5.0)
     p.add_argument("--chunk_size", type=int, default=3); p.add_argument("--max_attention_size", type=int, default=None); p.add_argument("--max_samples", type=int, default=8); p.add_argument("--per_template", type=int, default=2)
     p.add_argument("--allow_gpu0", action="store_true", help="Allow physical GPU0 when CUDA_VISIBLE_DEVICES starts with 0; disabled by default for safety.")
     p.add_argument("--offload_model", action="store_true", default=False); p.add_argument("--t5_cpu", action="store_true", default=False); p.add_argument("--skip_existing", action="store_true")
-    return p.parse_args()
+    return p.parse_args(argv)
 
 
 if __name__ == "__main__":

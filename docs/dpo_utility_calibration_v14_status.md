@@ -39,3 +39,15 @@ Do not run train400 or large DPO. The next safe training probe, after the user a
 - It was stopped early after `2` rows because winner improvement became negative.
 - Decision: `TRAINING_SIGNAL_FAIL_WINNER`.
 - Next safe direction: E02 best-step early stop / stronger winner protection, not scale.
+
+
+## E02 Best7 Training-Signal Update
+
+- `E02_best7` ran on physical GPU4 only with `CUDA_VISIBLE_DEVICES=4`.
+- Objective: `calibrated_winner_detached_log`, utility `u_log`, beta `1000`, L0 camera r4.
+- Steps: `7/7`.
+- Mean winner_improvement_post: `0.00010894877570016044`.
+- Final winner_improvement_post: `0.00033855438232421875`.
+- Mean winner_contribution_ratio_post: `0.6667287038434788`.
+- Decision: `DPO_RECIPE_TRAINING_SIGNAL_ONLY_V14` / `TRAINING_SIGNAL_PASS`.
+- Checkpoint video, metrics, and Codex visual audit are still pending; train400 and large DPO remain blocked.

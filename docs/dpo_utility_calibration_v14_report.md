@@ -97,3 +97,17 @@ This confirms beta calibration fixes the 0.693 no-signal issue, but E02 still fa
 ## E03 Smoke10 Early Stop
 
 `E03_smoke10` was launched on physical GPU5 only with lower LR/lambda_pref. It produced `2` rows and hit `WINNER_WORSE` by step 1, so the own E03 process was stopped early according to the gate policy. Decision: `TRAINING_SIGNAL_FAIL_WINNER`. Lower LR alone did not solve winner instability.
+
+
+## E02 Best7 Training Signal
+
+`E02_best7` reran the calibrated winner-detached-log scheme for 7 steps, matching the best-step region found by E02_smoke10.
+
+- Rows: `7` / `7`
+- Mean winner_improvement_post: `0.00010894877570016044`
+- Final winner_improvement_post: `0.00033855438232421875`
+- Mean WCR: `0.6667287038434788`
+- Mean loser_degradation_post: `-2.8984887259347098e-05`
+- Decision: `DPO_RECIPE_TRAINING_SIGNAL_ONLY_V14`
+
+This is the first v14 training-signal pass, but it is not a final recipe. The next required gate is checkpoint video generation, PSNR/SSIM/LPIPS/FVD/VBench/PhysGeo metrics, and Codex visual audit for step0/step5/step7. No scaling is allowed before that gate passes.

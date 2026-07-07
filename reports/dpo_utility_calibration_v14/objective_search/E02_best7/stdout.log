@@ -1,0 +1,93 @@
+PC_FORCE_SDPA_FALLBACK=1 but wan.modules.attention has no _sdpa_fallback; cannot patch flash_attention
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00001-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00002-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00003-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00004-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00005-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00006-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00007-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00008-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00009-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00010-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00011-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00012-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00013-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00014-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00015-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+The safetensors archive passed at /home/nvme03/workspace/lingbot-world/lingbot-world-base-cam/lingbot_world_fast/model-00016-of-00016.safetensors does not contain metadata. Make sure to save your model with the `save_pretrained` method. Defaulting to 'pt' metadata.
+{
+  "checkpoint_manifest": "local_assets/dpo_utility_calibration_v14/objective_search/E02_best7/checkpoints/checkpoint_manifest.json",
+  "checkpoints_saved": 3,
+  "final_winner_improvement_post": 0.00033855438232421875,
+  "mean_loser_degradation_post": -2.8984887259347098e-05,
+  "mean_winner_contribution_ratio_post": 0.6667287038434788,
+  "mean_winner_improvement_post": 0.00010894877570016044,
+  "objective": "calibrated_winner_detached_log",
+  "output": "reports/dpo_utility_calibration_v14/objective_search/E02_best7/E02_best7_7step.csv",
+  "rows_written": 7,
+  "seconds": 662.8546869754791,
+  "status": "CALIBRATED_WINNER_DETACHED_LOG_SIGNAL_HEALTHY",
+  "steps_requested": 7
+}
+{
+  "checkpoint_manifest": "local_assets/dpo_utility_calibration_v14/objective_search/E02_best7/checkpoints/checkpoint_manifest.json",
+  "checkpoints_saved": 3,
+  "final_winner_improvement_post": 0.00033855438232421875,
+  "gap_enriched_csv": "reports/dpo_utility_calibration_v14/objective_search/E02_best7/E02_best7_7step_gap_enriched.csv",
+  "gap_summary": {
+    "final_health_flags": "WINNER_IMPROVES;LOSER_DEGRADES",
+    "final_win_gap": "-0.00033855438232421875",
+    "final_winner_improvement_post": "0.00033855438232421875",
+    "mean_g_l": -3.86621721018718e-05,
+    "mean_g_w": -0.00014553301675477472,
+    "mean_lose_gap": -2.8984887259347098e-05,
+    "mean_loser_degradation_post": -2.8984887259347098e-05,
+    "mean_loser_dominance": 0.04623166316178738,
+    "mean_win_gap": -0.00010894877570016044,
+    "mean_winner_contribution_ratio": 0.6680136300480072,
+    "mean_winner_improvement_post": 0.00010894877570016044,
+    "pass_rows": 7,
+    "rows": 7
+  },
+  "init_lora_state": "local_assets/dpo_objective_repair_v12b/winner_curriculum/checkpoints/winner_anchor_repeat_L0_camera_r4_step020_lora_state.pt",
+  "mean_loser_degradation_post": -2.8984887259347098e-05,
+  "mean_winner_contribution_ratio_post": 0.6667287038434788,
+  "mean_winner_improvement_post": 0.00010894877570016044,
+  "objective": "calibrated_winner_detached_log",
+  "output": "reports/dpo_utility_calibration_v14/objective_search/E02_best7/E02_best7_7step.csv",
+  "rows_written": 7,
+  "scale": {
+    "input_csv": [
+      "reports/dpo_objective_search_v13b/S01_winner_detached_pref_low/S01_winner_detached_pref_low_200step.csv",
+      "reports/dpo_objective_search_v13b/S02_winner_detached_pref_lower_lr/S02_winner_detached_pref_lower_lr_200step.csv",
+      "reports/dpo_objective_search_v13b/S03/S03_200step.csv",
+      "reports/dpo_objective_search_v13b/S04_no_lose_gap_normalized_win_only/S04_no_lose_gap_normalized_win_only_200step.csv",
+      "reports/dpo_objective_search_v13b/S05_normalized_clipped_loser_alpha005/S05_normalized_clipped_loser_alpha005_200step.csv",
+      "reports/dpo_objective_search_v13b/S06_normalized_clipped_loser_alpha010/S06_normalized_clipped_loser_alpha010_200step.csv",
+      "reports/dpo_objective_search_v13b/S07_linear_winner_detached/S07_linear_winner_detached_200step.csv",
+      "reports/dpo_objective_search_v13b/S08_delayed_loser_gradient_tiny/S08_delayed_loser_gradient_tiny_200step.csv",
+      "reports/dpo_objective_search_v13b/S09_local_time_mask_winner_detached/S09_local_time_mask_winner_detached_200step.csv",
+      "reports/dpo_objective_search_v13b/S10_lora_camera_temporal_winner_detached/S10_lora_camera_temporal_winner_detached_100step.csv"
+    ],
+    "reason": "Choose utility/beta with median |beta*u| in 0.1-1.0 and high effective ratio.",
+    "recommended_beta": 1000,
+    "recommended_median_abs_beta_u": 0.20455321269580987,
+    "recommended_utility_type": "u_log"
+  },
+  "scheme_config": {
+    "beta": 1000.0,
+    "lambda_pref": 0.005,
+    "lambda_winner_anchor": 1.0,
+    "lr": 1e-06,
+    "objective": "calibrated_winner_detached_log",
+    "scheme_id": "E02_best7",
+    "scope": "L0_camera_r4",
+    "steps": 200,
+    "utility_type": "u_log"
+  },
+  "scheme_id": "E02_best7",
+  "seconds": 662.8546869754791,
+  "status": "CALIBRATED_WINNER_DETACHED_LOG_SIGNAL_HEALTHY",
+  "steps_requested": 7,
+  "training_signal_decision": "TRAINING_SIGNAL_PASS"
+}
