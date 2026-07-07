@@ -431,3 +431,14 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Decision: this repairs the one-pair calibration path only; `DPO_RECIPE_NOT_FOUND_V14` remains and S16/S32/train400/large DPO remain blocked.
 - Artifact policy: pushed only docs and small CSV/JSON/JSONL/MD evidence. Did not push local_assets, videos, images, checkpoints, weights, raw stdout logs, or large files.
 
+## v14 Asset-Complete Calibration2 Push
+
+- Updated: `2026-07-07T21:21:23Z`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `761299a Add v14 asset-complete calibration adapter and two-pair energy evidence`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Summary: added `cam_physgeo/dpo/v14_asset_complete_adapter.py`, generated a 4-row schema-valid asset-complete calibration manifest, and ran a bounded 2-pair real-energy calibration using physical GPU4 with `--runtime_device cuda`.
+- Result: 2/2 real energy rows are `status=ok`; energy seconds were about `228.92s` and `225.68s`; peak CUDA memory about `50.43GB`.
+- Decision: calibration path is now proven beyond one pair, but `DPO_RECIPE_NOT_FOUND_V14` remains and S16/S32/train400/large DPO remain blocked.
+- Artifact policy: pushed source/docs/small manifest/CSV/JSON/JSONL/MD only. Did not push reconstructed local_assets videos, stdout logs, checkpoints, weights, images, or large files.
+
