@@ -454,3 +454,11 @@ Safety: the preflight does not run rsync execute, does not pass --execute to the
 - Verified PASS: expected branch, git head readable, no forbidden staged large files, required handoff files present, Phase0 report artifacts present.
 - Current blockers remain external/data readiness blockers: `/mnt/workspace/hj/nas_hj` is not visible, `PHYS_EDITWORLD_ROOTS` is not set, and strict/LingBot manifests are empty.
 - No training, rollout, DPO, file copy, deletion, or GPU use was performed.
+
+
+## Selected Root Lock Update - 2026-07-08T21:35 CST
+
+- Added `scripts/migration/select_physeditworld_root.sh` to validate `PHYS_EDITWORLD_ROOTS` before manifest audit.
+- Current decision without a selected root: `PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT`.
+- The selector writes `reports/migration/physeditworld_selected_root.lock.json` only for a strong root with action/camera/intrinsics/gravity/replay/video evidence.
+- Weak candidates and likely false positives are not allowed into post-mount continuation by default.

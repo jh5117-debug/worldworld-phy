@@ -1,0 +1,16 @@
+{
+  "decision": "PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT",
+  "selected_roots": [
+    {
+      "error_reason": "PHYS_EDITWORLD_ROOTS is empty",
+      "evidence": "",
+      "exists": false,
+      "is_dir": false,
+      "next_action": "set PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h",
+      "root": "",
+      "score": 0,
+      "signals": "",
+      "status": "BLOCKED"
+    }
+  ]
+}

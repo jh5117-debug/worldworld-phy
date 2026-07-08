@@ -1,0 +1,2 @@
+root,status,score,signals,exists,is_dir,evidence,error_reason,next_action
+,BLOCKED,0,,False,False,,PHYS_EDITWORLD_ROOTS is empty,set PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h

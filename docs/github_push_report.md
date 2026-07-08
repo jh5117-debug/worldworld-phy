@@ -210,3 +210,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Latest decision: PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG.
 - Current evidence: existing `physeditworld_candidates_raw.txt` is dominated by old Physion/PhyInOne, code, and conda false positives; no strong PhysEditWorld selected-50h root is visible yet.
 - Safety: no full filesystem scan, no file copy, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+
+## PhysEditWorld Selected Root Lock Verifier (2026-07-08T21:32:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: CPU/IO-only selected-root verifier that writes a lock only for strong PhysEditWorld roots with action/camera/intrinsics/gravity/replay/video evidence.
+- Expected current decision without `PHYS_EDITWORLD_ROOTS`: PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT.
+- This prevents weak/false-positive candidate paths from entering post-mount manifest audit by accident.
+- Safety: no file copy, no deletion, no GPU use, no rollout, no warm-up, no DPO.

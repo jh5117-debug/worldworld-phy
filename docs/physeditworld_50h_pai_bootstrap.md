@@ -57,3 +57,14 @@ PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h   bash scripts/migratio
 ```
 
 The verifier is read-only and does not copy data, launch training/rollout/eval, use GPUs, delete files, or push large artifacts.
+
+
+## Selected Root Lock Command
+
+Before running the post-mount continuation, validate and lock the selected PhysEditWorld 50h root:
+
+```bash
+PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h   bash scripts/migration/select_physeditworld_root.sh
+```
+
+Only `PHYS_EDITWORLD_ROOT_SELECTION_LOCKED` should be treated as safe to continue into manifest audit. Weak candidates require manual review and should not be used for training/rollout.

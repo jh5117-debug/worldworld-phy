@@ -23,6 +23,8 @@ class PreflightStep:
 PASS_DECISIONS = {
     "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT",
     "MIGRATION_ASSET_VALIDATION_PASS",
+    "PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG",
+    "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED",
     "APPROVED_COPY_DRYRUN_READY",
     "APPROVED_COPY_EXECUTED",
     "PHYS_EDIT_WORLD_PIPELINE_REQUIREMENTS_PASS",
@@ -53,8 +55,10 @@ def status_for(decision: str, exit_code: int) -> str:
         return "PASS"
     if decision in REVIEW_DECISIONS:
         return "REVIEW_REQUIRED"
-    if "BLOCKED" in decision or decision in {"MISSING", "UNREADABLE"}:
+    if "BLOCKED" in decision or "WEAK_ONLY" in decision or "NONE_STRONG" in decision or decision.endswith("_EMPTY") or decision in {"MISSING", "UNREADABLE"}:
         return "BLOCKED"
+    if "REVIEW_REQUIRED" in decision:
+        return "REVIEW_REQUIRED"
     return "UNKNOWN"
 
 
@@ -71,6 +75,8 @@ def run_command(cmd: list[str], evidence: str, dry_run: bool) -> PreflightStep:
 def overall_decision(rows: list[PreflightStep]) -> str:
     order = [
         ("physeditworld_pai_readiness", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS"),
+        ("physeditworld_root_candidates_ranked", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES"),
+        ("physeditworld_selected_root_status", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_SELECTION"),
         ("migration_asset_validation", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ASSET_VALIDATION"),
         ("approved_copy_manifest_template", "PHYS_EDITWORLD_PHASE0_REVIEW_COPY_PLAN"),
         ("approved_copy_status", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_APPROVED_COPY"),
@@ -145,6 +151,8 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     commands = [
         (["bash", "scripts/migration/check_physeditworld_pai_readiness.sh"], "reports/migration/physeditworld_pai_readiness.json"),
+        (["bash", "scripts/migration/rank_physeditworld_root_candidates.sh"], "reports/migration/physeditworld_root_candidates_ranked.json"),
+        (["bash", "scripts/migration/select_physeditworld_root.sh"], "reports/migration/physeditworld_selected_root_status.json"),
         (["bash", "scripts/migration/validate_physeditworld_migration_assets.sh"], "reports/migration/migration_asset_validation.json"),
         (["bash", "scripts/migration/build_physeditworld_migration_copy_plan.sh"], "reports/migration/approved_copy_manifest_template.json"),
         (["bash", "scripts/migration/run_approved_migration_copy.sh"], "reports/migration/approved_copy_status.json"),

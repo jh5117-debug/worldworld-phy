@@ -11,6 +11,24 @@
       "step": "physeditworld_pai_readiness"
     },
     {
+      "command": "bash scripts/migration/rank_physeditworld_root_candidates.sh",
+      "decision": "PHYS_EDITWORLD_ROOT_CANDIDATES_WEAK_ONLY",
+      "error_reason": "",
+      "evidence": "reports/migration/physeditworld_root_candidates_ranked.json",
+      "exit_code": 0,
+      "status": "BLOCKED",
+      "step": "physeditworld_root_candidates_ranked"
+    },
+    {
+      "command": "bash scripts/migration/select_physeditworld_root.sh",
+      "decision": "PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT",
+      "error_reason": "",
+      "evidence": "reports/migration/physeditworld_selected_root_status.json",
+      "exit_code": 0,
+      "status": "BLOCKED",
+      "step": "physeditworld_selected_root_status"
+    },
+    {
       "command": "bash scripts/migration/validate_physeditworld_migration_assets.sh",
       "decision": "MIGRATION_ASSET_VALIDATION_NAS_BLOCKED",
       "error_reason": "",

@@ -82,6 +82,14 @@
       "status": "BLOCKED"
     },
     {
+      "detail": "decision=PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT",
+      "evidence": "reports/migration/physeditworld_selected_root_status.json",
+      "next_action": "set PHYS_EDITWORLD_ROOTS to a strong root and rerun selected-root verifier",
+      "phase": "0_migration",
+      "requirement": "PhysEditWorld selected-root lock",
+      "status": "BLOCKED"
+    },
+    {
       "detail": "decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED",
       "evidence": "reports/migration/migration_asset_validation.json",
       "next_action": "mount NAS and rerun migration asset validation before execute copy",

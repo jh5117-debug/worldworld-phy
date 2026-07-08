@@ -7,6 +7,12 @@ Decision: `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS`
 - `physeditworld_pai_readiness`: `BLOCKED` / `PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED`
   - evidence: `reports/migration/physeditworld_pai_readiness.json`
   - command: `bash scripts/migration/check_physeditworld_pai_readiness.sh`
+- `physeditworld_root_candidates_ranked`: `BLOCKED` / `PHYS_EDITWORLD_ROOT_CANDIDATES_WEAK_ONLY`
+  - evidence: `reports/migration/physeditworld_root_candidates_ranked.json`
+  - command: `bash scripts/migration/rank_physeditworld_root_candidates.sh`
+- `physeditworld_selected_root_status`: `BLOCKED` / `PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT`
+  - evidence: `reports/migration/physeditworld_selected_root_status.json`
+  - command: `bash scripts/migration/select_physeditworld_root.sh`
 - `migration_asset_validation`: `BLOCKED` / `MIGRATION_ASSET_VALIDATION_NAS_BLOCKED`
   - evidence: `reports/migration/migration_asset_validation.json`
   - command: `bash scripts/migration/validate_physeditworld_migration_assets.sh`
