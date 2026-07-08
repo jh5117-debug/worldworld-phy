@@ -57,6 +57,7 @@ git push -u origin cam-physgeo-dpo-refactor
 ## PhysEditWorld 50h Phase 3/4 Readiness Push (2026-07-08T18:44:19 CST)
 
 - Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `36942c3 Add PhysEditWorld baseline and warmup readiness scaffolding`.
 - Scope: gravity metric helpers, baseline rollout gate wrapper, rank32 prompt-only gravity warm-up config, future mixed-data ablation plan, and readiness report.
 - Decision: `PHASE3_PHASE4_SCAFFOLD_READY_DATA_BLOCKED`.
 - Baseline result: `BASELINE_BLOCKED_EMPTY_MANIFEST`; no real rollout or warm-up was launched because the PhysEditWorld converted train manifest is empty.
