@@ -651,3 +651,15 @@ git push -u origin cam-physgeo-dpo-refactor
 - Requirement/completion decisions remain `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS` and `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`.
 - Test status: bash syntax PASS, py_compile PASS, targeted compileall PASS, direct test-function smoke PASS, direct decision smoke PASS, git diff check PASS; pytest unavailable (`No module named pytest`), so no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, no videos/images/checkpoints/weights/large logs pushed.
+
+## PhysEditWorld H20 Migration Audit Bundle (2026-07-09T07:10:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `71d1fb0 Add PhysEditWorld H20 migration audit bundle`.
+- Scope: added a CPU/IO-only H20 audit collector and integrated it into Phase0 preflight, requirement matrix, and completion audit.
+- New command: `bash scripts/migration/collect_physeditworld_migration_audit_bundle.sh`.
+- Audit decision: `MIGRATION_AUDIT_BUNDLE_READY`; generated hostname/date/git/df/du/env/pip/python/nvidia/torch/untracked-large evidence under `reports/migration/`.
+- Phase0 decision remains `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES`; Phase0 now has 16 steps and `migration_audit_bundle` is PASS.
+- Requirement/completion decisions remain blocked by missing NAS/root: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`, `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`.
+- Test status: py_compile PASS, direct test-function smoke PASS, direct decision smoke PASS, targeted compileall PASS, git diff check PASS; pytest unavailable (`No module named pytest`), so no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, no local_assets/videos/images/checkpoints/weights/large logs pushed.
