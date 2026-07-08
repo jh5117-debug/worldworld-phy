@@ -51,16 +51,19 @@ def test_overall_blocks_on_nas_or_root_after_code_passes():
 def test_required_files_include_latest_handoff_tools():
     required = set(REQUIRED_FILES)
     assert "scripts/migration/select_physeditworld_root.sh" in required
+    assert "scripts/migration/probe_physeditworld_root_schema.sh" in required
     assert "scripts/migration/run_physeditworld_locked_handoff_sequence.sh" in required
     assert "scripts/migration/run_physeditworld_completion_audit.sh" in required
     assert "scripts/migration/prepare_physeditworld_root_intake.sh" in required
     assert "cam_physgeo/orchestration/physeditworld_completion_audit.py" in required
     assert "cam_physgeo/orchestration/physeditworld_root_intake.py" in required
+    assert "cam_physgeo/data/physeditworld_root_schema_probe.py" in required
 
 
 def test_expected_reports_include_root_lock_and_completion_audit():
     expected = set(EXPECTED_REPORTS)
     assert "reports/migration/physeditworld_selected_root_status.json" in expected
+    assert "reports/migration/physeditworld_root_schema_probe.json" in expected
     assert "reports/migration/physeditworld_root_intake.json" in expected
     assert "reports/migration/locked_handoff_sequence.json" in expected
     assert "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json" in expected

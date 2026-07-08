@@ -74,6 +74,14 @@
       "status": "BLOCKED"
     },
     {
+      "detail": "decision=PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT",
+      "evidence": "reports/migration/physeditworld_root_schema_probe.json",
+      "next_action": "provide selected root and rerun schema probe",
+      "phase": "phase0_migration",
+      "requirement": "selected-root schema probe",
+      "status": "BLOCKED"
+    },
+    {
       "detail": "decision=PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT",
       "evidence": "reports/migration/physeditworld_root_intake.json",
       "next_action": "provide selected root and rerun root intake/handoff",

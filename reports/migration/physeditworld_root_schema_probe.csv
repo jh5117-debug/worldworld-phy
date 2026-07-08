@@ -1,0 +1,2 @@
+root,status,decision,exists,is_dir,files_scanned,dirs_scanned,video_files,action_files,camera_files,intrinsics_files,gravity_files,replay_files,manifest_files,metadata_files,sample_dir_candidates,signals,likely_layouts,evidence,blockers,next_action
+,BLOCKED,PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT,False,False,0,0,0,0,0,0,0,0,0,0,0,,,,PHYS_EDITWORLD_ROOTS is empty,export PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h

@@ -17,6 +17,14 @@
       "status": "BLOCKED"
     },
     {
+      "decision": "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT",
+      "detail": "root schema is not ready or root is absent",
+      "name": "root_schema_probe",
+      "next_action": "PHYS_EDITWORLD_ROOTS=/path/to/root bash scripts/migration/probe_physeditworld_root_schema.sh",
+      "path": "reports/migration/physeditworld_root_schema_probe.json",
+      "status": "BLOCKED"
+    },
+    {
       "decision": "PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT",
       "detail": "root lock not written",
       "name": "root_selection_lock",

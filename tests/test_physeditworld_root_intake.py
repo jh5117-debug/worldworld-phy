@@ -8,6 +8,7 @@ def args(tmp_path: Path, roots: str = ""):
     return Namespace(
         physeditworld_roots=roots,
         root_candidates_json=str(tmp_path / "root_candidates.json"),
+        root_schema_json=str(tmp_path / "root_schema.json"),
         root_selection_json=str(tmp_path / "root_selection.json"),
         locked_handoff_json=str(tmp_path / "locked_handoff.json"),
         pai_handoff_json=str(tmp_path / "pai_handoff.json"),
@@ -27,6 +28,7 @@ def test_intake_waits_for_external_root_without_roots(tmp_path: Path):
     by_name = {row.name: row for row in rows}
     assert decision == "PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT"
     assert by_name["root_input"].status == "BLOCKED"
+    assert by_name["root_schema_probe"].status == "BLOCKED"
     assert by_name["root_selection_lock"].status == "BLOCKED"
 
 

@@ -54,6 +54,7 @@ def split_roots(raw: str) -> list[str]:
 def build_statuses(args: argparse.Namespace) -> tuple[str, list[RootIntakeStatus]]:
     roots = split_roots(args.physeditworld_roots or os.environ.get("PHYS_EDITWORLD_ROOTS", ""))
     root_candidates_decision = decision_of(args.root_candidates_json)
+    root_schema_decision = decision_of(args.root_schema_json)
     root_selection_decision = decision_of(args.root_selection_json)
     locked_handoff_decision = decision_of(args.locked_handoff_json)
     pai_handoff_decision = decision_of(args.pai_handoff_json)
@@ -78,6 +79,14 @@ def build_statuses(args: argparse.Namespace) -> tuple[str, list[RootIntakeStatus
             ";".join(roots),
             f"roots={len(roots)}",
             "export PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h",
+        ),
+        RootIntakeStatus(
+            "root_schema_probe",
+            "PASS" if root_schema_decision == "PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT" else "BLOCKED",
+            root_schema_decision,
+            args.root_schema_json,
+            "root schema is ready for manifest audit" if root_schema_decision == "PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT" else "root schema is not ready or root is absent",
+            "PHYS_EDITWORLD_ROOTS=/path/to/root bash scripts/migration/probe_physeditworld_root_schema.sh",
         ),
         RootIntakeStatus(
             "root_selection_lock",
@@ -199,6 +208,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="Build a PhysEditWorld selected-root intake handoff report")
     ap.add_argument("--physeditworld_roots", default="")
     ap.add_argument("--root_candidates_json", default="reports/migration/physeditworld_root_candidates_ranked.json")
+    ap.add_argument("--root_schema_json", default="reports/migration/physeditworld_root_schema_probe.json")
     ap.add_argument("--root_selection_json", default="reports/migration/physeditworld_selected_root_status.json")
     ap.add_argument("--locked_handoff_json", default="reports/migration/locked_handoff_sequence.json")
     ap.add_argument("--pai_handoff_json", default="reports/migration/pai_handoff_status.json")

@@ -41,3 +41,4 @@ def test_build_rows_includes_root_intake_report():
     rows = build_rows()
     requirements = {row.requirement for row in rows}
     assert "selected-root intake handoff report" in requirements
+    assert "selected-root schema probe" in requirements

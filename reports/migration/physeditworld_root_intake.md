@@ -24,6 +24,10 @@ Do not provide VideoPHY/Wan result folders, model checkpoints, old PhysInOne con
 - `root_input`: `BLOCKED` / `ROOTS_MISSING_OR_UNSET`
   - detail: roots=0
   - next: export PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h
+- `root_schema_probe`: `BLOCKED` / `PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT`
+  - path: `reports/migration/physeditworld_root_schema_probe.json`
+  - detail: root schema is not ready or root is absent
+  - next: PHYS_EDITWORLD_ROOTS=/path/to/root bash scripts/migration/probe_physeditworld_root_schema.sh
 - `root_selection_lock`: `BLOCKED` / `PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT`
   - path: `reports/migration/physeditworld_selected_root_status.json`
   - detail: root lock not written

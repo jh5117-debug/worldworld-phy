@@ -1,0 +1,28 @@
+{
+  "decision": "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT",
+  "roots": [
+    {
+      "action_files": 0,
+      "blockers": "PHYS_EDITWORLD_ROOTS is empty",
+      "camera_files": 0,
+      "decision": "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT",
+      "dirs_scanned": 0,
+      "evidence": "",
+      "exists": false,
+      "files_scanned": 0,
+      "gravity_files": 0,
+      "intrinsics_files": 0,
+      "is_dir": false,
+      "likely_layouts": "",
+      "manifest_files": 0,
+      "metadata_files": 0,
+      "next_action": "export PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h",
+      "replay_files": 0,
+      "root": "",
+      "sample_dir_candidates": 0,
+      "signals": "",
+      "status": "BLOCKED",
+      "video_files": 0
+    }
+  ]
+}
