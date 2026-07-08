@@ -465,3 +465,17 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current post-mount decision without roots: `POST_MOUNT_BLOCKED_AT_ROOT_INPUT`; this is expected until `PHYS_EDITWORLD_ROOTS` is set and the selected root lock is available.
 - Test status: targeted `compileall` PASS, direct post-mount dry-run smoke PASS, missing-manifest validator smoke PASS, requirement/completion refresh PASS; `pytest` unavailable in system Python, so no pytest PASS is claimed.
 - Safety: CPU/IO/docs/scripts only; no GPU use, no training, no rollout, no DPO, no file copy, no deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld Post-Mount Shell Entrypoint Update (2026-07-09T03:00:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: updated `scripts/continue_physeditworld_after_mount.sh` to expose the post-mount continuation controls through environment variables.
+- Supported environment controls: `TARGET_HOURS`, `CONVERSION_SMOKE_LIMIT`, `ROOT_LOCK`, `POST_MOUNT_DRY_RUN`, `SKIP_VIDEO_PROBE`, `ALLOW_UNLOCKED_ROOTS`, and `RUN_FULL_CONVERSION`.
+- Default behavior remains conservative: no full canonical LingBot conversion unless `RUN_FULL_CONVERSION=1` is explicitly set; no training, rollout, DPO, StageB, GRPO, broad-LoRA, deletion, or GPU use.
+- Intended post-mount sequence:
+  1. `PHYS_EDITWORLD_ROOTS=/path/to/root bash scripts/migration/select_physeditworld_root.sh`
+  2. `PHYS_EDITWORLD_ROOTS=/path/to/root bash scripts/continue_physeditworld_after_mount.sh`
+  3. set `RUN_FULL_CONVERSION=1` only after smoke conversion and validation pass.
+- Current blocker remains external: `PHYS_EDITWORLD_ROOTS` is unset and selected root/NAS are not visible, so post-mount still reports `POST_MOUNT_BLOCKED_AT_ROOT_INPUT`.
+- Test status: shell syntax check PASS, current blocked-state run PASS, direct post-mount smokes remain PASS; `pytest` unavailable in system Python, so no pytest PASS is claimed.
+- Safety: CPU/IO/docs/scripts only; no GPU use, no training, no rollout, no DPO, no file copy, no deletion, and no videos/images/checkpoints/weights pushed.
