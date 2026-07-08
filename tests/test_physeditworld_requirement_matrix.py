@@ -43,6 +43,9 @@ def test_requirement_matrix_includes_pai_bootstrap_restore_entrypoint():
     requirements = {row.requirement for row in build_rows()}
     assert "PAI bootstrap restore entrypoint" in requirements
     assert "PAI bootstrap operator guide" in requirements
+    assert "PAI restore-packet wrapper" in requirements
+    assert "PAI restore-packet summary" in requirements
+    assert "PAI restore packet decision" in requirements
 
 
 def test_requirement_matrix_includes_downstream_decision_gates():

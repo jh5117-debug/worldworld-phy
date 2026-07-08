@@ -50,3 +50,6 @@ def test_build_rows_includes_pai_bootstrap_restore_entrypoint():
     requirements = {row.requirement for row in rows}
     assert "PAI bootstrap restore entrypoint" in requirements
     assert "PAI bootstrap operator guide" in requirements
+    assert "PAI restore-packet wrapper" in requirements
+    assert "PAI restore-packet summary" in requirements
+    assert "PAI restore packet decision" in requirements

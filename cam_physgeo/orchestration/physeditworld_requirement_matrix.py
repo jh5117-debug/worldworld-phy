@@ -162,9 +162,18 @@ def build_rows() -> list[RequirementRow]:
         file_status("reports/migration/approved_copy_manifest_template.tsv", "explicit copy-plan template", "0_migration", "generate approved copy manifest template"),
         file_status("scripts/migration/bootstrap_pai_physeditworld.sh", "PAI bootstrap restore entrypoint", "0_migration", "add PAI bootstrap script"),
         file_status("docs/physeditworld_50h_pai_bootstrap.md", "PAI bootstrap operator guide", "0_migration", "write PAI bootstrap guide"),
+        file_status("scripts/migration/run_physeditworld_pai_restore_packet.sh", "PAI restore-packet wrapper", "0_migration", "add restore-packet wrapper"),
+        file_status("reports/migration/pai_restore_packet.md", "PAI restore-packet summary", "0_migration", "run restore-packet writer"),
     ])
     for evidence, requirement, pass_values, next_action in PHASE0_DECISION_GATES:
         rows.append(decision_status(evidence, requirement, "0_migration", pass_values, next_action))
+    rows.append(decision_status(
+        "reports/migration/pai_restore_packet.json",
+        "PAI restore packet decision",
+        "0_migration",
+        {"PAI_RESTORE_PACKET_READY_FOR_POST_MOUNT"},
+        "mount NAS, set PHYS_EDITWORLD_ROOTS, rerun bootstrap or restore-packet writer",
+    ))
     rows.extend([
         manifest_status("manifests/physeditworld_50h_all.jsonl", "strict selected 50h manifest", "1_data_audit", 1, "mount selected PhysEditWorld 50h root and rerun manifest audit"),
         manifest_status("manifests/physeditworld_50h_train.jsonl", "train split manifest", "1_data_audit", 1, "rerun replay-group split"),

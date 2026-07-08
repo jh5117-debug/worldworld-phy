@@ -4,8 +4,8 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 
 ## Status Counts
 
-- `BLOCKED`: 21
-- `PASS`: 15
+- `BLOCKED`: 22
+- `PASS`: 17
 
 ## Requirements
 
@@ -42,6 +42,12 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 - `0_migration` / PAI bootstrap operator guide: `PASS`
   - evidence: `docs/physeditworld_50h_pai_bootstrap.md`
   - detail: file exists
+- `0_migration` / PAI restore-packet wrapper: `PASS`
+  - evidence: `scripts/migration/run_physeditworld_pai_restore_packet.sh`
+  - detail: file exists
+- `0_migration` / PAI restore-packet summary: `PASS`
+  - evidence: `reports/migration/pai_restore_packet.md`
+  - detail: file exists
 - `0_migration` / expected empty manifest placeholders: `PASS`
   - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
   - detail: decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT
@@ -77,6 +83,10 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - evidence: `reports/migration/pai_handoff_status.json`
   - detail: decision=PAI_HANDOFF_BLOCKED_NAS_OR_ROOT
   - next: mount NAS/PhysEditWorld root and rerun PAI handoff verifier
+- `0_migration` / PAI restore packet decision: `BLOCKED`
+  - evidence: `reports/migration/pai_restore_packet.json`
+  - detail: decision=PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT
+  - next: mount NAS, set PHYS_EDITWORLD_ROOTS, rerun bootstrap or restore-packet writer
 - `1_data_audit` / strict selected 50h manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_50h_all.jsonl`
   - detail: rows=0, required>=1

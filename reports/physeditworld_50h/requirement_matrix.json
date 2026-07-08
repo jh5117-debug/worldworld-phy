@@ -90,6 +90,22 @@
       "status": "PASS"
     },
     {
+      "detail": "file exists",
+      "evidence": "scripts/migration/run_physeditworld_pai_restore_packet.sh",
+      "next_action": "",
+      "phase": "0_migration",
+      "requirement": "PAI restore-packet wrapper",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "reports/migration/pai_restore_packet.md",
+      "next_action": "",
+      "phase": "0_migration",
+      "requirement": "PAI restore-packet summary",
+      "status": "PASS"
+    },
+    {
       "detail": "decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
       "evidence": "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
       "next_action": "",
@@ -159,6 +175,14 @@
       "next_action": "mount NAS/PhysEditWorld root and rerun PAI handoff verifier",
       "phase": "0_migration",
       "requirement": "PAI handoff verifier",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT",
+      "evidence": "reports/migration/pai_restore_packet.json",
+      "next_action": "mount NAS, set PHYS_EDITWORLD_ROOTS, rerun bootstrap or restore-packet writer",
+      "phase": "0_migration",
+      "requirement": "PAI restore packet decision",
       "status": "BLOCKED"
     },
     {

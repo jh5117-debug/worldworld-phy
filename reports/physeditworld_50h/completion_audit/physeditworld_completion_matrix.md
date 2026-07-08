@@ -4,8 +4,8 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 
 ## Status Counts
 
-- `BLOCKED`: 20
-- `PASS`: 16
+- `BLOCKED`: 21
+- `PASS`: 18
 
 ## Requirement Evidence
 
@@ -39,6 +39,12 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 - `phase0_migration` / PAI bootstrap operator guide: `PASS`
   - evidence: `docs/physeditworld_50h_pai_bootstrap.md`
   - detail: file exists
+- `phase0_migration` / PAI restore-packet wrapper: `PASS`
+  - evidence: `scripts/migration/run_physeditworld_pai_restore_packet.sh`
+  - detail: file exists
+- `phase0_migration` / PAI restore-packet summary: `PASS`
+  - evidence: `reports/migration/pai_restore_packet.md`
+  - detail: file exists
 - `phase0_migration` / expected empty manifest placeholders: `PASS`
   - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
   - detail: decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT
@@ -70,6 +76,10 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - evidence: `reports/migration/approved_copy_status.json`
   - detail: decision=APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS
   - next: approve required rows after review and rerun dry-run
+- `phase0_migration` / PAI restore packet decision: `BLOCKED`
+  - evidence: `reports/migration/pai_restore_packet.json`
+  - detail: decision=PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT
+  - next: mount NAS, set PHYS_EDITWORLD_ROOTS, rerun bootstrap or restore-packet writer
 - `phase1_data` / strict PhysEditWorld 50h manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_50h_all.jsonl`
   - detail: rows=0, required>=1
