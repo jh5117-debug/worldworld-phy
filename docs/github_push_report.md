@@ -35,3 +35,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Dry-run status: `CONNECTIVITY_OR_MOUNT_BLOCKED` because `/mnt/workspace/hj/nas_hj` is not visible on H20 in this shell.
 - Artifact policy: only lightweight docs/scripts/reports are intended for push; no `local_assets`, videos/images, checkpoints, weights, HDF5/NPY/NPZ/PT/PTH/safetensors, or large logs.
 
+## PhysEditWorld 50h Phase 1 Data Audit Push (2026-07-08)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `435da66 Add PhysEditWorld 50h manifest audit tooling`.
+- Scope: added PhysEditWorld schema, manifest scanner, replay-group split tooling, focused tests, empty gated manifests, and audit reports.
+- Data gate result: `PHYS_EDIT_WORLD_DATA_NOT_FOUND`; 132 bounded candidates were inspected, 0 strict OK rows were admitted to `manifests/physeditworld_50h_all.jsonl`.
+- Main blockers: missing real PhysEditWorld gravity/action/camera matched replay schema in H20-visible paths; PhysInOne-style false positives are rejected.
+- Training/rollout status: not run. Phase 2+ remains blocked until a valid PhysEditWorld 50h root is provided or mounted.
+- Artifact policy: only lightweight code/docs/manifests/CSV/MD reports were pushed; no `local_assets`, videos/images, checkpoints, weights, or large logs.
+
