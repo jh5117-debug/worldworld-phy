@@ -11,11 +11,13 @@ else
   cd "$REPO_DIR"
   git fetch origin "$BRANCH"
   git checkout "$BRANCH"
-  git reset --hard "origin/$BRANCH"
+  git merge --ff-only "origin/$BRANCH"
 fi
 cd "$REPO_DIR"
 printf 'repo=%s\nbranch=%s\nhead=%s\n' "$REPO_DIR" "$(git branch --show-current)" "$(git rev-parse --short HEAD)"
 python3 -V || true
+bash scripts/migration/verify_pai_physeditworld_handoff.sh || true
+bash scripts/migration/run_physeditworld_phase0_preflight.sh || true
 bash scripts/run_physeditworld_pipeline_gates.sh || true
 python3 -m cam_physgeo.orchestration.physeditworld_requirement_matrix || true
-printf 'Bootstrap complete. Inspect reports/physeditworld_50h/pipeline_gate and reports/physeditworld_50h/requirement_matrix.*\n'
+printf 'Bootstrap complete. Inspect reports/migration, reports/physeditworld_50h/pipeline_gate, and reports/physeditworld_50h/requirement_matrix.*\n'

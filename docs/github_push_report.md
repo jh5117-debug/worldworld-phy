@@ -218,4 +218,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Scope: CPU/IO-only selected-root verifier that writes a lock only for strong PhysEditWorld roots with action/camera/intrinsics/gravity/replay/video evidence.
 - Expected current decision without `PHYS_EDITWORLD_ROOTS`: PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT.
 - This prevents weak/false-positive candidate paths from entering post-mount manifest audit by accident.
+
+## PhysEditWorld Post-Mount Root-Lock Enforcement (2026-07-08T21:56:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: post-mount continuation now requires `reports/migration/physeditworld_selected_root.lock.json` with decision `PHYS_EDITWORLD_ROOT_SELECTION_LOCKED` before manifest audit, split, conversion smoke, or later gates can run.
+- Latest post-mount decision with a root but no lock: `POST_MOUNT_BLOCKED_AT_ROOT_LOCK`.
+- PAI bootstrap safety: existing clone updates now use `git merge --ff-only` instead of `git reset --hard`; bootstrap also runs PAI handoff, Phase0 preflight, pipeline gate, and requirement matrix collectors.
+- Test status: compileall PASS, direct root-lock smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
 - Safety: no file copy, no deletion, no GPU use, no rollout, no warm-up, no DPO.

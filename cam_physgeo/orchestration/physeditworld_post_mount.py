@@ -34,6 +34,85 @@ def count_jsonl(path: str | Path) -> int | None:
         return sum(1 for line in f if line.strip())
 
 
+def norm_path(path: str | Path) -> str:
+    return str(Path(path).expanduser().resolve(strict=False))
+
+
+def validate_root_lock(roots: list[str], lock_path: str | Path, allow_unlocked_roots: bool = False) -> StepResult:
+    command = f"validate selected-root lock {lock_path}"
+    if allow_unlocked_roots:
+        return StepResult(
+            "root_lock",
+            "PASS",
+            command,
+            decision="POST_MOUNT_ROOT_LOCK_BYPASSED_FOR_MANUAL_REVIEW",
+            output_path=str(lock_path),
+            error_reason="allow_unlocked_roots=true; do not train/rollout from this path",
+        )
+    p = Path(lock_path)
+    if not p.exists():
+        return StepResult(
+            "root_lock",
+            "BLOCKED",
+            command,
+            decision="POST_MOUNT_BLOCKED_NO_ROOT_LOCK",
+            output_path=str(lock_path),
+            error_reason="run scripts/migration/select_physeditworld_root.sh with a strong PHYS_EDITWORLD_ROOTS path before post-mount continuation",
+        )
+    try:
+        obj = json.loads(p.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return StepResult(
+            "root_lock",
+            "BLOCKED",
+            command,
+            decision="POST_MOUNT_BLOCKED_UNREADABLE_ROOT_LOCK",
+            output_path=str(lock_path),
+            error_reason=repr(exc),
+        )
+    decision = str(obj.get("decision") or "")
+    if decision != "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED":
+        return StepResult(
+            "root_lock",
+            "BLOCKED",
+            command,
+            decision="POST_MOUNT_BLOCKED_ROOT_LOCK_NOT_PASS",
+            output_path=str(lock_path),
+            error_reason=f"root lock decision is {decision or 'missing'}, expected PHYS_EDITWORLD_ROOT_SELECTION_LOCKED",
+        )
+    locked_roots = {
+        norm_path(row.get("root", ""))
+        for row in obj.get("roots", [])
+        if row.get("root") and row.get("status") == "LOCKED"
+    }
+    requested_roots = {norm_path(root) for root in roots}
+    if not locked_roots:
+        return StepResult(
+            "root_lock",
+            "BLOCKED",
+            command,
+            decision="POST_MOUNT_BLOCKED_ROOT_LOCK_EMPTY",
+            output_path=str(lock_path),
+            error_reason="lock has no LOCKED roots",
+        )
+    if requested_roots != locked_roots:
+        return StepResult(
+            "root_lock",
+            "BLOCKED",
+            command,
+            decision="POST_MOUNT_BLOCKED_ROOT_LOCK_MISMATCH",
+            output_path=str(lock_path),
+            error_reason=f"requested roots {sorted(requested_roots)} do not match locked roots {sorted(locked_roots)}",
+        )
+    return StepResult(
+        "root_lock",
+        "PASS",
+        command,
+        decision="POST_MOUNT_ROOT_LOCK_PASS",
+        output_path=str(lock_path),
+    )
+
+
 def run(cmd: list[str], dry_run: bool) -> tuple[int, str]:
     printable = " ".join(shlex.quote(x) for x in cmd)
     if dry_run:
@@ -97,6 +176,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--limit", type=int, default=32, help="Conversion smoke limit")
     ap.add_argument("--skip_video_probe", action="store_true")
     ap.add_argument("--dry_run", action="store_true")
+    ap.add_argument("--root_lock", default="reports/migration/physeditworld_selected_root.lock.json")
+    ap.add_argument("--allow_unlocked_roots", action="store_true", help="Manual-inspection bypass only; never use for training/rollout.")
     ap.add_argument("--output_csv", default="reports/physeditworld_50h/post_mount/post_mount_status.csv")
     ap.add_argument("--output_json", default="reports/physeditworld_50h/post_mount/post_mount_status.json")
     ap.add_argument("--summary", default="reports/physeditworld_50h/post_mount/post_mount_summary.md")
@@ -109,6 +190,16 @@ def main(argv: list[str] | None = None) -> int:
     rows: list[StepResult] = []
     if not roots:
         rows.append(StepResult("root_input", "BLOCKED", "PHYS_EDITWORLD_ROOTS", decision="POST_MOUNT_BLOCKED_NO_ROOTS", error_reason="set PHYS_EDITWORLD_ROOTS=/path/to/selected_50h_root"))
+        decision = overall(rows)
+        write_csv(rows, args.output_csv)
+        write_json(rows, decision, args.output_json)
+        write_summary(rows, decision, args.summary)
+        print(json.dumps({"decision": decision, "steps": len(rows)}, sort_keys=True))
+        return 0
+
+    lock_row = validate_root_lock(roots, args.root_lock, args.allow_unlocked_roots)
+    rows.append(lock_row)
+    if lock_row.status == "BLOCKED":
         decision = overall(rows)
         write_csv(rows, args.output_csv)
         write_json(rows, decision, args.output_json)
