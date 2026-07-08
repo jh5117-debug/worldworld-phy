@@ -645,3 +645,13 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Validation: `python3 -m compileall cam_physgeo src tests` PASS and direct import smoke for v14 modules PASS after completion-audit docs.
 - Pytest status: still unavailable in the active H20 shell; no pytest PASS is claimed.
 - Artifact policy: only lightweight logs/docs were pushed; no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged.
+
+## v14 Residual Blocker Plan Push (2026-07-08)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`.
+- Commit: `9d24ccc Document v14 residual blockers and next evidence plan`.
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- New artifact: `reports/dpo_utility_calibration_v14/residual_blocker_plan.md`.
+- Purpose: preserve the original v14 scope by explicitly listing partial/unproven requirements: all500/S_pass/rollout real-energy coverage, latent monitor approval calibration, metric wrapper completeness, and pytest availability.
+- Decision remains `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.
+- Artifact policy: only lightweight docs/markdown were pushed; no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged.
