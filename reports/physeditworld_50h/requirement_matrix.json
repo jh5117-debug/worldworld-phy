@@ -106,6 +106,22 @@
       "status": "PASS"
     },
     {
+      "detail": "file exists",
+      "evidence": "scripts/migration/write_physeditworld_external_unblock_packet.sh",
+      "next_action": "",
+      "phase": "0_migration",
+      "requirement": "external unblock-packet wrapper",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "reports/migration/physeditworld_external_unblock_packet.md",
+      "next_action": "",
+      "phase": "0_migration",
+      "requirement": "external unblock-packet summary",
+      "status": "PASS"
+    },
+    {
       "detail": "decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
       "evidence": "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
       "next_action": "",
@@ -183,6 +199,14 @@
       "next_action": "mount NAS, set PHYS_EDITWORLD_ROOTS, rerun bootstrap or restore-packet writer",
       "phase": "0_migration",
       "requirement": "PAI restore packet decision",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT",
+      "evidence": "reports/migration/physeditworld_external_unblock_packet.json",
+      "next_action": "mount NAS, set PHYS_EDITWORLD_ROOTS, rerun external unblock packet writer and bootstrap",
+      "phase": "0_migration",
+      "requirement": "external unblock packet decision",
       "status": "BLOCKED"
     },
     {

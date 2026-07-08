@@ -46,6 +46,7 @@ bash scripts/run_physeditworld_pipeline_gates.sh
 python3 -m cam_physgeo.orchestration.physeditworld_requirement_matrix
 bash scripts/migration/run_physeditworld_completion_audit.sh
 bash scripts/migration/run_physeditworld_pai_restore_packet.sh
+bash scripts/migration/write_physeditworld_external_unblock_packet.sh
 bash scripts/migration/verify_pai_physeditworld_handoff.sh
 bash scripts/migration/run_physeditworld_pai_restore_packet.sh
 ```

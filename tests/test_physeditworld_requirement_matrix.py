@@ -46,6 +46,9 @@ def test_requirement_matrix_includes_pai_bootstrap_restore_entrypoint():
     assert "PAI restore-packet wrapper" in requirements
     assert "PAI restore-packet summary" in requirements
     assert "PAI restore packet decision" in requirements
+    assert "external unblock-packet wrapper" in requirements
+    assert "external unblock-packet summary" in requirements
+    assert "external unblock packet decision" in requirements
 
 
 def test_requirement_matrix_includes_downstream_decision_gates():

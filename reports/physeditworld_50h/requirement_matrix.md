@@ -4,8 +4,8 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 
 ## Status Counts
 
-- `BLOCKED`: 22
-- `PASS`: 17
+- `BLOCKED`: 23
+- `PASS`: 19
 
 ## Requirements
 
@@ -48,6 +48,12 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 - `0_migration` / PAI restore-packet summary: `PASS`
   - evidence: `reports/migration/pai_restore_packet.md`
   - detail: file exists
+- `0_migration` / external unblock-packet wrapper: `PASS`
+  - evidence: `scripts/migration/write_physeditworld_external_unblock_packet.sh`
+  - detail: file exists
+- `0_migration` / external unblock-packet summary: `PASS`
+  - evidence: `reports/migration/physeditworld_external_unblock_packet.md`
+  - detail: file exists
 - `0_migration` / expected empty manifest placeholders: `PASS`
   - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
   - detail: decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT
@@ -87,6 +93,10 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - evidence: `reports/migration/pai_restore_packet.json`
   - detail: decision=PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT
   - next: mount NAS, set PHYS_EDITWORLD_ROOTS, rerun bootstrap or restore-packet writer
+- `0_migration` / external unblock packet decision: `BLOCKED`
+  - evidence: `reports/migration/physeditworld_external_unblock_packet.json`
+  - detail: decision=PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT
+  - next: mount NAS, set PHYS_EDITWORLD_ROOTS, rerun external unblock packet writer and bootstrap
 - `1_data_audit` / strict selected 50h manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_50h_all.jsonl`
   - detail: rows=0, required>=1

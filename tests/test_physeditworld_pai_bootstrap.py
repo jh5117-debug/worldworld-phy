@@ -9,6 +9,7 @@ def test_bootstrap_runs_backend_readiness_and_completion_audit():
     assert "run_physeditworld_completion_audit.sh" in text
     assert "run_physeditworld_pipeline_gates.sh" in text
     assert "run_physeditworld_pai_restore_packet.sh" in text
+    assert "write_physeditworld_external_unblock_packet.sh" in text
     assert "physeditworld_50h/backend_readiness" in text
     assert "pai_restore_packet" in text
     assert text.count("run_physeditworld_pai_restore_packet.sh") >= 3

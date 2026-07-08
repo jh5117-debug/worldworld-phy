@@ -21,6 +21,7 @@ REQUIRED_FILES = (
     "scripts/migration/bootstrap_pai_physeditworld.sh",
     "scripts/migration/check_physeditworld_pai_readiness.sh",
     "scripts/migration/run_physeditworld_pai_restore_packet.sh",
+    "scripts/migration/write_physeditworld_external_unblock_packet.sh",
     "scripts/migration/init_physeditworld_empty_manifests.sh",
     "scripts/migration/rank_physeditworld_root_candidates.sh",
     "scripts/migration/probe_physeditworld_root_schema.sh",
@@ -47,6 +48,7 @@ REQUIRED_FILES = (
     "cam_physgeo/orchestration/physeditworld_locked_handoff.py",
     "cam_physgeo/orchestration/physeditworld_completion_audit.py",
     "cam_physgeo/orchestration/physeditworld_pai_restore_packet.py",
+    "cam_physgeo/orchestration/physeditworld_external_unblock_packet.py",
     "cam_physgeo/orchestration/physeditworld_root_intake.py",
     "cam_physgeo/orchestration/physeditworld_pai_handoff.py",
 )
@@ -69,6 +71,7 @@ EXPECTED_REPORTS = (
     "reports/physeditworld_50h/requirement_matrix.json",
     "reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json",
     "reports/migration/pai_restore_packet.json",
+    "reports/migration/physeditworld_external_unblock_packet.json",
 )
 
 

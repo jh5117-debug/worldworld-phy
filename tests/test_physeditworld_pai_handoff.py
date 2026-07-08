@@ -59,6 +59,8 @@ def test_required_files_include_latest_handoff_tools():
     assert "cam_physgeo/orchestration/physeditworld_completion_audit.py" in required
     assert "cam_physgeo/orchestration/physeditworld_pai_restore_packet.py" in required
     assert "scripts/migration/run_physeditworld_pai_restore_packet.sh" in required
+    assert "scripts/migration/write_physeditworld_external_unblock_packet.sh" in required
+    assert "cam_physgeo/orchestration/physeditworld_external_unblock_packet.py" in required
     assert "cam_physgeo/orchestration/physeditworld_backend_readiness.py" in required
     assert "cam_physgeo/orchestration/physeditworld_root_intake.py" in required
     assert "cam_physgeo/data/physeditworld_root_schema_probe.py" in required
@@ -75,6 +77,7 @@ def test_expected_reports_include_root_lock_completion_audit_and_restore_packet(
     assert "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json" in expected
     assert "reports/physeditworld_50h/backend_readiness/backend_readiness.json" in expected
     assert "reports/migration/pai_restore_packet.json" in expected
+    assert "reports/migration/physeditworld_external_unblock_packet.json" in expected
 
 
 def test_summary_prefers_locked_handoff_sequence(tmp_path):

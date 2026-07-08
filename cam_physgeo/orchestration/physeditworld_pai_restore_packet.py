@@ -54,6 +54,7 @@ SAFE_NEXT_COMMANDS: tuple[str, ...] = (
     "export PHYS_EDITWORLD_ROOTS=/path/to/selected_physeditworld_50h_root",
     "bash scripts/migration/bootstrap_pai_physeditworld.sh",
     "bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh",
+    "bash scripts/migration/write_physeditworld_external_unblock_packet.sh",
     "bash scripts/migration/verify_pai_physeditworld_handoff.sh",
     "bash scripts/migration/run_physeditworld_phase0_preflight.sh",
     "python3 -m cam_physgeo.orchestration.physeditworld_backend_readiness",

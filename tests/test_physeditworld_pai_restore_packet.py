@@ -43,3 +43,4 @@ def test_restore_packet_blocks_when_backend_not_ready():
 
 def test_restore_packet_safe_next_commands_include_handoff_verifier():
     assert "bash scripts/migration/verify_pai_physeditworld_handoff.sh" in SAFE_NEXT_COMMANDS
+    assert "bash scripts/migration/write_physeditworld_external_unblock_packet.sh" in SAFE_NEXT_COMMANDS
