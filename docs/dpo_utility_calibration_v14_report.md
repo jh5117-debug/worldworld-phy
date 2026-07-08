@@ -459,3 +459,17 @@ Gate statistics:
 Interpretation: V-JEPA2 is reliable as a checkpoint drift detector on this set, but not a visual-quality classifier. The right v15 use is a high-recall monitor/inspection trigger combined with Codex visual audit and metrics, not a standalone approval criterion. This supports the v14 root-cause conclusion: scalar DPO improvements can move checkpoint videos in latent space, but that movement is not necessarily visually beneficial.
 
 Decision remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`.
+
+## v14 Completion Audit Update (2026-07-08)
+
+- Completion matrix: `reports/dpo_utility_calibration_v14/completion_audit/v14_completion_matrix.md`.
+- Current decision: `DPO_RECIPE_NOT_FOUND_V14`.
+- Scale permission: `NO_SCALE`; no S16/S32/train400/large DPO is authorized.
+- Best scalar candidates had training signal but failed true V2V-5 visual gates:
+  - E07: scalar winner signal, but step200 videos were worse on 4/4 fixed-val samples.
+  - E09: source-weighted rollout-priority signal, but step50 videos were worse on 4/4 samples.
+  - E10: 100-step gap metrics passed, but step100 videos were worse on 2/4 samples and not clearly better on the rest.
+- Root blocker: calibrated scalar energy/gap improvements do not yet predict real V2V-5 visual quality; updates amplify foreground duplication, fragments, identity clutter, line/text artifacts, and scene contamination.
+- Real-energy calibration improved from one-pair smoke to diverse12: 12/12 ok rows across 12 synthetic failure types, but all500/S_pass/rollout real-energy coverage remains partial because of runtime/cache cost and missing old rollout loser assets.
+- V-JEPA2 is useful as a high-recall checkpoint drift / inspection monitor, including 24/24 ok rows in the expanded checkpoint regression run, but it is not a standalone quality approval metric.
+- Next safe direction: v15 monitor/regularizer design and artifact-aware checkpoint gating, not additional DPO scale.

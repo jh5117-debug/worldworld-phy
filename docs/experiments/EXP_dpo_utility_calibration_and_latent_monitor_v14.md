@@ -181,3 +181,17 @@ The experiment decision remains unchanged: calibration evidence alone does not a
 - Codex worse/not-worse rows: `19 / 5`.
 - AUC vs Codex worse is low (`0.4632` token relation, `0.4842` embedding), so V-JEPA2 is a drift detector/inspection trigger, not a standalone quality PASS metric.
 - v14 remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO.
+
+## v14 Completion Audit Update (2026-07-08)
+
+- Completion matrix: `reports/dpo_utility_calibration_v14/completion_audit/v14_completion_matrix.md`.
+- Current decision: `DPO_RECIPE_NOT_FOUND_V14`.
+- Scale permission: `NO_SCALE`; no S16/S32/train400/large DPO is authorized.
+- Best scalar candidates had training signal but failed true V2V-5 visual gates:
+  - E07: scalar winner signal, but step200 videos were worse on 4/4 fixed-val samples.
+  - E09: source-weighted rollout-priority signal, but step50 videos were worse on 4/4 samples.
+  - E10: 100-step gap metrics passed, but step100 videos were worse on 2/4 samples and not clearly better on the rest.
+- Root blocker: calibrated scalar energy/gap improvements do not yet predict real V2V-5 visual quality; updates amplify foreground duplication, fragments, identity clutter, line/text artifacts, and scene contamination.
+- Real-energy calibration improved from one-pair smoke to diverse12: 12/12 ok rows across 12 synthetic failure types, but all500/S_pass/rollout real-energy coverage remains partial because of runtime/cache cost and missing old rollout loser assets.
+- V-JEPA2 is useful as a high-recall checkpoint drift / inspection monitor, including 24/24 ok rows in the expanded checkpoint regression run, but it is not a standalone quality approval metric.
+- Next safe direction: v15 monitor/regularizer design and artifact-aware checkpoint gating, not additional DPO scale.
