@@ -107,6 +107,14 @@
     },
     {
       "detail": "file exists",
+      "evidence": "scripts/continue_physeditworld_after_mount.sh",
+      "next_action": "",
+      "phase": "0_migration",
+      "requirement": "post-mount continuation wrapper",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
       "evidence": "reports/migration/pai_restore_packet.md",
       "next_action": "",
       "phase": "0_migration",
@@ -223,6 +231,14 @@
       "next_action": "mount NAS, set PHYS_EDITWORLD_ROOTS, rerun external unblock packet writer and bootstrap",
       "phase": "0_migration",
       "requirement": "external unblock packet decision",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=POST_MOUNT_BLOCKED_AT_ROOT_INPUT",
+      "evidence": "reports/physeditworld_50h/post_mount/post_mount_status.json",
+      "next_action": "set PHYS_EDITWORLD_ROOTS, select/lock the root, and rerun post-mount continuation",
+      "phase": "0_migration",
+      "requirement": "post-mount Phase1/2 continuation gate",
       "status": "BLOCKED"
     },
     {

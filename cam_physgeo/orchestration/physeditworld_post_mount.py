@@ -140,7 +140,7 @@ def write_csv(rows: list[StepResult], path: str | Path) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
     keys = ["step", "status", "command", "exit_code", "decision", "output_path", "error_reason"]
     with p.open("w", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=keys)
+        writer = csv.DictWriter(f, fieldnames=keys, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({k: asdict(row).get(k, "") for k in keys})

@@ -4,8 +4,8 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 
 ## Status Counts
 
-- `BLOCKED`: 23
-- `PASS`: 21
+- `BLOCKED`: 24
+- `PASS`: 22
 
 ## Requirements
 
@@ -47,6 +47,9 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - detail: file exists
 - `0_migration` / PAI restore-packet wrapper: `PASS`
   - evidence: `scripts/migration/run_physeditworld_pai_restore_packet.sh`
+  - detail: file exists
+- `0_migration` / post-mount continuation wrapper: `PASS`
+  - evidence: `scripts/continue_physeditworld_after_mount.sh`
   - detail: file exists
 - `0_migration` / PAI restore-packet summary: `PASS`
   - evidence: `reports/migration/pai_restore_packet.md`
@@ -103,6 +106,10 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - evidence: `reports/migration/physeditworld_external_unblock_packet.json`
   - detail: decision=PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT
   - next: mount NAS, set PHYS_EDITWORLD_ROOTS, rerun external unblock packet writer and bootstrap
+- `0_migration` / post-mount Phase1/2 continuation gate: `BLOCKED`
+  - evidence: `reports/physeditworld_50h/post_mount/post_mount_status.json`
+  - detail: decision=POST_MOUNT_BLOCKED_AT_ROOT_INPUT
+  - next: set PHYS_EDITWORLD_ROOTS, select/lock the root, and rerun post-mount continuation
 - `1_data_audit` / strict selected 50h manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_50h_all.jsonl`
   - detail: rows=0, required>=1

@@ -99,6 +99,14 @@
     },
     {
       "detail": "file exists",
+      "evidence": "scripts/continue_physeditworld_after_mount.sh",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "post-mount continuation wrapper",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
       "evidence": "reports/migration/pai_restore_packet.md",
       "next_action": "",
       "phase": "phase0_migration",
@@ -208,6 +216,14 @@
       "phase": "phase0_migration",
       "requirement": "external unblock packet decision",
       "status": "UNKNOWN"
+    },
+    {
+      "detail": "decision=POST_MOUNT_BLOCKED_AT_ROOT_INPUT",
+      "evidence": "reports/physeditworld_50h/post_mount/post_mount_status.json",
+      "next_action": "set PHYS_EDITWORLD_ROOTS, select/lock the root, and rerun post-mount continuation",
+      "phase": "phase0_migration",
+      "requirement": "post-mount Phase1/2 continuation gate",
+      "status": "BLOCKED"
     },
     {
       "detail": "rows=0, required>=1",

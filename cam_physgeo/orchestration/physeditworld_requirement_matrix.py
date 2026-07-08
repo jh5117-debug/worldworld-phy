@@ -164,6 +164,7 @@ def build_rows() -> list[RequirementRow]:
         file_status("scripts/migration/bootstrap_pai_physeditworld.sh", "PAI bootstrap restore entrypoint", "0_migration", "add PAI bootstrap script"),
         file_status("docs/physeditworld_50h_pai_bootstrap.md", "PAI bootstrap operator guide", "0_migration", "write PAI bootstrap guide"),
         file_status("scripts/migration/run_physeditworld_pai_restore_packet.sh", "PAI restore-packet wrapper", "0_migration", "add restore-packet wrapper"),
+        file_status("scripts/continue_physeditworld_after_mount.sh", "post-mount continuation wrapper", "0_migration", "add post-mount continuation wrapper"),
         file_status("reports/migration/pai_restore_packet.md", "PAI restore-packet summary", "0_migration", "run restore-packet writer"),
         file_status("scripts/migration/write_physeditworld_external_unblock_packet.sh", "external unblock-packet wrapper", "0_migration", "add external unblock packet wrapper"),
         file_status("reports/migration/physeditworld_external_unblock_packet.md", "external unblock-packet summary", "0_migration", "run external unblock packet writer"),
@@ -190,6 +191,13 @@ def build_rows() -> list[RequirementRow]:
         "0_migration",
         {"PHYS_EDITWORLD_EXTERNAL_UNBLOCK_PACKET_READY_FOR_POST_MOUNT"},
         "mount NAS, set PHYS_EDITWORLD_ROOTS, rerun external unblock packet writer and bootstrap",
+    ))
+    rows.append(decision_status(
+        "reports/physeditworld_50h/post_mount/post_mount_status.json",
+        "post-mount Phase1/2 continuation gate",
+        "0_migration",
+        {"POST_MOUNT_PHASE12_DONE_RUN_PIPELINE_GATE_NEXT"},
+        "set PHYS_EDITWORLD_ROOTS, select/lock the root, and rerun post-mount continuation",
     ))
     rows.extend([
         manifest_status("manifests/physeditworld_50h_all.jsonl", "strict selected 50h manifest", "1_data_audit", 1, "mount selected PhysEditWorld 50h root and rerun manifest audit"),
