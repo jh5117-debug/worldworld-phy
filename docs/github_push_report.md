@@ -227,4 +227,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - PAI bootstrap safety: existing clone updates now use `git merge --ff-only` instead of `git reset --hard`; bootstrap also runs PAI handoff, Phase0 preflight, pipeline gate, and requirement matrix collectors.
 - Test status: compileall PASS, direct root-lock smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Locked Handoff Sequence (2026-07-08T22:05:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: added a CPU/IO-only sequence that runs selected-root locking, post-mount continuation, Phase0 preflight, PAI handoff verification, pipeline gate, and requirement matrix in the safe order.
+- Command: `bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh`.
+- Current decision without `PHYS_EDITWORLD_ROOTS`: `LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION`.
+- Evidence: `reports/migration/locked_handoff_sequence.md`.
+- Test status: compileall PASS, direct locked-handoff smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
 - Safety: no file copy, no deletion, no GPU use, no rollout, no warm-up, no DPO.

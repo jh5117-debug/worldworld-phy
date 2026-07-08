@@ -1,0 +1,15 @@
+{
+  "decision": "LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION",
+  "steps": [
+    {
+      "command": "bash scripts/migration/select_physeditworld_root.sh",
+      "decision": "PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT",
+      "error_reason": "",
+      "evidence": "reports/migration/physeditworld_selected_root_status.json",
+      "exit_code": 0,
+      "next_action": "set PHYS_EDITWORLD_ROOTS to a strong selected PhysEditWorld 50h root",
+      "status": "BLOCKED",
+      "step": "root_selection"
+    }
+  ]
+}

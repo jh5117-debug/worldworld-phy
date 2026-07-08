@@ -1,0 +1,2 @@
+step,status,command,evidence,decision,exit_code,error_reason,next_action
+root_selection,BLOCKED,bash scripts/migration/select_physeditworld_root.sh,reports/migration/physeditworld_selected_root_status.json,PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT,0,,set PHYS_EDITWORLD_ROOTS to a strong selected PhysEditWorld 50h root
