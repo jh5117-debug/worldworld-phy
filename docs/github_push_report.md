@@ -694,3 +694,14 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Result: 336 all500 recoverable rows are deduplicated into 74 condition-level prefix/future clip recovery tasks; 164 rows remain nonrecoverable, including 78 missing loser videos.
 - This was a no-video/no-GPU plan only; no MP4 files were created or pushed.
 - Artifact policy: only lightweight CSV/JSON/JSONL/MD/docs were pushed; no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged.
+
+## v14 Asset Recovery Smoke Push (2026-07-08)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`.
+- Commit: `1cd3b4c Validate v14 asset recovery smoke`.
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Smoke result: `cam_physgeo.dpo.v14_asset_complete_adapter --limit 1` adapted one all500 recoverable row and schema-validated it.
+- Output manifest: `manifests/dpo_v14_subsets/asset_complete/all500_recovered_smoke1_prefix5.jsonl`.
+- Reports: `reports/dpo_utility_calibration_v14/asset_recovery_plan/recovery_smoke_limit1_summary.md` plus CSV/JSON.
+- Generated MP4 files remain local-only under `local_assets/dpo_utility_calibration_v14/asset_recovery_smoke/all500_smoke1` and were not staged or pushed.
+- Artifact policy: only lightweight manifest/CSV/JSON/MD/docs were pushed; no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged.
