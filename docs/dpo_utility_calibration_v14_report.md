@@ -360,3 +360,32 @@ Conclusion: V-JEPA2 is viable as a v15 monitor/regularizer candidate for availab
 - Beta conclusion remains `NONE_ZERO_UTILITY` at policy=reference: beta cannot create preference signal without a nonzero policy-reference utility change.
 - Scope: calibration only. No DPO training, no S16/S32/train400/large DPO. all500/S_pass/rollout real-energy coverage remains incomplete, but bounded asset-complete real-energy evidence improved to 12 rows.
 
+## v14 Diverse12 Real-Energy Calibration Update (2026-07-08T09:35:00+08:00)
+
+To address the calibration12 diversity caveat, a new asset-complete Prefix5 calibration subset was built with 12 rows covering 12 distinct TypeM-v11 synthetic controlled failure types instead of the prior background-drift-heavy subset.
+
+Artifacts:
+
+- Candidate selection: `manifests/dpo_v14_subsets/diverse_failure_calibration_candidates.jsonl`
+- Asset-complete candidates: `manifests/dpo_v14_subsets/asset_complete_prefix5_diverse_failure_candidates.jsonl`
+- Frozen diverse12 manifest: `manifests/dpo_v14_subsets/asset_complete_prefix5_diverse12.jsonl`
+- Selection summary: `reports/dpo_utility_calibration_v14/blocker_retry/asset_complete_prefix5_diverse12_selection_summary.md`
+- Real-energy summary: `reports/dpo_utility_calibration_v14/blocker_retry/real_energy_diverse12_cuda_runtime/real_energy_diverse12_summary.md`
+- Standardized utility CSV: `reports/dpo_utility_calibration_v14/energy_utility_diverse12_real.csv`
+- Beta response: `reports/dpo_utility_calibration_v14/beta_loss_response_diverse12_real.csv`
+
+Result: `REAL_ENERGY_DIVERSE12_PASS`, 12/12 rows ok on physical GPU5 via `CUDA_VISIBLE_DEVICES=5`, no OOM/NaN/SIGFPE.
+
+Coverage: 12 unique failure types: collision response, containment, drop motion, roll event fragment, wrong camera motion, reobserve mismatch, object identity color shift, object duplicate/fragment, object deformation, partial foreground freeze, local scene patch drift, and background drift.
+
+Delta_ref findings:
+
+- min / median / mean / max: `-0.0174915` / `0.0086480` / `0.0104745` / `0.0376557`
+- positive / negative rows: `10 / 2`
+- negative rows: `object_duplicate_or_fragment` and a near-zero `background_drift_visible` row
+
+Interpretation: the real LingBot energy generally agrees with the controlled WIN>LOSE labels across diverse synthetic failure types, but not perfectly. The object-duplicate row is a meaningful contradiction and supports the existing conclusion that energy/gap metrics alone cannot select a DPO recipe without true-video and latent/visual gates.
+
+Beta response remains `NONE_ZERO_UTILITY` at policy=reference because `u_raw/u_log` is exactly zero when policy and frozen reference are identical. This is expected and does not contradict the earlier v13b finding that post-update utilities require much larger beta than 0.1.
+
+Decision remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`. No S16/S32/train400/large DPO is allowed from this calibration evidence alone.

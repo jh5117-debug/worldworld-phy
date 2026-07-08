@@ -1,0 +1,16 @@
+{
+  "input_manifest": "manifests/dpo_v14_subsets/diverse_failure_calibration_candidates.jsonl",
+  "limit": 64,
+  "output_manifest": "manifests/dpo_v14_subsets/asset_complete_prefix5_diverse_failure_candidates.jsonl",
+  "output_root": "local_assets/dpo_utility_calibration_v14/asset_complete_prefix5_diverse_failure_candidates",
+  "pair_type_counts": {
+    "TypeM_v11_synthetic_visible": 47
+  },
+  "report_csv": "reports/dpo_utility_calibration_v14/blocker_retry/asset_complete_prefix5_diverse_failure_candidates_adapter_report.csv",
+  "schema_validated": 47,
+  "selected_count": 47,
+  "status_counts": {
+    "ADAPTED": 47,
+    "SKIP": 45
+  }
+}

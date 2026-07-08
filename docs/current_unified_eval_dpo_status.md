@@ -665,3 +665,9 @@ Decision: `DPO_RECIPE_NOT_FOUND_V14`. E07/E09/E10 all passed scalar training-sig
 - Beta conclusion remains `NONE_ZERO_UTILITY` at policy=reference: beta cannot create preference signal without a nonzero policy-reference utility change.
 - Scope: calibration only. No DPO training, no S16/S32/train400/large DPO. all500/S_pass/rollout real-energy coverage remains incomplete, but bounded asset-complete real-energy evidence improved to 12 rows.
 
+## v14 Diverse Real-Energy Calibration Update (2026-07-08T09:35:00+08:00)
+
+- New evidence: `REAL_ENERGY_DIVERSE12_PASS` on `manifests/dpo_v14_subsets/asset_complete_prefix5_diverse12.jsonl`.
+- 12/12 rows ok, 12 unique failure types, physical GPU5 only.
+- Delta_ref is mostly aligned with labels (10 positive) but has 2 negative contradictions, especially `object_duplicate_or_fragment`.
+- Final DPO status remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE` because scalar/energy calibration still does not solve true-video degradation.

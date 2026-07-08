@@ -58,3 +58,13 @@ This is the current authoritative audit for `EXP_dpo_utility_calibration_and_lat
 3. Normalization helps scalar training but does not prevent visual artifact amplification.
 4. V-JEPA2/DINO latent monitor can distinguish available WIN/LOSE videos and is a viable v15 monitor/regularizer candidate.
 5. No DPO scheme can proceed to S16/S32/train400 because true checkpoint videos degrade.
+
+## v14 Diverse12 Real-Energy Calibration Update (2026-07-08T09:35:00+08:00)
+
+- Built `manifests/dpo_v14_subsets/asset_complete_prefix5_diverse12.jsonl` from 47 asset-complete candidates covering 12 failure types.
+- Ran real LingBot energy on physical GPU5 only with `CUDA_VISIBLE_DEVICES=5` and `--runtime_device cuda`.
+- Result: `REAL_ENERGY_DIVERSE12_PASS`, 12/12 ok, no OOM/NaN/SIGFPE.
+- Delta_ref min / median / mean / max: `-0.0174915` / `0.0086480` / `0.0104745` / `0.0376557`.
+- Positive / negative rows: `10 / 2`; the main negative contradiction is `object_duplicate_or_fragment`.
+- Beta response: `NONE_ZERO_UTILITY` at policy=reference, expected because policy and frozen reference are identical before update.
+- This improves calibration diversity but does not change final DPO decision: `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO.

@@ -150,3 +150,8 @@ No train400, no large DPO, no S32/S64, no StageA, no StageB, no GRPO, no broad-L
 - Beta conclusion remains `NONE_ZERO_UTILITY` at policy=reference: beta cannot create preference signal without a nonzero policy-reference utility change.
 - Scope: calibration only. No DPO training, no S16/S32/train400/large DPO. all500/S_pass/rollout real-energy coverage remains incomplete, but bounded asset-complete real-energy evidence improved to 12 rows.
 
+## Diverse12 Calibration Completion Note (2026-07-08T09:35:00+08:00)
+
+The v14 calibration scope was extended beyond the background-drift-heavy calibration12 subset. A 12-row asset-complete manifest with 12 unique synthetic controlled failure types was built and evaluated with real LingBot energy on physical GPU5. The run passed 12/12 rows and documented two energy-label contradictions. This satisfies an additional part of the offline calibration intent: synthetic failure type scale is now sampled more broadly, though all500/S_pass/rollout real-energy coverage remains incomplete because of runtime/cache and missing-asset blockers.
+
+The experiment decision remains unchanged: calibration evidence alone does not authorize DPO scale; true checkpoint video, metrics, and Codex visual audit remain mandatory.

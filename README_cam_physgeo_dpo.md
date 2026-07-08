@@ -469,3 +469,6 @@ Relevant paths:
 - Beta conclusion remains `NONE_ZERO_UTILITY` at policy=reference: beta cannot create preference signal without a nonzero policy-reference utility change.
 - Scope: calibration only. No DPO training, no S16/S32/train400/large DPO. all500/S_pass/rollout real-energy coverage remains incomplete, but bounded asset-complete real-energy evidence improved to 12 rows.
 
+### v14 Diverse Real-Energy Calibration
+
+A follow-up v14 calibration built `manifests/dpo_v14_subsets/asset_complete_prefix5_diverse12.jsonl` with 12 unique synthetic controlled failure types and ran real LingBot energy on physical GPU5. The run passed 12/12 rows, with 10 positive and 2 negative Delta_ref rows. This improves calibration diversity but does not authorize DPO scaling; v14 remains `DPO_RECIPE_NOT_FOUND_V14` until a recipe passes scalar, video, metric, and Codex visual gates.

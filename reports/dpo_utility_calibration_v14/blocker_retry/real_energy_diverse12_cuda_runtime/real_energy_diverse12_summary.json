@@ -1,0 +1,47 @@
+{
+  "csv": "reports/dpo_utility_calibration_v14/blocker_retry/real_energy_diverse12_cuda_runtime/shard_00_of_01.csv",
+  "decision": "REAL_ENERGY_DIVERSE12_PASS",
+  "delta_ref_max": 0.03765569627285004,
+  "delta_ref_mean": 0.010474516699711481,
+  "delta_ref_median": 0.008648000657558441,
+  "delta_ref_min": -0.017491504549980164,
+  "delta_ref_negative_rows": 2,
+  "delta_ref_positive_rows": 10,
+  "energy_seconds_max": 227.95005226135254,
+  "energy_seconds_mean": 193.42098329464594,
+  "energy_seconds_min": 171.09925389289856,
+  "failure_types": [
+    "collision_response_failure_synthetic",
+    "containment_failure_synthetic",
+    "drop_motion_failure_synthetic",
+    "roll_event_fragment_synthetic",
+    "wrong_camera_motion_visible",
+    "reobserve_mismatch_visible",
+    "object_identity_color_shift",
+    "object_duplicate_or_fragment",
+    "object_deformation_visible",
+    "partial_freeze_foreground",
+    "local_scene_patch_drift",
+    "background_drift_visible"
+  ],
+  "gpu": "physical GPU5 via CUDA_VISIBLE_DEVICES=5",
+  "jsonl": "reports/dpo_utility_calibration_v14/blocker_retry/real_energy_diverse12_cuda_runtime/shard_00_of_01.jsonl",
+  "negative_delta_pairs": [
+    {
+      "Delta_ref": -0.017491504549980164,
+      "failure_type": "object_duplicate_or_fragment",
+      "pair_id": "v11_SYN_0428_01039_drop_orbit_left_72_seed40039_object_duplicate_or_fragment"
+    },
+    {
+      "Delta_ref": -1.4696270227432251e-05,
+      "failure_type": "background_drift_visible",
+      "pair_id": "v11_SYN_0053_02262_collision_orbit_right_64_seed41262_background_drift_visible"
+    }
+  ],
+  "ok_rows": 12,
+  "rows": 12,
+  "source_manifest": "manifests/dpo_v14_subsets/asset_complete_prefix5_diverse12.jsonl",
+  "standard_csv": "reports/dpo_utility_calibration_v14/energy_utility_diverse12_real.csv",
+  "standard_jsonl": "reports/dpo_utility_calibration_v14/energy_utility_diverse12_real.jsonl",
+  "unique_failure_types": 12
+}
