@@ -334,3 +334,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current blocker remains external: no selected PhysEditWorld 50h root is mounted/provided.
 - Test status: compileall PASS, direct locked-handoff smoke PASS, locked handoff/handoff/completion smoke PASS; pytest unavailable, no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Locked Handoff Schema Probe Gate (2026-07-09T00:35:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: `b637dfc Require root schema probe in PhysEditWorld locked handoff`.
+- Scope: locked handoff now refreshes the selected-root schema probe after expected-manifest init and before root selection/post-mount continuation.
+- Current decision: `LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE`.
+- Evidence: `reports/migration/locked_handoff_sequence.md`; the sequence records `empty_manifest_init` PASS, then `root_schema_probe` BLOCKED with `PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT` because `PHYS_EDITWORLD_ROOTS` is unset.
+- Completion audit now records the locked handoff blocker as `root_schema_probe` and keeps Phase 1+ blocked until a real PhysEditWorld selected-50h root with action/camera/intrinsics/gravity/replay/video evidence is mounted.
+- Test status: compileall PASS, direct locked-schema smoke PASS, locked handoff/handoff/completion smoke PASS; pytest unavailable, no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
