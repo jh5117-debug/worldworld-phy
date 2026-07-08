@@ -45,3 +45,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Training/rollout status: not run. Phase 2+ remains blocked until a valid PhysEditWorld 50h root is provided or mounted.
 - Artifact policy: only lightweight code/docs/manifests/CSV/MD reports were pushed; no `local_assets`, videos/images, checkpoints, weights, or large logs.
 
+## PhysEditWorld 50h Prompt-Gravity Conversion Tooling Push (2026-07-08)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `6700121 Add PhysEditWorld prompt-gravity LingBot conversion tooling`.
+- Scope: added prompt-only gravity template validation, LingBot condition schema validation, PhysEditWorld-to-LingBot conversion tool, root-search evidence, conversion smoke summary, and tests.
+- Conversion status: `CONVERSION_TOOL_READY_DATA_BLOCKED`; direct synthetic smoke passed, but real conversion selected 0 rows because strict PhysEditWorld train manifest is empty.
+- Data status: `PHYS_EDIT_WORLD_ROOT_NOT_VISIBLE`; visible H20 paths still contain PhysInOne/legacy false positives rather than the selected PhysEditWorld 50h root.
+- Artifact policy: only lightweight code/docs/manifests/CSV/MD reports were pushed; no `local_assets`, videos/images, checkpoints, weights, or large logs.
+
