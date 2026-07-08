@@ -36,6 +36,7 @@ PASS_DECISIONS = {
     "PHYS_EDIT_WORLD_PIPELINE_REQUIREMENTS_PASS",
     "PIPELINE_READY_FOR_NEXT_EXECUTION_STEP",
     "PHYS_EDITWORLD_BACKEND_READY_FOR_BASELINE_WARMUP",
+    "PHYS_EDITWORLD_EXTERNAL_UNBLOCK_PACKET_READY_FOR_POST_MOUNT",
 }
 
 REVIEW_DECISIONS = {
@@ -67,6 +68,8 @@ def status_for(decision: str, exit_code: int) -> str:
         or "WAITING" in decision
         or "WEAK_ONLY" in decision
         or "NONE_STRONG" in decision
+        or "UNBLOCK_REQUIRED" in decision
+        or "REQUIRED_NAS_OR_ROOT" in decision
         or decision.endswith("_EMPTY")
         or decision in {"MISSING", "UNREADABLE"}
     ):
@@ -102,6 +105,7 @@ def overall_decision(rows: list[PreflightStep]) -> str:
         ("backend_readiness", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_BACKEND_READINESS"),
         ("requirement_matrix", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_REQUIREMENT_MATRIX"),
         ("pipeline_gate_status", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_PIPELINE_GATE"),
+        ("physeditworld_external_unblock_packet", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_EXTERNAL_UNBLOCK_PACKET"),
     ]
     by_step = {row.step: row for row in rows}
     for step, decision in order:
@@ -124,7 +128,7 @@ def write_csv(rows: list[PreflightStep], path: str | Path) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
     fields = list(PreflightStep.__dataclass_fields__.keys())
     with p.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fields)
+        writer = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow(asdict(row))
@@ -184,6 +188,7 @@ def main(argv: list[str] | None = None) -> int:
         (["python3", "-m", "cam_physgeo.orchestration.physeditworld_backend_readiness"], "reports/physeditworld_50h/backend_readiness/backend_readiness.json"),
         (["python3", "-m", "cam_physgeo.orchestration.physeditworld_requirement_matrix"], "reports/physeditworld_50h/requirement_matrix.json"),
         (["python3", "-m", "cam_physgeo.orchestration.physeditworld_pipeline_gate"], "reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json"),
+        (["bash", "scripts/migration/write_physeditworld_external_unblock_packet.sh"], "reports/migration/physeditworld_external_unblock_packet.json"),
     ]
     rows = [run_command(cmd, evidence, args.dry_run) for cmd, evidence in commands]
     decision = overall_decision(rows)

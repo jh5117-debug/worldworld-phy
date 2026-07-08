@@ -1,14 +1,14 @@
 # PhysEditWorld PAI Restore Packet
 
-Generated UTC: `2026-07-08T22:20:22.711476+00:00`
+Generated UTC: `2026-07-08T22:39:14.442684+00:00`
 Decision: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT`
 
 ## Git
 
 - repo: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys`
 - branch: `physion-only-local-assets-videogpa-smoke`
-- local head: `7322130`
-- origin branch head: `4342335`
+- local head: `9832827`
+- origin branch head: `c2f265d`
 
 ## Current Blockers
 
