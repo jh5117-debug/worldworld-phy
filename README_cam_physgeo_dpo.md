@@ -472,3 +472,7 @@ Relevant paths:
 ### v14 Diverse Real-Energy Calibration
 
 A follow-up v14 calibration built `manifests/dpo_v14_subsets/asset_complete_prefix5_diverse12.jsonl` with 12 unique synthetic controlled failure types and ran real LingBot energy on physical GPU5. The run passed 12/12 rows, with 10 positive and 2 negative Delta_ref rows. This improves calibration diversity but does not authorize DPO scaling; v14 remains `DPO_RECIPE_NOT_FOUND_V14` until a recipe passes scalar, video, metric, and Codex visual gates.
+
+### v14 V-JEPA2 Checkpoint Regression Monitor
+
+A targeted monitor compared E09/E10 step0 videos against degraded updated checkpoint videos using local V-JEPA2. It produced 8/8 positive token-relation margins, including all Codex-worse rows. This supports V-JEPA2 as a v15 checkpoint-drift/artifact-risk gate, but it is not a standalone visual-quality classifier and does not change v14 `NO_SCALE`.

@@ -68,3 +68,12 @@ This is the current authoritative audit for `EXP_dpo_utility_calibration_and_lat
 - Positive / negative rows: `10 / 2`; the main negative contradiction is `object_duplicate_or_fragment`.
 - Beta response: `NONE_ZERO_UTILITY` at policy=reference, expected because policy and frozen reference are identical before update.
 - This improves calibration diversity but does not change final DPO decision: `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO.
+
+## v14 V-JEPA2 Checkpoint Regression Update (2026-07-08T09:45:00+08:00)
+
+- Built `manifests/dpo_v14_subsets/checkpoint_regression_e09_e10_vjepa_pairs.jsonl` from E09/E10 checkpoint rollouts.
+- Ran local V-JEPA2 on physical GPU4 only with `CUDA_VISIBLE_DEVICES=4`; no training.
+- Result: 8/8 ok, 8/8 positive V-JEPA margins, 8/8 positive token-relation margins.
+- 6/8 rows were Codex-worse-than-step0; V-JEPA2 detected drift for all of them.
+- Decision: `CHECKPOINT_REGRESSION_MONITOR_PASS_AS_DRIFT_DETECTOR` for v15 monitor/gate design, not a v14 DPO recipe.
+- v14 remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO.

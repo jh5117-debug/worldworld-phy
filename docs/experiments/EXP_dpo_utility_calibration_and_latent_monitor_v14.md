@@ -155,3 +155,12 @@ No train400, no large DPO, no S32/S64, no StageA, no StageB, no GRPO, no broad-L
 The v14 calibration scope was extended beyond the background-drift-heavy calibration12 subset. A 12-row asset-complete manifest with 12 unique synthetic controlled failure types was built and evaluated with real LingBot energy on physical GPU5. The run passed 12/12 rows and documented two energy-label contradictions. This satisfies an additional part of the offline calibration intent: synthetic failure type scale is now sampled more broadly, though all500/S_pass/rollout real-energy coverage remains incomplete because of runtime/cache and missing-asset blockers.
 
 The experiment decision remains unchanged: calibration evidence alone does not authorize DPO scale; true checkpoint video, metrics, and Codex visual audit remain mandatory.
+
+## v14 V-JEPA2 Checkpoint Regression Update (2026-07-08T09:45:00+08:00)
+
+- Built `manifests/dpo_v14_subsets/checkpoint_regression_e09_e10_vjepa_pairs.jsonl` from E09/E10 checkpoint rollouts.
+- Ran local V-JEPA2 on physical GPU4 only with `CUDA_VISIBLE_DEVICES=4`; no training.
+- Result: 8/8 ok, 8/8 positive V-JEPA margins, 8/8 positive token-relation margins.
+- 6/8 rows were Codex-worse-than-step0; V-JEPA2 detected drift for all of them.
+- Decision: `CHECKPOINT_REGRESSION_MONITOR_PASS_AS_DRIFT_DETECTOR` for v15 monitor/gate design, not a v14 DPO recipe.
+- v14 remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO.

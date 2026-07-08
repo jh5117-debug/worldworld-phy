@@ -671,3 +671,12 @@ Decision: `DPO_RECIPE_NOT_FOUND_V14`. E07/E09/E10 all passed scalar training-sig
 - 12/12 rows ok, 12 unique failure types, physical GPU5 only.
 - Delta_ref is mostly aligned with labels (10 positive) but has 2 negative contradictions, especially `object_duplicate_or_fragment`.
 - Final DPO status remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE` because scalar/energy calibration still does not solve true-video degradation.
+
+## v14 V-JEPA2 Checkpoint Regression Update (2026-07-08T09:45:00+08:00)
+
+- Built `manifests/dpo_v14_subsets/checkpoint_regression_e09_e10_vjepa_pairs.jsonl` from E09/E10 checkpoint rollouts.
+- Ran local V-JEPA2 on physical GPU4 only with `CUDA_VISIBLE_DEVICES=4`; no training.
+- Result: 8/8 ok, 8/8 positive V-JEPA margins, 8/8 positive token-relation margins.
+- 6/8 rows were Codex-worse-than-step0; V-JEPA2 detected drift for all of them.
+- Decision: `CHECKPOINT_REGRESSION_MONITOR_PASS_AS_DRIFT_DETECTOR` for v15 monitor/gate design, not a v14 DPO recipe.
+- v14 remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO.

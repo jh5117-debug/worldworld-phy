@@ -389,3 +389,24 @@ Interpretation: the real LingBot energy generally agrees with the controlled WIN
 Beta response remains `NONE_ZERO_UTILITY` at policy=reference because `u_raw/u_log` is exactly zero when policy and frozen reference are identical. This is expected and does not contradict the earlier v13b finding that post-update utilities require much larger beta than 0.1.
 
 Decision remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`. No S16/S32/train400/large DPO is allowed from this calibration evidence alone.
+
+## v14 V-JEPA2 Checkpoint Regression Monitor Update (2026-07-08T09:45:00+08:00)
+
+A targeted V-JEPA2 checkpoint-regression monitor was run on the already generated E09/E10 checkpoint rollouts. The manifest treats step0 as the reference/winner and the updated checkpoint video as the candidate/loser:
+
+- Manifest: `manifests/dpo_v14_subsets/checkpoint_regression_e09_e10_vjepa_pairs.jsonl`
+- V-JEPA2 output: `reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_e09_e10/vjepa2_checkpoint_regression.csv`
+- Joined visual/latent CSV: `reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_e09_e10/vjepa2_checkpoint_regression_with_visual.csv`
+- Interpretation: `reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_e09_e10/vjepa2_checkpoint_regression_interpretation.md`
+
+Result: `CHECKPOINT_REGRESSION_MONITOR_PASS_AS_DRIFT_DETECTOR`.
+
+- Rows / ok rows: `8 / 8`
+- Positive V-JEPA embedding margins: `8/8`
+- Positive token-relation margins: `8/8`
+- Codex worse-than-step0 rows: `6/8`
+- Token-relation margin min / median / mean / max: `0.0515955 / 0.0591934 / 0.0663227 / 0.0963149`
+
+Interpretation: V-JEPA2 detects that E09/E10 updated checkpoints move away from step0 in every tested sample. This supports using V-JEPA2 as a v15 checkpoint-drift / artifact-risk gate. It is not sufficient alone as a binary visual-quality classifier, because two mixed/not-worse E10 rows also had positive latent drift. The safe use remains monitor-first, combined with Codex visual audit and conventional metrics.
+
+This does not change the v14 decision: `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`.
