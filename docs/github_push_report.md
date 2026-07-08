@@ -267,3 +267,15 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: compileall PASS, direct summary-order smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
 - Safety: no file copy, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Root Candidate False-Positive Filter (2026-07-08T22:55:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: `01016b5 Harden PhysEditWorld root candidate ranking`.
+- Scope: root candidate ranking now requires structural schema files for action/camera/intrinsics/gravity/replay instead of counting prompt-derived video filename words as schema evidence.
+- False-positive filters were tightened for VideoPHY/Wan/checkpoint/results paths.
+- Current decision: `PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG`.
+- Evidence: `reports/migration/physeditworld_root_candidates_ranked.md`.
+- Locked handoff remains blocked at root selection until a real selected PhysEditWorld 50h root is mounted or supplied via `PHYS_EDITWORLD_ROOTS`.
+- Test status: compileall PASS, direct root-candidate smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
