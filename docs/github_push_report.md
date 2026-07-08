@@ -529,3 +529,10 @@ git push -u origin cam-physgeo-dpo-refactor
 - Validation: compileall PASS, direct smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
 - Safety: CPU/IO only; no rsync execute, no data copy, no deletion, no GPU use, no training, no rollout, no local_assets/video/weights push.
 
+## PhysEditWorld Phase0 WAITING Status Classification (2026-07-09T03:30:00 CST)
+
+- Updated Phase0 preflight status classification so `WAITING` decisions are treated as `BLOCKED`, not `UNKNOWN`.
+- This makes root schema and root intake external-root blockers explicit in `reports/migration/phase0_preflight_status.json`.
+- Current live decision remains `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES`; no selected PhysEditWorld 50h root is visible and `PHYS_EDITWORLD_ROOTS` is unset.
+- Validation: compileall PASS and direct smoke PASS; no training, no rollout, no GPU use, no deletion.
+

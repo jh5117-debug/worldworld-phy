@@ -25,7 +25,7 @@
       "error_reason": "",
       "evidence": "reports/migration/physeditworld_root_schema_probe.json",
       "exit_code": 0,
-      "status": "UNKNOWN",
+      "status": "BLOCKED",
       "step": "physeditworld_root_schema_probe"
     },
     {
@@ -43,7 +43,7 @@
       "error_reason": "",
       "evidence": "reports/migration/physeditworld_root_intake.json",
       "exit_code": 0,
-      "status": "UNKNOWN",
+      "status": "BLOCKED",
       "step": "physeditworld_root_intake"
     },
     {

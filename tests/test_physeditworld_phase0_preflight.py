@@ -39,6 +39,11 @@ def test_status_for_manifest_init_pass():
     assert status_for("PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", 0) == "PASS"
 
 
+def test_status_for_waiting_is_blocked():
+    assert status_for("PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT", 0) == "BLOCKED"
+    assert status_for("PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT", 0) == "BLOCKED"
+
+
 def test_phase0_blocks_at_root_schema_before_readiness():
     rows = [
         PreflightStep("empty_manifest_init", "cmd", 0, "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", "PASS", "init"),

@@ -61,7 +61,14 @@ def status_for(decision: str, exit_code: int) -> str:
         return "PASS"
     if decision in REVIEW_DECISIONS:
         return "REVIEW_REQUIRED"
-    if "BLOCKED" in decision or "WEAK_ONLY" in decision or "NONE_STRONG" in decision or decision.endswith("_EMPTY") or decision in {"MISSING", "UNREADABLE"}:
+    if (
+        "BLOCKED" in decision
+        or "WAITING" in decision
+        or "WEAK_ONLY" in decision
+        or "NONE_STRONG" in decision
+        or decision.endswith("_EMPTY")
+        or decision in {"MISSING", "UNREADABLE"}
+    ):
         return "BLOCKED"
     if "REVIEW_REQUIRED" in decision:
         return "REVIEW_REQUIRED"

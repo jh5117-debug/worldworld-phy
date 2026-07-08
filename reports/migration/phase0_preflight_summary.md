@@ -10,13 +10,13 @@ Decision: `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES`
 - `physeditworld_root_candidates_ranked`: `BLOCKED` / `PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG`
   - evidence: `reports/migration/physeditworld_root_candidates_ranked.json`
   - command: `bash scripts/migration/rank_physeditworld_root_candidates.sh`
-- `physeditworld_root_schema_probe`: `UNKNOWN` / `PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT`
+- `physeditworld_root_schema_probe`: `BLOCKED` / `PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT`
   - evidence: `reports/migration/physeditworld_root_schema_probe.json`
   - command: `bash scripts/migration/probe_physeditworld_root_schema.sh`
 - `physeditworld_selected_root_status`: `BLOCKED` / `PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT`
   - evidence: `reports/migration/physeditworld_selected_root_status.json`
   - command: `bash scripts/migration/select_physeditworld_root.sh`
-- `physeditworld_root_intake`: `UNKNOWN` / `PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT`
+- `physeditworld_root_intake`: `BLOCKED` / `PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT`
   - evidence: `reports/migration/physeditworld_root_intake.json`
   - command: `bash scripts/migration/prepare_physeditworld_root_intake.sh`
 - `locked_handoff_sequence`: `BLOCKED` / `LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE`
