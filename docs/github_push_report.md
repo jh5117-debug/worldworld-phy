@@ -290,3 +290,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current blocker: no strong PhysEditWorld selected 50h root is visible and `PHYS_EDITWORLD_ROOTS` is unset; NAS is still not visible.
 - Test status: compileall PASS, direct root-intake/completion smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Root Schema Probe (2026-07-08T23:36:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: `3d6fff3 Add PhysEditWorld root schema probe`.
+- Scope: added a CPU/IO-only selected-root schema probe, integrated it into root intake, PAI handoff verification, and the objective completion audit.
+- Current decision: `PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT`.
+- Evidence: `reports/migration/physeditworld_root_schema_probe.md`, refreshed `reports/migration/physeditworld_root_intake.md`, refreshed `reports/migration/pai_handoff_summary.md`, and refreshed `reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.md`.
+- Current blocker: `PHYS_EDITWORLD_ROOTS` is unset and `/mnt/workspace/hj/nas_hj` is not visible, so strict PhysEditWorld manifests remain empty and Phase 1+ must not run yet.
+- Test status: compileall PASS, direct schema-probe/root-intake/handoff/completion smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
