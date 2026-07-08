@@ -161,3 +161,11 @@ The next aligned work is v15 monitor/regularizer design:
 - Rollout-only remains blocked for real-energy retry because current assets are missing rollout loser videos.
 - This is still metadata/path existence only: no video decode, no energy, no training, and no GPU use.
 - Decision remains `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.
+
+## v14 Asset Recovery Plan Update (2026-07-08T10:49 CST)
+
+- Added no-video recovery plan: `reports/dpo_utility_calibration_v14/asset_recovery_plan/asset_recovery_plan_summary.md`.
+- The plan covers 336 recoverable all500 pair rows and deduplicates them into condition-level prefix/future clip recovery tasks.
+- It does not create MP4 files, run energy, use GPU, train, or delete assets.
+- Rollout-only and S_pass real-energy coverage remain blocked by missing loser rollout videos in the current worktree.
+- Decision remains `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.

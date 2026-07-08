@@ -1,0 +1,16 @@
+{
+  "decision": "V14_ASSET_RECOVERY_PLAN_READY_NOT_EXECUTED",
+  "scale_permission": "NO_SCALE",
+  "all500_rows": 500,
+  "recoverable_pair_rows": 336,
+  "nonrecoverable_pair_rows": 164,
+  "condition_level_tasks": 74,
+  "need_prefix_clip_pairs": 336,
+  "need_winner_future_clip_pairs": 336,
+  "no_recovery_needed_pairs": 0,
+  "blocked_reason_counts": {
+    "missing_loser_video": 78,
+    "prefix_not_recoverable": 149,
+    "winner_not_recoverable": 149
+  }
+}
