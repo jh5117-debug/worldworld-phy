@@ -323,3 +323,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current blocker remains external: `PHYS_EDITWORLD_ROOTS` is unset and NAS `/mnt/workspace/hj/nas_hj` is not visible.
 - Test status: compileall PASS, direct integration smoke PASS, Phase0/handoff/completion smoke PASS; pytest unavailable, no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Locked Handoff Manifest Init Step (2026-07-09T00:15:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: `14df472 Run manifest init in PhysEditWorld locked handoff`.
+- Scope: locked handoff now runs the expected-manifest initializer before selected-root locking, so a fresh H20/PAI clone creates lightweight expected JSONL placeholders before post-mount gates.
+- Current decision: `LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION`.
+- Evidence: `reports/migration/locked_handoff_sequence.md`; the sequence now records `empty_manifest_init` as PASS before `root_selection` blocks because `PHYS_EDITWORLD_ROOTS` is unset.
+- Current blocker remains external: no selected PhysEditWorld 50h root is mounted/provided.
+- Test status: compileall PASS, direct locked-handoff smoke PASS, locked handoff/handoff/completion smoke PASS; pytest unavailable, no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
