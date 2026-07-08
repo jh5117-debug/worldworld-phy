@@ -15,6 +15,7 @@ READY_ROOT_SCHEMA_PROBE = "PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT"
 READY_READINESS = "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT"
 READY_ASSET_VALIDATION = "MIGRATION_ASSET_VALIDATION_PASS"
 READY_APPROVED_COPY = {"APPROVED_COPY_DRYRUN_READY", "APPROVED_COPY_EXECUTED"}
+READY_BACKEND = "PHYS_EDITWORLD_BACKEND_READY_FOR_BASELINE_WARMUP"
 
 
 @dataclass
@@ -194,6 +195,24 @@ def main(argv: list[str] | None = None) -> int:
         or asset_decision != READY_ASSET_VALIDATION
         or copy_decision not in READY_APPROVED_COPY
     ):
+        decision = pipeline_decision(rows)
+        write_csv(rows, args.output_csv)
+        write_json(rows, decision, args.output_json)
+        write_summary(rows, decision, args.summary)
+        print(json.dumps({"decision": decision, "phases": len(rows)}, sort_keys=True))
+        return 0
+
+    backend_decision, backend_status, backend_error = read_json_decision("reports/physeditworld_50h/backend_readiness/backend_readiness.json")
+    backend_status = "PASS" if backend_decision == READY_BACKEND else "BLOCKED"
+    rows.append(PhaseStatus(
+        "backend_readiness",
+        backend_decision,
+        backend_status,
+        "reports/physeditworld_50h/backend_readiness/backend_readiness.json",
+        next_action="run real baseline/warm-up/checkpoint gates" if backend_status == "PASS" else "connect real LingBot-Fast baseline rollout, checkpoint eval, and rank32 warm-up backends",
+        error_reason=backend_error,
+    ))
+    if backend_status == "BLOCKED":
         decision = pipeline_decision(rows)
         write_csv(rows, args.output_csv)
         write_json(rows, decision, args.output_json)

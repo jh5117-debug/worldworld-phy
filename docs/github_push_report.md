@@ -545,3 +545,11 @@ git push -u origin cam-physgeo-dpo-refactor
 - Validation: compileall PASS, direct smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
 - Safety: CPU/IO only; no model weights loaded, no GPU use, no training, no rollout, no data copy/deletion, no local_assets/video/weights push.
 
+## PhysEditWorld Backend Readiness Pipeline Gate (2026-07-09T03:50:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Scope: wired `PHYS_EDITWORLD_BACKEND_READY_FOR_BASELINE_WARMUP` into the safe pipeline gate and Phase0 preflight.
+- Effect: baseline rollout, checkpoint eval, and rank32 warm-up stay blocked while backend readiness remains `PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY`.
+- Live pipeline decision after refresh: `PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE`; Phase0 remains `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES` because the selected PhysEditWorld root/NAS are still not visible.
+- Validation: compileall PASS, direct backend-gate smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
+- Safety: CPU/IO only; no GPU use, no training, no rollout, no copy/delete, no local_assets/video/weights push.

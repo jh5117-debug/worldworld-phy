@@ -44,6 +44,17 @@ def test_pipeline_blocks_at_approved_copy_when_prior_phase_passes():
     assert decision == "PIPELINE_BLOCKED_AT_APPROVED_COPY"
 
 
+def test_pipeline_blocks_at_backend_readiness_before_baseline():
+    decision = pipeline_decision([
+        PhaseStatus("readiness", "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT", "PASS", "x"),
+        PhaseStatus("asset_validation", "MIGRATION_ASSET_VALIDATION_PASS", "PASS", "y"),
+        PhaseStatus("approved_copy", "APPROVED_COPY_DRYRUN_READY", "PASS", "z"),
+        PhaseStatus("backend_readiness", "PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY", "BLOCKED", "backend_readiness.json"),
+        PhaseStatus("baseline", "BASELINE_READY", "PASS", "summary.md"),
+    ])
+    assert decision == "PIPELINE_BLOCKED_AT_BACKEND_READINESS"
+
+
 def test_pipeline_blocks_at_root_schema_before_readiness():
     decision = pipeline_decision([
         PhaseStatus("manifest_init", "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", "PASS", "x"),

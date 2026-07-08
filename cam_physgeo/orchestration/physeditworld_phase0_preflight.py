@@ -35,6 +35,7 @@ PASS_DECISIONS = {
     "APPROVED_COPY_EXECUTED",
     "PHYS_EDIT_WORLD_PIPELINE_REQUIREMENTS_PASS",
     "PIPELINE_READY_FOR_NEXT_EXECUTION_STEP",
+    "PHYS_EDITWORLD_BACKEND_READY_FOR_BASELINE_WARMUP",
 }
 
 REVIEW_DECISIONS = {
@@ -98,6 +99,7 @@ def overall_decision(rows: list[PreflightStep]) -> str:
         ("approved_copy_manifest_template", "PHYS_EDITWORLD_PHASE0_REVIEW_COPY_PLAN"),
         ("approved_copy_status", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_APPROVED_COPY"),
         ("pai_handoff_status", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_PAI_HANDOFF"),
+        ("backend_readiness", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_BACKEND_READINESS"),
         ("requirement_matrix", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_REQUIREMENT_MATRIX"),
         ("pipeline_gate_status", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_PIPELINE_GATE"),
     ]
@@ -179,6 +181,7 @@ def main(argv: list[str] | None = None) -> int:
         (["bash", "scripts/migration/build_physeditworld_migration_copy_plan.sh"], "reports/migration/approved_copy_manifest_template.json"),
         (["bash", "scripts/migration/run_approved_migration_copy.sh"], "reports/migration/approved_copy_status.json"),
         (["bash", "scripts/migration/verify_pai_physeditworld_handoff.sh"], "reports/migration/pai_handoff_status.json"),
+        (["python3", "-m", "cam_physgeo.orchestration.physeditworld_backend_readiness"], "reports/physeditworld_50h/backend_readiness/backend_readiness.json"),
         (["python3", "-m", "cam_physgeo.orchestration.physeditworld_requirement_matrix"], "reports/physeditworld_50h/requirement_matrix.json"),
         (["python3", "-m", "cam_physgeo.orchestration.physeditworld_pipeline_gate"], "reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json"),
     ]
