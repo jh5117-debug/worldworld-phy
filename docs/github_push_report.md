@@ -301,3 +301,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current blocker: `PHYS_EDITWORLD_ROOTS` is unset and `/mnt/workspace/hj/nas_hj` is not visible, so strict PhysEditWorld manifests remain empty and Phase 1+ must not run yet.
 - Test status: compileall PASS, direct schema-probe/root-intake/handoff/completion smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Expected Manifest Placeholder Init (2026-07-08T23:46:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: `8400907 Initialize PhysEditWorld expected manifest placeholders`.
+- Scope: added a CPU/IO-only manifest initializer and committed empty expected LingBot JSONL placeholders so audits report `rows=0 BLOCKED` instead of missing files while the selected root is absent.
+- Current decision: `PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED`.
+- Evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.md` and refreshed `reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.md`.
+- Current blocker remains external: selected PhysEditWorld 50h root and NAS are not visible; strict and LingBot manifests have 0 rows and Phase 1+ must not run yet.
+- Test status: compileall PASS, direct manifest-init smoke PASS, completion audit rerun PASS; pytest unavailable, no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
