@@ -12,7 +12,7 @@ Decision: `PAI_HANDOFF_BLOCKED_NAS_OR_ROOT`
 - `git_branch`: `PASS`
   - detail: branch=physion-only-local-assets-videogpa-smoke
 - `git_head`: `PASS`
-  - detail: 7140051
+  - detail: 9e71db4
 - `forbidden_staged_files`: `PASS`
   - detail: none
 - `required_handoff_files`: `PASS`
@@ -35,10 +35,18 @@ Decision: `PAI_HANDOFF_BLOCKED_NAS_OR_ROOT`
 ## Safe Next Commands
 
 ```bash
+# Preferred one-command path after NAS/root are visible:
+PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h \
+  bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh
+
+# Read-only completion evidence after any handoff run:
+bash scripts/migration/run_physeditworld_completion_audit.sh
+
+# Lower-level fallback commands for debugging one stage at a time:
+PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h bash scripts/migration/select_physeditworld_root.sh
+PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h bash scripts/continue_physeditworld_after_mount.sh
 bash scripts/migration/run_physeditworld_phase0_preflight.sh
 bash scripts/run_physeditworld_pipeline_gates.sh
-python3 -m cam_physgeo.orchestration.physeditworld_requirement_matrix
-PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h bash scripts/continue_physeditworld_after_mount.sh
 ```
 
 ## Safety

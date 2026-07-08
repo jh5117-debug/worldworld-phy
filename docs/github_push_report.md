@@ -257,4 +257,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current handoff outcome remains blocked until NAS/root are mounted; this update only strengthens code/report coverage.
 - Test status: compileall PASS, direct handoff smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld PAI Handoff Safe Command Order (2026-07-08T22:31:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: PAI handoff summary now recommends the root-locked sequence first, then the objective completion audit, before listing lower-level fallback commands.
+- Preferred command: `PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh`.
+- This avoids accidentally bypassing selected-root lock and post-mount gates with older direct commands.
+- Test status: compileall PASS, direct summary-order smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
 - Safety: no file copy, no deletion, no GPU use, no rollout, no warm-up, no DPO.

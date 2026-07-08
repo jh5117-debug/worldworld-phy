@@ -1,6 +1,6 @@
 name,status,path,detail,next_action,error_reason
 git_branch,PASS,,branch=physion-only-local-assets-videogpa-smoke,,
-git_head,PASS,,7140051,,
+git_head,PASS,,9e71db4,,
 forbidden_staged_files,PASS,,none,,
 required_handoff_files,PASS,,missing=0 total=25,,
 phase0_report_artifacts,PASS,,"missing=0 total=12 decisions={""reports/migration/approved_copy_status.json"": ""APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS"", ""reports/migration/locked_handoff_sequence.json"": ""LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION"", ""reports/migration/migration_asset_validation.json"": ""MIGRATION_ASSET_VALIDATION_NAS_BLOCKED"", ""reports/migration/phase0_preflight_status.json"": ""PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS"", ""reports/migration/physeditworld_pai_readiness.json"": ""PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED"", ""reports/migration/physeditworld_root_candidates_ranked.json"": ""PHYS_EDITWORLD_ROOT_CANDIDATES_WEAK_ONLY"", ""reports/migration/physeditworld_selected_root_status.json"": ""PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT"", ""reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json"": ""PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION"", ""reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json"": ""PIPELINE_BLOCKED_AT_READINESS"", ""reports/physeditworld_50h/requirement_matrix.json"": ""PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS""}",,

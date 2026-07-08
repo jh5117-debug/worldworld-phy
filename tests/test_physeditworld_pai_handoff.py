@@ -4,6 +4,7 @@ from cam_physgeo.orchestration.physeditworld_pai_handoff import (
     HandoffCheck,
     check_root_input,
     overall_decision,
+    write_summary,
     split_roots,
 )
 
@@ -60,3 +61,12 @@ def test_expected_reports_include_root_lock_and_completion_audit():
     assert "reports/migration/physeditworld_selected_root_status.json" in expected
     assert "reports/migration/locked_handoff_sequence.json" in expected
     assert "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json" in expected
+
+
+def test_summary_prefers_locked_handoff_sequence(tmp_path):
+    out = tmp_path / "summary.md"
+    write_summary([HandoffCheck("nas_target", "BLOCKED", next_action="mount NAS")], "PAI_HANDOFF_BLOCKED_NAS_OR_ROOT", out)
+    text = out.read_text()
+    assert "run_physeditworld_locked_handoff_sequence.sh" in text
+    assert "run_physeditworld_completion_audit.sh" in text
+    assert text.index("run_physeditworld_locked_handoff_sequence.sh") < text.index("continue_physeditworld_after_mount.sh")
