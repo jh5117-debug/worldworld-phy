@@ -286,3 +286,10 @@ Next work should add a rollout-quality/latent visual monitor or stronger visual 
 - Log: `reports/dpo_utility_calibration_v14/test_logs/direct_import_after_completion_docs.log`.
 - Imported modules: `v14_pair_inventory`, `utility_calibration_v14`, `beta_loss_response_v14`, `latent_relation_monitor_v14`, `dpo_objective_search_v14`, and `gpu_scheduler_v14`.
 - `pytest` remains unavailable in the active H20 shell, so no pytest PASS is claimed.
+
+## v14 Residual Blocker Plan Update (2026-07-08T10:22 CST)
+
+- Added residual blocker plan: `reports/dpo_utility_calibration_v14/residual_blocker_plan.md`.
+- This plan distinguishes completed evidence from partial requirements that remain unproven: all500/S_pass/rollout real-energy coverage, latent monitor approval calibration, metric-wrapper completeness, and pytest availability.
+- Decision remains `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.
+- Safe next direction remains v15 artifact-aware monitor/regularizer design using existing E07/E09/E10 checkpoint videos, not additional DPO scale.

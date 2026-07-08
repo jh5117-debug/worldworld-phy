@@ -473,3 +473,10 @@ Decision remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`.
 - Real-energy calibration improved from one-pair smoke to diverse12: 12/12 ok rows across 12 synthetic failure types, but all500/S_pass/rollout real-energy coverage remains partial because of runtime/cache cost and missing old rollout loser assets.
 - V-JEPA2 is useful as a high-recall checkpoint drift / inspection monitor, including 24/24 ok rows in the expanded checkpoint regression run, but it is not a standalone quality approval metric.
 - Next safe direction: v15 monitor/regularizer design and artifact-aware checkpoint gating, not additional DPO scale.
+
+## v14 Residual Blocker Plan Update (2026-07-08T10:22 CST)
+
+- Added residual blocker plan: `reports/dpo_utility_calibration_v14/residual_blocker_plan.md`.
+- This plan distinguishes completed evidence from partial requirements that remain unproven: all500/S_pass/rollout real-energy coverage, latent monitor approval calibration, metric-wrapper completeness, and pytest availability.
+- Decision remains `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.
+- Safe next direction remains v15 artifact-aware monitor/regularizer design using existing E07/E09/E10 checkpoint videos, not additional DPO scale.
