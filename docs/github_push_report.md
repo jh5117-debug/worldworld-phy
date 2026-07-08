@@ -578,3 +578,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Effect: a freshly restored PAI checkout exposes `PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY` and `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION` immediately instead of hiding those behind older pipeline-only output.
 - Validation: `bash -n` PASS, direct PAI-bootstrap smoke PASS, compileall PASS for the test file; pytest unavailable in active H20 shell (`No module named pytest`).
 - Safety: CPU/IO only; no GPU use, no training, no rollout, no copy/delete, no local_assets/video/weights push.
+
+## PhysEditWorld PAI Bootstrap Requirement Tracking (2026-07-09T04:42:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `2d9d356 Track PhysEditWorld PAI bootstrap readiness gates`.
+- Scope: requirement matrix and completion audit now explicitly track the PAI bootstrap restore entrypoint and operator guide:
+  - `scripts/migration/bootstrap_pai_physeditworld.sh`
+  - `docs/physeditworld_50h_pai_bootstrap.md`
+- Effect: the H20 -> PAI handoff can verify the bootstrap path as first-class migration evidence instead of relying only on the broader handoff verifier.
+- Live decisions remain blocked as intended: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS` and `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION` because NAS/selected PhysEditWorld root are still not visible.
+- Validation: targeted compileall PASS, direct matrix/audit smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
