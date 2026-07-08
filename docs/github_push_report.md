@@ -663,3 +663,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Requirement/completion decisions remain blocked by missing NAS/root: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`, `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`.
 - Test status: py_compile PASS, direct test-function smoke PASS, direct decision smoke PASS, targeted compileall PASS, git diff check PASS; pytest unavailable (`No module named pytest`), so no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, no local_assets/videos/images/checkpoints/weights/large logs pushed.
+
+## PhysEditWorld Post-Mount Gate Matrix Integration (2026-07-09T07:23:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `b03527f Track post-mount continuation in PhysEditWorld gates`.
+- Scope: requirement matrix and completion audit now track `scripts/continue_physeditworld_after_mount.sh` plus `reports/physeditworld_50h/post_mount/post_mount_status.json` as the Phase1/2 post-mount continuation gate.
+- Current post-mount decision without `PHYS_EDITWORLD_ROOTS`: `POST_MOUNT_BLOCKED_AT_ROOT_INPUT`.
+- Requirement/completion matrices now contain 46 rows and remain blocked at migration readiness until NAS/root are visible and locked.
+- Test status: py_compile PASS, direct post-mount test-function smoke PASS, direct matrix/completion decision smoke PASS, targeted compileall PASS, git diff check PASS; pytest unavailable (`No module named pytest`), so no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, no local_assets/videos/images/checkpoints/weights/large logs pushed.
