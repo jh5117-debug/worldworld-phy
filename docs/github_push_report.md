@@ -279,3 +279,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Locked handoff remains blocked at root selection until a real selected PhysEditWorld 50h root is mounted or supplied via `PHYS_EDITWORLD_ROOTS`.
 - Test status: compileall PASS, direct root-candidate smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Root Intake Handoff (2026-07-08T23:12:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: `48b4fa8 Add PhysEditWorld root intake handoff`.
+- Scope: added a CPU/IO-only root-intake handoff report and script that tells the operator exactly what external PhysEditWorld selected-50h root must contain and which locked commands to run after mounting it.
+- Current decision: `PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT`.
+- Evidence: `reports/migration/physeditworld_root_intake.md`, refreshed `reports/migration/pai_handoff_summary.md`, and refreshed `reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.md`.
+- Current blocker: no strong PhysEditWorld selected 50h root is visible and `PHYS_EDITWORLD_ROOTS` is unset; NAS is still not visible.
+- Test status: compileall PASS, direct root-intake/completion smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
