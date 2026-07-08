@@ -1,0 +1,20 @@
+phase,requirement,status,evidence,detail,next_action
+0_prd,PRD exists,PASS,docs/experiments/EXP_physeditworld_50h_prompt_gravity_lingbotfast.md,file exists,
+0_prd,status doc exists,PASS,docs/physeditworld_50h_current_status.md,file exists,
+0_migration,environment export,PASS,reports/migration/environment_no_builds.yml,file exists,
+0_migration,pip freeze export,PASS,reports/migration/pip_freeze.txt,file exists,
+0_migration,required weights manifest,PASS,reports/migration/required_weights_manifest.tsv,file exists,
+0_migration,required data manifest,PASS,reports/migration/required_data_manifest.tsv,file exists,
+0_migration,rsync dry-run script,PASS,scripts/migration/rsync_h20_to_pai_dryrun.sh,file exists,
+0_migration,guarded rsync execute script,PASS,scripts/migration/rsync_h20_to_pai_execute.sh,file exists,
+0_migration,PAI/NAS and data readiness,BLOCKED,reports/migration/physeditworld_pai_readiness.json,decision=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED,mount NAS and selected PhysEditWorld 50h root
+1_data_audit,strict selected 50h manifest,BLOCKED,manifests/physeditworld_50h_all.jsonl,"rows=0, required>=1",mount selected PhysEditWorld 50h root and rerun manifest audit
+1_data_audit,train split manifest,BLOCKED,manifests/physeditworld_50h_train.jsonl,"rows=0, required>=1",rerun replay-group split
+1_data_audit,split summary,PASS,reports/physeditworld_50h/split_summary.md,file exists,
+2_conversion,LingBot train conversion manifest,BLOCKED,manifests/physeditworld_50h_lingbot_train.jsonl,"rows=0, required>=1",rerun prompt-only LingBot conversion
+2_conversion,LingBot val conversion manifest,MISSING,manifests/physeditworld_50h_lingbot_val.jsonl,manifest missing,rerun prompt-only LingBot conversion
+3_baseline,baseline rollout summary,PASS,reports/physeditworld_50h_baseline_rollout/summary.md,file exists,
+5_checkpoint_eval,checkpoint video/metric gate,BLOCKED,reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json,decision=CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING,"produce true rollout videos, metrics, and Codex audit"
+7_tiny_dpo,tiny anchored DPO gate,BLOCKED,reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json,decision=TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS,build >=100 reviewed pairs before tiny DPO
+8_ablation,future mixed-data ablation plan,PASS,docs/experiments/EXP_physeditworld50_plus_ourphysics50_ablation_plan.md,file exists,
+6_pairs,anchored DPO pair manifest,BLOCKED,manifests/physeditworld_dpo_pairs_anchored_v0.jsonl,"rows=0, required>=100",run pair builder after warm-up checkpoint gate passes

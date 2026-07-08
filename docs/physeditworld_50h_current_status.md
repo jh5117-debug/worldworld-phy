@@ -272,3 +272,20 @@ A safe phase-gate orchestrator was added:
 The orchestrator reruns/reads readiness first and stops before baseline, warm-up, checkpoint eval, pair construction, or tiny DPO when prerequisites are blocked. Current stop point is readiness because NAS and the selected PhysEditWorld 50h root are not visible and the strict/LingBot manifests are empty.
 
 Test status: compileall PASS, direct pipeline gate smoke PASS, pytest unavailable; no pytest PASS is claimed. No GPU, rollout, metrics scoring, visual audit, training, or DPO was run.
+
+
+## PAI Bootstrap And Requirement Matrix Update (2026-07-08T19:27:35 CST)
+
+Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`.
+
+Added PAI recovery and requirement-audit artifacts:
+
+- PAI bootstrap script: `scripts/migration/bootstrap_pai_physeditworld.sh`.
+- Bootstrap doc: `docs/physeditworld_50h_pai_bootstrap.md`.
+- Requirement matrix generator: `cam_physgeo/orchestration/physeditworld_requirement_matrix.py`.
+- Test: `tests/test_physeditworld_requirement_matrix.py`.
+- Matrix CSV/JSON/MD: `reports/physeditworld_50h/requirement_matrix.*`.
+
+Current matrix: 19 requirements total, 11 PASS, 7 BLOCKED, 1 MISSING. The earliest blocker remains migration/data readiness: NAS and selected PhysEditWorld 50h root are not visible.
+
+Test status: compileall PASS, direct requirement-matrix smoke PASS, pytest unavailable; no pytest PASS is claimed. No GPU, rollout, metrics scoring, visual audit, training, or DPO was run.

@@ -1,0 +1,19 @@
+from cam_physgeo.orchestration.physeditworld_requirement_matrix import RequirementRow, overall_decision
+
+
+def test_requirement_matrix_blocks_at_migration_readiness():
+    decision = overall_decision([
+        RequirementRow("0_migration", "PAI/NAS and data readiness", "BLOCKED", "x"),
+        RequirementRow("1_data_audit", "strict selected 50h manifest", "BLOCKED", "x"),
+    ])
+    assert decision == "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS"
+
+
+def test_requirement_matrix_passes_when_all_pass():
+    decision = overall_decision([
+        RequirementRow("0_migration", "PAI/NAS and data readiness", "PASS", "x"),
+        RequirementRow("1_data_audit", "strict selected 50h manifest", "PASS", "x"),
+        RequirementRow("2_conversion", "LingBot train conversion manifest", "PASS", "x"),
+        RequirementRow("6_pairs", "anchored DPO pair manifest", "PASS", "x"),
+    ])
+    assert decision == "PHYS_EDIT_WORLD_PIPELINE_REQUIREMENTS_PASS"
