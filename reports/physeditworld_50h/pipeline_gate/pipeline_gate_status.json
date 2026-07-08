@@ -8,7 +8,15 @@
       "phase": "readiness",
       "source": "reports/migration/physeditworld_pai_readiness.json",
       "status": "BLOCKED"
+    },
+    {
+      "decision": "MIGRATION_ASSET_VALIDATION_NAS_BLOCKED",
+      "error_reason": "",
+      "next_action": "mount NAS and rerun migration asset validation",
+      "phase": "asset_validation",
+      "source": "reports/migration/migration_asset_validation.json",
+      "status": "BLOCKED"
     }
   ],
-  "timestamp": "2026-07-08T11:18:19.410659+00:00"
+  "timestamp": "2026-07-08T12:09:56.203783+00:00"
 }

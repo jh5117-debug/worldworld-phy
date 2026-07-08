@@ -351,3 +351,16 @@ The requirement matrix now includes migration asset validation as an explicit Ph
 
 This makes the current migration blocker sharper: both PAI/NAS data readiness and migration asset validation are blocked until /mnt/workspace/hj/nas_hj and the selected PhysEditWorld 50h root are visible. No training, rollout, metric scoring, pair construction, or DPO was run.
 
+## Pipeline Gate Asset-Validation Update (2026-07-08T20:12:00 CST)
+
+Decision remains: PIPELINE_BLOCKED_AT_READINESS.
+
+The safe pipeline gate now reads both Phase 0 readiness and migration asset validation before any baseline, warm-up, pair construction, or tiny DPO step:
+
+- readiness: PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED.
+- asset_validation: MIGRATION_ASSET_VALIDATION_NAS_BLOCKED.
+- Pipeline phases reported: 2.
+- Summary: reports/physeditworld_50h/pipeline_gate/pipeline_gate_summary.md.
+
+This keeps the live pipeline gate aligned with the requirement matrix: the selected PhysEditWorld 50h root and /mnt/workspace/hj/nas_hj must be visible before any copy, rollout, warm-up, or DPO can proceed. No GPU, rollout, metric scoring, visual audit, training, or DPO was run.
+

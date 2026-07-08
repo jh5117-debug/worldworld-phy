@@ -19,3 +19,19 @@ def test_read_md_decision_missing(tmp_path):
     assert decision == "MISSING"
     assert status == "BLOCKED"
     assert error == "file missing"
+
+def test_pipeline_keeps_first_phase_order_for_asset_validation():
+    decision = pipeline_decision([
+        PhaseStatus("readiness", "PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED", "BLOCKED", "x"),
+        PhaseStatus("asset_validation", "MIGRATION_ASSET_VALIDATION_NAS_BLOCKED", "BLOCKED", "y"),
+    ])
+    assert decision == "PIPELINE_BLOCKED_AT_READINESS"
+
+
+def test_pipeline_blocks_at_asset_validation_when_readiness_passes():
+    decision = pipeline_decision([
+        PhaseStatus("readiness", "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT", "PASS", "x"),
+        PhaseStatus("asset_validation", "MIGRATION_ASSET_VALIDATION_NAS_BLOCKED", "BLOCKED", "y"),
+    ])
+    assert decision == "PIPELINE_BLOCKED_AT_ASSET_VALIDATION"
+

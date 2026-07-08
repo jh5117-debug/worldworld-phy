@@ -11,6 +11,7 @@ from typing import Any
 
 BLOCKED_PREFIXES = ("BLOCKED",)
 READY_READINESS = "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT"
+READY_ASSET_VALIDATION = "MIGRATION_ASSET_VALIDATION_PASS"
 
 
 @dataclass
@@ -132,9 +133,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if not any(row.phase == "readiness" for row in rows):
         decision, status, error = read_json_decision("reports/migration/physeditworld_pai_readiness.json")
-        rows.append(PhaseStatus("readiness", decision, status, "reports/migration/physeditworld_pai_readiness.json", next_action="mount NAS and selected PhysEditWorld 50h root" if status == "BLOCKED" else "run baseline gate", error_reason=error))
+        rows.append(PhaseStatus("readiness", decision, status, "reports/migration/physeditworld_pai_readiness.json", next_action="mount NAS and selected PhysEditWorld 50h root" if status == "BLOCKED" else "check migration asset validation", error_reason=error))
 
-    if rows[-1].decision != READY_READINESS:
+    asset_decision, asset_status, asset_error = read_json_decision("reports/migration/migration_asset_validation.json")
+    rows.append(PhaseStatus("asset_validation", asset_decision, asset_status, "reports/migration/migration_asset_validation.json", next_action="mount NAS and rerun migration asset validation" if asset_status == "BLOCKED" else "run baseline gate", error_reason=asset_error))
+
+    if any(row.phase == "readiness" and row.decision != READY_READINESS for row in rows) or asset_decision != READY_ASSET_VALIDATION:
         decision = pipeline_decision(rows)
         write_csv(rows, args.output_csv)
         write_json(rows, decision, args.output_json)

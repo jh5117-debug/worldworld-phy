@@ -6,6 +6,8 @@ Decision: `PIPELINE_BLOCKED_AT_READINESS`
 
 - `readiness`: `PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED` from `reports/migration/physeditworld_pai_readiness.json`
   - next: mount NAS and selected PhysEditWorld 50h root
+- `asset_validation`: `MIGRATION_ASSET_VALIDATION_NAS_BLOCKED` from `reports/migration/migration_asset_validation.json`
+  - next: mount NAS and rerun migration asset validation
 
 ## Safety
 

@@ -145,3 +145,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: compileall PASS, direct requirement-matrix smoke PASS, direct unit smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
 
+## PhysEditWorld Pipeline Gate Asset-Validation Integration (2026-07-08T20:12:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: pipeline gate now reports migration asset validation alongside PAI/NAS readiness before any later phase can run.
+- Latest decision: PIPELINE_BLOCKED_AT_READINESS.
+- Phase rows: readiness=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED, asset_validation=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED.
+- Test status: compileall PASS, direct pipeline smoke PASS, direct unit smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+

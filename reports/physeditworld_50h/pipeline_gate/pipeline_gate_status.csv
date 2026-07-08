@@ -1,2 +1,3 @@
 phase,decision,status,source,next_action,error_reason
 readiness,PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED,BLOCKED,reports/migration/physeditworld_pai_readiness.json,mount NAS and selected PhysEditWorld 50h root,
+asset_validation,MIGRATION_ASSET_VALIDATION_NAS_BLOCKED,BLOCKED,reports/migration/migration_asset_validation.json,mount NAS and rerun migration asset validation,
