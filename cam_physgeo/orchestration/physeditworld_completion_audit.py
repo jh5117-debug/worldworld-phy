@@ -141,6 +141,8 @@ def build_rows() -> list[AuditRow]:
         file_row("phase0_migration", "required data manifest", "reports/migration/required_data_manifest.tsv", "build data manifest"),
         file_row("phase0_migration", "guarded dry-run rsync script", "scripts/migration/rsync_h20_to_pai_dryrun.sh", "add migration dry-run script"),
         file_row("phase0_migration", "guarded execute rsync script", "scripts/migration/rsync_h20_to_pai_execute.sh", "add guarded migration execute script"),
+        file_row("phase0_migration", "PAI bootstrap restore entrypoint", "scripts/migration/bootstrap_pai_physeditworld.sh", "add PAI bootstrap script"),
+        file_row("phase0_migration", "PAI bootstrap operator guide", "docs/physeditworld_50h_pai_bootstrap.md", "write PAI bootstrap guide"),
         json_decision_row("phase0_migration", "expected empty manifest placeholders", "reports/physeditworld_50h/manifest_init/empty_manifest_init.json", {"PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED", "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT"}, "run scripts/migration/init_physeditworld_empty_manifests.sh"),
         json_decision_row("phase0_migration", "locked handoff sequence", "reports/migration/locked_handoff_sequence.json", {"LOCKED_HANDOFF_PHASE12_READY_FOR_BASELINE_GATE"}, "set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence"),
         json_decision_row("phase0_migration", "selected-root schema probe", "reports/migration/physeditworld_root_schema_probe.json", {"PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT"}, "provide selected root and rerun schema probe"),
@@ -225,7 +227,7 @@ def write_csv(rows: list[AuditRow], path: str | Path) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
     fields = list(AuditRow.__dataclass_fields__.keys())
     with p.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fields)
+        writer = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow(asdict(row))

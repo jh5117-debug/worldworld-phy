@@ -43,3 +43,10 @@ def test_build_rows_includes_root_intake_report():
     assert "expected empty manifest placeholders" in requirements
     assert "selected-root intake handoff report" in requirements
     assert "selected-root schema probe" in requirements
+
+
+def test_build_rows_includes_pai_bootstrap_restore_entrypoint():
+    rows = build_rows()
+    requirements = {row.requirement for row in rows}
+    assert "PAI bootstrap restore entrypoint" in requirements
+    assert "PAI bootstrap operator guide" in requirements

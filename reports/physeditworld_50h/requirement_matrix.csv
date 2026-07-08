@@ -8,6 +8,8 @@ phase,requirement,status,evidence,detail,next_action
 0_migration,rsync dry-run script,PASS,scripts/migration/rsync_h20_to_pai_dryrun.sh,file exists,
 0_migration,guarded rsync execute script,PASS,scripts/migration/rsync_h20_to_pai_execute.sh,file exists,
 0_migration,explicit copy-plan template,PASS,reports/migration/approved_copy_manifest_template.tsv,file exists,
+0_migration,PAI bootstrap restore entrypoint,PASS,scripts/migration/bootstrap_pai_physeditworld.sh,file exists,
+0_migration,PAI bootstrap operator guide,PASS,docs/physeditworld_50h_pai_bootstrap.md,file exists,
 0_migration,expected empty manifest placeholders,PASS,reports/physeditworld_50h/manifest_init/empty_manifest_init.json,decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT,
 0_migration,PAI/NAS and data readiness,BLOCKED,reports/migration/physeditworld_pai_readiness.json,decision=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED,mount NAS and selected PhysEditWorld 50h root
 0_migration,PhysEditWorld root candidate ranking,BLOCKED,reports/migration/physeditworld_root_candidates_ranked.json,decision=PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG,provide selected PhysEditWorld root via PHYS_EDITWORLD_ROOTS and rerun root candidate ranker

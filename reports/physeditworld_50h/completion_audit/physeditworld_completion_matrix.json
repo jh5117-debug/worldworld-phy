@@ -66,6 +66,22 @@
       "status": "PASS"
     },
     {
+      "detail": "file exists",
+      "evidence": "scripts/migration/bootstrap_pai_physeditworld.sh",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "PAI bootstrap restore entrypoint",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "docs/physeditworld_50h_pai_bootstrap.md",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "PAI bootstrap operator guide",
+      "status": "PASS"
+    },
+    {
       "detail": "decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
       "evidence": "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
       "next_action": "",

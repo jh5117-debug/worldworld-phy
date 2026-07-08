@@ -5,7 +5,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 ## Status Counts
 
 - `BLOCKED`: 20
-- `PASS`: 14
+- `PASS`: 16
 
 ## Requirement Evidence
 
@@ -32,6 +32,12 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - detail: file exists
 - `phase0_migration` / guarded execute rsync script: `PASS`
   - evidence: `scripts/migration/rsync_h20_to_pai_execute.sh`
+  - detail: file exists
+- `phase0_migration` / PAI bootstrap restore entrypoint: `PASS`
+  - evidence: `scripts/migration/bootstrap_pai_physeditworld.sh`
+  - detail: file exists
+- `phase0_migration` / PAI bootstrap operator guide: `PASS`
+  - evidence: `docs/physeditworld_50h_pai_bootstrap.md`
   - detail: file exists
 - `phase0_migration` / expected empty manifest placeholders: `PASS`
   - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`

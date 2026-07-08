@@ -39,6 +39,12 @@ def test_requirement_matrix_includes_prompt_only_gravity_policy_gate():
     assert "prompt-only gravity policy audit" in requirements
 
 
+def test_requirement_matrix_includes_pai_bootstrap_restore_entrypoint():
+    requirements = {row.requirement for row in build_rows()}
+    assert "PAI bootstrap restore entrypoint" in requirements
+    assert "PAI bootstrap operator guide" in requirements
+
+
 def test_requirement_matrix_includes_downstream_decision_gates():
     requirements = {row.requirement for row in build_rows()}
     assert "baseline true rollout gate" in requirements

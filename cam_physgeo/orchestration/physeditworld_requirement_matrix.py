@@ -160,6 +160,8 @@ def build_rows() -> list[RequirementRow]:
         file_status("scripts/migration/rsync_h20_to_pai_dryrun.sh", "rsync dry-run script", "0_migration", "add dry-run script"),
         file_status("scripts/migration/rsync_h20_to_pai_execute.sh", "guarded rsync execute script", "0_migration", "add execute script"),
         file_status("reports/migration/approved_copy_manifest_template.tsv", "explicit copy-plan template", "0_migration", "generate approved copy manifest template"),
+        file_status("scripts/migration/bootstrap_pai_physeditworld.sh", "PAI bootstrap restore entrypoint", "0_migration", "add PAI bootstrap script"),
+        file_status("docs/physeditworld_50h_pai_bootstrap.md", "PAI bootstrap operator guide", "0_migration", "write PAI bootstrap guide"),
     ])
     for evidence, requirement, pass_values, next_action in PHASE0_DECISION_GATES:
         rows.append(decision_status(evidence, requirement, "0_migration", pass_values, next_action))
@@ -243,7 +245,7 @@ def write_csv(rows: list[RequirementRow], path: str | Path) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
     keys = ["phase", "requirement", "status", "evidence", "detail", "next_action"]
     with p.open("w", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=keys)
+        writer = csv.DictWriter(f, fieldnames=keys, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow(asdict(row))

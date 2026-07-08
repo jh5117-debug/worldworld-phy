@@ -5,7 +5,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 ## Status Counts
 
 - `BLOCKED`: 21
-- `PASS`: 13
+- `PASS`: 15
 
 ## Requirements
 
@@ -35,6 +35,12 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - detail: file exists
 - `0_migration` / explicit copy-plan template: `PASS`
   - evidence: `reports/migration/approved_copy_manifest_template.tsv`
+  - detail: file exists
+- `0_migration` / PAI bootstrap restore entrypoint: `PASS`
+  - evidence: `scripts/migration/bootstrap_pai_physeditworld.sh`
+  - detail: file exists
+- `0_migration` / PAI bootstrap operator guide: `PASS`
+  - evidence: `docs/physeditworld_50h_pai_bootstrap.md`
   - detail: file exists
 - `0_migration` / expected empty manifest placeholders: `PASS`
   - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
