@@ -684,3 +684,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: latest `python3 -m compileall cam_physgeo src tests` PASS; no pytest PASS is claimed in this update.
 - Safety: no data copy, no deletion, no GPU use, no rollout, no warm-up, no DPO, no local_assets/videos/images/checkpoints/weights/large logs pushed.
 
+## PhysEditWorld Post-Mount Smoke Conversion Gate Fix (2026-07-09T07:47:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `62e1fd0 Defer canonical conversion validation in post-mount smoke`.
+- Scope: default post-mount continuation now validates only the non-canonical smoke LingBot manifest and records `POST_MOUNT_CANONICAL_CONVERSION_DEFERRED` instead of validating empty canonical train/val placeholders.
+- Full canonical LingBot conversion remains explicit via `RUN_FULL_CONVERSION=1` after smoke conversion passes.
+- Test status: py_compile PASS, direct post-mount test-function smoke PASS, targeted compileall PASS. Pytest is not claimed.
+- Safety: no data copy, no deletion, no GPU use, no rollout, no warm-up, no DPO, no local_assets/videos/images/checkpoints/weights/large logs pushed.
+
