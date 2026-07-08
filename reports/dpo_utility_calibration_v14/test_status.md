@@ -29,3 +29,12 @@
 - Broad V-JEPA2 monitor: calibration4/synthetic10/stratified100/S_pass4/rollout15 completed with explicit ok/error rows.
 - Combined result: 133 rows, 74 ok, 74/74 positive token-relation margins among available videos.
 - `pytest` is still unavailable in the active shell, so no pytest PASS is claimed.
+
+## v14 Completion Docs Test Update (2026-07-08T10:17 CST)
+
+- `python3 -m compileall cam_physgeo src tests`: PASS after completion-audit/root-cause doc updates.
+- Log: `reports/dpo_utility_calibration_v14/test_logs/compileall_after_completion_docs.log`.
+- Direct import smoke for v14 modules: PASS.
+- Log: `reports/dpo_utility_calibration_v14/test_logs/direct_import_after_completion_docs.log`.
+- Imported modules: `v14_pair_inventory`, `utility_calibration_v14`, `beta_loss_response_v14`, `latent_relation_monitor_v14`, `dpo_objective_search_v14`, and `gpu_scheduler_v14`.
+- `pytest` remains unavailable in the active H20 shell, so no pytest PASS is claimed.
