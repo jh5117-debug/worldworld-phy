@@ -103,6 +103,37 @@ def write_or_link_intrinsics(src: str | Path, dst: Path, scale_meta: dict[str, A
     np.save(dst, scaled)
 
 
+def write_sampled_npy(src: str | Path, dst: Path, indices: list[int], field_name: str) -> dict[str, Any]:
+    src = Path(src)
+    if np is None:
+        raise RuntimeError(f"numpy is required to sample {field_name}")
+    if src.suffix.lower() != ".npy":
+        raise ValueError(f"{field_name} must be convertible to .npy, got {src}")
+    array = np.load(src, allow_pickle=False)
+    if array.ndim < 1:
+        raise ValueError(f"{field_name} must have a time dimension, got shape {array.shape}")
+    max_index = max(indices) if indices else -1
+    if array.shape[0] >= max_index + 1:
+        sampled = array[indices]
+        status = "SAMPLED"
+    elif array.shape[0] == len(indices):
+        sampled = np.array(array, copy=True)
+        status = "ALREADY_SAMPLED"
+    else:
+        raise ValueError(
+            f"{field_name} length {array.shape[0]} cannot cover max frame index {max_index} "
+            f"or requested output length {len(indices)}"
+        )
+    np.save(dst, sampled)
+    return {
+        "source_path": str(src),
+        "source_length": int(array.shape[0]),
+        "output_length": int(sampled.shape[0]),
+        "indices_length": len(indices),
+        "status": status,
+    }
+
+
 def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace) -> dict[str, Any]:
     sample_id = str(row.get("sample_id") or Path(str(row.get("video_path", "sample"))).stem)
     final_dir = output_root / sample_id
@@ -116,13 +147,14 @@ def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace
     status = "OK"
     error = ""
     try:
-        # v0 keeps original media/assets as links; frame resampling metadata records the intended 81-frame view.
+        # v0 keeps media as links; action/camera arrays are sampled to the same 81-frame index view.
         prefix = row.get("prefix_video_path") or row.get("image_path") or row.get("video_path")
         prefix_name = "prefix.mp4" if str(prefix).lower().endswith(".mp4") else "image.jpg"
         _link_or_copy(prefix, tmp_dir / prefix_name)
         _link_or_copy(row["video_path"], tmp_dir / "target.mp4")
-        _link_or_copy(row["action_trace_path"], tmp_dir / "action.npy")
-        _link_or_copy(row["camera_trajectory_path"], tmp_dir / "poses.npy")
+        indices = frame_indices(row.get("num_frames"), args.num_frames)
+        action_sampling = write_sampled_npy(row["action_trace_path"], tmp_dir / "action.npy", indices, "action_trace")
+        camera_sampling = write_sampled_npy(row["camera_trajectory_path"], tmp_dir / "poses.npy", indices, "camera_trajectory")
         intrinsics_scale = intrinsics_scale_metadata(row, args.width, args.height)
         write_or_link_intrinsics(row["intrinsics_path"], tmp_dir / "intrinsics.npy", intrinsics_scale)
         prompt = build_prompt_gravity(row.get("gravity_value"), args.gravity_prompt_style)
@@ -132,7 +164,6 @@ def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace
         (tmp_dir / "prompt.txt").write_text(prompt + "\n", encoding="utf-8")
         gravity = {"gravity_value": row.get("gravity_value"), "gravity_label": row.get("gravity_label"), "gravity_condition_type": "prompt_only"}
         write_json(tmp_dir / "gravity.json", gravity)
-        indices = frame_indices(row.get("num_frames"), args.num_frames)
         metadata = {
             "sample_id": sample_id,
             "use_action": True,
@@ -162,6 +193,8 @@ def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace
                 "camera_frame_indices": indices,
                 "same_indices_for_action_camera_video": True,
             },
+            "action_sampling": action_sampling,
+            "camera_sampling": camera_sampling,
             "intrinsics_scale": intrinsics_scale,
         }
         write_json(tmp_dir / "metadata.json", metadata)

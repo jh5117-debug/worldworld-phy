@@ -387,3 +387,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current overall decision remains `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS` because selected PhysEditWorld root/NAS are still absent; this update prevents false downstream PASS after Phase0 is resolved.
 - Test status: compileall PASS, direct downstream decision-gate smoke PASS, requirement/completion refresh PASS; pytest unavailable, no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Conversion Input Alignment Hardening (2026-07-09T01:35:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: Phase 2 LingBot conversion invariant hardening for prompt-only gravity training inputs.
+- Conversion update: resized intrinsics are written into `intrinsics.npy` when source width/height are available; metadata records `intrinsics_scale`.
+- Alignment update: `action.npy` and `poses.npy` are now sampled to the same `frame_indices` used for the intended video window; metadata records `action_sampling`, `camera_sampling`, and `sampling_alignment.same_indices_for_action_camera_video=true`.
+- Schema gate: converted condition dirs now reject missing frame indices, missing sampling alignment, missing/invalid action-camera sampling metadata, and missing/invalid intrinsics scaling metadata.
+- Current data gate remains blocked: strict PhysEditWorld train manifest still has 0 rows because the selected 50h root is not visible/mounted.
+- Test status: project `compileall` PASS, direct conversion smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no GPU use, no training, no rollout, no DPO, no data/checkpoint/weight deletion, and no videos/images/checkpoints/weights pushed.
