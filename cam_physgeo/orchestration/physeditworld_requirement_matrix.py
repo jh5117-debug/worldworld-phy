@@ -76,6 +76,7 @@ def build_rows() -> list[RequirementRow]:
         file_status("scripts/migration/rsync_h20_to_pai_dryrun.sh", "rsync dry-run script", "0_migration", "add dry-run script"),
         file_status("scripts/migration/rsync_h20_to_pai_execute.sh", "guarded rsync execute script", "0_migration", "add execute script"),
         decision_status("reports/migration/physeditworld_pai_readiness.json", "PAI/NAS and data readiness", "0_migration", {"READY_FOR_BASELINE_ROLLOUT_PREFLIGHT"}, "mount NAS and selected PhysEditWorld 50h root"),
+        decision_status("reports/migration/migration_asset_validation.json", "migration asset validation", "0_migration", {"MIGRATION_ASSET_VALIDATION_PASS"}, "mount NAS and rerun migration asset validation before execute copy"),
         manifest_status("manifests/physeditworld_50h_all.jsonl", "strict selected 50h manifest", "1_data_audit", 1, "mount selected PhysEditWorld 50h root and rerun manifest audit"),
         manifest_status("manifests/physeditworld_50h_train.jsonl", "train split manifest", "1_data_audit", 1, "rerun replay-group split"),
         file_status("reports/physeditworld_50h/split_summary.md", "split summary", "1_data_audit", "run split summary"),
@@ -97,7 +98,7 @@ def build_rows() -> list[RequirementRow]:
 
 
 def overall_decision(rows: list[RequirementRow]) -> str:
-    if any(row.phase == "0_migration" and row.requirement == "PAI/NAS and data readiness" and row.status != "PASS" for row in rows):
+    if any(row.phase == "0_migration" and row.status != "PASS" for row in rows):
         return "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS"
     if any(row.phase == "1_data_audit" and row.status != "PASS" for row in rows):
         return "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_DATA_AUDIT"

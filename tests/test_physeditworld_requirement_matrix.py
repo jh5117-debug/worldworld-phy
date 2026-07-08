@@ -17,3 +17,12 @@ def test_requirement_matrix_passes_when_all_pass():
         RequirementRow("6_pairs", "anchored DPO pair manifest", "PASS", "x"),
     ])
     assert decision == "PHYS_EDIT_WORLD_PIPELINE_REQUIREMENTS_PASS"
+
+def test_requirement_matrix_blocks_on_asset_validation():
+    decision = overall_decision([
+        RequirementRow("0_migration", "environment export", "PASS", "x"),
+        RequirementRow("0_migration", "migration asset validation", "BLOCKED", "x"),
+        RequirementRow("1_data_audit", "strict selected 50h manifest", "PASS", "x"),
+    ])
+    assert decision == "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS"
+

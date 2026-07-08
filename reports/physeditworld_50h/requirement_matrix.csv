@@ -8,6 +8,7 @@ phase,requirement,status,evidence,detail,next_action
 0_migration,rsync dry-run script,PASS,scripts/migration/rsync_h20_to_pai_dryrun.sh,file exists,
 0_migration,guarded rsync execute script,PASS,scripts/migration/rsync_h20_to_pai_execute.sh,file exists,
 0_migration,PAI/NAS and data readiness,BLOCKED,reports/migration/physeditworld_pai_readiness.json,decision=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED,mount NAS and selected PhysEditWorld 50h root
+0_migration,migration asset validation,BLOCKED,reports/migration/migration_asset_validation.json,decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED,mount NAS and rerun migration asset validation before execute copy
 1_data_audit,strict selected 50h manifest,BLOCKED,manifests/physeditworld_50h_all.jsonl,"rows=0, required>=1",mount selected PhysEditWorld 50h root and rerun manifest audit
 1_data_audit,train split manifest,BLOCKED,manifests/physeditworld_50h_train.jsonl,"rows=0, required>=1",rerun replay-group split
 1_data_audit,split summary,PASS,reports/physeditworld_50h/split_summary.md,file exists,

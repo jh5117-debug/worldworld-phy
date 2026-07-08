@@ -4,7 +4,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 
 ## Status Counts
 
-- `BLOCKED`: 7
+- `BLOCKED`: 8
 - `MISSING`: 1
 - `PASS`: 11
 
@@ -38,6 +38,10 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - evidence: `reports/migration/physeditworld_pai_readiness.json`
   - detail: decision=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED
   - next: mount NAS and selected PhysEditWorld 50h root
+- `0_migration` / migration asset validation: `BLOCKED`
+  - evidence: `reports/migration/migration_asset_validation.json`
+  - detail: decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED
+  - next: mount NAS and rerun migration asset validation before execute copy
 - `1_data_audit` / strict selected 50h manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_50h_all.jsonl`
   - detail: rows=0, required>=1

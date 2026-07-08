@@ -74,6 +74,14 @@
       "status": "BLOCKED"
     },
     {
+      "detail": "decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED",
+      "evidence": "reports/migration/migration_asset_validation.json",
+      "next_action": "mount NAS and rerun migration asset validation before execute copy",
+      "phase": "0_migration",
+      "requirement": "migration asset validation",
+      "status": "BLOCKED"
+    },
+    {
       "detail": "rows=0, required>=1",
       "evidence": "manifests/physeditworld_50h_all.jsonl",
       "next_action": "mount selected PhysEditWorld 50h root and rerun manifest audit",

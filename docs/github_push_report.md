@@ -135,3 +135,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
 - Artifact policy: only lightweight code/docs/scripts/CSV/JSON/MD summaries are intended for push; no local_assets, videos/images, checkpoints, weights, or large logs.
 
+## PhysEditWorld Requirement Matrix Asset-Validation Gate (2026-07-08T20:06:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: requirement matrix now includes migration asset validation as an explicit Phase 0 gate.
+- Latest decision: PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS.
+- Matrix status: 20 total, 11 PASS, 8 BLOCKED, 1 MISSING.
+- New blocker evidence: reports/migration/migration_asset_validation.json reports MIGRATION_ASSET_VALIDATION_NAS_BLOCKED.
+- Test status: compileall PASS, direct requirement-matrix smoke PASS, direct unit smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+

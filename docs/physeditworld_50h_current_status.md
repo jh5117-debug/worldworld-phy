@@ -337,3 +337,17 @@ Validation evidence:
 
 This confirms migration execution is still blocked on the NAS mount/visibility, not on the validator itself. No GPU, rollout, warm-up, pair construction, or DPO was run.
 
+## Requirement Matrix Asset-Validation Update (2026-07-08T20:06:00 CST)
+
+Decision remains: PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS.
+
+The requirement matrix now includes migration asset validation as an explicit Phase 0 gate:
+
+- Requirement count: 20.
+- Status counts: PASS=11, BLOCKED=8, MISSING=1.
+- New Phase 0 row: migration asset validation = BLOCKED.
+- Evidence: reports/migration/migration_asset_validation.json.
+- Detail: decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED.
+
+This makes the current migration blocker sharper: both PAI/NAS data readiness and migration asset validation are blocked until /mnt/workspace/hj/nas_hj and the selected PhysEditWorld 50h root are visible. No training, rollout, metric scoring, pair construction, or DPO was run.
+
