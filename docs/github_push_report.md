@@ -684,3 +684,13 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - The manifest files were force-added because `manifests/` is gitignored, but they are lightweight JSONL reports only.
 - Result: all500 has 336 recoverable rows, stratified100 has 64 recoverable rows, synthetic/local-mask have 336 recoverable rows, while rollout_only and S_pass remain blocked by missing loser videos.
 - Artifact policy: no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged or pushed.
+
+## v14 Asset Recovery Plan Push (2026-07-08)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`.
+- Commit: `566cb35 Plan v14 recoverable asset preparation`.
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- New artifacts: `reports/dpo_utility_calibration_v14/asset_recovery_plan/*`.
+- Result: 336 all500 recoverable rows are deduplicated into 74 condition-level prefix/future clip recovery tasks; 164 rows remain nonrecoverable, including 78 missing loser videos.
+- This was a no-video/no-GPU plan only; no MP4 files were created or pushed.
+- Artifact policy: only lightweight CSV/JSON/JSONL/MD/docs were pushed; no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged.
