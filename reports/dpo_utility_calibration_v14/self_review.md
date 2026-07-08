@@ -111,3 +111,21 @@ A bounded resume run extended real LingBot energy coverage from 8 to 12 asset-co
 - Decision: `VJEPA_ARTIFACT_CORRELATION_WEAK_MONITOR_ONLY`.
 - V-JEPA2 remains useful as a high-recall drift/inspection trigger, but artifact-specific discrimination is weak/noisy on the current 24-row checkpoint set and especially limited for scalar-positive E07/E09/E10 rows.
 - This supports the v15 plan: V-JEPA2 should be paired with explicit artifact labels/gates, not used as standalone checkpoint approval or a direct DPO reward.
+
+## v14 Asset Availability Audit Update (2026-07-08T10:38 CST)
+
+- Added asset audit: `reports/dpo_utility_calibration_v14/asset_availability/asset_availability_summary.md`.
+- Added per-pair CSV: `reports/dpo_utility_calibration_v14/asset_availability/asset_availability_by_pair.csv`.
+- Added asset-complete manifests under `manifests/dpo_v14_subsets/asset_complete/` for all500, S_pass, rollout_only, synthetic_controlled, stratified100, and local_mask subsets.
+- This is metadata/path existence only: no video decode, no energy, no training, and no GPU use.
+- Purpose: separate rows eligible for future bounded real-energy/cache attempts from missing-asset blockers without claiming all500 real-energy completion.
+- Decision remains `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.
+
+## v14 Asset Availability Audit Update (2026-07-08T10:42 CST)
+
+- Updated asset audit with strict-existing vs recoverable split: `reports/dpo_utility_calibration_v14/asset_availability/asset_availability_summary.md`.
+- Strict-existing counts are low because many prefix/future clips are not materialized as separate files in this worktree.
+- Recoverable counts identify rows where prefix/future can be regenerated from existing full GT video, while loser video must already exist.
+- Rollout-only remains blocked for real-energy retry because current assets are missing rollout loser videos.
+- This is still metadata/path existence only: no video decode, no energy, no training, and no GPU use.
+- Decision remains `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.

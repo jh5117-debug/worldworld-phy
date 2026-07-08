@@ -1,0 +1,378 @@
+{
+  "decision": "V14_ASSET_AVAILABILITY_AUDIT_COMPLETE_WITH_RECOVERABLE_SPLIT",
+  "scale_permission": "NO_SCALE",
+  "subsets": [
+    {
+      "subset": "all500",
+      "manifest": "manifests/dpo_v14_subsets/all500.jsonl",
+      "rows": 500,
+      "strict_existing_for_energy": 0,
+      "recoverable_for_energy": 336,
+      "recoverable_ratio": 0.672,
+      "ready_recoverable_for_energy": 336,
+      "rollout_rows": 0,
+      "synthetic_rows": 485,
+      "missing_prefix_existing": 500,
+      "missing_prefix_recoverable": 149,
+      "missing_winner_existing": 149,
+      "missing_winner_recoverable": 149,
+      "missing_loser_video": 78,
+      "missing_prompt": 0,
+      "missing_poses": 0,
+      "missing_intrinsics": 0,
+      "missing_contact_sheet": 0,
+      "missing_visual_review": 0,
+      "prefix_recover_from_full_count": 351,
+      "winner_future_recover_from_full_count": 351,
+      "strict_existing_manifest": "manifests/dpo_v14_subsets/asset_complete/all500_strict_existing_for_energy.jsonl",
+      "recoverable_manifest": "manifests/dpo_v14_subsets/asset_complete/all500_recoverable_for_energy.jsonl",
+      "source_distribution": "{\"other\": 15, \"synthetic_controlled\": 485}",
+      "top_failure_distribution": "{\"background_drift_visible\": 36, \"collision_response_failure_synthetic\": 59, \"containment_failure_synthetic\": 48, \"foreground_identity_color_shift\": 20, \"local_scene_patch_drift\": 43, \"object_duplicate_or_fragment\": 19, \"object_identity_color_shift\": 48, \"partial_freeze_foreground\": 51, \"reobserve_mismatch_visible\": 46, \"wrong_camera_motion_visible\": 24}"
+    },
+    {
+      "subset": "s_pass",
+      "manifest": "manifests/dpo_v14_subsets/s_pass.jsonl",
+      "rows": 4,
+      "strict_existing_for_energy": 0,
+      "recoverable_for_energy": 0,
+      "recoverable_ratio": 0.0,
+      "ready_recoverable_for_energy": 0,
+      "rollout_rows": 0,
+      "synthetic_rows": 3,
+      "missing_prefix_existing": 4,
+      "missing_prefix_recoverable": 3,
+      "missing_winner_existing": 3,
+      "missing_winner_recoverable": 3,
+      "missing_loser_video": 4,
+      "missing_prompt": 0,
+      "missing_poses": 0,
+      "missing_intrinsics": 0,
+      "missing_contact_sheet": 0,
+      "missing_visual_review": 0,
+      "prefix_recover_from_full_count": 1,
+      "winner_future_recover_from_full_count": 1,
+      "strict_existing_manifest": "manifests/dpo_v14_subsets/asset_complete/s_pass_strict_existing_for_energy.jsonl",
+      "recoverable_manifest": "manifests/dpo_v14_subsets/asset_complete/s_pass_recoverable_for_energy.jsonl",
+      "source_distribution": "{\"other\": 1, \"synthetic_controlled\": 3}",
+      "top_failure_distribution": "{\"containment_failure\": 1, \"foreground_identity_color_shift\": 3}"
+    },
+    {
+      "subset": "s_fail",
+      "manifest": "manifests/dpo_v14_subsets/s_fail.jsonl",
+      "rows": 0,
+      "strict_existing_for_energy": 0,
+      "recoverable_for_energy": 0,
+      "recoverable_ratio": null,
+      "ready_recoverable_for_energy": 0,
+      "rollout_rows": 0,
+      "synthetic_rows": 0,
+      "missing_prefix_existing": 0,
+      "missing_prefix_recoverable": 0,
+      "missing_winner_existing": 0,
+      "missing_winner_recoverable": 0,
+      "missing_loser_video": 0,
+      "missing_prompt": 0,
+      "missing_poses": 0,
+      "missing_intrinsics": 0,
+      "missing_contact_sheet": 0,
+      "missing_visual_review": 0,
+      "prefix_recover_from_full_count": 0,
+      "winner_future_recover_from_full_count": 0,
+      "strict_existing_manifest": "manifests/dpo_v14_subsets/asset_complete/s_fail_strict_existing_for_energy.jsonl",
+      "recoverable_manifest": "manifests/dpo_v14_subsets/asset_complete/s_fail_recoverable_for_energy.jsonl",
+      "source_distribution": "{}",
+      "top_failure_distribution": "{}"
+    },
+    {
+      "subset": "rollout_only",
+      "manifest": "manifests/dpo_v14_subsets/rollout_only.jsonl",
+      "rows": 15,
+      "strict_existing_for_energy": 0,
+      "recoverable_for_energy": 0,
+      "recoverable_ratio": 0.0,
+      "ready_recoverable_for_energy": 0,
+      "rollout_rows": 0,
+      "synthetic_rows": 0,
+      "missing_prefix_existing": 15,
+      "missing_prefix_recoverable": 0,
+      "missing_winner_existing": 0,
+      "missing_winner_recoverable": 0,
+      "missing_loser_video": 15,
+      "missing_prompt": 0,
+      "missing_poses": 0,
+      "missing_intrinsics": 0,
+      "missing_contact_sheet": 0,
+      "missing_visual_review": 0,
+      "prefix_recover_from_full_count": 15,
+      "winner_future_recover_from_full_count": 15,
+      "strict_existing_manifest": "manifests/dpo_v14_subsets/asset_complete/rollout_only_strict_existing_for_energy.jsonl",
+      "recoverable_manifest": "manifests/dpo_v14_subsets/asset_complete/rollout_only_recoverable_for_energy.jsonl",
+      "source_distribution": "{\"other\": 15}",
+      "top_failure_distribution": "{\"collision_event_failure\": 1, \"collision_extra_objects\": 1, \"containment_extra_objects\": 2, \"containment_failure\": 3, \"event_extra_objects\": 1, \"event_missing_or_fragments\": 1, \"foreground_identity_event\": 1, \"foreground_identity_extra_objects\": 2, \"physical_event_fragments\": 1, \"roll_identity_event\": 2}"
+    },
+    {
+      "subset": "synthetic_controlled",
+      "manifest": "manifests/dpo_v14_subsets/synthetic_controlled.jsonl",
+      "rows": 485,
+      "strict_existing_for_energy": 0,
+      "recoverable_for_energy": 336,
+      "recoverable_ratio": 0.6927835051546392,
+      "ready_recoverable_for_energy": 336,
+      "rollout_rows": 0,
+      "synthetic_rows": 485,
+      "missing_prefix_existing": 485,
+      "missing_prefix_recoverable": 149,
+      "missing_winner_existing": 149,
+      "missing_winner_recoverable": 149,
+      "missing_loser_video": 63,
+      "missing_prompt": 0,
+      "missing_poses": 0,
+      "missing_intrinsics": 0,
+      "missing_contact_sheet": 0,
+      "missing_visual_review": 0,
+      "prefix_recover_from_full_count": 336,
+      "winner_future_recover_from_full_count": 336,
+      "strict_existing_manifest": "manifests/dpo_v14_subsets/asset_complete/synthetic_controlled_strict_existing_for_energy.jsonl",
+      "recoverable_manifest": "manifests/dpo_v14_subsets/asset_complete/synthetic_controlled_recoverable_for_energy.jsonl",
+      "source_distribution": "{\"synthetic_controlled\": 485}",
+      "top_failure_distribution": "{\"background_drift_visible\": 36, \"collision_response_failure_synthetic\": 59, \"containment_failure_synthetic\": 48, \"foreground_identity_color_shift\": 20, \"local_scene_patch_drift\": 43, \"object_duplicate_or_fragment\": 19, \"object_identity_color_shift\": 48, \"partial_freeze_foreground\": 51, \"reobserve_mismatch_visible\": 46, \"wrong_camera_motion_visible\": 24}"
+    },
+    {
+      "subset": "stratified100",
+      "manifest": "manifests/dpo_v14_subsets/stratified100.jsonl",
+      "rows": 100,
+      "strict_existing_for_energy": 0,
+      "recoverable_for_energy": 64,
+      "recoverable_ratio": 0.64,
+      "ready_recoverable_for_energy": 64,
+      "rollout_rows": 0,
+      "synthetic_rows": 85,
+      "missing_prefix_existing": 100,
+      "missing_prefix_recoverable": 21,
+      "missing_winner_existing": 21,
+      "missing_winner_recoverable": 21,
+      "missing_loser_video": 36,
+      "missing_prompt": 0,
+      "missing_poses": 0,
+      "missing_intrinsics": 0,
+      "missing_contact_sheet": 0,
+      "missing_visual_review": 0,
+      "prefix_recover_from_full_count": 79,
+      "winner_future_recover_from_full_count": 79,
+      "strict_existing_manifest": "manifests/dpo_v14_subsets/asset_complete/stratified100_strict_existing_for_energy.jsonl",
+      "recoverable_manifest": "manifests/dpo_v14_subsets/asset_complete/stratified100_recoverable_for_energy.jsonl",
+      "source_distribution": "{\"other\": 15, \"synthetic_controlled\": 85}",
+      "top_failure_distribution": "{\"background_drift_visible\": 6, \"collision_response_failure_synthetic\": 6, \"containment_failure_synthetic\": 6, \"drop_motion_failure_synthetic\": 6, \"foreground_identity_color_shift\": 6, \"local_patch_drift\": 5, \"local_patch_freeze\": 5, \"local_scene_patch_drift\": 5, \"local_temporal_jump\": 5, \"object_deformation_visible\": 5}"
+    },
+    {
+      "subset": "local_mask",
+      "manifest": "manifests/dpo_v14_subsets/local_mask.jsonl",
+      "rows": 485,
+      "strict_existing_for_energy": 0,
+      "recoverable_for_energy": 336,
+      "recoverable_ratio": 0.6927835051546392,
+      "ready_recoverable_for_energy": 336,
+      "rollout_rows": 0,
+      "synthetic_rows": 485,
+      "missing_prefix_existing": 485,
+      "missing_prefix_recoverable": 149,
+      "missing_winner_existing": 149,
+      "missing_winner_recoverable": 149,
+      "missing_loser_video": 63,
+      "missing_prompt": 0,
+      "missing_poses": 0,
+      "missing_intrinsics": 0,
+      "missing_contact_sheet": 0,
+      "missing_visual_review": 0,
+      "prefix_recover_from_full_count": 336,
+      "winner_future_recover_from_full_count": 336,
+      "strict_existing_manifest": "manifests/dpo_v14_subsets/asset_complete/local_mask_strict_existing_for_energy.jsonl",
+      "recoverable_manifest": "manifests/dpo_v14_subsets/asset_complete/local_mask_recoverable_for_energy.jsonl",
+      "source_distribution": "{\"synthetic_controlled\": 485}",
+      "top_failure_distribution": "{\"background_drift_visible\": 36, \"collision_response_failure_synthetic\": 59, \"containment_failure_synthetic\": 48, \"foreground_identity_color_shift\": 20, \"local_scene_patch_drift\": 43, \"object_duplicate_or_fragment\": 19, \"object_identity_color_shift\": 48, \"partial_freeze_foreground\": 51, \"reobserve_mismatch_visible\": 46, \"wrong_camera_motion_visible\": 24}"
+    }
+  ],
+  "missing_examples": {
+    "all500::prefix_existing": [
+      "v6b_GT_C_001_01014_drop_orbit_left_72_seed40014",
+      "v6b_GT_C_002_03410_roll_orbit_right_60_seed42410",
+      "v6b_GT_C_003_03418_roll_orbit_right_60_seed42418",
+      "v6b_GT_C_004_04204_containment_orbit_left_44_seed43204",
+      "v6b_GT_C_005_04209_containment_orbit_left_44_seed43209"
+    ],
+    "all500::loser_video": [
+      "v6b_GT_C_001_01014_drop_orbit_left_72_seed40014",
+      "v6b_GT_C_002_03410_roll_orbit_right_60_seed42410",
+      "v6b_GT_C_003_03418_roll_orbit_right_60_seed42418",
+      "v6b_GT_C_004_04204_containment_orbit_left_44_seed43204",
+      "v6b_GT_C_005_04209_containment_orbit_left_44_seed43209"
+    ],
+    "all500::prefix_recoverable": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "all500::winner_existing": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "all500::winner_recoverable": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "s_pass::prefix_existing": [
+      "v6b_GT_C_007_04228_containment_orbit_left_44_seed43228",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift",
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_039_04214_containment_orbit_left_44_seed43214_foreground_identity_color_shift"
+    ],
+    "s_pass::loser_video": [
+      "v6b_GT_C_007_04228_containment_orbit_left_44_seed43228",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift",
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_039_04214_containment_orbit_left_44_seed43214_foreground_identity_color_shift"
+    ],
+    "s_pass::prefix_recoverable": [
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift",
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_039_04214_containment_orbit_left_44_seed43214_foreground_identity_color_shift"
+    ],
+    "s_pass::winner_existing": [
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift",
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_039_04214_containment_orbit_left_44_seed43214_foreground_identity_color_shift"
+    ],
+    "s_pass::winner_recoverable": [
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift",
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_039_04214_containment_orbit_left_44_seed43214_foreground_identity_color_shift"
+    ],
+    "rollout_only::prefix_existing": [
+      "v6b_GT_C_001_01014_drop_orbit_left_72_seed40014",
+      "v6b_GT_C_002_03410_roll_orbit_right_60_seed42410",
+      "v6b_GT_C_003_03418_roll_orbit_right_60_seed42418",
+      "v6b_GT_C_004_04204_containment_orbit_left_44_seed43204",
+      "v6b_GT_C_005_04209_containment_orbit_left_44_seed43209"
+    ],
+    "rollout_only::loser_video": [
+      "v6b_GT_C_001_01014_drop_orbit_left_72_seed40014",
+      "v6b_GT_C_002_03410_roll_orbit_right_60_seed42410",
+      "v6b_GT_C_003_03418_roll_orbit_right_60_seed42418",
+      "v6b_GT_C_004_04204_containment_orbit_left_44_seed43204",
+      "v6b_GT_C_005_04209_containment_orbit_left_44_seed43209"
+    ],
+    "synthetic_controlled::prefix_existing": [
+      "v11_SYN_0017_02215_collision_strafe_left_180_seed41215_background_drift_visible",
+      "v11_SYN_0013_02215_collision_strafe_left_180_seed41215_collision_response_failure_synthetic",
+      "v11_SYN_0223_04209_containment_orbit_left_44_seed43209_containment_failure_synthetic",
+      "v11_SYN_0379_01002_drop_orbit_left_72_seed40002_drop_motion_failure_synthetic",
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift"
+    ],
+    "synthetic_controlled::prefix_recoverable": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "synthetic_controlled::winner_existing": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "synthetic_controlled::winner_recoverable": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "synthetic_controlled::loser_video": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "stratified100::prefix_existing": [
+      "v6b_GT_C_011_02276_collision_orbit_right_64_seed41276",
+      "v6b_GT_C_012_02284_collision_orbit_right_64_seed41284",
+      "v6b_GT_C_015_04248_containment_orbit_left_44_seed43248",
+      "v6b_GT_C_004_04204_containment_orbit_left_44_seed43204",
+      "v6b_GT_C_001_01014_drop_orbit_left_72_seed40014"
+    ],
+    "stratified100::loser_video": [
+      "v6b_GT_C_011_02276_collision_orbit_right_64_seed41276",
+      "v6b_GT_C_012_02284_collision_orbit_right_64_seed41284",
+      "v6b_GT_C_015_04248_containment_orbit_left_44_seed43248",
+      "v6b_GT_C_004_04204_containment_orbit_left_44_seed43204",
+      "v6b_GT_C_001_01014_drop_orbit_left_72_seed40014"
+    ],
+    "stratified100::prefix_recoverable": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "stratified100::winner_existing": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "stratified100::winner_recoverable": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "local_mask::prefix_existing": [
+      "v11_SYN_0017_02215_collision_strafe_left_180_seed41215_background_drift_visible",
+      "v11_SYN_0013_02215_collision_strafe_left_180_seed41215_collision_response_failure_synthetic",
+      "v11_SYN_0223_04209_containment_orbit_left_44_seed43209_containment_failure_synthetic",
+      "v11_SYN_0379_01002_drop_orbit_left_72_seed40002_drop_motion_failure_synthetic",
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift"
+    ],
+    "local_mask::prefix_recoverable": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "local_mask::winner_existing": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "local_mask::winner_recoverable": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ],
+    "local_mask::loser_video": [
+      "v10_TypeM_067_01014_drop_orbit_left_72_seed40014_foreground_identity_color_shift",
+      "v10_TypeM_066_01013_drop_orbit_left_72_seed40013_local_patch_drift",
+      "v10_TypeM_065_01008_drop_orbit_left_72_seed40008_local_patch_freeze",
+      "v10_TypeM_064_01002_drop_orbit_left_72_seed40002_local_temporal_jump",
+      "v10_TypeM_071_01038_drop_orbit_left_72_seed40038_foreground_identity_color_shift"
+    ]
+  }
+}
