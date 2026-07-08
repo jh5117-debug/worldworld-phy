@@ -335,3 +335,13 @@ Next work should add a rollout-quality/latent visual monitor or stronger visual 
 - It does not create MP4 files, run energy, use GPU, train, or delete assets.
 - Rollout-only and S_pass real-energy coverage remain blocked by missing loser rollout videos in the current worktree.
 - Decision remains `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.
+
+## v14 Asset Recovery Smoke Update (2026-07-08T10:54 CST)
+
+- Ran a bounded 1-pair recovery smoke with `CUDA_VISIBLE_DEVICES=` and no GPU use.
+- Command used `cam_physgeo.dpo.v14_asset_complete_adapter` on `manifests/dpo_v14_subsets/asset_complete/all500_recoverable_for_energy.jsonl` with `--limit 1`.
+- Result: `PASS`; selected count `1`, schema validated `1`, status counts `{'ADAPTED': 1}`.
+- Output manifest: `manifests/dpo_v14_subsets/asset_complete/all500_recovered_smoke1_prefix5.jsonl`.
+- Report: `reports/dpo_utility_calibration_v14/asset_recovery_plan/recovery_smoke_limit1_summary.md`.
+- Generated MP4 files are local-only under `local_assets/dpo_utility_calibration_v14/asset_recovery_smoke/all500_smoke1` and must not be pushed.
+- This proves the recoverable asset plan can materialize a schema-valid Prefix5 row, but it does not complete all500 real-energy calibration and does not change `NO_SCALE`.

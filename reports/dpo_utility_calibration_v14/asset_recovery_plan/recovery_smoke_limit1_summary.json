@@ -1,0 +1,15 @@
+{
+  "input_manifest": "manifests/dpo_v14_subsets/asset_complete/all500_recoverable_for_energy.jsonl",
+  "limit": 1,
+  "output_manifest": "manifests/dpo_v14_subsets/asset_complete/all500_recovered_smoke1_prefix5.jsonl",
+  "output_root": "local_assets/dpo_utility_calibration_v14/asset_recovery_smoke/all500_smoke1",
+  "pair_type_counts": {
+    "TypeM_v11_synthetic_visible": 1
+  },
+  "report_csv": "reports/dpo_utility_calibration_v14/asset_recovery_plan/recovery_smoke_limit1.csv",
+  "schema_validated": 1,
+  "selected_count": 1,
+  "status_counts": {
+    "ADAPTED": 1
+  }
+}
