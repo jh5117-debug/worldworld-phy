@@ -147,3 +147,20 @@ M .gitignore
 ?? tests/test_physion_smoke.py
 ?? third_party/vjepa2_official/
 ```
+
+## Phase 1 Data Audit Update (2026-07-08T18:05:23 CST)
+
+Decision: `PHYS_EDIT_WORLD_DATA_NOT_FOUND`.
+
+A bounded candidate-file audit was run from `reports/migration/physeditworld_candidates_raw.txt` rather than broad-scanning all legacy videos. The first 200 candidate paths produced 132 candidate rows but 0 strict OK rows for PhysEditWorld 50h training.
+
+Evidence:
+
+- Manifest: `manifests/physeditworld_50h_all.jsonl` has 0 rows.
+- Splits: train/val/test and OOD manifests are present but empty.
+- Audit CSV: `reports/physeditworld_50h/data_audit.csv` has 132 candidate rows.
+- Summary: `reports/physeditworld_50h/data_audit_summary.md`.
+- Main blockers: `MISSING_ACTION` and `MISSING_GRAVITY` after strict rejection of PhysInOne-style false positives.
+
+No conversion, rollout, warm-up, pair construction, or DPO was run after this gate failure.
+
