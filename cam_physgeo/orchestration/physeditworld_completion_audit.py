@@ -174,6 +174,13 @@ def build_rows() -> list[AuditRow]:
         md_decision_row("phase4_warmup", "rank32 warm-up preflight", "reports/physeditworld_50h_warmup_rank32/preflight_summary.md", {"WARMUP_PREFLIGHT_PASS"}, "run 5-step warm-up preflight after conversion"),
         json_decision_row("phase5_checkpoint_eval", "warm-up checkpoint video/metric gate", "reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json", {"WARMUP_GATE_PASS"}, "run checkpoint rollout, metrics, and Codex visual audit"),
         manifest_row("phase6_pairs", "anchored DPO pair manifest", "manifests/physeditworld_dpo_pairs_anchored_v0.jsonl", 100, "build >=100 reviewed anchored pairs after warm-up gate"),
+        json_decision_row(
+            "phase6_pairs",
+            "strict anchored pair manifest validation",
+            "reports/physeditworld_dpo_pairs_anchored_v0/pair_manifest_validation.json",
+            {"PHYS_EDITWORLD_PAIR_MANIFEST_PASS"},
+            "run pair manifest validator and ensure every pair has visual audit, reward/gravity margin, and matched condition/action/camera/intrinsics/gravity",
+        ),
         json_decision_row("phase7_tiny_dpo", "tiny anchored DPO gate", "reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json", {"TINY_DPO_PASS"}, "run tiny anchored DPO only after pair gate"),
         file_row("phase8_ablation", "PhysEditWorld50 plus OurPhysics50 ablation plan", "docs/experiments/EXP_physeditworld50_plus_ourphysics50_ablation_plan.md", "write future ablation plan"),
         git_forbidden_row(),

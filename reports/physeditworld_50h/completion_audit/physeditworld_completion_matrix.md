@@ -4,7 +4,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 
 ## Status Counts
 
-- `BLOCKED`: 18
+- `BLOCKED`: 19
 - `PASS`: 14
 
 ## Requirement Evidence
@@ -113,6 +113,10 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - evidence: `manifests/physeditworld_dpo_pairs_anchored_v0.jsonl`
   - detail: rows=0, required>=100
   - next: build >=100 reviewed anchored pairs after warm-up gate
+- `phase6_pairs` / strict anchored pair manifest validation: `BLOCKED`
+  - evidence: `reports/physeditworld_dpo_pairs_anchored_v0/pair_manifest_validation.json`
+  - detail: decision=PHYS_EDITWORLD_PAIR_MANIFEST_BLOCKED_EMPTY
+  - next: run pair manifest validator and ensure every pair has visual audit, reward/gravity margin, and matched condition/action/camera/intrinsics/gravity
 - `phase7_tiny_dpo` / tiny anchored DPO gate: `BLOCKED`
   - evidence: `reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json`
   - detail: decision=TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS

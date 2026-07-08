@@ -4,7 +4,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 
 ## Status Counts
 
-- `BLOCKED`: 19
+- `BLOCKED`: 20
 - `PASS`: 13
 
 ## Requirements
@@ -124,3 +124,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - evidence: `manifests/physeditworld_dpo_pairs_anchored_v0.jsonl`
   - detail: rows=0, required>=100
   - next: run pair builder after warm-up checkpoint gate passes
+- `6_pairs` / strict anchored pair manifest validation: `BLOCKED`
+  - evidence: `reports/physeditworld_dpo_pairs_anchored_v0/pair_manifest_validation.json`
+  - detail: decision=PHYS_EDITWORLD_PAIR_MANIFEST_BLOCKED_EMPTY
+  - next: run pair manifest validator and fix/review every pair before tiny DPO

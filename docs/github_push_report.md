@@ -500,3 +500,15 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current checkpoint eval decision remains blocked because `manifests/physeditworld_50h_lingbot_val.jsonl` is absent/empty and validation is not PASS.
 - Test status: targeted `compileall` PASS, direct checkpoint-eval validation-gate smoke PASS, current blocked report refreshed; `pytest` unavailable in system Python, so no pytest PASS is claimed.
 - Safety: CPU/IO/docs/scripts only; no GPU rollout, no training, no DPO, no deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld Pair/Tiny-DPO Validation Gate (2026-07-09T03:05:00 CST)
+
+- Added strict PhysEditWorld anchored pair manifest validator: `cam_physgeo/dpo/physeditworld_pair_manifest_validate.py`.
+- Validator requires prefix/WIN/LOSE/contact-sheet paths, same condition/action/camera/intrinsics/gravity, positive reward margin, positive gravity metric margin, Codex visual review, non-empty written reason, medium-hard loser, and no winner-bad/blur/collapse/subtle flags.
+- Tiny anchored DPO gate now requires `reports/physeditworld_dpo_pairs_anchored_v0/pair_manifest_validation.json` decision `PHYS_EDITWORLD_PAIR_MANIFEST_PASS`; JSONL row count alone is no longer sufficient.
+- Requirement matrix and completion audit now include the strict pair validation gate before Phase7 tiny DPO.
+- Current real-state decision: `PHYS_EDITWORLD_PAIR_MANIFEST_BLOCKED_EMPTY` because `manifests/physeditworld_dpo_pairs_anchored_v0.jsonl` has 0 rows.
+- Current tiny-DPO gate decision: `TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS`; no DPO training was run.
+- Validation run: `python3 -m compileall` PASS and direct smoke PASS. `pytest` is unavailable in the active H20 shell (`No module named pytest`), so no pytest PASS is claimed.
+- Safety: CPU/IO only; no GPU training, no rollout, no checkpoint deletion, no local_assets/video/weights push.
+

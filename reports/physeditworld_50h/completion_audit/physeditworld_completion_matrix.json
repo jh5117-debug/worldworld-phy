@@ -234,6 +234,14 @@
       "status": "BLOCKED"
     },
     {
+      "detail": "decision=PHYS_EDITWORLD_PAIR_MANIFEST_BLOCKED_EMPTY",
+      "evidence": "reports/physeditworld_dpo_pairs_anchored_v0/pair_manifest_validation.json",
+      "next_action": "run pair manifest validator and ensure every pair has visual audit, reward/gravity margin, and matched condition/action/camera/intrinsics/gravity",
+      "phase": "phase6_pairs",
+      "requirement": "strict anchored pair manifest validation",
+      "status": "BLOCKED"
+    },
+    {
       "detail": "decision=TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS",
       "evidence": "reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json",
       "next_action": "run tiny anchored DPO only after pair gate",

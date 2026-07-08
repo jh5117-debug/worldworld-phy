@@ -31,3 +31,4 @@ phase,requirement,status,evidence,detail,next_action
 7_tiny_dpo,tiny anchored DPO gate,BLOCKED,reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json,decision=TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS,build >=100 reviewed pairs before tiny DPO
 8_ablation,future mixed-data ablation plan,PASS,docs/experiments/EXP_physeditworld50_plus_ourphysics50_ablation_plan.md,file exists,
 6_pairs,anchored DPO pair manifest,BLOCKED,manifests/physeditworld_dpo_pairs_anchored_v0.jsonl,"rows=0, required>=100",run pair builder after warm-up checkpoint gate passes
+6_pairs,strict anchored pair manifest validation,BLOCKED,reports/physeditworld_dpo_pairs_anchored_v0/pair_manifest_validation.json,decision=PHYS_EDITWORLD_PAIR_MANIFEST_BLOCKED_EMPTY,run pair manifest validator and fix/review every pair before tiny DPO

@@ -197,6 +197,15 @@ def build_rows() -> list[RequirementRow]:
         rows.append(RequirementRow("6_pairs", "anchored DPO pair manifest", "BLOCKED", "manifests/physeditworld_dpo_pairs_anchored_v0.jsonl", f"rows={pair_rows}, required>=100", "run pair builder after warm-up checkpoint gate passes"))
     else:
         rows.append(RequirementRow("6_pairs", "anchored DPO pair manifest", "PASS", "manifests/physeditworld_dpo_pairs_anchored_v0.jsonl", f"rows={pair_rows}"))
+    rows.append(
+        decision_status(
+            "reports/physeditworld_dpo_pairs_anchored_v0/pair_manifest_validation.json",
+            "strict anchored pair manifest validation",
+            "6_pairs",
+            {"PHYS_EDITWORLD_PAIR_MANIFEST_PASS"},
+            "run pair manifest validator and fix/review every pair before tiny DPO",
+        )
+    )
     return rows
 
 

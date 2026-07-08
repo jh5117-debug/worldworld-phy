@@ -256,6 +256,14 @@
       "phase": "6_pairs",
       "requirement": "anchored DPO pair manifest",
       "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=PHYS_EDITWORLD_PAIR_MANIFEST_BLOCKED_EMPTY",
+      "evidence": "reports/physeditworld_dpo_pairs_anchored_v0/pair_manifest_validation.json",
+      "next_action": "run pair manifest validator and fix/review every pair before tiny DPO",
+      "phase": "6_pairs",
+      "requirement": "strict anchored pair manifest validation",
+      "status": "BLOCKED"
     }
   ]
 }

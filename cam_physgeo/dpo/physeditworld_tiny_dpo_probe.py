@@ -10,6 +10,7 @@ from typing import Any
 ALLOWED_PHYSICAL_GPUS = {"4", "5", "6", "7"}
 FORBIDDEN_PHYSICAL_GPUS = {"0", "1", "2", "3"}
 PAIR_READY_DECISIONS = {"READY_FOR_TINY_ANCHORED_DPO"}
+PAIR_VALIDATION_PASS = {"PHYS_EDITWORLD_PAIR_MANIFEST_PASS"}
 
 
 def count_jsonl(path: str | Path) -> int | None:
@@ -29,7 +30,15 @@ def read_decision(path: str | Path) -> str:
         obj = json.loads(text)
         return str(obj.get("decision") or obj.get("status") or "UNKNOWN")
     except Exception:
-        for token in ["READY_FOR_TINY_ANCHORED_DPO", "BLOCKED_INSUFFICIENT_DPO_PAIRS"]:
+        for token in [
+            "READY_FOR_TINY_ANCHORED_DPO",
+            "BLOCKED_INSUFFICIENT_DPO_PAIRS",
+            "PHYS_EDITWORLD_PAIR_MANIFEST_PASS",
+            "PHYS_EDITWORLD_PAIR_MANIFEST_BLOCKED_MISSING",
+            "PHYS_EDITWORLD_PAIR_MANIFEST_BLOCKED_EMPTY",
+            "PHYS_EDITWORLD_PAIR_MANIFEST_BLOCKED_INSUFFICIENT_READY",
+            "PHYS_EDITWORLD_PAIR_MANIFEST_SCHEMA_FAIL",
+        ]:
             if token in text:
                 return token
     return "UNKNOWN"
@@ -49,7 +58,19 @@ def visible_gpu_status() -> tuple[str, str]:
 def write_csv(row: dict[str, Any], path: str | Path) -> None:
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
-    keys = ["decision", "status", "error_reason", "pair_manifest", "pair_rows", "pair_gate_decision", "min_pairs", "steps", "cuda_visible_devices", "gpu_policy"]
+    keys = [
+        "decision",
+        "status",
+        "error_reason",
+        "pair_manifest",
+        "pair_rows",
+        "pair_gate_decision",
+        "pair_validation_decision",
+        "min_pairs",
+        "steps",
+        "cuda_visible_devices",
+        "gpu_policy",
+    ]
     with p.open("w", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=keys)
         writer.writeheader()
@@ -74,12 +95,13 @@ def write_summary(row: dict[str, Any], path: str | Path) -> None:
         f"- Error reason: {row.get('error_reason') or 'none'}",
         f"- Pair manifest: `{row['pair_manifest']}` rows={row.get('pair_rows')}",
         f"- Pair gate decision: `{row.get('pair_gate_decision')}`",
+        f"- Pair validation decision: `{row.get('pair_validation_decision')}`",
         f"- Minimum pairs: `{row.get('min_pairs')}`",
         f"- Requested steps: `{row.get('steps')}`",
         f"- CUDA_VISIBLE_DEVICES: `{row.get('cuda_visible_devices')}`",
         f"- GPU policy: `{row.get('gpu_policy')}`",
         "",
-        "No tiny DPO is allowed until at least 100 reviewed anchored pairs exist and the pair gate has passed.",
+        "No tiny DPO is allowed until at least 100 reviewed anchored pairs exist, the pair builder gate has passed, and the strict pair manifest validation has passed.",
     ]
     p.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -88,6 +110,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="PhysEditWorld tiny anchored DPO safety gate")
     ap.add_argument("--pair_manifest", required=True)
     ap.add_argument("--pair_gate_summary", required=True)
+    ap.add_argument("--pair_validation", default="reports/physeditworld_dpo_pairs_anchored_v0/pair_manifest_validation.json")
     ap.add_argument("--min_pairs", type=int, default=100)
     ap.add_argument("--steps", type=int, default=200)
     ap.add_argument("--output_root", required=True)
@@ -102,6 +125,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     pair_rows = count_jsonl(args.pair_manifest)
     pair_decision = read_decision(args.pair_gate_summary)
+    pair_validation_decision = read_decision(args.pair_validation)
     visible, gpu_policy = visible_gpu_status()
     decision = "TINY_DPO_READY_DRY_RUN" if args.dry_run else "TINY_DPO_BACKEND_NOT_CONNECTED"
     status = "PASS" if args.dry_run else "BLOCKED"
@@ -115,6 +139,8 @@ def main(argv: list[str] | None = None) -> int:
         decision, status, error = "TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS", "BLOCKED", f"pair rows {pair_rows} < {args.min_pairs}"
     elif pair_decision not in PAIR_READY_DECISIONS:
         decision, status, error = "TINY_DPO_BLOCKED_PAIR_GATE", "BLOCKED", "pair gate has not passed"
+    elif pair_validation_decision not in PAIR_VALIDATION_PASS:
+        decision, status, error = "TINY_DPO_BLOCKED_PAIR_VALIDATION", "BLOCKED", "strict pair manifest validation has not passed"
 
     row = {
         "decision": decision,
@@ -123,6 +149,7 @@ def main(argv: list[str] | None = None) -> int:
         "pair_manifest": args.pair_manifest,
         "pair_rows": pair_rows,
         "pair_gate_decision": pair_decision,
+        "pair_validation_decision": pair_validation_decision,
         "min_pairs": args.min_pairs,
         "steps": args.steps,
         "cuda_visible_devices": visible,

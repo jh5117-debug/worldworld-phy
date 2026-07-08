@@ -7,6 +7,7 @@
   "pair_gate_decision": "UNKNOWN",
   "pair_manifest": "manifests/physeditworld_dpo_pairs_anchored_v0.jsonl",
   "pair_rows": 0,
+  "pair_validation_decision": "PHYS_EDITWORLD_PAIR_MANIFEST_BLOCKED_EMPTY",
   "status": "BLOCKED",
   "steps": 200
 }

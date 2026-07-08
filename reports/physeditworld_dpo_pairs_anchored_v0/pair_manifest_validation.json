@@ -1,0 +1,9 @@
+{
+  "decision": "PHYS_EDITWORLD_PAIR_MANIFEST_BLOCKED_EMPTY",
+  "manifest": "manifests/physeditworld_dpo_pairs_anchored_v0.jsonl",
+  "min_pairs": 100,
+  "ready_strict": 0,
+  "rejected": 0,
+  "rows": [],
+  "total_rows": 0
+}
