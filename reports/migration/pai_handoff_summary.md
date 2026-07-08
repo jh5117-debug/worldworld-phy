@@ -12,7 +12,7 @@ Decision: `PAI_HANDOFF_BLOCKED_NAS_OR_ROOT`
 - `git_branch`: `PASS`
   - detail: branch=physion-only-local-assets-videogpa-smoke
 - `git_head`: `PASS`
-  - detail: 0e14dfe
+  - detail: a2db537
 - `forbidden_staged_files`: `PASS`
   - detail: none
 - `required_handoff_files`: `PASS`

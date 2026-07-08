@@ -4,6 +4,9 @@ Decision: `LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION`
 
 ## Steps
 
+- `empty_manifest_init`: `PASS` / `PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT`
+  - command: `bash scripts/migration/init_physeditworld_empty_manifests.sh`
+  - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
 - `root_selection`: `BLOCKED` / `PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT`
   - command: `bash scripts/migration/select_physeditworld_root.sh`
   - evidence: `reports/migration/physeditworld_selected_root_status.json`

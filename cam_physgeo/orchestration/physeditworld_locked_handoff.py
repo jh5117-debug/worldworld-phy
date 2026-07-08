@@ -24,6 +24,8 @@ class SequenceStep:
 
 
 PASS_DECISIONS = {
+    "PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED",
+    "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
     "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED",
     "POST_MOUNT_PHASE12_DONE_RUN_PIPELINE_GATE_NEXT",
     "PHYS_EDITWORLD_PHASE0_READY",
@@ -38,6 +40,12 @@ REVIEW_DECISIONS = {
 
 
 STEP_SPECS = [
+    (
+        "empty_manifest_init",
+        ["bash", "scripts/migration/init_physeditworld_empty_manifests.sh"],
+        "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
+        "create expected lightweight manifest placeholders before root-locked handoff",
+    ),
     (
         "root_selection",
         ["bash", "scripts/migration/select_physeditworld_root.sh"],

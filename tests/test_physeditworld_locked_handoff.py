@@ -1,7 +1,8 @@
-from cam_physgeo.orchestration.physeditworld_locked_handoff import SequenceStep, overall_decision, status_for_decision
+from cam_physgeo.orchestration.physeditworld_locked_handoff import STEP_SPECS, SequenceStep, overall_decision, status_for_decision
 
 
 def test_status_for_pass_decision():
+    assert status_for_decision("PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", 0) == "PASS"
     assert status_for_decision("PHYS_EDITWORLD_ROOT_SELECTION_LOCKED", 0) == "PASS"
 
 
@@ -15,6 +16,7 @@ def test_status_for_nonzero_exit_fails():
 
 def test_overall_blocks_at_first_bad_step():
     decision = overall_decision([
+        SequenceStep("empty_manifest_init", "PASS", "cmd", "e", "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT"),
         SequenceStep("root_selection", "PASS", "cmd", "e", "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED"),
         SequenceStep("post_mount", "BLOCKED", "cmd", "e", "POST_MOUNT_BLOCKED_NO_ROOT_LOCK"),
     ])
@@ -23,7 +25,14 @@ def test_overall_blocks_at_first_bad_step():
 
 def test_overall_ready_when_all_pass():
     decision = overall_decision([
+        SequenceStep("empty_manifest_init", "PASS", "cmd", "e", "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT"),
         SequenceStep("root_selection", "PASS", "cmd", "e", "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED"),
         SequenceStep("post_mount", "PASS", "cmd", "e", "POST_MOUNT_PHASE12_DONE_RUN_PIPELINE_GATE_NEXT"),
     ])
     assert decision == "LOCKED_HANDOFF_PHASE12_READY_FOR_BASELINE_GATE"
+
+
+def test_locked_handoff_runs_manifest_init_first():
+    first = STEP_SPECS[0]
+    assert first[0] == "empty_manifest_init"
+    assert any("init_physeditworld_empty_manifests.sh" in part for part in first[1])

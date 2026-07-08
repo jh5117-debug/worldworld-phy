@@ -2,6 +2,16 @@
   "decision": "LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION",
   "steps": [
     {
+      "command": "bash scripts/migration/init_physeditworld_empty_manifests.sh",
+      "decision": "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
+      "error_reason": "",
+      "evidence": "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
+      "exit_code": 0,
+      "next_action": "",
+      "status": "PASS",
+      "step": "empty_manifest_init"
+    },
+    {
       "command": "bash scripts/migration/select_physeditworld_root.sh",
       "decision": "PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT",
       "error_reason": "",
