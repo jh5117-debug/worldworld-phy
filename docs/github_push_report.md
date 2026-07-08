@@ -431,3 +431,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current data gate remains blocked: strict PhysEditWorld train manifest still has 0 rows because the selected 50h root is not visible/mounted.
 - Test status: project `compileall` PASS, direct tiny-mp4 conversion smoke PASS with 5-frame prefix and 76-frame future target, empty-manifest conversion gate PASS; pytest unavailable, no pytest PASS is claimed.
 - Safety: no GPU use, no training, no rollout, no DPO, no data/checkpoint/weight deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld Rich LingBot Manifest Rows (2026-07-09T02:15:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: Phase 2 conversion manifest rows now expose direct LingBot input paths instead of only `sample_dir`.
+- Manifest update: converted JSONL rows include `prefix_path`, `target_video_path`, `action_path`, `poses_path`, `intrinsics_path`, `prompt_path`, `gravity_path`, `metadata_path`, gravity/replay ids, source paths, frame counts, and future-only target metadata.
+- CLI update: optional `--manifest_out` allows tests and post-mount scripts to write the converted manifest to an explicit path while preserving the existing default manifest names.
+- Current data gate remains blocked: strict PhysEditWorld train manifest still has 0 rows because the selected 50h root is not visible/mounted.
+- Test status: project `compileall` PASS, direct rich-manifest conversion smoke PASS, empty-manifest conversion gate PASS; pytest unavailable, no pytest PASS is claimed.
+- Safety: no GPU use, no training, no rollout, no DPO, no data/checkpoint/weight deletion, and no videos/images/checkpoints/weights pushed.

@@ -50,6 +50,7 @@ def test_physeditworld_to_lingbot_smoke(tmp_path: Path):
     out = tmp_path / "out"
     report = tmp_path / "report.csv"
     summary = tmp_path / "summary.md"
+    manifest_out = tmp_path / "lingbot_manifest.jsonl"
     rc = main(
         [
             "--manifest",
@@ -60,6 +61,8 @@ def test_physeditworld_to_lingbot_smoke(tmp_path: Path):
             str(report),
             "--summary",
             str(summary),
+            "--manifest_out",
+            str(manifest_out),
             "--height",
             "6",
             "--width",
@@ -111,6 +114,22 @@ def test_physeditworld_to_lingbot_smoke(tmp_path: Path):
     assert int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) == 8
     assert int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) == 6
     cap.release()
+
+    manifest_rows = [json.loads(line) for line in manifest_out.read_text().splitlines() if line.strip()]
+    assert len(manifest_rows) == 1
+    manifest_row = manifest_rows[0]
+    assert manifest_row["sample_id"] == "sample0"
+    assert manifest_row["prefix_path"].endswith("prefix.mp4")
+    assert manifest_row["target_video_path"].endswith("target.mp4")
+    assert manifest_row["action_path"].endswith("action.npy")
+    assert manifest_row["poses_path"].endswith("poses.npy")
+    assert manifest_row["intrinsics_path"].endswith("intrinsics.npy")
+    assert manifest_row["prompt_path"].endswith("prompt.txt")
+    assert manifest_row["gravity_condition_type"] == "prompt_only"
+    assert manifest_row["prediction_start_frame"] == 5
+    assert manifest_row["prefix_frame_count"] == 5
+    assert manifest_row["target_frame_count"] == 76
+    assert manifest_row["action_frame_count"] == 81
     cap = cv2.VideoCapture(str(sample_dir / "prefix.mp4"))
     assert cap.isOpened()
     assert int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) == 5

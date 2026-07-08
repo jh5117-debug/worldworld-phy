@@ -321,6 +321,45 @@ def write_csv(rows: list[dict[str, Any]], path: Path) -> None:
             writer.writerow(row)
 
 
+def build_lingbot_manifest_row(sample_id: str, sample_dir: str | Path, status: str) -> dict[str, Any]:
+    sample_path = Path(sample_dir)
+    meta = json.loads((sample_path / "metadata.json").read_text(encoding="utf-8"))
+    prefix_file = meta.get("prefix_file") or ("prefix.mp4" if (sample_path / "prefix.mp4").exists() else "image.jpg")
+    return {
+        "sample_id": sample_id,
+        "sample_dir": str(sample_path),
+        "status": status,
+        "prefix_path": str(sample_path / prefix_file),
+        "target_video_path": str(sample_path / "target.mp4"),
+        "action_path": str(sample_path / "action.npy"),
+        "poses_path": str(sample_path / "poses.npy"),
+        "intrinsics_path": str(sample_path / "intrinsics.npy"),
+        "prompt_path": str(sample_path / "prompt.txt"),
+        "gravity_path": str(sample_path / "gravity.json"),
+        "metadata_path": str(sample_path / "metadata.json"),
+        "gravity_condition_type": meta.get("gravity_condition_type"),
+        "gravity_value": meta.get("gravity_value"),
+        "gravity_label": meta.get("gravity_label"),
+        "replay_group_id": meta.get("replay_group_id"),
+        "scene_id": meta.get("scene_id"),
+        "action_trace_id": meta.get("action_trace_id"),
+        "camera_policy_id": meta.get("camera_policy_id"),
+        "num_frames_requested": meta.get("num_frames_requested"),
+        "prediction_start_frame": meta.get("prediction_start_frame"),
+        "prefix_frame_count": len(meta.get("prefix_frame_indices") or []),
+        "target_frame_count": len(meta.get("target_frame_indices") or []),
+        "action_frame_count": len(meta.get("frame_indices") or []),
+        "camera_frame_count": len(meta.get("frame_indices") or []),
+        "fps": meta.get("fps_requested"),
+        "height": meta.get("height_requested"),
+        "width": meta.get("width_requested"),
+        "source_video_path": meta.get("source_video_path"),
+        "source_action_trace_path": meta.get("source_action_trace_path"),
+        "source_camera_trajectory_path": meta.get("source_camera_trajectory_path"),
+        "source_intrinsics_path": meta.get("source_intrinsics_path"),
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--manifest", required=True)
@@ -335,6 +374,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--gravity_prompt_style", default="physeditworld_v0")
     ap.add_argument("--report", required=True)
     ap.add_argument("--summary", required=True)
+    ap.add_argument("--manifest_out", default=None)
     args = ap.parse_args(argv)
     rows = list(read_jsonl(args.manifest))
     if args.limit is not None:
@@ -348,9 +388,9 @@ def main(argv: list[str] | None = None) -> int:
     converted_manifest = []
     for row in reports:
         if row.get("status") in {"OK", "EXISTS_OK"}:
-            converted_manifest.append({"sample_id": row["sample_id"], "sample_dir": row["sample_dir"], "status": row["status"]})
+            converted_manifest.append(build_lingbot_manifest_row(row["sample_id"], row["sample_dir"], row["status"]))
     suffix = Path(args.manifest).stem.replace("physeditworld_50h_", "") or "all"
-    manifest_out = Path("manifests") / f"physeditworld_50h_lingbot_{suffix}.jsonl"
+    manifest_out = Path(args.manifest_out) if args.manifest_out else Path("manifests") / f"physeditworld_50h_lingbot_{suffix}.jsonl"
     write_jsonl(converted_manifest, manifest_out)
     Path(args.summary).parent.mkdir(parents=True, exist_ok=True)
     Path(args.summary).write_text(
@@ -362,6 +402,7 @@ def main(argv: list[str] | None = None) -> int:
         f"- Output root: `{args.output_root}`\n"
         f"- Output manifest: `{manifest_out}`\n"
         "- Gravity condition type: `prompt_only`\n"
+        "- Output manifest rows include direct LingBot input paths and future-only target metadata.\n"
         "- No gravity MLP or embedding is introduced.\n"
     )
     print({"selected": len(rows), "ok": ok, "failed": failed, "manifest_out": str(manifest_out)})
