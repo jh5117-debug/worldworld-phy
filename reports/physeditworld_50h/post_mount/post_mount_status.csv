@@ -1,2 +1,2 @@
 step,status,command,exit_code,decision,output_path,error_reason
-root_lock,BLOCKED,validate selected-root lock reports/migration/physeditworld_selected_root.lock.json,,POST_MOUNT_BLOCKED_NO_ROOT_LOCK,reports/migration/physeditworld_selected_root.lock.json,run scripts/migration/select_physeditworld_root.sh with a strong PHYS_EDITWORLD_ROOTS path before post-mount continuation
+root_input,BLOCKED,PHYS_EDITWORLD_ROOTS,,POST_MOUNT_BLOCKED_NO_ROOTS,,set PHYS_EDITWORLD_ROOTS=/path/to/selected_50h_root

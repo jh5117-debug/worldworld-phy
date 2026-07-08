@@ -95,17 +95,32 @@ def write_csv(rows: list[dict[str, Any]], path: Path) -> None:
             writer.writerow(row)
 
 
-def write_summary(manifest: str, rows: list[dict[str, Any]], output_json: Path, summary: Path) -> str:
+def write_summary(
+    manifest: str,
+    rows: list[dict[str, Any]],
+    output_json: Path,
+    summary: Path,
+    missing_manifest: bool = False,
+) -> str:
     total = len(rows)
     passed = sum(1 for row in rows if row["status"] == "PASS")
     failed = total - passed
-    if total == 0:
+    if missing_manifest:
+        decision = "LINGBOT_MANIFEST_BLOCKED_MISSING"
+    elif total == 0:
         decision = "LINGBOT_MANIFEST_BLOCKED_EMPTY"
     elif failed:
         decision = "LINGBOT_MANIFEST_SCHEMA_FAIL"
     else:
         decision = "LINGBOT_MANIFEST_SCHEMA_PASS"
-    payload = {"decision": decision, "manifest": manifest, "total": total, "passed": passed, "failed": failed}
+    payload = {
+        "decision": decision,
+        "manifest": manifest,
+        "total": total,
+        "passed": passed,
+        "failed": failed,
+        "missing_manifest": missing_manifest,
+    }
     output_json.parent.mkdir(parents=True, exist_ok=True)
     output_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     summary.parent.mkdir(parents=True, exist_ok=True)
@@ -116,6 +131,7 @@ def write_summary(manifest: str, rows: list[dict[str, Any]], output_json: Path, 
         f"- Rows: {total}\n"
         f"- PASS: {passed}\n"
         f"- FAIL: {failed}\n"
+        f"- Missing manifest: {missing_manifest}\n"
         "- Required semantics: prompt-only gravity, explicit prefix path, future-only target path, sampled action/camera paths, intrinsics path, and metadata path.\n",
         encoding="utf-8",
     )
@@ -129,10 +145,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--output_json", required=True)
     ap.add_argument("--summary", required=True)
     args = ap.parse_args(argv)
-    manifest_rows = list(read_jsonl(args.manifest))
+    missing_manifest = not Path(args.manifest).exists()
+    manifest_rows = [] if missing_manifest else list(read_jsonl(args.manifest))
     validation_rows = [validate_manifest_row(row) for row in manifest_rows]
     write_csv(validation_rows, Path(args.output_csv))
-    decision = write_summary(args.manifest, validation_rows, Path(args.output_json), Path(args.summary))
+    decision = write_summary(args.manifest, validation_rows, Path(args.output_json), Path(args.summary), missing_manifest)
     print(json.dumps({"decision": decision, "rows": len(validation_rows)}, sort_keys=True))
     return 0
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cam_physgeo.data.lingbot_manifest_validate import validate_manifest_row
+from cam_physgeo.data.lingbot_manifest_validate import main as validate_main, validate_manifest_row
 from cam_physgeo.data.physeditworld_to_lingbot import main as convert_main
 
 
@@ -89,3 +89,22 @@ def test_lingbot_manifest_validate_missing_path_fails(tmp_path: Path):
     result = validate_manifest_row(row)
     assert result["status"] == "FAIL"
     assert "missing_path:target_video_path" in result["error_reason"]
+
+
+def test_lingbot_manifest_validate_missing_manifest_is_structured(tmp_path: Path):
+    rc = validate_main(
+        [
+            "--manifest",
+            str(tmp_path / "missing.jsonl"),
+            "--output_csv",
+            str(tmp_path / "out.csv"),
+            "--output_json",
+            str(tmp_path / "out.json"),
+            "--summary",
+            str(tmp_path / "summary.md"),
+        ]
+    )
+    assert rc == 0
+    payload = json.loads((tmp_path / "out.json").read_text(encoding="utf-8"))
+    assert payload["decision"] == "LINGBOT_MANIFEST_BLOCKED_MISSING"
+    assert payload["missing_manifest"] is True

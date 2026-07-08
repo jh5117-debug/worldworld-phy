@@ -1,14 +1,14 @@
 {
-  "decision": "POST_MOUNT_BLOCKED_AT_ROOT_LOCK",
+  "decision": "POST_MOUNT_BLOCKED_AT_ROOT_INPUT",
   "steps": [
     {
-      "command": "validate selected-root lock reports/migration/physeditworld_selected_root.lock.json",
-      "decision": "POST_MOUNT_BLOCKED_NO_ROOT_LOCK",
-      "error_reason": "run scripts/migration/select_physeditworld_root.sh with a strong PHYS_EDITWORLD_ROOTS path before post-mount continuation",
+      "command": "PHYS_EDITWORLD_ROOTS",
+      "decision": "POST_MOUNT_BLOCKED_NO_ROOTS",
+      "error_reason": "set PHYS_EDITWORLD_ROOTS=/path/to/selected_50h_root",
       "exit_code": null,
-      "output_path": "reports/migration/physeditworld_selected_root.lock.json",
+      "output_path": "",
       "status": "BLOCKED",
-      "step": "root_lock"
+      "step": "root_input"
     }
   ]
 }

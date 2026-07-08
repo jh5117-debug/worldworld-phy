@@ -453,3 +453,15 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current overall decisions remain `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS` and `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`; selected PhysEditWorld root/NAS are still absent and strict manifests remain empty.
 - Test status: targeted `compileall` PASS, direct converted-manifest validator smoke PASS, empty-manifest validation PASS, requirement/completion refresh PASS; `pytest` unavailable in system Python, so no pytest PASS is claimed.
 - Safety: CPU/IO/docs/scripts only; no GPU use, no training, no rollout, no DPO, no file copy, no deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld Post-Mount Continuation Hardening (2026-07-09T02:45:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: hardened `cam_physgeo/orchestration/physeditworld_post_mount.py` so Phase 1/2 can resume deterministically once the selected PhysEditWorld root is visible.
+- Smoke/canonical separation: conversion smoke now writes `manifests/physeditworld_50h_lingbot_smoke_train.jsonl`; it no longer writes the canonical `physeditworld_50h_lingbot_train.jsonl`.
+- Full conversion guard: canonical all/train/val/test LingBot manifests are produced only when `--run_full_conversion` is explicitly set.
+- Validation integration: post-mount now runs LingBot manifest validation for the smoke manifest and refreshes canonical train/val validation reports, so downstream gates cannot pass from row-count-only evidence.
+- Missing-manifest handling: `lingbot_manifest_validate.py` now emits `LINGBOT_MANIFEST_BLOCKED_MISSING` instead of a traceback when a converted manifest is absent.
+- Current post-mount decision without roots: `POST_MOUNT_BLOCKED_AT_ROOT_INPUT`; this is expected until `PHYS_EDITWORLD_ROOTS` is set and the selected root lock is available.
+- Test status: targeted `compileall` PASS, direct post-mount dry-run smoke PASS, missing-manifest validator smoke PASS, requirement/completion refresh PASS; `pytest` unavailable in system Python, so no pytest PASS is claimed.
+- Safety: CPU/IO/docs/scripts only; no GPU use, no training, no rollout, no DPO, no file copy, no deletion, and no videos/images/checkpoints/weights pushed.

@@ -1,6 +1,6 @@
 import json
 
-from cam_physgeo.orchestration.physeditworld_post_mount import StepResult, overall, split_roots, validate_root_lock
+from cam_physgeo.orchestration.physeditworld_post_mount import StepResult, main, overall, split_roots, validate_root_lock
 
 
 def test_split_roots_accepts_colon_and_comma():
@@ -46,3 +46,57 @@ def test_root_lock_passes_for_matching_locked_root(tmp_path):
     row = validate_root_lock([str(root)], lock)
     assert row.status == "PASS"
     assert row.decision == "POST_MOUNT_ROOT_LOCK_PASS"
+
+
+def test_post_mount_dry_run_keeps_smoke_manifest_noncanonical(tmp_path):
+    root = tmp_path / "root"
+    root.mkdir()
+    out_json = tmp_path / "post_mount.json"
+    rc = main(
+        [
+            "--roots",
+            str(root),
+            "--allow_unlocked_roots",
+            "--dry_run",
+            "--output_csv",
+            str(tmp_path / "post_mount.csv"),
+            "--output_json",
+            str(out_json),
+            "--summary",
+            str(tmp_path / "post_mount.md"),
+        ]
+    )
+    assert rc == 0
+    payload = json.loads(out_json.read_text(encoding="utf-8"))
+    steps = {row["step"]: row for row in payload["steps"]}
+    smoke_command = steps["conversion_smoke"]["command"]
+    assert "manifests/physeditworld_50h_lingbot_smoke_train.jsonl" in smoke_command
+    assert "--manifest_out manifests/physeditworld_50h_lingbot_train.jsonl" not in smoke_command
+    assert "conversion_train" not in steps
+
+
+def test_post_mount_dry_run_full_conversion_adds_canonical_validation(tmp_path):
+    root = tmp_path / "root"
+    root.mkdir()
+    out_json = tmp_path / "post_mount.json"
+    rc = main(
+        [
+            "--roots",
+            str(root),
+            "--allow_unlocked_roots",
+            "--dry_run",
+            "--run_full_conversion",
+            "--output_csv",
+            str(tmp_path / "post_mount.csv"),
+            "--output_json",
+            str(out_json),
+            "--summary",
+            str(tmp_path / "post_mount.md"),
+        ]
+    )
+    assert rc == 0
+    payload = json.loads(out_json.read_text(encoding="utf-8"))
+    steps = {row["step"]: row for row in payload["steps"]}
+    assert "conversion_train" in steps
+    assert "conversion_train_validation" in steps
+    assert "manifests/physeditworld_50h_lingbot_train.jsonl" in steps["conversion_train"]["command"]

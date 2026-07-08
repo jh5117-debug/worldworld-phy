@@ -156,6 +156,7 @@ def write_summary(rows: list[StepResult], decision: str, path: str | Path) -> No
         "## Safety",
         "",
         "This continuation runs only Phase 1/2 CPU/IO preparation and safe gate collectors. It does not start warm-up training, checkpoint rollout, DPO, StageB, GRPO, broad-LoRA, or deletion.",
+        "Smoke conversion writes a non-canonical smoke manifest. Canonical LingBot train/val/test manifests are written only when `--run_full_conversion` is explicitly set.",
     ])
     p.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -175,6 +176,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--target_hours", type=float, default=50.0)
     ap.add_argument("--limit", type=int, default=32, help="Conversion smoke limit")
     ap.add_argument("--skip_video_probe", action="store_true")
+    ap.add_argument("--run_full_conversion", action="store_true", help="After smoke conversion passes, write canonical all/train/val/test LingBot manifests.")
     ap.add_argument("--dry_run", action="store_true")
     ap.add_argument("--root_lock", default="reports/migration/physeditworld_selected_root.lock.json")
     ap.add_argument("--allow_unlocked_roots", action="store_true", help="Manual-inspection bypass only; never use for training/rollout.")
@@ -243,10 +245,107 @@ def main(argv: list[str] | None = None) -> int:
 
     commands = [
         ("split", ["python3", "-m", "cam_physgeo.data.physeditworld_split", "--manifest", "manifests/physeditworld_50h_all.jsonl", "--out_dir", "manifests", "--prefix", "physeditworld_50h", "--report_dir", "reports/physeditworld_50h"], "manifests/physeditworld_50h_train.jsonl"),
-        ("conversion_smoke", ["python3", "-m", "cam_physgeo.data.physeditworld_to_lingbot", "--manifest", "manifests/physeditworld_50h_train.jsonl", "--limit", str(args.limit), "--output_root", "local_assets/physeditworld_50h_lingbot_smoke", "--num_frames", "81", "--fps", "16", "--height", "480", "--width", "832", "--gravity_prompt_style", "physeditworld_v0", "--report", "reports/physeditworld_50h/conversion_smoke.csv", "--summary", "reports/physeditworld_50h/conversion_smoke_summary.md"], "reports/physeditworld_50h/conversion_smoke_summary.md"),
+        (
+            "conversion_smoke",
+            [
+                "python3", "-m", "cam_physgeo.data.physeditworld_to_lingbot",
+                "--manifest", "manifests/physeditworld_50h_train.jsonl",
+                "--limit", str(args.limit),
+                "--output_root", "local_assets/physeditworld_50h_lingbot_smoke",
+                "--num_frames", "81",
+                "--fps", "16",
+                "--height", "480",
+                "--width", "832",
+                "--gravity_prompt_style", "physeditworld_v0",
+                "--report", "reports/physeditworld_50h/conversion_smoke.csv",
+                "--summary", "reports/physeditworld_50h/conversion_smoke_summary.md",
+                "--manifest_out", "manifests/physeditworld_50h_lingbot_smoke_train.jsonl",
+            ],
+            "manifests/physeditworld_50h_lingbot_smoke_train.jsonl",
+        ),
+        (
+            "conversion_smoke_validation",
+            [
+                "python3", "-m", "cam_physgeo.data.lingbot_manifest_validate",
+                "--manifest", "manifests/physeditworld_50h_lingbot_smoke_train.jsonl",
+                "--output_csv", "reports/physeditworld_50h/conversion_validation/lingbot_smoke_train_manifest_validation.csv",
+                "--output_json", "reports/physeditworld_50h/conversion_validation/lingbot_smoke_train_manifest_validation.json",
+                "--summary", "reports/physeditworld_50h/conversion_validation/lingbot_smoke_train_manifest_validation.md",
+            ],
+            "reports/physeditworld_50h/conversion_validation/lingbot_smoke_train_manifest_validation.json",
+        ),
+    ]
+    if args.run_full_conversion:
+        for split_name, manifest_path in [
+            ("all", "manifests/physeditworld_50h_all.jsonl"),
+            ("train", "manifests/physeditworld_50h_train.jsonl"),
+            ("val", "manifests/physeditworld_50h_val.jsonl"),
+            ("test", "manifests/physeditworld_50h_test.jsonl"),
+        ]:
+            commands.append(
+                (
+                    f"conversion_{split_name}",
+                    [
+                        "python3", "-m", "cam_physgeo.data.physeditworld_to_lingbot",
+                        "--manifest", manifest_path,
+                        "--output_root", "local_assets/physeditworld_50h_lingbot_v0",
+                        "--num_frames", "81",
+                        "--fps", "16",
+                        "--height", "480",
+                        "--width", "832",
+                        "--gravity_prompt_style", "physeditworld_v0",
+                        "--report", f"reports/physeditworld_50h/conversion_{split_name}.csv",
+                        "--summary", f"reports/physeditworld_50h/conversion_{split_name}_summary.md",
+                        "--manifest_out", f"manifests/physeditworld_50h_lingbot_{split_name}.jsonl",
+                    ],
+                    f"manifests/physeditworld_50h_lingbot_{split_name}.jsonl",
+                )
+            )
+        for split_name in ["train", "val", "test"]:
+            commands.append(
+                (
+                    f"conversion_{split_name}_validation",
+                    [
+                        "python3", "-m", "cam_physgeo.data.lingbot_manifest_validate",
+                        "--manifest", f"manifests/physeditworld_50h_lingbot_{split_name}.jsonl",
+                        "--output_csv", f"reports/physeditworld_50h/conversion_validation/lingbot_{split_name}_manifest_validation.csv",
+                        "--output_json", f"reports/physeditworld_50h/conversion_validation/lingbot_{split_name}_manifest_validation.json",
+                        "--summary", f"reports/physeditworld_50h/conversion_validation/lingbot_{split_name}_manifest_validation.md",
+                    ],
+                    f"reports/physeditworld_50h/conversion_validation/lingbot_{split_name}_manifest_validation.json",
+                )
+            )
+    else:
+        commands.extend(
+            [
+                (
+                    "conversion_train_validation",
+                    [
+                        "python3", "-m", "cam_physgeo.data.lingbot_manifest_validate",
+                        "--manifest", "manifests/physeditworld_50h_lingbot_train.jsonl",
+                        "--output_csv", "reports/physeditworld_50h/conversion_validation/lingbot_train_manifest_validation.csv",
+                        "--output_json", "reports/physeditworld_50h/conversion_validation/lingbot_train_manifest_validation.json",
+                        "--summary", "reports/physeditworld_50h/conversion_validation/lingbot_train_manifest_validation.md",
+                    ],
+                    "reports/physeditworld_50h/conversion_validation/lingbot_train_manifest_validation.json",
+                ),
+                (
+                    "conversion_val_validation",
+                    [
+                        "python3", "-m", "cam_physgeo.data.lingbot_manifest_validate",
+                        "--manifest", "manifests/physeditworld_50h_lingbot_val.jsonl",
+                        "--output_csv", "reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.csv",
+                        "--output_json", "reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json",
+                        "--summary", "reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.md",
+                    ],
+                    "reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json",
+                ),
+            ]
+        )
+    commands.extend([
         ("pipeline_gate", ["bash", "scripts/run_physeditworld_pipeline_gates.sh"], "reports/physeditworld_50h/pipeline_gate/pipeline_gate_summary.md"),
         ("requirement_matrix", ["python3", "-m", "cam_physgeo.orchestration.physeditworld_requirement_matrix"], "reports/physeditworld_50h/requirement_matrix.md"),
-    ]
+    ])
     for name, cmd, outpath in commands:
         code, out = run(cmd, args.dry_run)
         rows.append(StepResult(name, "PASS" if code == 0 else "FAIL", " ".join(shlex.quote(x) for x in cmd), code, output_path=outpath, error_reason="" if code == 0 else out))
