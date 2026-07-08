@@ -257,3 +257,15 @@ Relevant paths:
 - E10 (, L2 camera-temporal r4) completed 100/100 steps with final winner improvement  and mean WCR . True V2V-5 audit failed: step100 was worse on 2/4 samples and not decisively better on the rest, with duplicate green balls, object identity clutter, and foreground fragments.
 - Current decision: . The scalar no-signal / beta-scale issue is partially repaired, but energy/gap improvement does not yet predict rollout visual quality.
 - Scale permission: ; no S16/S32/train400/large DPO from these recipes. Next direction is a rollout-quality or latent visual monitor/regularizer before further DPO scaling.
+
+## v14 Completion Root Cause Correction (2026-07-08)
+
+This supersedes the earlier E09/E10 note where several numeric fields were left blank.
+
+- Final decision: `DPO_RECIPE_NOT_FOUND_V14`.
+- Scale permission: `NO_SCALE`; do not run S16/S32/train400/large DPO from v14.
+- E07 (`linear_winner_detached`, L0 camera r4) completed 200/200 rows with final winner improvement `+0.0161217451`, mean winner improvement `+0.0058058372`, mean winner contribution ratio about `0.985`, and mean loser degradation negative. It failed the true V2V-5 visual gate: step200 was worse on 4/4 fixed validation samples.
+- E09 (`source_weighted_rollout_priority`, L0 camera r4) reached strong early signal at step50: winner improvement `+0.0014111996`, WCR `1.0`, loser degradation `-0.0013124943`, DPO loss `0.5111857`. It failed the true V2V-5 visual gate: step50 was worse on 3/4 samples and not better on the remaining sample.
+- E10 (`calibrated_winner_detached_log`, L2 camera-temporal r4) completed 100/100 rows with final winner improvement `+0.0004041791`, mean winner improvement `+0.0001850957`, mean WCR about `0.8247`, and mean loser degradation negative. It failed the true V2V-5 visual gate: step100 was worse on 2/4 samples and not decisively better on the rest.
+- Exact blocker: scalar energy/gap improvements do not yet predict real rollout visual quality. The observed update failure is artifact amplification: foreground duplication, line/text-like artifacts, object identity clutter, foreground fragments, and scene contamination.
+- V-JEPA2 now provides a no-download monitor and high-recall checkpoint drift signal, but it is not a standalone quality approval metric. The safe next direction is v15 artifact-aware monitor/regularizer design before any more DPO scale.

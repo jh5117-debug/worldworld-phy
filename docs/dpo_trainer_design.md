@@ -134,3 +134,14 @@ Future DPO probes should not use arbitrary beta=0.1. Use empirical utility calib
 - E10 (, L2 camera-temporal r4) completed 100/100 steps with final winner improvement  and mean WCR . True V2V-5 audit failed: step100 was worse on 2/4 samples and not decisively better on the rest, with duplicate green balls, object identity clutter, and foreground fragments.
 - Current decision: . The scalar no-signal / beta-scale issue is partially repaired, but energy/gap improvement does not yet predict rollout visual quality.
 - Scale permission: ; no S16/S32/train400/large DPO from these recipes. Next direction is a rollout-quality or latent visual monitor/regularizer before further DPO scaling.
+
+## v14 Completion Trainer Rule (2026-07-08)
+
+v14 proves that calibrated beta/log-utility and stronger scalar gap metrics are not sufficient trainer gates. E07, E09, and E10 all produced positive winner-side scalar movement, but each failed true V2V-5 checkpoint visual audit. Future DPO trainers must treat energy/gap signal as a precondition only, then require artifact-aware video + metrics + Codex visual gates before any S16/S32/train400 scale.
+
+Implementation guidance for the next probe:
+- keep loser detached or clipped until winner-side visual quality is stable;
+- retain explicit winner anchor and best-step early stopping;
+- add artifact-aware monitor/regularizer candidates from V-JEPA2 checkpoint drift and foreground/identity artifact checks;
+- do not choose final checkpoints by scalar loss, DPO utility, or winner improvement alone;
+- no broad-LoRA or train400 pilot until a tiny recipe passes real V2V-5 videos.

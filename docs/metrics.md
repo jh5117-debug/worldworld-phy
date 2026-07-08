@@ -204,3 +204,16 @@ Relevant paths:
 - S_pass4 and rollout15 currently have 0 ok rows because their loser rollout video assets are missing from local_assets; this is recorded as an asset coverage blocker, not a latent-backend failure.
 - Decision: `LATENT_MONITOR_PASS_VJEPA2_SMOKE_WITH_ASSET_BLOCKERS`.
 - DPO recipe decision remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO scale is allowed until checkpoint video quality passes.
+
+## v14 Completion Metrics Rule (2026-07-08)
+
+The earlier note that v14 had no valid TRD/V-JEPA scores is superseded. Local V-JEPA2 produced real no-download scores:
+
+- WIN/LOSE coverage: `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_monitor.csv`, 133 attempted rows, 74 available-video ok rows, 74/74 positive token-relation margins.
+- Expanded checkpoint regression: `reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_all_available/vjepa2_checkpoint_regression_all.csv`, 24/24 ok rows with positive V-JEPA/token-relation margins.
+- Gate statistics show V-JEPA2 is useful as a high-recall drift / inspection trigger, but not a standalone quality approval metric: thresholding catches worse checkpoints but also has false positives and low AUC versus Codex worse/not-worse labels.
+
+Metric policy after v14:
+- A promising DPO scheme must pass scalar gaps, true V2V-5 videos, PSNR/SSIM/LPIPS where available, FVD/VBench when the wrapper supports them, PhysGeo checks, and Codex visual audit.
+- V-JEPA2 can trigger or prioritize inspection and can be considered for v15 regularization, but it cannot approve a checkpoint by itself.
+- If visual audit fails, metric incompleteness cannot authorize scale.
