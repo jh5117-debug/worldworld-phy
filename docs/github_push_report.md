@@ -345,3 +345,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Completion audit now records the locked handoff blocker as `root_schema_probe` and keeps Phase 1+ blocked until a real PhysEditWorld selected-50h root with action/camera/intrinsics/gravity/replay/video evidence is mounted.
 - Test status: compileall PASS, direct locked-schema smoke PASS, locked handoff/handoff/completion smoke PASS; pytest unavailable, no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Phase0 Pipeline Schema-Probe Gate Alignment (2026-07-09T00:55:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: `871996a Align PhysEditWorld phase0 pipeline gates with schema probe`.
+- Scope: requirement matrix now lists expected manifest placeholders, selected-root schema probe, and locked handoff sequence as explicit Phase0 evidence; pipeline gate now checks manifest init and root schema probe before readiness/asset/copy gates.
+- Current decisions: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS` and `PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE`.
+- Evidence: `reports/physeditworld_50h/requirement_matrix.md` and `reports/physeditworld_50h/pipeline_gate/pipeline_gate_summary.md`.
+- Current blocker remains external: `PHYS_EDITWORLD_ROOTS` is unset; selected PhysEditWorld 50h root and NAS are not visible, so baseline, warm-up, pair construction, and tiny DPO remain blocked.
+- Test status: compileall PASS, direct phase0 gate alignment smoke PASS, pipeline/requirement/completion smoke PASS; pytest unavailable, no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
