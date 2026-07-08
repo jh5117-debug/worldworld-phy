@@ -127,3 +127,11 @@ The next aligned work is v15 monitor/regularizer design:
 - No broad-LoRA.
 - No checkpoint/data/weight deletion.
 - No videos/images/checkpoints/weights pushed.
+
+## v14 Artifact Regression Aggregation (2026-07-08T10:25 CST)
+
+- Added aggregation: `reports/dpo_utility_calibration_v14/artifact_regression/artifact_regression_summary.md`.
+- Source audits: E07 step200, E09 step50, and E10 step100 true V2V-5 checkpoint visual audits.
+- Result: scalar-positive schemes consistently fail visual gates. E07 is worse on 4/4, E09 is flagged worse on 4/4; one row is described as at-best-mixed/not-better, and E10 is worse on 2/4 and not decisively better on the rest.
+- Dominant failure tags: identity clutter, foreground duplication/fragments, artifact/line-text contamination, with background/camera contamination in some E09 samples.
+- Decision remains `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.
