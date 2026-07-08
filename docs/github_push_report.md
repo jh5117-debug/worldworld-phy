@@ -569,3 +569,15 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Scope: calibration only. No DPO training, no S16/S32/train400, no large DPO.
 - Artifact policy: pushed small CSV/JSONL/JSON/MD/docs only; no local_assets, videos, images, checkpoints, weights, stdout logs, run scripts, or large logs.
 
+## v14 Diverse12 Real-Energy Calibration Push
+
+- Updated: `2026-07-08T09:38:00+08:00`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `b1ff835 Extend v14 real energy calibration to diverse failures`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Result: `REAL_ENERGY_DIVERSE12_PASS`, 12/12 bounded asset-complete rows ok on physical GPU5 via `CUDA_VISIBLE_DEVICES=5`.
+- Coverage: 12 unique TypeM-v11 synthetic controlled failure types.
+- Delta_ref: min `-0.0174915`, median `0.0086480`, mean `0.0104745`, max `0.0376557`; 10 positive and 2 negative rows.
+- Beta conclusion: `NONE_ZERO_UTILITY` at policy=reference; beta cannot create preference signal before a policy-reference utility change exists.
+- Scope: calibration only. No DPO training, no S16/S32/train400, no large DPO.
+- Artifact policy: pushed small manifests, CSV/JSONL/JSON/MD summaries and docs only; no local_assets, videos, images, checkpoints, weights, stdout logs, run scripts, or large logs.
