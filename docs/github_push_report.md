@@ -593,3 +593,15 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Interpretation: V-JEPA2 can detect checkpoint drift/artifact risk and is a v15 monitor/gate candidate, but it is not a standalone visual-quality classifier and does not change v14 `NO_SCALE`.
 - Scope: monitor only. No DPO training, no S16/S32/train400, no large DPO.
 - Artifact policy: pushed small manifest/CSV/JSON/MD/docs only; no local_assets, videos, images, checkpoints, weights, stdout logs, run scripts, or large logs.
+
+## v14 V-JEPA Gate Statistics Push
+
+- Updated: `2026-07-08T09:58:00+08:00`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `866413c Document v14 V-JEPA checkpoint gate statistics`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Result: quantified V-JEPA2 checkpoint-drift gate on E09/E10 regression rows.
+- Token-relation AUC vs Codex worse label: `0.5833`; V-JEPA embedding AUC: `0.6667` on 8 rows.
+- Conservative high-recall threshold catches all 6 worse rows but flags 2 mixed/not-worse rows, so V-JEPA2 is suitable as a v15 monitor/inspection trigger, not standalone approval.
+- Scope: report/statistics only. No DPO training, no S16/S32/train400, no large DPO.
+- Artifact policy: pushed small CSV/JSON/MD/docs only; no local_assets, videos, images, checkpoints, weights, stdout logs, run scripts, or large logs.
