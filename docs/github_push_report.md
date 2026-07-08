@@ -553,3 +553,11 @@ git push -u origin cam-physgeo-dpo-refactor
 - Live pipeline decision after refresh: `PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE`; Phase0 remains `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES` because the selected PhysEditWorld root/NAS are still not visible.
 - Validation: compileall PASS, direct backend-gate smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
 - Safety: CPU/IO only; no GPU use, no training, no rollout, no copy/delete, no local_assets/video/weights push.
+
+## PhysEditWorld Post-Mount Backend Gate (2026-07-09T04:06:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Scope: post-mount continuation now refreshes backend readiness after manifest/split/conversion and blocks at `POST_MOUNT_BLOCKED_AT_BACKEND_READINESS` if the real LingBot-Fast baseline/warm-up/checkpoint backends remain scaffold-only.
+- Effect: a mounted PhysEditWorld root can no longer flow from conversion into downstream gates unless backend readiness is `PHYS_EDITWORLD_BACKEND_READY_FOR_BASELINE_WARMUP`.
+- Validation: compileall PASS, direct post-mount backend-gate smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
+- Safety: CPU/IO only; no GPU use, no training, no rollout, no copy/delete, no local_assets/video/weights push.

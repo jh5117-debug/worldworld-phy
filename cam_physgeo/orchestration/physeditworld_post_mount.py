@@ -11,6 +11,9 @@ from pathlib import Path
 from typing import Any
 
 
+PASS_BACKEND_READINESS = "PHYS_EDITWORLD_BACKEND_READY_FOR_BASELINE_WARMUP"
+
+
 @dataclass
 class StepResult:
     step: str
@@ -36,6 +39,17 @@ def count_jsonl(path: str | Path) -> int | None:
 
 def norm_path(path: str | Path) -> str:
     return str(Path(path).expanduser().resolve(strict=False))
+
+
+def read_json_decision(path: str | Path) -> tuple[str, str]:
+    p = Path(path)
+    if not p.exists():
+        return "MISSING", "file missing"
+    try:
+        obj = json.loads(p.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return "UNREADABLE", repr(exc)
+    return str(obj.get("decision") or obj.get("status") or "UNKNOWN"), str(obj.get("error_reason") or "")
 
 
 def validate_root_lock(roots: list[str], lock_path: str | Path, allow_unlocked_roots: bool = False) -> StepResult:
@@ -342,15 +356,41 @@ def main(argv: list[str] | None = None) -> int:
                 ),
             ]
         )
-    commands.extend([
-        ("pipeline_gate", ["bash", "scripts/run_physeditworld_pipeline_gates.sh"], "reports/physeditworld_50h/pipeline_gate/pipeline_gate_summary.md"),
-        ("requirement_matrix", ["python3", "-m", "cam_physgeo.orchestration.physeditworld_requirement_matrix"], "reports/physeditworld_50h/requirement_matrix.md"),
-    ])
     for name, cmd, outpath in commands:
         code, out = run(cmd, args.dry_run)
         rows.append(StepResult(name, "PASS" if code == 0 else "FAIL", " ".join(shlex.quote(x) for x in cmd), code, output_path=outpath, error_reason="" if code == 0 else out))
         if code != 0:
             break
+
+    if not any(row.status in {"BLOCKED", "FAIL"} for row in rows):
+        backend_cmd = ["python3", "-m", "cam_physgeo.orchestration.physeditworld_backend_readiness"]
+        backend_output = "reports/physeditworld_50h/backend_readiness/backend_readiness.json"
+        code, out = run(backend_cmd, args.dry_run)
+        backend_decision, backend_error = read_json_decision(backend_output)
+        backend_status = "PASS" if code == 0 and backend_decision == PASS_BACKEND_READINESS else "BLOCKED"
+        if code != 0:
+            backend_status = "FAIL"
+            backend_error = out
+        rows.append(StepResult(
+            "backend_readiness",
+            backend_status,
+            " ".join(shlex.quote(x) for x in backend_cmd),
+            code,
+            decision=backend_decision,
+            output_path=backend_output,
+            error_reason=backend_error if backend_error else ("backend readiness must pass before baseline/warm-up/checkpoint eval" if backend_status == "BLOCKED" else ""),
+        ))
+
+    if not any(row.status in {"BLOCKED", "FAIL"} for row in rows):
+        final_commands = [
+            ("pipeline_gate", ["bash", "scripts/run_physeditworld_pipeline_gates.sh"], "reports/physeditworld_50h/pipeline_gate/pipeline_gate_summary.md"),
+            ("requirement_matrix", ["python3", "-m", "cam_physgeo.orchestration.physeditworld_requirement_matrix"], "reports/physeditworld_50h/requirement_matrix.md"),
+        ]
+        for name, cmd, outpath in final_commands:
+            code, out = run(cmd, args.dry_run)
+            rows.append(StepResult(name, "PASS" if code == 0 else "FAIL", " ".join(shlex.quote(x) for x in cmd), code, output_path=outpath, error_reason="" if code == 0 else out))
+            if code != 0:
+                break
 
     decision = overall(rows)
     write_csv(rows, args.output_csv)

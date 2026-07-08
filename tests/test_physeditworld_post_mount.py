@@ -100,3 +100,13 @@ def test_post_mount_dry_run_full_conversion_adds_canonical_validation(tmp_path):
     assert "conversion_train" in steps
     assert "conversion_train_validation" in steps
     assert "manifests/physeditworld_50h_lingbot_train.jsonl" in steps["conversion_train"]["command"]
+
+
+def test_post_mount_blocks_at_backend_readiness():
+    decision = overall([
+        StepResult("manifest_audit", "PASS", "x"),
+        StepResult("split", "PASS", "x"),
+        StepResult("conversion_smoke", "PASS", "x"),
+        StepResult("backend_readiness", "BLOCKED", "x"),
+    ])
+    assert decision == "POST_MOUNT_BLOCKED_AT_BACKEND_READINESS"
