@@ -4,8 +4,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 
 ## Status Counts
 
-- `BLOCKED`: 15
-- `MISSING`: 1
+- `BLOCKED`: 16
 - `PASS`: 12
 
 ## Requirement Evidence
@@ -80,9 +79,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - evidence: `manifests/physeditworld_50h_lingbot_train.jsonl`
   - detail: rows=0, required>=1
   - next: run prompt-only gravity conversion
-- `phase2_conversion` / LingBot val conversion manifest: `MISSING`
+- `phase2_conversion` / LingBot val conversion manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_50h_lingbot_val.jsonl`
-  - detail: manifest missing
+  - detail: rows=0, required>=1
   - next: run prompt-only gravity conversion
 - `phase3_baseline` / baseline true rollout gate: `BLOCKED`
   - evidence: `reports/physeditworld_50h_baseline_rollout/summary.md`

@@ -19,7 +19,7 @@ phase1_data,train split no replay leakage,BLOCKED,manifests/physeditworld_50h_tr
 phase1_data,split summary,PASS,reports/physeditworld_50h/split_summary.md,file exists,
 phase1_data,replay-group leakage check,PASS,reports/physeditworld_50h/replay_group_leakage_check.csv,file exists,
 phase2_conversion,LingBot train conversion manifest,BLOCKED,manifests/physeditworld_50h_lingbot_train.jsonl,"rows=0, required>=1",run prompt-only gravity conversion
-phase2_conversion,LingBot val conversion manifest,MISSING,manifests/physeditworld_50h_lingbot_val.jsonl,manifest missing,run prompt-only gravity conversion
+phase2_conversion,LingBot val conversion manifest,BLOCKED,manifests/physeditworld_50h_lingbot_val.jsonl,"rows=0, required>=1",run prompt-only gravity conversion
 phase3_baseline,baseline true rollout gate,BLOCKED,reports/physeditworld_50h_baseline_rollout/summary.md,decision=BASELINE_BLOCKED_EMPTY_MANIFEST,run baseline rollout after LingBot manifests exist
 phase4_warmup,rank32 warm-up preflight,BLOCKED,reports/physeditworld_50h_warmup_rank32/preflight_summary.md,decision=WARMUP_BLOCKED_EMPTY_MANIFEST,run 5-step warm-up preflight after conversion
 phase5_checkpoint_eval,warm-up checkpoint video/metric gate,BLOCKED,reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json,decision=CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING,"run checkpoint rollout, metrics, and Codex visual audit"

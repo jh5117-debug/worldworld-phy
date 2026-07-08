@@ -1,0 +1,13 @@
+path,existed_before,rows,status,action,error_reason
+manifests/physeditworld_50h_all.jsonl,True,0,EXISTS,keep_existing,
+manifests/physeditworld_50h_train.jsonl,True,0,EXISTS,keep_existing,
+manifests/physeditworld_50h_val.jsonl,True,0,EXISTS,keep_existing,
+manifests/physeditworld_50h_test.jsonl,True,0,EXISTS,keep_existing,
+manifests/physeditworld_50h_gravity_ood.jsonl,True,0,EXISTS,keep_existing,
+manifests/physeditworld_50h_scene_ood.jsonl,True,0,EXISTS,keep_existing,
+manifests/physeditworld_50h_action_ood.jsonl,True,0,EXISTS,keep_existing,
+manifests/physeditworld_50h_lingbot_all.jsonl,False,0,CREATED,create_empty_jsonl,
+manifests/physeditworld_50h_lingbot_train.jsonl,True,0,EXISTS,keep_existing,
+manifests/physeditworld_50h_lingbot_val.jsonl,False,0,CREATED,create_empty_jsonl,
+manifests/physeditworld_50h_lingbot_test.jsonl,False,0,CREATED,create_empty_jsonl,
+manifests/physeditworld_dpo_pairs_anchored_v0.jsonl,True,0,EXISTS,keep_existing,

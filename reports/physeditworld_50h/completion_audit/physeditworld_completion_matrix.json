@@ -162,12 +162,12 @@
       "status": "BLOCKED"
     },
     {
-      "detail": "manifest missing",
+      "detail": "rows=0, required>=1",
       "evidence": "manifests/physeditworld_50h_lingbot_val.jsonl",
       "next_action": "run prompt-only gravity conversion",
       "phase": "phase2_conversion",
       "requirement": "LingBot val conversion manifest",
-      "status": "MISSING"
+      "status": "BLOCKED"
     },
     {
       "detail": "decision=BASELINE_BLOCKED_EMPTY_MANIFEST",

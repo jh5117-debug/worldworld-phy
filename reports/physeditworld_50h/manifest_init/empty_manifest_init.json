@@ -1,0 +1,101 @@
+{
+  "decision": "PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED",
+  "manifests": [
+    {
+      "action": "keep_existing",
+      "error_reason": "",
+      "existed_before": true,
+      "path": "manifests/physeditworld_50h_all.jsonl",
+      "rows": 0,
+      "status": "EXISTS"
+    },
+    {
+      "action": "keep_existing",
+      "error_reason": "",
+      "existed_before": true,
+      "path": "manifests/physeditworld_50h_train.jsonl",
+      "rows": 0,
+      "status": "EXISTS"
+    },
+    {
+      "action": "keep_existing",
+      "error_reason": "",
+      "existed_before": true,
+      "path": "manifests/physeditworld_50h_val.jsonl",
+      "rows": 0,
+      "status": "EXISTS"
+    },
+    {
+      "action": "keep_existing",
+      "error_reason": "",
+      "existed_before": true,
+      "path": "manifests/physeditworld_50h_test.jsonl",
+      "rows": 0,
+      "status": "EXISTS"
+    },
+    {
+      "action": "keep_existing",
+      "error_reason": "",
+      "existed_before": true,
+      "path": "manifests/physeditworld_50h_gravity_ood.jsonl",
+      "rows": 0,
+      "status": "EXISTS"
+    },
+    {
+      "action": "keep_existing",
+      "error_reason": "",
+      "existed_before": true,
+      "path": "manifests/physeditworld_50h_scene_ood.jsonl",
+      "rows": 0,
+      "status": "EXISTS"
+    },
+    {
+      "action": "keep_existing",
+      "error_reason": "",
+      "existed_before": true,
+      "path": "manifests/physeditworld_50h_action_ood.jsonl",
+      "rows": 0,
+      "status": "EXISTS"
+    },
+    {
+      "action": "create_empty_jsonl",
+      "error_reason": "",
+      "existed_before": false,
+      "path": "manifests/physeditworld_50h_lingbot_all.jsonl",
+      "rows": 0,
+      "status": "CREATED"
+    },
+    {
+      "action": "keep_existing",
+      "error_reason": "",
+      "existed_before": true,
+      "path": "manifests/physeditworld_50h_lingbot_train.jsonl",
+      "rows": 0,
+      "status": "EXISTS"
+    },
+    {
+      "action": "create_empty_jsonl",
+      "error_reason": "",
+      "existed_before": false,
+      "path": "manifests/physeditworld_50h_lingbot_val.jsonl",
+      "rows": 0,
+      "status": "CREATED"
+    },
+    {
+      "action": "create_empty_jsonl",
+      "error_reason": "",
+      "existed_before": false,
+      "path": "manifests/physeditworld_50h_lingbot_test.jsonl",
+      "rows": 0,
+      "status": "CREATED"
+    },
+    {
+      "action": "keep_existing",
+      "error_reason": "",
+      "existed_before": true,
+      "path": "manifests/physeditworld_dpo_pairs_anchored_v0.jsonl",
+      "rows": 0,
+      "status": "EXISTS"
+    }
+  ]
+}
