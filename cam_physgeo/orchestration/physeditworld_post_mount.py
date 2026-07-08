@@ -1,0 +1,174 @@
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import os
+import shlex
+import subprocess
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
+
+
+@dataclass
+class StepResult:
+    step: str
+    status: str
+    command: str
+    exit_code: int | None = None
+    decision: str = ""
+    output_path: str = ""
+    error_reason: str = ""
+
+
+def split_roots(value: str) -> list[str]:
+    return [part for part in value.replace(",", ":").split(":") if part]
+
+
+def count_jsonl(path: str | Path) -> int | None:
+    p = Path(path)
+    if not p.exists():
+        return None
+    with p.open("r", encoding="utf-8") as f:
+        return sum(1 for line in f if line.strip())
+
+
+def run(cmd: list[str], dry_run: bool) -> tuple[int, str]:
+    printable = " ".join(shlex.quote(x) for x in cmd)
+    if dry_run:
+        return 0, "DRY_RUN: " + printable
+    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False)
+    return proc.returncode, proc.stdout[-4000:]
+
+
+def write_csv(rows: list[StepResult], path: str | Path) -> None:
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    keys = ["step", "status", "command", "exit_code", "decision", "output_path", "error_reason"]
+    with p.open("w", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=keys)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({k: asdict(row).get(k, "") for k in keys})
+
+
+def write_json(rows: list[StepResult], decision: str, path: str | Path) -> None:
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps({"decision": decision, "steps": [asdict(r) for r in rows]}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def write_summary(rows: list[StepResult], decision: str, path: str | Path) -> None:
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["# PhysEditWorld Post-Mount Continuation Summary", "", f"Decision: `{decision}`", "", "## Steps", ""]
+    for row in rows:
+        lines.append(f"- `{row.step}`: `{row.status}`")
+        lines.append(f"  - command: `{row.command}`")
+        if row.decision:
+            lines.append(f"  - decision: `{row.decision}`")
+        if row.output_path:
+            lines.append(f"  - output: `{row.output_path}`")
+        if row.error_reason:
+            lines.append(f"  - error: {row.error_reason}")
+    lines.extend([
+        "",
+        "## Safety",
+        "",
+        "This continuation runs only Phase 1/2 CPU/IO preparation and safe gate collectors. It does not start warm-up training, checkpoint rollout, DPO, StageB, GRPO, broad-LoRA, or deletion.",
+    ])
+    p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def overall(rows: list[StepResult]) -> str:
+    if not rows:
+        return "POST_MOUNT_NO_STEPS"
+    first_bad = next((r for r in rows if r.status in {"BLOCKED", "FAIL"}), None)
+    if first_bad:
+        return "POST_MOUNT_BLOCKED_AT_" + first_bad.step.upper()
+    return "POST_MOUNT_PHASE12_DONE_RUN_PIPELINE_GATE_NEXT"
+
+
+def build_parser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser(description="Continue PhysEditWorld pipeline after selected root is mounted")
+    ap.add_argument("--roots", nargs="*", default=None, help="PhysEditWorld roots. Defaults to PHYS_EDITWORLD_ROOTS colon/comma list.")
+    ap.add_argument("--target_hours", type=float, default=50.0)
+    ap.add_argument("--limit", type=int, default=32, help="Conversion smoke limit")
+    ap.add_argument("--skip_video_probe", action="store_true")
+    ap.add_argument("--dry_run", action="store_true")
+    ap.add_argument("--output_csv", default="reports/physeditworld_50h/post_mount/post_mount_status.csv")
+    ap.add_argument("--output_json", default="reports/physeditworld_50h/post_mount/post_mount_status.json")
+    ap.add_argument("--summary", default="reports/physeditworld_50h/post_mount/post_mount_summary.md")
+    return ap
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    roots = args.roots if args.roots is not None else split_roots(os.environ.get("PHYS_EDITWORLD_ROOTS", ""))
+    rows: list[StepResult] = []
+    if not roots:
+        rows.append(StepResult("root_input", "BLOCKED", "PHYS_EDITWORLD_ROOTS", decision="POST_MOUNT_BLOCKED_NO_ROOTS", error_reason="set PHYS_EDITWORLD_ROOTS=/path/to/selected_50h_root"))
+        decision = overall(rows)
+        write_csv(rows, args.output_csv)
+        write_json(rows, decision, args.output_json)
+        write_summary(rows, decision, args.summary)
+        print(json.dumps({"decision": decision, "steps": len(rows)}, sort_keys=True))
+        return 0
+
+    missing = [root for root in roots if not Path(root).exists()]
+    if missing:
+        rows.append(StepResult("root_input", "BLOCKED", " ".join(roots), decision="POST_MOUNT_BLOCKED_ROOT_MISSING", error_reason="missing roots: " + ",".join(missing)))
+        decision = overall(rows)
+        write_csv(rows, args.output_csv)
+        write_json(rows, decision, args.output_json)
+        write_summary(rows, decision, args.summary)
+        print(json.dumps({"decision": decision, "steps": len(rows)}, sort_keys=True))
+        return 0
+
+    manifest_cmd = [
+        "python3", "-m", "cam_physgeo.data.physeditworld_manifest",
+        "--roots", *roots,
+        "--target_hours", str(args.target_hours),
+        "--output", "manifests/physeditworld_50h_all.jsonl",
+        "--report", "reports/physeditworld_50h/data_audit.csv",
+        "--summary", "reports/physeditworld_50h/data_audit_summary.md",
+    ]
+    if args.skip_video_probe:
+        manifest_cmd.append("--skip_video_probe")
+    code, out = run(manifest_cmd, args.dry_run)
+    rows.append(StepResult("manifest_audit", "PASS" if code == 0 else "FAIL", " ".join(shlex.quote(x) for x in manifest_cmd), code, output_path="manifests/physeditworld_50h_all.jsonl", error_reason="" if code == 0 else out))
+    if code != 0 or count_jsonl("manifests/physeditworld_50h_all.jsonl") == 0 and not args.dry_run:
+        if code == 0:
+            rows[-1].status = "BLOCKED"
+            rows[-1].decision = "PHYS_EDIT_WORLD_DATA_NOT_FOUND"
+            rows[-1].error_reason = "manifest audit produced zero rows"
+        decision = overall(rows)
+        write_csv(rows, args.output_csv)
+        write_json(rows, decision, args.output_json)
+        write_summary(rows, decision, args.summary)
+        print(json.dumps({"decision": decision, "steps": len(rows)}, sort_keys=True))
+        return 0
+
+    commands = [
+        ("split", ["python3", "-m", "cam_physgeo.data.physeditworld_split", "--manifest", "manifests/physeditworld_50h_all.jsonl", "--out_dir", "manifests", "--prefix", "physeditworld_50h", "--report_dir", "reports/physeditworld_50h"], "manifests/physeditworld_50h_train.jsonl"),
+        ("conversion_smoke", ["python3", "-m", "cam_physgeo.data.physeditworld_to_lingbot", "--manifest", "manifests/physeditworld_50h_train.jsonl", "--limit", str(args.limit), "--output_root", "local_assets/physeditworld_50h_lingbot_smoke", "--num_frames", "81", "--fps", "16", "--height", "480", "--width", "832", "--gravity_prompt_style", "physeditworld_v0", "--report", "reports/physeditworld_50h/conversion_smoke.csv", "--summary", "reports/physeditworld_50h/conversion_smoke_summary.md"], "reports/physeditworld_50h/conversion_smoke_summary.md"),
+        ("pipeline_gate", ["bash", "scripts/run_physeditworld_pipeline_gates.sh"], "reports/physeditworld_50h/pipeline_gate/pipeline_gate_summary.md"),
+        ("requirement_matrix", ["python3", "-m", "cam_physgeo.orchestration.physeditworld_requirement_matrix"], "reports/physeditworld_50h/requirement_matrix.md"),
+    ]
+    for name, cmd, outpath in commands:
+        code, out = run(cmd, args.dry_run)
+        rows.append(StepResult(name, "PASS" if code == 0 else "FAIL", " ".join(shlex.quote(x) for x in cmd), code, output_path=outpath, error_reason="" if code == 0 else out))
+        if code != 0:
+            break
+
+    decision = overall(rows)
+    write_csv(rows, args.output_csv)
+    write_json(rows, decision, args.output_json)
+    write_summary(rows, decision, args.summary)
+    print(json.dumps({"decision": decision, "steps": len(rows)}, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

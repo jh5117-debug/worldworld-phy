@@ -1,0 +1,2 @@
+step,status,command,exit_code,decision,output_path,error_reason
+root_input,BLOCKED,PHYS_EDITWORLD_ROOTS,,POST_MOUNT_BLOCKED_NO_ROOTS,,set PHYS_EDITWORLD_ROOTS=/path/to/selected_50h_root

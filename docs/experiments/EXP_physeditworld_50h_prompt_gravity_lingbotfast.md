@@ -345,3 +345,27 @@ Added PAI recovery and requirement-audit artifacts:
 Current matrix: 19 requirements total, 11 PASS, 7 BLOCKED, 1 MISSING. The earliest blocker remains migration/data readiness: NAS and selected PhysEditWorld 50h root are not visible.
 
 Test status: compileall PASS, direct requirement-matrix smoke PASS, pytest unavailable; no pytest PASS is claimed. No GPU, rollout, metrics scoring, visual audit, training, or DPO was run.
+
+
+## Post-Mount Continuation Update (2026-07-08T19:34:47 CST)
+
+Decision: `POST_MOUNT_BLOCKED_AT_ROOT_INPUT`.
+
+Added a safe continuation entry point for the moment the selected PhysEditWorld 50h root becomes visible:
+
+- Tool: `cam_physgeo/orchestration/physeditworld_post_mount.py`.
+- Launch script: `scripts/continue_physeditworld_after_mount.sh`.
+- Doc: `docs/physeditworld_50h_post_mount_continue.md`.
+- Test: `tests/test_physeditworld_post_mount.py`.
+- Status CSV/JSON/MD: `reports/physeditworld_50h/post_mount/post_mount_status.*` and `post_mount_summary.md`.
+
+Usage after mount:
+
+```bash
+PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h \
+bash scripts/continue_physeditworld_after_mount.sh
+```
+
+With no root provided, the smoke correctly blocks at root input. The continuation does not start warm-up training, checkpoint rollout, DPO, StageB, GRPO, broad-LoRA, deletion, or large-file push.
+
+Test status: compileall PASS, direct post-mount smoke PASS, pytest unavailable; no pytest PASS is claimed.

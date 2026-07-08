@@ -115,3 +115,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Matrix status: 19 total, 11 PASS, 7 BLOCKED, 1 MISSING.
 - Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Artifact policy: only lightweight code/docs/scripts/CSV/JSON/MD summaries are intended for push; no `local_assets`, videos/images, checkpoints, weights, or large logs.
+
+
+## PhysEditWorld Post-Mount Continuation (2026-07-08T19:34:47 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Scope: safe continuation command for rerunning Phase 1 manifest audit, split, prompt-only conversion smoke, pipeline gate, and requirement matrix after selected PhysEditWorld root is mounted.
+- Latest decision: `POST_MOUNT_BLOCKED_AT_ROOT_INPUT` with no `PHYS_EDITWORLD_ROOTS` set.
+- Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Artifact policy: only lightweight code/docs/scripts/CSV/JSON/MD summaries are intended for push; no `local_assets`, videos/images, checkpoints, weights, or large logs.

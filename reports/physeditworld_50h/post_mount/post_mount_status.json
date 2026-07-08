@@ -1,0 +1,14 @@
+{
+  "decision": "POST_MOUNT_BLOCKED_AT_ROOT_INPUT",
+  "steps": [
+    {
+      "command": "PHYS_EDITWORLD_ROOTS",
+      "decision": "POST_MOUNT_BLOCKED_NO_ROOTS",
+      "error_reason": "set PHYS_EDITWORLD_ROOTS=/path/to/selected_50h_root",
+      "exit_code": null,
+      "output_path": "",
+      "status": "BLOCKED",
+      "step": "root_input"
+    }
+  ]
+}
