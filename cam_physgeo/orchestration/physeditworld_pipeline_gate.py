@@ -12,6 +12,7 @@ from typing import Any
 BLOCKED_PREFIXES = ("BLOCKED",)
 READY_READINESS = "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT"
 READY_ASSET_VALIDATION = "MIGRATION_ASSET_VALIDATION_PASS"
+READY_APPROVED_COPY = {"APPROVED_COPY_DRYRUN_READY", "APPROVED_COPY_EXECUTED"}
 
 
 @dataclass
@@ -136,9 +137,16 @@ def main(argv: list[str] | None = None) -> int:
         rows.append(PhaseStatus("readiness", decision, status, "reports/migration/physeditworld_pai_readiness.json", next_action="mount NAS and selected PhysEditWorld 50h root" if status == "BLOCKED" else "check migration asset validation", error_reason=error))
 
     asset_decision, asset_status, asset_error = read_json_decision("reports/migration/migration_asset_validation.json")
-    rows.append(PhaseStatus("asset_validation", asset_decision, asset_status, "reports/migration/migration_asset_validation.json", next_action="mount NAS and rerun migration asset validation" if asset_status == "BLOCKED" else "run baseline gate", error_reason=asset_error))
+    rows.append(PhaseStatus("asset_validation", asset_decision, asset_status, "reports/migration/migration_asset_validation.json", next_action="mount NAS and rerun migration asset validation" if asset_status == "BLOCKED" else "check approved-only copy dry-run", error_reason=asset_error))
 
-    if any(row.phase == "readiness" and row.decision != READY_READINESS for row in rows) or asset_decision != READY_ASSET_VALIDATION:
+    copy_decision, copy_status, copy_error = read_json_decision("reports/migration/approved_copy_status.json")
+    rows.append(PhaseStatus("approved_copy", copy_decision, copy_status, "reports/migration/approved_copy_status.json", next_action="approve required restore rows and rerun approved-copy dry-run" if copy_status == "BLOCKED" else "run baseline gate", error_reason=copy_error))
+
+    if (
+        any(row.phase == "readiness" and row.decision != READY_READINESS for row in rows)
+        or asset_decision != READY_ASSET_VALIDATION
+        or copy_decision not in READY_APPROVED_COPY
+    ):
         decision = pipeline_decision(rows)
         write_csv(rows, args.output_csv)
         write_json(rows, decision, args.output_json)

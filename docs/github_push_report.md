@@ -174,3 +174,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: compileall PASS, direct approved-copy smoke PASS, direct unit smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Artifact policy: only lightweight code/docs/scripts/CSV/JSON/MD summaries are intended for push; no local_assets, videos/images, checkpoints, weights, or large logs.
 
+## PhysEditWorld Pipeline Gate Approved-Copy Integration (2026-07-08T20:40:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: pipeline gate now reports approved-only copy executor status alongside readiness and migration asset validation.
+- Latest decision: PIPELINE_BLOCKED_AT_READINESS.
+- Phase rows: readiness=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED, asset_validation=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED, approved_copy=APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS.
+- Test status: compileall PASS, direct pipeline smoke PASS, direct unit smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+

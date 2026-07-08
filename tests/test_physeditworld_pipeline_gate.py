@@ -35,3 +35,11 @@ def test_pipeline_blocks_at_asset_validation_when_readiness_passes():
     ])
     assert decision == "PIPELINE_BLOCKED_AT_ASSET_VALIDATION"
 
+def test_pipeline_blocks_at_approved_copy_when_prior_phase_passes():
+    decision = pipeline_decision([
+        PhaseStatus("readiness", "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT", "PASS", "x"),
+        PhaseStatus("asset_validation", "MIGRATION_ASSET_VALIDATION_PASS", "PASS", "y"),
+        PhaseStatus("approved_copy", "APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS", "BLOCKED", "z"),
+    ])
+    assert decision == "PIPELINE_BLOCKED_AT_APPROVED_COPY"
+

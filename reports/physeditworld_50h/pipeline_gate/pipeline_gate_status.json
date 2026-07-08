@@ -16,7 +16,15 @@
       "phase": "asset_validation",
       "source": "reports/migration/migration_asset_validation.json",
       "status": "BLOCKED"
+    },
+    {
+      "decision": "APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS",
+      "error_reason": "",
+      "next_action": "approve required restore rows and rerun approved-copy dry-run",
+      "phase": "approved_copy",
+      "source": "reports/migration/approved_copy_status.json",
+      "status": "BLOCKED"
     }
   ],
-  "timestamp": "2026-07-08T12:09:56.203783+00:00"
+  "timestamp": "2026-07-08T12:37:39.380122+00:00"
 }

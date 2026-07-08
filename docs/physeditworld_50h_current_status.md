@@ -408,3 +408,17 @@ Current evidence:
 
 This closes the migration safety loop: candidate manifests produce a review template, the review template defaults to no approvals, and the executor refuses to copy until explicit approvals exist.
 
+## Pipeline Gate Approved-Copy Update (2026-07-08T20:40:00 CST)
+
+Decision remains: PIPELINE_BLOCKED_AT_READINESS.
+
+The safe pipeline gate now reads three Phase 0 migration states before any baseline, warm-up, pair construction, or tiny DPO step:
+
+- readiness: PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED.
+- asset_validation: MIGRATION_ASSET_VALIDATION_NAS_BLOCKED.
+- approved_copy: APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS.
+- Pipeline phases reported: 3.
+- Summary: reports/physeditworld_50h/pipeline_gate/pipeline_gate_summary.md.
+
+This aligns the live pipeline gate with the full migration safety chain. No copy, GPU use, rollout, metric scoring, visual audit, training, or DPO was run.
+

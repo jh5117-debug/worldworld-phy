@@ -8,6 +8,8 @@ Decision: `PIPELINE_BLOCKED_AT_READINESS`
   - next: mount NAS and selected PhysEditWorld 50h root
 - `asset_validation`: `MIGRATION_ASSET_VALIDATION_NAS_BLOCKED` from `reports/migration/migration_asset_validation.json`
   - next: mount NAS and rerun migration asset validation
+- `approved_copy`: `APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS` from `reports/migration/approved_copy_status.json`
+  - next: approve required restore rows and rerun approved-copy dry-run
 
 ## Safety
 
