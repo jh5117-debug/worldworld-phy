@@ -124,3 +124,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Latest decision: `POST_MOUNT_BLOCKED_AT_ROOT_INPUT` with no `PHYS_EDITWORLD_ROOTS` set.
 - Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Artifact policy: only lightweight code/docs/scripts/CSV/JSON/MD summaries are intended for push; no `local_assets`, videos/images, checkpoints, weights, or large logs.
+
+## PhysEditWorld Migration Asset Validation (2026-07-08T19:58:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: read-only migration asset validation for required weight/data manifests, NAS target visibility, and guarded rsync execute script.
+- Latest decision: MIGRATION_ASSET_VALIDATION_NAS_BLOCKED.
+- Evidence: reports/migration/migration_asset_validation_summary.md checks 800 manifest rows; execute guard PASS; NAS /mnt/workspace/hj/nas_hj is missing.
+- Test status: compileall PASS, direct validator smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+- Artifact policy: only lightweight code/docs/scripts/CSV/JSON/MD summaries are intended for push; no local_assets, videos/images, checkpoints, weights, or large logs.
+

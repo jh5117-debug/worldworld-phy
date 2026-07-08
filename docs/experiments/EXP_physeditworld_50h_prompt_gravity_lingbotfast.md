@@ -369,3 +369,27 @@ bash scripts/continue_physeditworld_after_mount.sh
 With no root provided, the smoke correctly blocks at root input. The continuation does not start warm-up training, checkpoint rollout, DPO, StageB, GRPO, broad-LoRA, deletion, or large-file push.
 
 Test status: compileall PASS, direct post-mount smoke PASS, pytest unavailable; no pytest PASS is claimed.
+
+## Migration Asset Validation Update (2026-07-08T19:58:00 CST)
+
+Decision: MIGRATION_ASSET_VALIDATION_NAS_BLOCKED.
+
+A read-only migration asset validator was added and run before any H20 to PAI/NAS copy:
+
+- Tool: cam_physgeo/orchestration/migration_asset_validator.py.
+- Wrapper: scripts/migration/validate_physeditworld_migration_assets.sh.
+- Doc: docs/physeditworld_50h_migration_asset_validation.md.
+- CSV: reports/migration/migration_asset_validation.csv.
+- JSON: reports/migration/migration_asset_validation.json.
+- Summary: reports/migration/migration_asset_validation_summary.md.
+
+Validation evidence:
+
+- Manifest rows checked: 800 total, 300 weights rows and 500 data rows.
+- Present file bytes counted: 5.97 GB.
+- Execute script guard: PASS; MIGRATION_APPROVED=1 is required.
+- NAS target /mnt/workspace/hj/nas_hj: BLOCKED_MISSING.
+- Safety: no files copied, no files deleted, no large directory recursive hashing, no local_assets payload.
+
+This confirms migration execution is still blocked on the NAS mount/visibility, not on the validator itself. No GPU, rollout, warm-up, pair construction, or DPO was run.
+

@@ -1,0 +1,46 @@
+{
+  "decision": "MIGRATION_ASSET_VALIDATION_NAS_BLOCKED",
+  "execute_guard": {
+    "exists": true,
+    "has_local_assets_exclusion_note": true,
+    "has_migration_approved_guard": true,
+    "path": "scripts/migration/rsync_h20_to_pai_execute.sh",
+    "status": "PASS"
+  },
+  "nas": {
+    "error_reason": "",
+    "exists": false,
+    "free_bytes": null,
+    "is_dir": false,
+    "path": "/mnt/workspace/hj/nas_hj",
+    "readable": false,
+    "status": "BLOCKED_MISSING",
+    "writable": false
+  },
+  "safety": {
+    "copied_files": false,
+    "deleted_files": false,
+    "hashed_large_files": false,
+    "local_assets_included": false
+  },
+  "summary": {
+    "by_file_type": {
+      "dir": 237,
+      "file": 559,
+      "missing": 2,
+      "symlink": 2
+    },
+    "by_kind": {
+      "data": 500,
+      "weights": 300
+    },
+    "by_status": {
+      "DIR_PRESENT_NOT_HASHED": 237,
+      "FILE_PRESENT_NO_SHA256": 4,
+      "FILE_PRESENT_SHA256_OK": 557,
+      "MISSING_ON_DISK": 2
+    },
+    "rows": 800,
+    "total_present_file_bytes": 6415095518
+  }
+}
