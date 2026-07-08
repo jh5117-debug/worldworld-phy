@@ -640,3 +640,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Handoff, requirement matrix, and completion audit now track the external unblock packet as Phase 0 evidence.
 - Validation: `bash -n` PASS, `py_compile` PASS, targeted `compileall` PASS, direct external/restore/handoff/matrix/completion smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
 - Safety: CPU/IO only; no GPU use, no training, no rollout, no DPO, no rsync execute, no copy/delete, no local_assets/video/weights push.
+
+## PhysEditWorld Phase 0 External Unblock Packet Integration (2026-07-09T06:45:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `e46e10e Track external unblock packet in Phase0 preflight`.
+- Scope: Phase0 preflight now runs and tracks `physeditworld_external_unblock_packet` as an explicit final migration-readiness step.
+- Latest Phase0 decision: `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES` with 15 steps; the external unblock packet step records `PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT` / `BLOCKED`.
+- Restore/handoff decisions remain blocked by missing NAS/root: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT`, `PAI_HANDOFF_BLOCKED_NAS_OR_ROOT`.
+- Requirement/completion decisions remain `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS` and `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`.
+- Test status: bash syntax PASS, py_compile PASS, targeted compileall PASS, direct test-function smoke PASS, direct decision smoke PASS, git diff check PASS; pytest unavailable (`No module named pytest`), so no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, no videos/images/checkpoints/weights/large logs pushed.
