@@ -521,3 +521,11 @@ git push -u origin cam-physgeo-dpo-refactor
 - Validation: compileall PASS, direct smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
 - Safety: CPU/IO only; no GPU use, no training, no rollout, no deletion, no local_assets/video/weights push.
 
+## PhysEditWorld Phase0 Preflight Handoff Chain (2026-07-09T03:24:00 CST)
+
+- Extended `cam_physgeo/orchestration/physeditworld_phase0_preflight.py` to run the complete root/migration handoff chain: root candidate ranking, selected-root schema probe, selected-root lock, root intake, locked handoff, PAI readiness, migration asset validation, approved-copy dry-run status, PAI handoff, requirement matrix, and pipeline gate.
+- Added pass decisions for `PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT`, `PHYS_EDITWORLD_ROOT_INTAKE_LOCKED_READY_FOR_HANDOFF`, `LOCKED_HANDOFF_PHASE12_READY_FOR_BASELINE_GATE`, and `PAI_HANDOFF_READY_FOR_POST_MOUNT_CONTINUE`.
+- Current live Phase0 decision remains `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES` because no strong selected PhysEditWorld 50h root is visible and `PHYS_EDITWORLD_ROOTS` is unset.
+- Validation: compileall PASS, direct smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
+- Safety: CPU/IO only; no rsync execute, no data copy, no deletion, no GPU use, no training, no rollout, no local_assets/video/weights push.
+

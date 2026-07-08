@@ -4,6 +4,11 @@ from cam_physgeo.orchestration.physeditworld_phase0_preflight import PreflightSt
 def test_phase0_blocks_at_readiness_first():
     rows = [
         PreflightStep("empty_manifest_init", "cmd", 0, "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", "PASS", "init"),
+        PreflightStep("physeditworld_root_candidates_ranked", "cmd", 0, "PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG", "PASS", "root_candidates"),
+        PreflightStep("physeditworld_root_schema_probe", "cmd", 0, "PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT", "PASS", "schema"),
+        PreflightStep("physeditworld_selected_root_status", "cmd", 0, "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED", "PASS", "root"),
+        PreflightStep("physeditworld_root_intake", "cmd", 0, "PHYS_EDITWORLD_ROOT_INTAKE_LOCKED_READY_FOR_HANDOFF", "PASS", "intake"),
+        PreflightStep("locked_handoff_sequence", "cmd", 0, "LOCKED_HANDOFF_PHASE12_READY_FOR_BASELINE_GATE", "PASS", "handoff"),
         PreflightStep("physeditworld_pai_readiness", "cmd", 0, "PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED", "BLOCKED", "x"),
         PreflightStep("migration_asset_validation", "cmd", 0, "MIGRATION_ASSET_VALIDATION_NAS_BLOCKED", "BLOCKED", "y"),
     ]
@@ -13,6 +18,11 @@ def test_phase0_blocks_at_readiness_first():
 def test_phase0_blocks_at_approved_copy_after_prior_passes():
     rows = [
         PreflightStep("empty_manifest_init", "cmd", 0, "PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED", "PASS", "init"),
+        PreflightStep("physeditworld_root_candidates_ranked", "cmd", 0, "PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG", "PASS", "root_candidates"),
+        PreflightStep("physeditworld_root_schema_probe", "cmd", 0, "PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT", "PASS", "schema"),
+        PreflightStep("physeditworld_selected_root_status", "cmd", 0, "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED", "PASS", "root"),
+        PreflightStep("physeditworld_root_intake", "cmd", 0, "PHYS_EDITWORLD_ROOT_INTAKE_LOCKED_READY_FOR_HANDOFF", "PASS", "intake"),
+        PreflightStep("locked_handoff_sequence", "cmd", 0, "LOCKED_HANDOFF_PHASE12_READY_FOR_BASELINE_GATE", "PASS", "handoff"),
         PreflightStep("physeditworld_pai_readiness", "cmd", 0, "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT", "PASS", "x"),
         PreflightStep("migration_asset_validation", "cmd", 0, "MIGRATION_ASSET_VALIDATION_PASS", "PASS", "y"),
         PreflightStep("approved_copy_manifest_template", "cmd", 0, "COPY_PLAN_REVIEW_REQUIRED", "REVIEW_REQUIRED", "z"),
@@ -27,3 +37,20 @@ def test_status_for_review_required():
 
 def test_status_for_manifest_init_pass():
     assert status_for("PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", 0) == "PASS"
+
+
+def test_phase0_blocks_at_root_schema_before_readiness():
+    rows = [
+        PreflightStep("empty_manifest_init", "cmd", 0, "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", "PASS", "init"),
+        PreflightStep("physeditworld_root_candidates_ranked", "cmd", 0, "PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG", "PASS", "root_candidates"),
+        PreflightStep("physeditworld_root_schema_probe", "cmd", 0, "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT", "BLOCKED", "schema"),
+        PreflightStep("physeditworld_pai_readiness", "cmd", 0, "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT", "PASS", "readiness"),
+    ]
+    assert overall_decision(rows) == "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_SCHEMA_PROBE"
+
+
+def test_phase0_accepts_locked_handoff_and_pai_handoff_pass_decisions():
+    assert status_for("PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT", 0) == "PASS"
+    assert status_for("PHYS_EDITWORLD_ROOT_INTAKE_LOCKED_READY_FOR_HANDOFF", 0) == "PASS"
+    assert status_for("LOCKED_HANDOFF_PHASE12_READY_FOR_BASELINE_GATE", 0) == "PASS"
+    assert status_for("PAI_HANDOFF_READY_FOR_POST_MOUNT_CONTINUE", 0) == "PASS"

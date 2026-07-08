@@ -26,7 +26,11 @@ PASS_DECISIONS = {
     "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT",
     "MIGRATION_ASSET_VALIDATION_PASS",
     "PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG",
+    "PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT",
     "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED",
+    "PHYS_EDITWORLD_ROOT_INTAKE_LOCKED_READY_FOR_HANDOFF",
+    "LOCKED_HANDOFF_PHASE12_READY_FOR_BASELINE_GATE",
+    "PAI_HANDOFF_READY_FOR_POST_MOUNT_CONTINUE",
     "APPROVED_COPY_DRYRUN_READY",
     "APPROVED_COPY_EXECUTED",
     "PHYS_EDIT_WORLD_PIPELINE_REQUIREMENTS_PASS",
@@ -77,12 +81,16 @@ def run_command(cmd: list[str], evidence: str, dry_run: bool) -> PreflightStep:
 def overall_decision(rows: list[PreflightStep]) -> str:
     order = [
         ("empty_manifest_init", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_MANIFEST_INIT"),
-        ("physeditworld_pai_readiness", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS"),
         ("physeditworld_root_candidates_ranked", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES"),
+        ("physeditworld_root_schema_probe", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_SCHEMA_PROBE"),
         ("physeditworld_selected_root_status", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_SELECTION"),
+        ("physeditworld_root_intake", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_INTAKE"),
+        ("locked_handoff_sequence", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_LOCKED_HANDOFF"),
+        ("physeditworld_pai_readiness", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS"),
         ("migration_asset_validation", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ASSET_VALIDATION"),
         ("approved_copy_manifest_template", "PHYS_EDITWORLD_PHASE0_REVIEW_COPY_PLAN"),
         ("approved_copy_status", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_APPROVED_COPY"),
+        ("pai_handoff_status", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_PAI_HANDOFF"),
         ("requirement_matrix", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_REQUIREMENT_MATRIX"),
         ("pipeline_gate_status", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_PIPELINE_GATE"),
     ]
@@ -154,12 +162,16 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     commands = [
         (["bash", "scripts/migration/init_physeditworld_empty_manifests.sh"], "reports/physeditworld_50h/manifest_init/empty_manifest_init.json"),
-        (["bash", "scripts/migration/check_physeditworld_pai_readiness.sh"], "reports/migration/physeditworld_pai_readiness.json"),
         (["bash", "scripts/migration/rank_physeditworld_root_candidates.sh"], "reports/migration/physeditworld_root_candidates_ranked.json"),
+        (["bash", "scripts/migration/probe_physeditworld_root_schema.sh"], "reports/migration/physeditworld_root_schema_probe.json"),
         (["bash", "scripts/migration/select_physeditworld_root.sh"], "reports/migration/physeditworld_selected_root_status.json"),
+        (["bash", "scripts/migration/prepare_physeditworld_root_intake.sh"], "reports/migration/physeditworld_root_intake.json"),
+        (["bash", "scripts/migration/run_physeditworld_locked_handoff_sequence.sh"], "reports/migration/locked_handoff_sequence.json"),
+        (["bash", "scripts/migration/check_physeditworld_pai_readiness.sh"], "reports/migration/physeditworld_pai_readiness.json"),
         (["bash", "scripts/migration/validate_physeditworld_migration_assets.sh"], "reports/migration/migration_asset_validation.json"),
         (["bash", "scripts/migration/build_physeditworld_migration_copy_plan.sh"], "reports/migration/approved_copy_manifest_template.json"),
         (["bash", "scripts/migration/run_approved_migration_copy.sh"], "reports/migration/approved_copy_status.json"),
+        (["bash", "scripts/migration/verify_pai_physeditworld_handoff.sh"], "reports/migration/pai_handoff_status.json"),
         (["python3", "-m", "cam_physgeo.orchestration.physeditworld_requirement_matrix"], "reports/physeditworld_50h/requirement_matrix.json"),
         (["python3", "-m", "cam_physgeo.orchestration.physeditworld_pipeline_gate"], "reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json"),
     ]

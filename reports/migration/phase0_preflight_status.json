@@ -1,5 +1,5 @@
 {
-  "decision": "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS",
+  "decision": "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES",
   "steps": [
     {
       "command": "bash scripts/migration/init_physeditworld_empty_manifests.sh",
@@ -11,15 +11,6 @@
       "step": "empty_manifest_init"
     },
     {
-      "command": "bash scripts/migration/check_physeditworld_pai_readiness.sh",
-      "decision": "PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED",
-      "error_reason": "",
-      "evidence": "reports/migration/physeditworld_pai_readiness.json",
-      "exit_code": 0,
-      "status": "BLOCKED",
-      "step": "physeditworld_pai_readiness"
-    },
-    {
       "command": "bash scripts/migration/rank_physeditworld_root_candidates.sh",
       "decision": "PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG",
       "error_reason": "",
@@ -29,6 +20,15 @@
       "step": "physeditworld_root_candidates_ranked"
     },
     {
+      "command": "bash scripts/migration/probe_physeditworld_root_schema.sh",
+      "decision": "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT",
+      "error_reason": "",
+      "evidence": "reports/migration/physeditworld_root_schema_probe.json",
+      "exit_code": 0,
+      "status": "UNKNOWN",
+      "step": "physeditworld_root_schema_probe"
+    },
+    {
       "command": "bash scripts/migration/select_physeditworld_root.sh",
       "decision": "PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT",
       "error_reason": "",
@@ -36,6 +36,33 @@
       "exit_code": 0,
       "status": "BLOCKED",
       "step": "physeditworld_selected_root_status"
+    },
+    {
+      "command": "bash scripts/migration/prepare_physeditworld_root_intake.sh",
+      "decision": "PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT",
+      "error_reason": "",
+      "evidence": "reports/migration/physeditworld_root_intake.json",
+      "exit_code": 0,
+      "status": "UNKNOWN",
+      "step": "physeditworld_root_intake"
+    },
+    {
+      "command": "bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh",
+      "decision": "LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE",
+      "error_reason": "",
+      "evidence": "reports/migration/locked_handoff_sequence.json",
+      "exit_code": 0,
+      "status": "BLOCKED",
+      "step": "locked_handoff_sequence"
+    },
+    {
+      "command": "bash scripts/migration/check_physeditworld_pai_readiness.sh",
+      "decision": "PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED",
+      "error_reason": "",
+      "evidence": "reports/migration/physeditworld_pai_readiness.json",
+      "exit_code": 0,
+      "status": "BLOCKED",
+      "step": "physeditworld_pai_readiness"
     },
     {
       "command": "bash scripts/migration/validate_physeditworld_migration_assets.sh",
@@ -65,6 +92,15 @@
       "step": "approved_copy_status"
     },
     {
+      "command": "bash scripts/migration/verify_pai_physeditworld_handoff.sh",
+      "decision": "PAI_HANDOFF_BLOCKED_NAS_OR_ROOT",
+      "error_reason": "",
+      "evidence": "reports/migration/pai_handoff_status.json",
+      "exit_code": 0,
+      "status": "BLOCKED",
+      "step": "pai_handoff_status"
+    },
+    {
       "command": "python3 -m cam_physgeo.orchestration.physeditworld_requirement_matrix",
       "decision": "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS",
       "error_reason": "",
@@ -75,7 +111,7 @@
     },
     {
       "command": "python3 -m cam_physgeo.orchestration.physeditworld_pipeline_gate",
-      "decision": "PIPELINE_BLOCKED_AT_READINESS",
+      "decision": "PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE",
       "error_reason": "",
       "evidence": "reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json",
       "exit_code": 0,
