@@ -636,3 +636,12 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Docs updated: `docs/dpo_failure_root_cause_report.md`, `docs/dpo_trainer_design.md`, `docs/metrics.md`.
 - Key correction: E07/E09/E10 scalar-positive schemes failed true V2V-5 visual gates; V-JEPA2 is now recorded as a real high-recall drift monitor, not a standalone approval metric.
 - Artifact policy: no `local_assets`, MP4/JPG/PNG, checkpoints, weights, stdout logs, or run scripts were staged or pushed.
+
+## v14 Completion Test Smoke Push (2026-07-08)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`.
+- Commit: `950099d Record v14 completion doc test smoke`.
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Validation: `python3 -m compileall cam_physgeo src tests` PASS and direct import smoke for v14 modules PASS after completion-audit docs.
+- Pytest status: still unavailable in the active H20 shell; no pytest PASS is claimed.
+- Artifact policy: only lightweight logs/docs were pushed; no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged.
