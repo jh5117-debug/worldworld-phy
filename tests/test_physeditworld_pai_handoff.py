@@ -53,12 +53,15 @@ def test_required_files_include_latest_handoff_tools():
     assert "scripts/migration/select_physeditworld_root.sh" in required
     assert "scripts/migration/run_physeditworld_locked_handoff_sequence.sh" in required
     assert "scripts/migration/run_physeditworld_completion_audit.sh" in required
+    assert "scripts/migration/prepare_physeditworld_root_intake.sh" in required
     assert "cam_physgeo/orchestration/physeditworld_completion_audit.py" in required
+    assert "cam_physgeo/orchestration/physeditworld_root_intake.py" in required
 
 
 def test_expected_reports_include_root_lock_and_completion_audit():
     expected = set(EXPECTED_REPORTS)
     assert "reports/migration/physeditworld_selected_root_status.json" in expected
+    assert "reports/migration/physeditworld_root_intake.json" in expected
     assert "reports/migration/locked_handoff_sequence.json" in expected
     assert "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json" in expected
 

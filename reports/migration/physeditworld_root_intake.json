@@ -1,0 +1,69 @@
+{
+  "checks": [
+    {
+      "decision": "PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG",
+      "detail": "no automatically usable PhysEditWorld selected-50h root is visible",
+      "name": "root_candidates",
+      "next_action": "mount/provide the real selected 50h root and set PHYS_EDITWORLD_ROOTS",
+      "path": "reports/migration/physeditworld_root_candidates_ranked.json",
+      "status": "BLOCKED"
+    },
+    {
+      "decision": "ROOTS_MISSING_OR_UNSET",
+      "detail": "roots=0",
+      "name": "root_input",
+      "next_action": "export PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h",
+      "path": "",
+      "status": "BLOCKED"
+    },
+    {
+      "decision": "PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT",
+      "detail": "root lock not written",
+      "name": "root_selection_lock",
+      "next_action": "PHYS_EDITWORLD_ROOTS=/path/to/root bash scripts/migration/select_physeditworld_root.sh",
+      "path": "reports/migration/physeditworld_selected_root_status.json",
+      "status": "BLOCKED"
+    },
+    {
+      "decision": "LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION",
+      "detail": "safe locked handoff is not complete",
+      "name": "locked_handoff",
+      "next_action": "PHYS_EDITWORLD_ROOTS=/path/to/root bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh",
+      "path": "reports/migration/locked_handoff_sequence.json",
+      "status": "BLOCKED"
+    },
+    {
+      "decision": "PAI_HANDOFF_BLOCKED_NAS_OR_ROOT",
+      "detail": "NAS/root/manifests not all ready",
+      "name": "pai_handoff",
+      "next_action": "mount NAS/root and rerun verify_pai_physeditworld_handoff.sh",
+      "path": "reports/migration/pai_handoff_status.json",
+      "status": "BLOCKED"
+    },
+    {
+      "decision": "STRICT_ROWS_EMPTY",
+      "detail": "all=0 train=0",
+      "name": "strict_manifest_rows",
+      "next_action": "run manifest audit and replay-group split after root lock",
+      "path": "manifests/physeditworld_50h_all.jsonl;manifests/physeditworld_50h_train.jsonl",
+      "status": "BLOCKED"
+    },
+    {
+      "decision": "LINGBOT_ROWS_EMPTY",
+      "detail": "rows=0",
+      "name": "lingbot_train_rows",
+      "next_action": "run prompt-only gravity conversion after strict split",
+      "path": "manifests/physeditworld_50h_lingbot_train.jsonl",
+      "status": "BLOCKED"
+    },
+    {
+      "decision": "PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION",
+      "detail": "objective remains incomplete",
+      "name": "completion_audit",
+      "next_action": "bash scripts/migration/run_physeditworld_completion_audit.sh",
+      "path": "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json",
+      "status": "BLOCKED"
+    }
+  ],
+  "decision": "PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT"
+}

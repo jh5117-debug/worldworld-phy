@@ -4,7 +4,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 
 ## Status Counts
 
-- `BLOCKED`: 13
+- `BLOCKED`: 14
 - `MISSING`: 1
 - `PASS`: 12
 
@@ -38,6 +38,10 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - evidence: `reports/migration/locked_handoff_sequence.json`
   - detail: decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION
   - next: set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence
+- `phase0_migration` / selected-root intake handoff report: `BLOCKED`
+  - evidence: `reports/migration/physeditworld_root_intake.json`
+  - detail: decision=PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT
+  - next: provide selected root and rerun root intake/handoff
 - `phase0_migration` / selected-root lock: `BLOCKED`
   - evidence: `reports/migration/physeditworld_selected_root_status.json`
   - detail: decision=PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT

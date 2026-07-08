@@ -1,5 +1,6 @@
 from cam_physgeo.orchestration.physeditworld_completion_audit import (
     AuditRow,
+    build_rows,
     overall_decision,
     status_from_decision,
 )
@@ -11,6 +12,7 @@ def test_status_from_decision_pass():
 
 def test_status_from_decision_blocked():
     assert status_from_decision("BASELINE_BLOCKED_EMPTY_MANIFEST", {"BASELINE_ROLLOUT_PASS"}) == "BLOCKED"
+    assert status_from_decision("PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT", {"PHYS_EDITWORLD_ROOT_INTAKE_LOCKED_READY_FOR_HANDOFF"}) == "BLOCKED"
 
 
 def test_status_from_decision_missing():
@@ -33,3 +35,9 @@ def test_overall_complete_when_all_rows_pass():
         AuditRow("safety", "forbidden", "PASS", "git"),
     ]
     assert overall_decision(rows) == "PHYS_EDITWORLD_OBJECTIVE_COMPLETE"
+
+
+def test_build_rows_includes_root_intake_report():
+    rows = build_rows()
+    requirements = {row.requirement for row in rows}
+    assert "selected-root intake handoff report" in requirements

@@ -28,6 +28,7 @@ REQUIRED_FILES = (
     "scripts/migration/run_physeditworld_phase0_preflight.sh",
     "scripts/migration/run_physeditworld_locked_handoff_sequence.sh",
     "scripts/migration/run_physeditworld_completion_audit.sh",
+    "scripts/migration/prepare_physeditworld_root_intake.sh",
     "scripts/migration/verify_pai_physeditworld_handoff.sh",
     "scripts/continue_physeditworld_after_mount.sh",
     "scripts/run_physeditworld_pipeline_gates.sh",
@@ -39,6 +40,7 @@ REQUIRED_FILES = (
     "cam_physgeo/orchestration/physeditworld_requirement_matrix.py",
     "cam_physgeo/orchestration/physeditworld_locked_handoff.py",
     "cam_physgeo/orchestration/physeditworld_completion_audit.py",
+    "cam_physgeo/orchestration/physeditworld_root_intake.py",
     "cam_physgeo/orchestration/physeditworld_pai_handoff.py",
 )
 
@@ -47,6 +49,7 @@ EXPECTED_REPORTS = (
     "reports/migration/phase0_preflight_summary.md",
     "reports/migration/physeditworld_pai_readiness.json",
     "reports/migration/physeditworld_root_candidates_ranked.json",
+    "reports/migration/physeditworld_root_intake.json",
     "reports/migration/physeditworld_selected_root_status.json",
     "reports/migration/locked_handoff_sequence.json",
     "reports/migration/migration_asset_validation.json",
