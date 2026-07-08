@@ -624,3 +624,19 @@ git push -u origin cam-physgeo-dpo-refactor
 - Live decisions remain blocked as intended: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT` and `PAI_HANDOFF_BLOCKED_NAS_OR_ROOT` because NAS and selected `PHYS_EDITWORLD_ROOTS` are not visible.
 - Validation: `bash -n` PASS, `py_compile` PASS, targeted `compileall` PASS, direct restore/handoff/restore smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
 - Safety: CPU/IO only; no GPU use, no training, no rollout, no DPO, no rsync execute, no copy/delete, no local_assets/video/weights push.
+
+## PhysEditWorld External NAS/Root Unblock Packet (2026-07-09T06:24:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `152b634 Add PhysEditWorld external unblock packet`.
+- Scope: added a CPU/IO-only external unblock packet writer for the current NAS/root blocker.
+- New artifacts:
+  - `cam_physgeo/orchestration/physeditworld_external_unblock_packet.py`
+  - `scripts/migration/write_physeditworld_external_unblock_packet.sh`
+  - `reports/migration/physeditworld_external_unblock_packet.json`
+  - `reports/migration/physeditworld_external_unblock_packet.md`
+- The packet records required selected-root evidence: video/frames, action trace, camera trajectory/poses, intrinsics, gravity labels, and replay-group/matched-replay metadata.
+- Live decision: `PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT`; current blockers include `NAS_TARGET_MISSING`, `PHYS_EDITWORLD_ROOTS_UNSET`, `NO_STRONG_ROOT_CANDIDATE_VISIBLE`, `ROOT_SCHEMA_PROBE_WAITING_FOR_ROOT`, and backend scaffold readiness.
+- Handoff, requirement matrix, and completion audit now track the external unblock packet as Phase 0 evidence.
+- Validation: `bash -n` PASS, `py_compile` PASS, targeted `compileall` PASS, direct external/restore/handoff/matrix/completion smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
+- Safety: CPU/IO only; no GPU use, no training, no rollout, no DPO, no rsync execute, no copy/delete, no local_assets/video/weights push.
