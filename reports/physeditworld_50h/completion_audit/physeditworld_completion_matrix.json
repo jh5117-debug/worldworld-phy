@@ -35,6 +35,14 @@
     },
     {
       "detail": "file exists",
+      "evidence": "scripts/migration/collect_physeditworld_migration_audit_bundle.sh",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "migration audit collector wrapper",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
       "evidence": "reports/migration/required_weights_manifest.tsv",
       "next_action": "",
       "phase": "phase0_migration",
@@ -111,6 +119,14 @@
       "next_action": "",
       "phase": "phase0_migration",
       "requirement": "external unblock-packet summary",
+      "status": "PASS"
+    },
+    {
+      "detail": "decision=MIGRATION_AUDIT_BUNDLE_READY",
+      "evidence": "reports/migration/migration_audit_bundle.json",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "H20 read-only migration audit bundle",
       "status": "PASS"
     },
     {

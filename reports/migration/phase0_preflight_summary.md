@@ -7,6 +7,9 @@ Decision: `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES`
 - `empty_manifest_init`: `PASS` / `PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT`
   - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
   - command: `bash scripts/migration/init_physeditworld_empty_manifests.sh`
+- `migration_audit_bundle`: `PASS` / `MIGRATION_AUDIT_BUNDLE_READY`
+  - evidence: `reports/migration/migration_audit_bundle.json`
+  - command: `bash scripts/migration/collect_physeditworld_migration_audit_bundle.sh`
 - `physeditworld_root_candidates_ranked`: `BLOCKED` / `PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG`
   - evidence: `reports/migration/physeditworld_root_candidates_ranked.json`
   - command: `bash scripts/migration/rank_physeditworld_root_candidates.sh`

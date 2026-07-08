@@ -1,11 +1,91 @@
  M .gitignore
+ M cam_physgeo/orchestration/physeditworld_completion_audit.py
+ M cam_physgeo/orchestration/physeditworld_phase0_preflight.py
+ M cam_physgeo/orchestration/physeditworld_requirement_matrix.py
  M configs/train_stage2_phycsgo_act.yaml
  D data/audit/csgo_human_eval_template.csv
  D data/audit/csgo_physics_taxonomy_v1.md
  D logs/.gitkeep
+ M reports/migration/df_h20_pai.txt
+ M reports/migration/environment_no_builds.yml
+ M reports/migration/git_log_30.txt
+ M reports/migration/git_status_short.txt
+ M reports/migration/migration_date.txt
+ M reports/migration/nvidia_smi.txt
+ M reports/migration/pai_handoff_status.csv
+ M reports/migration/pai_handoff_status.json
+ M reports/migration/pai_handoff_summary.md
+ M reports/migration/pai_restore_packet.json
+ M reports/migration/pai_restore_packet.md
+ M reports/migration/phase0_preflight_status.csv
+ M reports/migration/phase0_preflight_status.json
+ M reports/migration/phase0_preflight_summary.md
+ M reports/migration/physeditworld_external_unblock_packet.json
+ M reports/migration/physeditworld_external_unblock_packet.md
+ M reports/migration/physeditworld_root_intake.json
+ M reports/migration/physeditworld_root_intake.md
+ M reports/migration/python_path.txt
+ M reports/migration/python_version.txt
+ M reports/migration/torch_cuda_info.txt
+ M reports/migration/untracked_large_files.tsv
+ M reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.csv
+ M reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json
+ M reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.md
+ M reports/physeditworld_50h/conversion_smoke_summary.md
+ M reports/physeditworld_50h/manifest_init/empty_manifest_init.csv
+ M reports/physeditworld_50h/manifest_init/empty_manifest_init.json
+ M reports/physeditworld_50h/manifest_init/empty_manifest_init.md
+ M reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json
+ M reports/physeditworld_50h/requirement_matrix.csv
+ M reports/physeditworld_50h/requirement_matrix.json
+ M reports/physeditworld_50h/requirement_matrix.md
+ M tests/test_physeditworld_phase0_preflight.py
 ?? README_cam_physgeo_dpo.md
-?? cam_physgeo/
-?? configs/cam_physgeo/
+?? cam_physgeo/__init__.py
+?? cam_physgeo/dpo/__init__.py
+?? cam_physgeo/dpo/anchored_dataset.py
+?? cam_physgeo/dpo/dpo_loss.py
+?? cam_physgeo/dpo/export_videogpa_pairs.py
+?? cam_physgeo/dpo/pair_builder.py
+?? cam_physgeo/dpo/preference_schema.py
+?? cam_physgeo/dpo/self_rollout_dataset.py
+?? cam_physgeo/dpo/videogpa_adapter.py
+?? cam_physgeo/eval/__init__.py
+?? cam_physgeo/eval/camera_audit.py
+?? cam_physgeo/eval/eval_metrics.py
+?? cam_physgeo/eval/eval_reward_calibration.py
+?? cam_physgeo/eval/make_contact_sheet.py
+?? cam_physgeo/eval/report_tables.py
+?? cam_physgeo/eval/run_inference.py
+?? cam_physgeo/orchestration/physeditworld_migration_audit_bundle.py
+?? cam_physgeo/rewards/
+?? cam_physgeo/training/__init__.py
+?? cam_physgeo/training/lingbot_dataset_smoke.py
+?? cam_physgeo/training/lingbot_warmup_smoke.py
+?? cam_physgeo/training/lora_utils.py
+?? cam_physgeo/training/model_loading.py
+?? cam_physgeo/training/train_stage1_physion_warmup.py
+?? cam_physgeo/training/train_stage1_warmup.py
+?? cam_physgeo/training/train_stage2_anchored_dpo.py
+?? cam_physgeo/training/train_stage3_self_dpo.py
+?? cam_physgeo/training/train_trd_aux.py
+?? cam_physgeo/training/train_utils.py
+?? cam_physgeo/trd/
+?? cam_physgeo/utils/
+?? configs/cam_physgeo/corruption.yaml
+?? configs/cam_physgeo/data_movingcam_synthetic.yaml
+?? configs/cam_physgeo/data_phyinone.yaml
+?? configs/cam_physgeo/data_physion_movingcam.yaml
+?? configs/cam_physgeo/data_physion_official.yaml
+?? configs/cam_physgeo/eval.yaml
+?? configs/cam_physgeo/paths.yaml
+?? configs/cam_physgeo/reward.yaml
+?? configs/cam_physgeo/stage0_audit.yaml
+?? configs/cam_physgeo/stage1_physion_warmup.yaml
+?? configs/cam_physgeo/stage1_warmup.yaml
+?? configs/cam_physgeo/stage2_anchored_dpo.yaml
+?? configs/cam_physgeo/stage3_self_dpo.yaml
+?? configs/cam_physgeo/videogpa_adapter.yaml
 ?? configs/generated/
 ?? configs/train_stage1_physinone_cam.yaml.localbackup.20260428_063010
 ?? configs/train_stage2_phycsgo_act.runtime_act4.yaml
@@ -21,7 +101,6 @@
 ?? docs/experiment_plan.md
 ?? docs/final_report_physion_only.md
 ?? docs/framework_completeness_audit.md
-?? docs/github_push_report.md
 ?? docs/github_push_report_physion.md
 ?? docs/implementation_status.md
 ?? docs/legacy_code_reuse_plan.md
@@ -93,9 +172,11 @@
 ?? scripts/12_generate_physion_movingcam_subset.sh
 ?? scripts/download_flux2_dev_devturbo_hf.sh
 ?? scripts/generate_videophy2_first_frames_flux2.py
+?? scripts/migration/collect_physeditworld_migration_audit_bundle.sh
 ?? scripts/safe_delete_from_manifest.sh
 ?? smoke_after_release_fix.txt
 ?? src/physical_consistency/stages/stage1_physinone_cam/trainer.py.bak_ddp_bundle_20260515_154317
 ?? tests/test_cam_physgeo_smoke.py
+?? tests/test_physeditworld_migration_audit_bundle.py
 ?? tests/test_physion_smoke.py
 ?? third_party/vjepa2_official/

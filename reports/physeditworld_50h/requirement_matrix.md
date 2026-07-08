@@ -5,7 +5,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 ## Status Counts
 
 - `BLOCKED`: 23
-- `PASS`: 19
+- `PASS`: 21
 
 ## Requirements
 
@@ -20,6 +20,9 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - detail: file exists
 - `0_migration` / pip freeze export: `PASS`
   - evidence: `reports/migration/pip_freeze.txt`
+  - detail: file exists
+- `0_migration` / migration audit collector wrapper: `PASS`
+  - evidence: `scripts/migration/collect_physeditworld_migration_audit_bundle.sh`
   - detail: file exists
 - `0_migration` / required weights manifest: `PASS`
   - evidence: `reports/migration/required_weights_manifest.tsv`
@@ -54,6 +57,9 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 - `0_migration` / external unblock-packet summary: `PASS`
   - evidence: `reports/migration/physeditworld_external_unblock_packet.md`
   - detail: file exists
+- `0_migration` / H20 read-only migration audit bundle: `PASS`
+  - evidence: `reports/migration/migration_audit_bundle.json`
+  - detail: decision=MIGRATION_AUDIT_BUNDLE_READY
 - `0_migration` / expected empty manifest placeholders: `PASS`
   - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
   - detail: decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT

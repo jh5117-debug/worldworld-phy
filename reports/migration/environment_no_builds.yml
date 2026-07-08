@@ -1,1 +1,1 @@
-# conda env export unavailable or empty in active shell; see pip_freeze.txt and python3_version.txt
+# conda not found in PATH; see pip_freeze.txt and python_path.txt

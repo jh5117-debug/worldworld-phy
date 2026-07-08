@@ -11,6 +11,15 @@
       "step": "empty_manifest_init"
     },
     {
+      "command": "bash scripts/migration/collect_physeditworld_migration_audit_bundle.sh",
+      "decision": "MIGRATION_AUDIT_BUNDLE_READY",
+      "error_reason": "",
+      "evidence": "reports/migration/migration_audit_bundle.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "step": "migration_audit_bundle"
+    },
+    {
       "command": "bash scripts/migration/rank_physeditworld_root_candidates.sh",
       "decision": "PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG",
       "error_reason": "",

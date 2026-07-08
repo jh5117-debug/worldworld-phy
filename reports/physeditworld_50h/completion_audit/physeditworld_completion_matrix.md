@@ -5,7 +5,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 ## Status Counts
 
 - `BLOCKED`: 21
-- `PASS`: 20
+- `PASS`: 22
 - `UNKNOWN`: 1
 
 ## Requirement Evidence
@@ -21,6 +21,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - detail: file exists
 - `phase0_migration` / pip freeze export: `PASS`
   - evidence: `reports/migration/pip_freeze.txt`
+  - detail: file exists
+- `phase0_migration` / migration audit collector wrapper: `PASS`
+  - evidence: `scripts/migration/collect_physeditworld_migration_audit_bundle.sh`
   - detail: file exists
 - `phase0_migration` / required weights manifest: `PASS`
   - evidence: `reports/migration/required_weights_manifest.tsv`
@@ -52,6 +55,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 - `phase0_migration` / external unblock-packet summary: `PASS`
   - evidence: `reports/migration/physeditworld_external_unblock_packet.md`
   - detail: file exists
+- `phase0_migration` / H20 read-only migration audit bundle: `PASS`
+  - evidence: `reports/migration/migration_audit_bundle.json`
+  - detail: decision=MIGRATION_AUDIT_BUNDLE_READY
 - `phase0_migration` / expected empty manifest placeholders: `PASS`
   - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
   - detail: decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT

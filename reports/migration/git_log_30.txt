@@ -1,30 +1,30 @@
-065fdbb (HEAD -> physion-only-local-assets-videogpa-smoke) Prepare PhysEditWorld 50h prompt-gravity PRD
-681b34f (physion-only-cam-physgeo-dpo, main, cam-physgeo-dpo-refactor) Quiet TRD diagnostics and default empty paths
-4c7c3b5 Patch LingBot eval resolution config
-64309ba Log LingBot full-val scoring failures
-09fb006 Align LingBot full-val metric tables
-ca7d2e4 Default TRD validation manifests
-a5aed62 Add PhysInOne eval-driven stage2 checkpoints
-555191d Add optional Stage1 T5 GPU residency
-7625e72 Guard stage1 final bundle on main rank
-f59d3d9 Add stage1 timing diagnostics
-f811d9f Add safe storage cleanup helper
-aaf1a75 Add PAI health check and Stage1 act pipeline
-d1c3d03 Add static-camera zero-action preprocessing
-8d907ea Respect disabled Stage1 epoch checkpoint saves
-75cba4e Allow Stage1 PhysInOne training with act control
-10b2dbf Add PhysInOne moving-camera act preprocessing
-12ee899 Add control-signal trace diagnostics
-e31e64c Add Stage2 low-memory numeric diagnostics
-8fc8cf7 Log real Stage1 training finish times
-345c1c8 Relax mixed-safe attention precision
-bc40371 Fallback to valid LingBot checkout
-9271da1 Prefer explicit LingBot code path
-6df3222 Log Stage1 model load progress
-4057a10 Add Stage1 init progress logs
-8a2630e Add Stage1 distributed startup smoke logs
-5b04fb0 Auto-pick free Stage1 rendezvous port
-3b47e08 Add Stage1 DDP H20 launch fallback
-6d25781 Harden Stage1 LingBot import resolution
-463afc9 Add mixed-safe bf16 Stage1 H20 train-only launch path
-c0d48e1 Harden FLUX first-frame downloads
+511a52b (HEAD -> physion-only-local-assets-videogpa-smoke) Update GitHub push report for Phase0 external unblock preflight
+1836451 Track external unblock packet in Phase0 preflight
+9832827 Update GitHub push report for external unblock packet
+8368194 Add PhysEditWorld external unblock packet
+7322130 Update GitHub push report for bootstrap fixed point
+07666f0 Refresh PAI bootstrap restore handoff fixed point
+cc9de21 Update GitHub push report for restore packet gate
+ddb79f4 Require PhysEditWorld PAI restore packet in readiness gates
+8e9d00a Update GitHub push report for PAI restore packet
+3fec094 Add PhysEditWorld PAI restore packet
+a984a4d Update GitHub push report for PhysEditWorld bootstrap gates
+2eeb9b3 Track PhysEditWorld PAI bootstrap readiness gates
+8edcb22 Run backend readiness in PhysEditWorld PAI bootstrap
+2b3f761 Include backend readiness in PhysEditWorld PAI handoff
+40bb910 Gate post-mount continuation on backend readiness
+9cc38c0 Gate PhysEditWorld pipeline on backend readiness
+a3b7aa7 Add PhysEditWorld backend readiness audit
+a01677e Classify PhysEditWorld phase0 waiting states as blocked
+28fdc79 Extend PhysEditWorld phase0 preflight handoff chain
+ad8ac98 Require pair validation in PhysEditWorld pipeline gate
+ba06f36 Require validated PhysEditWorld pairs before tiny DPO
+642e102 Require validated eval manifest for PhysEditWorld checkpoint gate
+239b049 Require validated LingBot manifests for PhysEditWorld baseline and warmup
+e0b9fcf Expose PhysEditWorld post-mount continuation controls
+dd49cf4 Harden PhysEditWorld post-mount conversion continuation
+55df97f Validate PhysEditWorld LingBot conversion manifests
+5e7e035 Emit rich PhysEditWorld LingBot conversion manifests
+740a99a Make PhysEditWorld conversion targets future-only
+3828dd4 Derive PhysEditWorld prefix clips during conversion
+f5f9b76 Sample PhysEditWorld target videos during conversion

@@ -1,3 +1,4 @@
+df: /mnt/workspace/hj/nas_hj: No such file or directory
 Filesystem      Size  Used Avail Use% Mounted on
-/dev/nvme2n1p1  3.4T  3.1T  382G  90% /home/nvme03
+/dev/nvme2n1p1  3.4T  3.1T  370G  90% /home/nvme03
 /dev/nvme3n1p1  3.4T  3.1T  345G  91% /home/nvme04

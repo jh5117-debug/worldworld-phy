@@ -1,1 +1,1 @@
-python_not_found_in_active_shell; see python3_path.txt
+/usr/bin/python3

@@ -4,6 +4,7 @@ from cam_physgeo.orchestration.physeditworld_phase0_preflight import PreflightSt
 def test_phase0_blocks_at_readiness_first():
     rows = [
         PreflightStep("empty_manifest_init", "cmd", 0, "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", "PASS", "init"),
+        PreflightStep("migration_audit_bundle", "cmd", 0, "MIGRATION_AUDIT_BUNDLE_READY", "PASS", "audit"),
         PreflightStep("physeditworld_root_candidates_ranked", "cmd", 0, "PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG", "PASS", "root_candidates"),
         PreflightStep("physeditworld_root_schema_probe", "cmd", 0, "PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT", "PASS", "schema"),
         PreflightStep("physeditworld_selected_root_status", "cmd", 0, "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED", "PASS", "root"),
@@ -18,6 +19,7 @@ def test_phase0_blocks_at_readiness_first():
 def test_phase0_blocks_at_approved_copy_after_prior_passes():
     rows = [
         PreflightStep("empty_manifest_init", "cmd", 0, "PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED", "PASS", "init"),
+        PreflightStep("migration_audit_bundle", "cmd", 0, "MIGRATION_AUDIT_BUNDLE_READY", "PASS", "audit"),
         PreflightStep("physeditworld_root_candidates_ranked", "cmd", 0, "PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG", "PASS", "root_candidates"),
         PreflightStep("physeditworld_root_schema_probe", "cmd", 0, "PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT", "PASS", "schema"),
         PreflightStep("physeditworld_selected_root_status", "cmd", 0, "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED", "PASS", "root"),
@@ -37,6 +39,7 @@ def test_status_for_review_required():
 
 def test_status_for_manifest_init_pass():
     assert status_for("PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", 0) == "PASS"
+    assert status_for("MIGRATION_AUDIT_BUNDLE_READY", 0) == "PASS"
 
 
 def test_status_for_waiting_is_blocked():
@@ -48,6 +51,7 @@ def test_status_for_waiting_is_blocked():
 def test_phase0_blocks_at_root_schema_before_readiness():
     rows = [
         PreflightStep("empty_manifest_init", "cmd", 0, "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", "PASS", "init"),
+        PreflightStep("migration_audit_bundle", "cmd", 0, "MIGRATION_AUDIT_BUNDLE_READY", "PASS", "audit"),
         PreflightStep("physeditworld_root_candidates_ranked", "cmd", 0, "PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG", "PASS", "root_candidates"),
         PreflightStep("physeditworld_root_schema_probe", "cmd", 0, "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT", "BLOCKED", "schema"),
         PreflightStep("physeditworld_pai_readiness", "cmd", 0, "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT", "PASS", "readiness"),
@@ -67,6 +71,7 @@ def test_phase0_accepts_locked_handoff_and_pai_handoff_pass_decisions():
 def test_phase0_blocks_at_backend_readiness_after_handoff():
     rows = [
         PreflightStep("empty_manifest_init", "cmd", 0, "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", "PASS", "init"),
+        PreflightStep("migration_audit_bundle", "cmd", 0, "MIGRATION_AUDIT_BUNDLE_READY", "PASS", "audit"),
         PreflightStep("physeditworld_root_candidates_ranked", "cmd", 0, "PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG", "PASS", "root_candidates"),
         PreflightStep("physeditworld_root_schema_probe", "cmd", 0, "PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT", "PASS", "schema"),
         PreflightStep("physeditworld_selected_root_status", "cmd", 0, "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED", "PASS", "root"),
@@ -84,6 +89,7 @@ def test_phase0_blocks_at_backend_readiness_after_handoff():
 def test_phase0_blocks_at_external_unblock_packet_after_pipeline_gate():
     rows = [
         PreflightStep("empty_manifest_init", "cmd", 0, "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", "PASS", "init"),
+        PreflightStep("migration_audit_bundle", "cmd", 0, "MIGRATION_AUDIT_BUNDLE_READY", "PASS", "audit"),
         PreflightStep("physeditworld_root_candidates_ranked", "cmd", 0, "PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG", "PASS", "root_candidates"),
         PreflightStep("physeditworld_root_schema_probe", "cmd", 0, "PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT", "PASS", "schema"),
         PreflightStep("physeditworld_selected_root_status", "cmd", 0, "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED", "PASS", "root"),
@@ -100,3 +106,11 @@ def test_phase0_blocks_at_external_unblock_packet_after_pipeline_gate():
         PreflightStep("physeditworld_external_unblock_packet", "cmd", 0, "PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT", "BLOCKED", "external"),
     ]
     assert overall_decision(rows) == "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_EXTERNAL_UNBLOCK_PACKET"
+
+def test_phase0_blocks_at_migration_audit_after_manifest_init():
+    rows = [
+        PreflightStep("empty_manifest_init", "cmd", 0, "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", "PASS", "init"),
+        PreflightStep("migration_audit_bundle", "cmd", 0, "MIGRATION_AUDIT_BUNDLE_INCOMPLETE", "BLOCKED", "audit"),
+        PreflightStep("physeditworld_root_candidates_ranked", "cmd", 0, "PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG", "PASS", "root_candidates"),
+    ]
+    assert overall_decision(rows) == "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_MIGRATION_AUDIT"

@@ -1,0 +1,103 @@
+{
+  "decision": "MIGRATION_AUDIT_BUNDLE_READY",
+  "items": [
+    {
+      "command": "",
+      "name": "h20_hostname",
+      "notes": "",
+      "path": "reports/migration/h20_hostname.txt",
+      "status": "PASS"
+    },
+    {
+      "command": "",
+      "name": "migration_date",
+      "notes": "",
+      "path": "reports/migration/migration_date.txt",
+      "status": "PASS"
+    },
+    {
+      "command": "git status --short",
+      "name": "git_status_short",
+      "notes": "",
+      "path": "reports/migration/git_status_short.txt",
+      "status": "PASS"
+    },
+    {
+      "command": "git branch --show-current",
+      "name": "git_branch",
+      "notes": "",
+      "path": "reports/migration/git_branch.txt",
+      "status": "PASS"
+    },
+    {
+      "command": "git log --oneline --decorate -30",
+      "name": "git_log_30",
+      "notes": "",
+      "path": "reports/migration/git_log_30.txt",
+      "status": "PASS"
+    },
+    {
+      "command": "df -h /home/nvme03 /home/nvme04 /mnt/workspace/hj/nas_hj",
+      "name": "df_h20_pai",
+      "notes": "exit_code=1",
+      "path": "reports/migration/df_h20_pai.txt",
+      "status": "WARN"
+    },
+    {
+      "command": "du -sh . docs reports manifests configs cam_physgeo src",
+      "name": "repo_du_summary",
+      "notes": "",
+      "path": "reports/migration/repo_du_summary.txt",
+      "status": "PASS"
+    },
+    {
+      "command": "conda env export --no-builds",
+      "name": "environment_no_builds",
+      "notes": "conda_not_found",
+      "path": "reports/migration/environment_no_builds.yml",
+      "status": "WARN"
+    },
+    {
+      "command": "/usr/bin/python3 -m pip freeze",
+      "name": "pip_freeze",
+      "notes": "",
+      "path": "reports/migration/pip_freeze.txt",
+      "status": "PASS"
+    },
+    {
+      "command": "",
+      "name": "python_version",
+      "notes": "",
+      "path": "reports/migration/python_version.txt",
+      "status": "PASS"
+    },
+    {
+      "command": "",
+      "name": "python_path",
+      "notes": "",
+      "path": "reports/migration/python_path.txt",
+      "status": "PASS"
+    },
+    {
+      "command": "/usr/bin/nvidia-smi",
+      "name": "nvidia_smi",
+      "notes": "timeout=20s",
+      "path": "reports/migration/nvidia_smi.txt",
+      "status": "WARN"
+    },
+    {
+      "command": "/usr/bin/python3 -c 'import sys\nprint('\"'\"'python'\"'\"', sys.version)\ntry:\n    import torch\n    print('\"'\"'torch'\"'\"', torch.__version__)\n    print('\"'\"'cuda'\"'\"', torch.version.cuda)\n    print('\"'\"'cuda_available'\"'\"', torch.cuda.is_available())\n    if torch.cuda.is_available():\n        print('\"'\"'device_count'\"'\"', torch.cuda.device_count())\n        for i in range(torch.cuda.device_count()):\n            print(i, torch.cuda.get_device_name(i))\nexcept Exception as e:\n    print('\"'\"'torch_import_error'\"'\"', repr(e))'",
+      "name": "torch_cuda_info",
+      "notes": "",
+      "path": "reports/migration/torch_cuda_info.txt",
+      "status": "PASS"
+    },
+    {
+      "command": "git ls-files --others --exclude-standard -z",
+      "name": "untracked_large_files",
+      "notes": "large_untracked_count=0 threshold_mb=50",
+      "path": "reports/migration/untracked_large_files.tsv",
+      "status": "PASS"
+    }
+  ]
+}

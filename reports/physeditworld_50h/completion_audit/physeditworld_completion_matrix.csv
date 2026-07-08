@@ -3,6 +3,7 @@ phase0_prd,PRD written before execution,PASS,docs/experiments/EXP_physeditworld_
 phase0_prd,current status document,PASS,docs/physeditworld_50h_current_status.md,file exists,
 phase0_migration,environment export,PASS,reports/migration/environment_no_builds.yml,file exists,
 phase0_migration,pip freeze export,PASS,reports/migration/pip_freeze.txt,file exists,
+phase0_migration,migration audit collector wrapper,PASS,scripts/migration/collect_physeditworld_migration_audit_bundle.sh,file exists,
 phase0_migration,required weights manifest,PASS,reports/migration/required_weights_manifest.tsv,file exists,
 phase0_migration,required data manifest,PASS,reports/migration/required_data_manifest.tsv,file exists,
 phase0_migration,guarded dry-run rsync script,PASS,scripts/migration/rsync_h20_to_pai_dryrun.sh,file exists,
@@ -13,6 +14,7 @@ phase0_migration,PAI restore-packet wrapper,PASS,scripts/migration/run_physeditw
 phase0_migration,PAI restore-packet summary,PASS,reports/migration/pai_restore_packet.md,file exists,
 phase0_migration,external unblock-packet wrapper,PASS,scripts/migration/write_physeditworld_external_unblock_packet.sh,file exists,
 phase0_migration,external unblock-packet summary,PASS,reports/migration/physeditworld_external_unblock_packet.md,file exists,
+phase0_migration,H20 read-only migration audit bundle,PASS,reports/migration/migration_audit_bundle.json,decision=MIGRATION_AUDIT_BUNDLE_READY,
 phase0_migration,expected empty manifest placeholders,PASS,reports/physeditworld_50h/manifest_init/empty_manifest_init.json,decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT,
 phase0_migration,locked handoff sequence,BLOCKED,reports/migration/locked_handoff_sequence.json,decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE,set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence
 phase0_migration,selected-root schema probe,BLOCKED,reports/migration/physeditworld_root_schema_probe.json,decision=PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT,provide selected root and rerun schema probe

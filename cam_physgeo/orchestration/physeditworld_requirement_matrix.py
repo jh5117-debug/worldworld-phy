@@ -155,6 +155,7 @@ def build_rows() -> list[RequirementRow]:
         file_status("docs/physeditworld_50h_current_status.md", "status doc exists", "0_prd", "write status"),
         file_status("reports/migration/environment_no_builds.yml", "environment export", "0_migration", "export conda env"),
         file_status("reports/migration/pip_freeze.txt", "pip freeze export", "0_migration", "export pip freeze"),
+        file_status("scripts/migration/collect_physeditworld_migration_audit_bundle.sh", "migration audit collector wrapper", "0_migration", "add migration audit collector"),
         file_status("reports/migration/required_weights_manifest.tsv", "required weights manifest", "0_migration", "build weights manifest"),
         file_status("reports/migration/required_data_manifest.tsv", "required data manifest", "0_migration", "build data manifest"),
         file_status("scripts/migration/rsync_h20_to_pai_dryrun.sh", "rsync dry-run script", "0_migration", "add dry-run script"),
@@ -167,6 +168,13 @@ def build_rows() -> list[RequirementRow]:
         file_status("scripts/migration/write_physeditworld_external_unblock_packet.sh", "external unblock-packet wrapper", "0_migration", "add external unblock packet wrapper"),
         file_status("reports/migration/physeditworld_external_unblock_packet.md", "external unblock-packet summary", "0_migration", "run external unblock packet writer"),
     ])
+    rows.append(decision_status(
+        "reports/migration/migration_audit_bundle.json",
+        "H20 read-only migration audit bundle",
+        "0_migration",
+        {"MIGRATION_AUDIT_BUNDLE_READY"},
+        "run migration audit bundle collector before migration/handoff",
+    ))
     for evidence, requirement, pass_values, next_action in PHASE0_DECISION_GATES:
         rows.append(decision_status(evidence, requirement, "0_migration", pass_values, next_action))
     rows.append(decision_status(
