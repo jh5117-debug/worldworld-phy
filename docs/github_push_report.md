@@ -601,3 +601,16 @@ git push -u origin cam-physgeo-dpo-refactor
 - Live restore-packet decision: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT` with blockers `NAS_TARGET_MISSING`, `PHYS_EDITWORLD_ROOTS_MISSING_OR_INVALID`, `PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY`, and the existing matrix/completion blockers.
 - Validation: `py_compile` PASS, targeted `compileall` PASS, direct restore-packet/handoff smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
 - Safety: CPU/IO only; no GPU use, no training, no rollout, no DPO, no rsync execute, no copy/delete, no local_assets/video/weights push.
+
+## PhysEditWorld PAI Restore Packet Readiness Gate (2026-07-09T05:55:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `968c2dc Require PhysEditWorld PAI restore packet in readiness gates`.
+- Scope: requirement matrix and completion audit now treat the PAI restore packet as first-class Phase 0 evidence.
+- New tracked evidence:
+  - `scripts/migration/run_physeditworld_pai_restore_packet.sh`
+  - `reports/migration/pai_restore_packet.md`
+  - `reports/migration/pai_restore_packet.json` decision gate.
+- Live decisions remain blocked as intended: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT`, `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`, and `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION` because NAS and selected `PHYS_EDITWORLD_ROOTS` are not visible.
+- Validation: `py_compile` PASS, targeted `compileall` PASS, direct requirement/completion smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
+- Safety: CPU/IO only; no GPU use, no training, no rollout, no DPO, no rsync execute, no copy/delete, no local_assets/video/weights push.
