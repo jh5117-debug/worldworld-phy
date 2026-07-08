@@ -32,7 +32,7 @@ Do not provide VideoPHY/Wan result folders, model checkpoints, old PhysInOne con
   - path: `reports/migration/physeditworld_selected_root_status.json`
   - detail: root lock not written
   - next: PHYS_EDITWORLD_ROOTS=/path/to/root bash scripts/migration/select_physeditworld_root.sh
-- `locked_handoff`: `BLOCKED` / `LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION`
+- `locked_handoff`: `BLOCKED` / `LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE`
   - path: `reports/migration/locked_handoff_sequence.json`
   - detail: safe locked handoff is not complete
   - next: PHYS_EDITWORLD_ROOTS=/path/to/root bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh

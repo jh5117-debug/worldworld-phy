@@ -1,5 +1,5 @@
 {
-  "decision": "PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED",
+  "decision": "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
   "manifests": [
     {
       "action": "keep_existing",
@@ -58,12 +58,12 @@
       "status": "EXISTS"
     },
     {
-      "action": "create_empty_jsonl",
+      "action": "keep_existing",
       "error_reason": "",
-      "existed_before": false,
+      "existed_before": true,
       "path": "manifests/physeditworld_50h_lingbot_all.jsonl",
       "rows": 0,
-      "status": "CREATED"
+      "status": "EXISTS"
     },
     {
       "action": "keep_existing",
@@ -74,20 +74,20 @@
       "status": "EXISTS"
     },
     {
-      "action": "create_empty_jsonl",
+      "action": "keep_existing",
       "error_reason": "",
-      "existed_before": false,
+      "existed_before": true,
       "path": "manifests/physeditworld_50h_lingbot_val.jsonl",
       "rows": 0,
-      "status": "CREATED"
+      "status": "EXISTS"
     },
     {
-      "action": "create_empty_jsonl",
+      "action": "keep_existing",
       "error_reason": "",
-      "existed_before": false,
+      "existed_before": true,
       "path": "manifests/physeditworld_50h_lingbot_test.jsonl",
       "rows": 0,
-      "status": "CREATED"
+      "status": "EXISTS"
     },
     {
       "action": "keep_existing",

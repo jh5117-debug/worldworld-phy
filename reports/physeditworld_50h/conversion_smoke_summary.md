@@ -7,4 +7,5 @@
 - Output root: `local_assets/physeditworld_50h_lingbot_smoke`
 - Output manifest: `manifests/physeditworld_50h_lingbot_train.jsonl`
 - Gravity condition type: `prompt_only`
+- Output manifest rows include direct LingBot input paths and future-only target metadata.
 - No gravity MLP or embedding is introduced.

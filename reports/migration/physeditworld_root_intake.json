@@ -33,7 +33,7 @@
       "status": "BLOCKED"
     },
     {
-      "decision": "LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION",
+      "decision": "LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE",
       "detail": "safe locked handoff is not complete",
       "name": "locked_handoff",
       "next_action": "PHYS_EDITWORLD_ROOTS=/path/to/root bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh",
