@@ -11,7 +11,7 @@ BRANCH=physion-only-local-assets-videogpa-smoke \
 bash scripts/migration/bootstrap_pai_physeditworld.sh
 ```
 
-The script clones or updates the repo, checks out the PhysEditWorld branch, runs the safe pipeline gate, and regenerates the requirement matrix.
+The script clones or updates the repo, checks out the PhysEditWorld branch, runs handoff verification, Phase0 preflight, backend readiness, the safe pipeline gate, the requirement matrix, and the completion audit.
 
 ## What It Does Not Do
 
@@ -25,14 +25,25 @@ The script clones or updates the repo, checks out the PhysEditWorld branch, runs
 Until the selected PhysEditWorld 50h root and NAS target are visible, the expected decision is:
 
 ```text
-PIPELINE_BLOCKED_AT_READINESS
+PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE
+```
+
+Current H20 blockers before NAS/root are visible should include:
+
+```text
+PAI_HANDOFF_BLOCKED_NAS_OR_ROOT
+PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY
+PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES
+PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION
 ```
 
 The required next action is to mount/provide the selected PhysEditWorld 50h root, then rerun the bootstrap or:
 
 ```bash
+python3 -m cam_physgeo.orchestration.physeditworld_backend_readiness
 bash scripts/run_physeditworld_pipeline_gates.sh
 python3 -m cam_physgeo.orchestration.physeditworld_requirement_matrix
+bash scripts/migration/run_physeditworld_completion_audit.sh
 ```
 
 

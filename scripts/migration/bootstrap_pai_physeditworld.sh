@@ -19,6 +19,8 @@ python3 -V || true
 bash scripts/migration/init_physeditworld_empty_manifests.sh || true
 bash scripts/migration/verify_pai_physeditworld_handoff.sh || true
 bash scripts/migration/run_physeditworld_phase0_preflight.sh || true
+python3 -m cam_physgeo.orchestration.physeditworld_backend_readiness || true
 bash scripts/run_physeditworld_pipeline_gates.sh || true
 python3 -m cam_physgeo.orchestration.physeditworld_requirement_matrix || true
-printf 'Bootstrap complete. Inspect reports/migration, reports/physeditworld_50h/pipeline_gate, and reports/physeditworld_50h/requirement_matrix.*\n'
+bash scripts/migration/run_physeditworld_completion_audit.sh || true
+printf 'Bootstrap complete. Inspect reports/migration, reports/physeditworld_50h/backend_readiness, reports/physeditworld_50h/pipeline_gate, reports/physeditworld_50h/requirement_matrix.*, and reports/physeditworld_50h/completion_audit.\n'
