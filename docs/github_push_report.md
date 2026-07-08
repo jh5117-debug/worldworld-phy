@@ -627,3 +627,12 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Artifacts pushed: completion matrix CSV/JSON/MD plus lightweight docs/status updates.
 - Artifact policy: no `local_assets`, MP4/JPG/PNG, checkpoints, weights, stdout logs, or run scripts were staged or pushed.
 - Decision recorded: `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.
+
+## v14 Root Cause and Metric Gate Push (2026-07-08)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`.
+- Commit: `94d5e93 Document v14 DPO root cause and metric gate updates`.
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Docs updated: `docs/dpo_failure_root_cause_report.md`, `docs/dpo_trainer_design.md`, `docs/metrics.md`.
+- Key correction: E07/E09/E10 scalar-positive schemes failed true V2V-5 visual gates; V-JEPA2 is now recorded as a real high-recall drift monitor, not a standalone approval metric.
+- Artifact policy: no `local_assets`, MP4/JPG/PNG, checkpoints, weights, stdout logs, or run scripts were staged or pushed.
