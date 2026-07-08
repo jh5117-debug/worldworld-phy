@@ -1,0 +1,213 @@
+{
+  "decision": "PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION",
+  "rows": [
+    {
+      "detail": "file exists",
+      "evidence": "docs/experiments/EXP_physeditworld_50h_prompt_gravity_lingbotfast.md",
+      "next_action": "",
+      "phase": "phase0_prd",
+      "requirement": "PRD written before execution",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "docs/physeditworld_50h_current_status.md",
+      "next_action": "",
+      "phase": "phase0_prd",
+      "requirement": "current status document",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "reports/migration/environment_no_builds.yml",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "environment export",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "reports/migration/pip_freeze.txt",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "pip freeze export",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "reports/migration/required_weights_manifest.tsv",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "required weights manifest",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "reports/migration/required_data_manifest.tsv",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "required data manifest",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "scripts/migration/rsync_h20_to_pai_dryrun.sh",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "guarded dry-run rsync script",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "scripts/migration/rsync_h20_to_pai_execute.sh",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "guarded execute rsync script",
+      "status": "PASS"
+    },
+    {
+      "detail": "decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION",
+      "evidence": "reports/migration/locked_handoff_sequence.json",
+      "next_action": "set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence",
+      "phase": "phase0_migration",
+      "requirement": "locked handoff sequence",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT",
+      "evidence": "reports/migration/physeditworld_selected_root_status.json",
+      "next_action": "provide selected PhysEditWorld 50h root and rerun root selector",
+      "phase": "phase0_migration",
+      "requirement": "selected-root lock",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=PAI_HANDOFF_BLOCKED_NAS_OR_ROOT",
+      "evidence": "reports/migration/pai_handoff_status.json",
+      "next_action": "mount NAS/root and rerun PAI handoff",
+      "phase": "phase0_migration",
+      "requirement": "PAI handoff verifier",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED",
+      "evidence": "reports/migration/migration_asset_validation.json",
+      "next_action": "mount NAS and validate required assets",
+      "phase": "phase0_migration",
+      "requirement": "migration asset validation",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS",
+      "evidence": "reports/migration/approved_copy_status.json",
+      "next_action": "approve required rows after review and rerun dry-run",
+      "phase": "phase0_migration",
+      "requirement": "approved-only migration copy",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "rows=0, required>=1",
+      "evidence": "manifests/physeditworld_50h_all.jsonl",
+      "next_action": "mount selected root and run manifest audit",
+      "phase": "phase1_data",
+      "requirement": "strict PhysEditWorld 50h manifest",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "rows=0, required>=1",
+      "evidence": "manifests/physeditworld_50h_train.jsonl",
+      "next_action": "run replay-group split after data audit",
+      "phase": "phase1_data",
+      "requirement": "train split no replay leakage",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "reports/physeditworld_50h/split_summary.md",
+      "next_action": "",
+      "phase": "phase1_data",
+      "requirement": "split summary",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "reports/physeditworld_50h/replay_group_leakage_check.csv",
+      "next_action": "",
+      "phase": "phase1_data",
+      "requirement": "replay-group leakage check",
+      "status": "PASS"
+    },
+    {
+      "detail": "rows=0, required>=1",
+      "evidence": "manifests/physeditworld_50h_lingbot_train.jsonl",
+      "next_action": "run prompt-only gravity conversion",
+      "phase": "phase2_conversion",
+      "requirement": "LingBot train conversion manifest",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "manifest missing",
+      "evidence": "manifests/physeditworld_50h_lingbot_val.jsonl",
+      "next_action": "run prompt-only gravity conversion",
+      "phase": "phase2_conversion",
+      "requirement": "LingBot val conversion manifest",
+      "status": "MISSING"
+    },
+    {
+      "detail": "decision=BASELINE_BLOCKED_EMPTY_MANIFEST",
+      "evidence": "reports/physeditworld_50h_baseline_rollout/summary.md",
+      "next_action": "run baseline rollout after LingBot manifests exist",
+      "phase": "phase3_baseline",
+      "requirement": "baseline true rollout gate",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=WARMUP_BLOCKED_EMPTY_MANIFEST",
+      "evidence": "reports/physeditworld_50h_warmup_rank32/preflight_summary.md",
+      "next_action": "run 5-step warm-up preflight after conversion",
+      "phase": "phase4_warmup",
+      "requirement": "rank32 warm-up preflight",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING",
+      "evidence": "reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json",
+      "next_action": "run checkpoint rollout, metrics, and Codex visual audit",
+      "phase": "phase5_checkpoint_eval",
+      "requirement": "warm-up checkpoint video/metric gate",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "rows=0, required>=100",
+      "evidence": "manifests/physeditworld_dpo_pairs_anchored_v0.jsonl",
+      "next_action": "build >=100 reviewed anchored pairs after warm-up gate",
+      "phase": "phase6_pairs",
+      "requirement": "anchored DPO pair manifest",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS",
+      "evidence": "reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json",
+      "next_action": "run tiny anchored DPO only after pair gate",
+      "phase": "phase7_tiny_dpo",
+      "requirement": "tiny anchored DPO gate",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "docs/experiments/EXP_physeditworld50_plus_ourphysics50_ablation_plan.md",
+      "next_action": "",
+      "phase": "phase8_ablation",
+      "requirement": "PhysEditWorld50 plus OurPhysics50 ablation plan",
+      "status": "PASS"
+    },
+    {
+      "detail": "none",
+      "evidence": "git diff --cached --name-only",
+      "next_action": "",
+      "phase": "safety",
+      "requirement": "forbidden staged large artifacts",
+      "status": "PASS"
+    }
+  ]
+}

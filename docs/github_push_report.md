@@ -237,4 +237,15 @@ git push -u origin cam-physgeo-dpo-refactor
 - Evidence: `reports/migration/locked_handoff_sequence.md`.
 - Test status: compileall PASS, direct locked-handoff smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Objective Completion Audit (2026-07-08T22:14:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: added an objective-level completion audit for the full PhysEditWorld migration/data/conversion/baseline/warm-up/checkpoint/pair/tiny-DPO requirement chain.
+- Command: `bash scripts/migration/run_physeditworld_completion_audit.sh`.
+- Current decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`.
+- Evidence: `reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.md`.
+- Important correction: baseline and warm-up are now judged by their decision strings (`BASELINE_BLOCKED_EMPTY_MANIFEST`, `WARMUP_BLOCKED_EMPTY_MANIFEST`) rather than by summary-file existence alone.
+- Test status: compileall PASS, direct completion-audit smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
 - Safety: no file copy, no deletion, no GPU use, no rollout, no warm-up, no DPO.

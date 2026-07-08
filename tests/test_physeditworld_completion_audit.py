@@ -1,0 +1,35 @@
+from cam_physgeo.orchestration.physeditworld_completion_audit import (
+    AuditRow,
+    overall_decision,
+    status_from_decision,
+)
+
+
+def test_status_from_decision_pass():
+    assert status_from_decision("WARMUP_GATE_PASS", {"WARMUP_GATE_PASS"}) == "PASS"
+
+
+def test_status_from_decision_blocked():
+    assert status_from_decision("BASELINE_BLOCKED_EMPTY_MANIFEST", {"BASELINE_ROLLOUT_PASS"}) == "BLOCKED"
+
+
+def test_status_from_decision_missing():
+    assert status_from_decision("MISSING", {"X"}) == "MISSING"
+
+
+def test_overall_blocks_at_earliest_phase():
+    rows = [
+        AuditRow("phase0_prd", "prd", "PASS", "x"),
+        AuditRow("phase0_migration", "root", "BLOCKED", "x"),
+        AuditRow("phase1_data", "manifest", "BLOCKED", "y"),
+    ]
+    assert overall_decision(rows) == "PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION"
+
+
+def test_overall_complete_when_all_rows_pass():
+    rows = [
+        AuditRow("phase0_prd", "prd", "PASS", "x"),
+        AuditRow("phase0_migration", "root", "PASS", "x"),
+        AuditRow("safety", "forbidden", "PASS", "git"),
+    ]
+    assert overall_decision(rows) == "PHYS_EDITWORLD_OBJECTIVE_COMPLETE"

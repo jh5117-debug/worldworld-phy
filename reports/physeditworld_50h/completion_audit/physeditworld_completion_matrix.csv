@@ -1,0 +1,27 @@
+phase,requirement,status,evidence,detail,next_action
+phase0_prd,PRD written before execution,PASS,docs/experiments/EXP_physeditworld_50h_prompt_gravity_lingbotfast.md,file exists,
+phase0_prd,current status document,PASS,docs/physeditworld_50h_current_status.md,file exists,
+phase0_migration,environment export,PASS,reports/migration/environment_no_builds.yml,file exists,
+phase0_migration,pip freeze export,PASS,reports/migration/pip_freeze.txt,file exists,
+phase0_migration,required weights manifest,PASS,reports/migration/required_weights_manifest.tsv,file exists,
+phase0_migration,required data manifest,PASS,reports/migration/required_data_manifest.tsv,file exists,
+phase0_migration,guarded dry-run rsync script,PASS,scripts/migration/rsync_h20_to_pai_dryrun.sh,file exists,
+phase0_migration,guarded execute rsync script,PASS,scripts/migration/rsync_h20_to_pai_execute.sh,file exists,
+phase0_migration,locked handoff sequence,BLOCKED,reports/migration/locked_handoff_sequence.json,decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION,set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence
+phase0_migration,selected-root lock,BLOCKED,reports/migration/physeditworld_selected_root_status.json,decision=PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT,provide selected PhysEditWorld 50h root and rerun root selector
+phase0_migration,PAI handoff verifier,BLOCKED,reports/migration/pai_handoff_status.json,decision=PAI_HANDOFF_BLOCKED_NAS_OR_ROOT,mount NAS/root and rerun PAI handoff
+phase0_migration,migration asset validation,BLOCKED,reports/migration/migration_asset_validation.json,decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED,mount NAS and validate required assets
+phase0_migration,approved-only migration copy,BLOCKED,reports/migration/approved_copy_status.json,decision=APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS,approve required rows after review and rerun dry-run
+phase1_data,strict PhysEditWorld 50h manifest,BLOCKED,manifests/physeditworld_50h_all.jsonl,"rows=0, required>=1",mount selected root and run manifest audit
+phase1_data,train split no replay leakage,BLOCKED,manifests/physeditworld_50h_train.jsonl,"rows=0, required>=1",run replay-group split after data audit
+phase1_data,split summary,PASS,reports/physeditworld_50h/split_summary.md,file exists,
+phase1_data,replay-group leakage check,PASS,reports/physeditworld_50h/replay_group_leakage_check.csv,file exists,
+phase2_conversion,LingBot train conversion manifest,BLOCKED,manifests/physeditworld_50h_lingbot_train.jsonl,"rows=0, required>=1",run prompt-only gravity conversion
+phase2_conversion,LingBot val conversion manifest,MISSING,manifests/physeditworld_50h_lingbot_val.jsonl,manifest missing,run prompt-only gravity conversion
+phase3_baseline,baseline true rollout gate,BLOCKED,reports/physeditworld_50h_baseline_rollout/summary.md,decision=BASELINE_BLOCKED_EMPTY_MANIFEST,run baseline rollout after LingBot manifests exist
+phase4_warmup,rank32 warm-up preflight,BLOCKED,reports/physeditworld_50h_warmup_rank32/preflight_summary.md,decision=WARMUP_BLOCKED_EMPTY_MANIFEST,run 5-step warm-up preflight after conversion
+phase5_checkpoint_eval,warm-up checkpoint video/metric gate,BLOCKED,reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json,decision=CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING,"run checkpoint rollout, metrics, and Codex visual audit"
+phase6_pairs,anchored DPO pair manifest,BLOCKED,manifests/physeditworld_dpo_pairs_anchored_v0.jsonl,"rows=0, required>=100",build >=100 reviewed anchored pairs after warm-up gate
+phase7_tiny_dpo,tiny anchored DPO gate,BLOCKED,reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json,decision=TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS,run tiny anchored DPO only after pair gate
+phase8_ablation,PhysEditWorld50 plus OurPhysics50 ablation plan,PASS,docs/experiments/EXP_physeditworld50_plus_ourphysics50_ablation_plan.md,file exists,
+safety,forbidden staged large artifacts,PASS,git diff --cached --name-only,none,
