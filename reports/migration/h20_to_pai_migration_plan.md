@@ -121,3 +121,15 @@ MIGRATION_APPROVED=1 MIGRATION_COPY_APPROVED=1   bash scripts/migration/run_appr
 
 The executor only considers rows with `approved=true`, rejects `local_assets/` payloads, writes row-level status, and never deletes source files.
 
+## One-Command Phase 0 Preflight
+
+Run the full safe migration preflight with:
+
+```bash
+bash scripts/migration/run_physeditworld_phase0_preflight.sh
+```
+
+Latest decision: `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS`.
+
+This command reruns readiness, asset validation, copy-plan generation, approved-copy status, requirement matrix, and pipeline gate. It does not execute rsync, does not pass `--execute`, does not copy files, does not delete files, and does not use GPUs.
+

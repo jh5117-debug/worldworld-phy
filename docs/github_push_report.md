@@ -183,3 +183,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: compileall PASS, direct pipeline smoke PASS, direct unit smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
 
+## PhysEditWorld Phase 0 Migration Preflight (2026-07-08T20:46:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: one-command safe Phase 0 migration preflight for readiness, asset validation, copy-plan, approved-copy status, requirement matrix, and pipeline gate.
+- Latest decision: PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS.
+- Step count: 6.
+- Test status: compileall PASS, direct preflight smoke PASS, direct unit smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+

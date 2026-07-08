@@ -1,0 +1,59 @@
+{
+  "decision": "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS",
+  "steps": [
+    {
+      "command": "bash scripts/migration/check_physeditworld_pai_readiness.sh",
+      "decision": "PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED",
+      "error_reason": "",
+      "evidence": "reports/migration/physeditworld_pai_readiness.json",
+      "exit_code": 0,
+      "status": "BLOCKED",
+      "step": "physeditworld_pai_readiness"
+    },
+    {
+      "command": "bash scripts/migration/validate_physeditworld_migration_assets.sh",
+      "decision": "MIGRATION_ASSET_VALIDATION_NAS_BLOCKED",
+      "error_reason": "",
+      "evidence": "reports/migration/migration_asset_validation.json",
+      "exit_code": 0,
+      "status": "BLOCKED",
+      "step": "migration_asset_validation"
+    },
+    {
+      "command": "bash scripts/migration/build_physeditworld_migration_copy_plan.sh",
+      "decision": "COPY_PLAN_REVIEW_REQUIRED",
+      "error_reason": "",
+      "evidence": "reports/migration/approved_copy_manifest_template.json",
+      "exit_code": 0,
+      "status": "REVIEW_REQUIRED",
+      "step": "approved_copy_manifest_template"
+    },
+    {
+      "command": "bash scripts/migration/run_approved_migration_copy.sh",
+      "decision": "APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS",
+      "error_reason": "",
+      "evidence": "reports/migration/approved_copy_status.json",
+      "exit_code": 0,
+      "status": "BLOCKED",
+      "step": "approved_copy_status"
+    },
+    {
+      "command": "python3 -m cam_physgeo.orchestration.physeditworld_requirement_matrix",
+      "decision": "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS",
+      "error_reason": "",
+      "evidence": "reports/physeditworld_50h/requirement_matrix.json",
+      "exit_code": 0,
+      "status": "BLOCKED",
+      "step": "requirement_matrix"
+    },
+    {
+      "command": "python3 -m cam_physgeo.orchestration.physeditworld_pipeline_gate",
+      "decision": "PIPELINE_BLOCKED_AT_READINESS",
+      "error_reason": "",
+      "evidence": "reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json",
+      "exit_code": 0,
+      "status": "BLOCKED",
+      "step": "pipeline_gate_status"
+    }
+  ]
+}

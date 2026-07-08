@@ -422,3 +422,26 @@ The safe pipeline gate now reads three Phase 0 migration states before any basel
 
 This aligns the live pipeline gate with the full migration safety chain. No copy, GPU use, rollout, metric scoring, visual audit, training, or DPO was run.
 
+## Phase 0 Migration Preflight Update (2026-07-08T20:46:00 CST)
+
+Decision: PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS.
+
+A consolidated Phase 0 preflight was added. It reruns and summarizes all safe migration gates without copying assets or using GPU:
+
+- Tool: cam_physgeo/orchestration/physeditworld_phase0_preflight.py.
+- Wrapper: scripts/migration/run_physeditworld_phase0_preflight.sh.
+- CSV: reports/migration/phase0_preflight_status.csv.
+- JSON: reports/migration/phase0_preflight_status.json.
+- Summary: reports/migration/phase0_preflight_summary.md.
+
+The current preflight has 6 steps:
+
+1. PAI/NAS/data readiness: PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED.
+2. Migration asset validation: MIGRATION_ASSET_VALIDATION_NAS_BLOCKED.
+3. Copy-plan template: COPY_PLAN_REVIEW_REQUIRED.
+4. Approved-only copy status: APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS.
+5. Requirement matrix: PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS.
+6. Pipeline gate: PIPELINE_BLOCKED_AT_READINESS.
+
+Safety: the preflight does not run rsync execute, does not pass --execute to the approved-copy tool, does not copy data/weights/checkpoints/videos/local_assets, does not delete files, and does not use GPUs.
+
