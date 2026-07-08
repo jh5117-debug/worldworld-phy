@@ -17,12 +17,30 @@ FALSE_POSITIVE_TOKENS = (
     "/docs/",
     "/tests/",
     "/scripts/",
+    "/results/",
+    "/checkpoint",
+    "checkpoint-",
+    "videophy",
+    "wan-ti2v",
+    "wan22",
+    "wan2.2",
+    "physical_ti2v",
     "physion",
     "physinone",
     "csgo",
     "lingbot_inputs",
     "antigravity.py",
 )
+ACTION_FILE_TOKENS = ("action", "actions", "act_trace", "action_trace", "controls", "control_trace")
+CAMERA_FILE_TOKENS = ("camera", "camera_trajectory", "trajectory", "poses", "pose", "extrinsics")
+INTRINSICS_FILE_TOKENS = ("intrinsic", "intrinsics", "calib", "camera_matrix")
+GRAVITY_FILE_TOKENS = ("gravity", "grav", "gravity_label")
+REPLAY_FILE_TOKENS = ("replay", "replay_group", "group", "episode_group", "matched_replay")
+ACTION_DIR_TOKENS = {"action", "actions", "action_traces", "controls"}
+CAMERA_DIR_TOKENS = {"camera", "cameras", "poses", "trajectories", "camera_trajectories"}
+INTRINSICS_DIR_TOKENS = {"intrinsics", "calibration", "calib"}
+GRAVITY_DIR_TOKENS = {"gravity", "gravities"}
+REPLAY_DIR_TOKENS = {"replay", "replays", "replay_groups", "groups"}
 
 
 @dataclass
@@ -57,21 +75,49 @@ def candidate_root(raw: str) -> str:
 
 
 def path_signals(text: str) -> set[str]:
-    t = text.lower()
+    """Return structural signals from a concrete file path.
+
+    This intentionally avoids using arbitrary natural-language video filenames
+    as evidence for action/camera/replay. Generated videos often contain words
+    such as "camera captures" or "adventure action" in their prompt-derived
+    filename; those are not PhysEditWorld schema signals.
+    """
+    p = Path(text)
+    name = p.name.lower()
+    stem = p.stem.lower()
+    suffix = p.suffix.lower()
+    parent_tokens = {part.lower() for part in p.parts[-4:-1]}
     signals: set[str] = set()
-    if any(ext in t for ext in VIDEO_EXTS):
+    if suffix in VIDEO_EXTS:
         signals.add("video")
-    if "action" in t:
+        return signals
+    if any(tok in stem for tok in ACTION_FILE_TOKENS) or parent_tokens & ACTION_DIR_TOKENS:
         signals.add("action")
-    if "camera" in t or "pose" in t or "trajectory" in t:
+    if any(tok in stem for tok in CAMERA_FILE_TOKENS) or parent_tokens & CAMERA_DIR_TOKENS:
         signals.add("camera")
-    if "intrinsic" in t:
+    if any(tok in stem for tok in INTRINSICS_FILE_TOKENS) or parent_tokens & INTRINSICS_DIR_TOKENS:
         signals.add("intrinsics")
-    if "gravity" in t:
+    if any(tok in stem for tok in GRAVITY_FILE_TOKENS) or parent_tokens & GRAVITY_DIR_TOKENS:
         signals.add("gravity")
-    if "replay" in t or "group" in t:
+    if any(tok in stem for tok in REPLAY_FILE_TOKENS) or parent_tokens & REPLAY_DIR_TOKENS:
         signals.add("replay")
     return signals
+
+
+def root_name_bonus(root: str) -> tuple[int, list[str]]:
+    t = root.lower()
+    bonuses: list[str] = []
+    score = 0
+    if "physeditworld" in t or "physedit_world" in t:
+        score += 8
+        bonuses.append("physeditworld_name")
+    elif "physedit" in t:
+        score += 5
+        bonuses.append("physedit_name")
+    if "selected_50h" in t or "50h" in t:
+        score += 2
+        bonuses.append("selected_50h_name")
+    return score, bonuses
 
 
 def penalty_tokens(text: str) -> list[str]:
@@ -106,28 +152,30 @@ def scan_existing_root(root: Path, max_depth: int, max_files: int) -> tuple[set[
 def score_candidate(root: str, raw_rows: list[str], max_depth: int, max_files: int) -> RootCandidate:
     root_path = Path(root)
     text = "\n".join([root, *raw_rows])
-    signals = path_signals(text)
+    signals: set[str] = set()
+    for raw in raw_rows:
+        raw_path = Path(raw)
+        if raw == root and raw_path.exists() and raw_path.is_dir():
+            continue
+        signals.update(path_signals(raw))
     fs_signals, examples = scan_existing_root(root_path, max_depth=max_depth, max_files=max_files)
     signals.update(fs_signals)
     penalties = penalty_tokens(text)
-    score = 0
-    tlow = text.lower()
-    if "physedit" in tlow:
-        score += 8
-    if "gravity" in tlow:
-        score += 3
-    if "replay" in tlow:
-        score += 2
-    score += 2 * len(signals)
+    score, _name_bonuses = root_name_bonus(root)
+    score += 3 * len(signals & {"action", "camera", "intrinsics", "gravity", "replay"})
+    if "video" in signals:
+        score += 1
     if root_path.exists():
         score += 1
     if root_path.is_dir():
         score += 1
     score -= 5 * len(penalties)
-    if score >= 12 and "gravity" in signals and "action" in signals and ("camera" in signals or "intrinsics" in signals):
+    has_core_schema = {"video", "action", "gravity"}.issubset(signals) and ("camera" in signals or "intrinsics" in signals)
+    has_matched_replay_schema = has_core_schema and "replay" in signals
+    if score >= 16 and has_matched_replay_schema and not penalties:
         status = "STRONG_CANDIDATE"
         next_action = f"Set PHYS_EDITWORLD_ROOTS={root} and rerun post-mount continuation."
-    elif score >= 4 and not penalties:
+    elif score >= 8 and has_core_schema and not penalties:
         status = "WEAK_CANDIDATE"
         next_action = "Inspect manually; root lacks enough action/camera/gravity evidence for automatic selection."
     else:
