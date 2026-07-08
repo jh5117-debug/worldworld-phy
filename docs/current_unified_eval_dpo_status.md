@@ -636,3 +636,19 @@ Decision: `DPO_RECIPE_NOT_FOUND_V14`. E07/E09/E10 all passed scalar training-sig
 - V-JEPA2 monitor status is now `PASS_WITH_ASSET_BLOCKERS`, not backend-only blocked: 74/74 available rows have positive token-relation margins.
 - Remaining blockers are true-video degradation for scalar-positive DPO schemes, missing old rollout loser assets, and all500 real-energy runtime/cache cost.
 - No S16/S32/train400/large DPO is allowed from v14.
+
+## v14 Calibration8 Real-Energy Update (2026-07-08T07:58:00+08:00)
+
+- Built a larger asset-complete Prefix5 manifest: `manifests/dpo_v14_subsets/asset_complete_prefix5_calibration12.jsonl`.
+- Adapter summary: `reports/dpo_utility_calibration_v14/blocker_retry/asset_complete_prefix5_calibration12_adapter_summary.json`.
+- Ran bounded real LingBot energy on physical GPU5 with `CUDA_VISIBLE_DEVICES=5`, `--runtime_device cuda`, `--limit 8`.
+- Real-energy output: `reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration12_cuda_runtime_limit8/shard_00_of_01.csv`.
+- Summary: `reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration12_cuda_runtime_limit8/real_energy_calibration8_summary.md`.
+- Result: `REAL_ENERGY_CALIBRATION8_PASS`, 8/8 rows ok, no OOM/NaN/SIGFPE.
+- Delta_ref range: `-0.00189158` to `0.01883214`; mean `0.00802792`; median `0.00748671`; 7 positive rows and 1 negative row.
+- Mean per-row energy time: about `184.01s`; peak CUDA memory about `50.43GB`.
+- Standardized utility CSV: `reports/dpo_utility_calibration_v14/energy_utility_calibration8_real.csv`.
+- Beta response: `reports/dpo_utility_calibration_v14/beta_loss_response_calibration8_real.csv` and `reports/dpo_utility_calibration_v14/recommended_dpo_scale_calibration8_real.json`.
+- Beta conclusion: at policy=reference, observed `u_raw/u_log` is exactly zero, so recommendation is `NONE_ZERO_UTILITY`; beta cannot create preference signal without a nonzero policy-reference utility change.
+- Scope: calibration only. No DPO training, no S16/S32/train400/large DPO. all500/S_pass/rollout real-energy coverage remains incomplete, but bounded real-energy evidence improved from 4 rows to 8 rows.
+

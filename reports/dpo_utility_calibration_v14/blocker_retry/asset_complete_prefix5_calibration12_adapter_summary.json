@@ -1,0 +1,16 @@
+{
+  "input_manifest": "manifests/dpo_pair_factory_v11_ready_500_canonical.jsonl",
+  "limit": 12,
+  "output_manifest": "manifests/dpo_v14_subsets/asset_complete_prefix5_calibration12.jsonl",
+  "output_root": "local_assets/dpo_utility_calibration_v14/asset_complete_prefix5_calibration12",
+  "pair_type_counts": {
+    "TypeM_v11_synthetic_visible": 12
+  },
+  "report_csv": "reports/dpo_utility_calibration_v14/blocker_retry/asset_complete_prefix5_calibration12_adapter_report.csv",
+  "schema_validated": 12,
+  "selected_count": 12,
+  "status_counts": {
+    "ADAPTED": 12,
+    "SKIP": 3
+  }
+}

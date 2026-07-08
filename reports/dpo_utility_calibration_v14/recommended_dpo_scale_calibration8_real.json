@@ -1,0 +1,9 @@
+{
+  "recommended_utility_type": "NONE_ZERO_UTILITY",
+  "recommended_beta": null,
+  "recommended_median_abs_beta_u": 0.0,
+  "reason": "All observed utility values are zero at policy=reference; beta cannot create preference signal without a nonzero policy-reference utility change.",
+  "input_csv": [
+    "reports/dpo_utility_calibration_v14/energy_utility_calibration8_real.csv"
+  ]
+}
