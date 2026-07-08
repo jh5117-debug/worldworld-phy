@@ -1,0 +1,11 @@
+{
+  "approved_rows": 0,
+  "decision": "APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS",
+  "execute": false,
+  "rows": [],
+  "safety": {
+    "deleted_files": false,
+    "local_assets_rejected": true,
+    "only_approved_true": true
+  }
+}

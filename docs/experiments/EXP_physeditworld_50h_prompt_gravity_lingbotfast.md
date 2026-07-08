@@ -442,3 +442,25 @@ Validation evidence:
 
 This prevents accidental broad migration from the noisy candidate manifests. After NAS and the selected PhysEditWorld 50h root are visible, only rows confirmed as necessary for restore should be changed to approved=true.
 
+## Approved-Only Migration Copy Executor Update (2026-07-08T20:34:00 CST)
+
+Decision: APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS.
+
+A guarded executor was added for future migration copies:
+
+- Tool: cam_physgeo/orchestration/migration_approved_copy.py.
+- Wrapper: scripts/migration/run_approved_migration_copy.sh.
+- CSV: reports/migration/approved_copy_status.csv.
+- JSON: reports/migration/approved_copy_status.json.
+- Summary: reports/migration/approved_copy_status_summary.md.
+
+Current evidence:
+
+- Approved rows considered: 0.
+- Execute mode: false.
+- local_assets payloads are rejected.
+- No files were copied or deleted.
+- To execute in the future, rows must first be changed to approved=true and the command must be run with MIGRATION_APPROVED=1 and MIGRATION_COPY_APPROVED=1 plus --execute.
+
+This closes the migration safety loop: candidate manifests produce a review template, the review template defaults to no approvals, and the executor refuses to copy until explicit approvals exist.
+

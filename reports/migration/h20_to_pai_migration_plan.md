@@ -103,3 +103,21 @@ Latest decision: `COPY_PLAN_REVIEW_REQUIRED`.
 - No candidate asset is copied until its row is explicitly reviewed and changed to `approved=true`.
 - This protects against accidentally migrating old rollouts, contact sheets, failed checkpoints, or broad `local_assets/` payloads.
 
+## Approved-Only Copy Executor
+
+After editing `reports/migration/approved_copy_manifest_template.tsv`, run a status/dry-run check:
+
+```bash
+bash scripts/migration/run_approved_migration_copy.sh
+```
+
+Latest decision with the current template: `APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS`.
+
+Execution requires all of the following:
+
+```bash
+MIGRATION_APPROVED=1 MIGRATION_COPY_APPROVED=1   bash scripts/migration/run_approved_migration_copy.sh --execute
+```
+
+The executor only considers rows with `approved=true`, rejects `local_assets/` payloads, writes row-level status, and never deletes source files.
+

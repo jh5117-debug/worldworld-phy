@@ -4,7 +4,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 
 ## Status Counts
 
-- `BLOCKED`: 8
+- `BLOCKED`: 9
 - `MISSING`: 1
 - `PASS`: 12
 
@@ -45,6 +45,10 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 - `0_migration` / explicit copy-plan template: `PASS`
   - evidence: `reports/migration/approved_copy_manifest_template.tsv`
   - detail: file exists
+- `0_migration` / approved-only copy executor status: `BLOCKED`
+  - evidence: `reports/migration/approved_copy_status.json`
+  - detail: decision=APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS
+  - next: mark required restore rows approved=true and rerun approved-copy dry-run after NAS is visible
 - `1_data_audit` / strict selected 50h manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_50h_all.jsonl`
   - detail: rows=0, required>=1

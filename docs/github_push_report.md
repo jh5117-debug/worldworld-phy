@@ -164,3 +164,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: compileall PASS, direct copy-plan smoke PASS, direct unit smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Artifact policy: only lightweight code/docs/scripts/TSV/JSON/MD summaries are intended for push; no local_assets, videos/images, checkpoints, weights, or large logs.
 
+## PhysEditWorld Approved-Only Migration Copy Executor (2026-07-08T20:34:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: guarded approved-only copy executor for future H20 to PAI/NAS migration.
+- Latest decision: APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS.
+- Approved rows considered: 0; execute=false; no files copied or deleted.
+- Safety: only approved=true rows are considered, local_assets payloads are rejected, future execute requires MIGRATION_APPROVED=1 and MIGRATION_COPY_APPROVED=1.
+- Test status: compileall PASS, direct approved-copy smoke PASS, direct unit smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Artifact policy: only lightweight code/docs/scripts/CSV/JSON/MD summaries are intended for push; no local_assets, videos/images, checkpoints, weights, or large logs.
+
