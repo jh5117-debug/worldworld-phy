@@ -4,7 +4,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 
 ## Status Counts
 
-- `BLOCKED`: 16
+- `BLOCKED`: 18
 - `PASS`: 14
 
 ## Requirement Evidence
@@ -89,6 +89,14 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - evidence: `manifests/physeditworld_50h_lingbot_val.jsonl`
   - detail: rows=0, required>=1
   - next: run prompt-only gravity conversion
+- `phase2_conversion` / LingBot train conversion schema validation: `BLOCKED`
+  - evidence: `reports/physeditworld_50h/conversion_validation/lingbot_train_manifest_validation.json`
+  - detail: decision=LINGBOT_MANIFEST_BLOCKED_EMPTY
+  - next: rerun conversion manifest validator after prompt-only LingBot conversion writes rows
+- `phase2_conversion` / LingBot val conversion schema validation: `BLOCKED`
+  - evidence: `reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json`
+  - detail: decision=LINGBOT_MANIFEST_BLOCKED_EMPTY
+  - next: rerun conversion manifest validator after prompt-only LingBot conversion writes rows
 - `phase3_baseline` / baseline true rollout gate: `BLOCKED`
   - evidence: `reports/physeditworld_50h_baseline_rollout/summary.md`
   - detail: decision=BASELINE_BLOCKED_EMPTY_MANIFEST

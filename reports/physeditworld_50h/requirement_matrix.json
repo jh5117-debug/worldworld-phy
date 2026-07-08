@@ -194,6 +194,22 @@
       "status": "BLOCKED"
     },
     {
+      "detail": "decision=LINGBOT_MANIFEST_BLOCKED_EMPTY",
+      "evidence": "reports/physeditworld_50h/conversion_validation/lingbot_train_manifest_validation.json",
+      "next_action": "rerun conversion manifest validator after prompt-only LingBot conversion writes rows",
+      "phase": "2_conversion",
+      "requirement": "LingBot train conversion schema validation",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=LINGBOT_MANIFEST_BLOCKED_EMPTY",
+      "evidence": "reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json",
+      "next_action": "rerun conversion manifest validator after prompt-only LingBot conversion writes rows",
+      "phase": "2_conversion",
+      "requirement": "LingBot val conversion schema validation",
+      "status": "BLOCKED"
+    },
+    {
       "detail": "decision=BASELINE_BLOCKED_EMPTY_MANIFEST",
       "evidence": "reports/physeditworld_50h_baseline_rollout/summary.md",
       "next_action": "run true baseline rollout after LingBot manifests exist",

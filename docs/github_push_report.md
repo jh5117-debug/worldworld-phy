@@ -441,3 +441,15 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current data gate remains blocked: strict PhysEditWorld train manifest still has 0 rows because the selected 50h root is not visible/mounted.
 - Test status: project `compileall` PASS, direct rich-manifest conversion smoke PASS, empty-manifest conversion gate PASS; pytest unavailable, no pytest PASS is claimed.
 - Safety: no GPU use, no training, no rollout, no DPO, no data/checkpoint/weight deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld LingBot Manifest Validation Gate (2026-07-09T02:30:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: added an explicit Phase 2 converted-manifest validator for prompt-only PhysEditWorld-to-LingBot rows.
+- Validator: `cam_physgeo/data/lingbot_manifest_validate.py` checks required row fields, file existence for prefix/target/action/poses/intrinsics/prompt/gravity/metadata, prompt-only gravity type, converted condition schema, and metadata frame-count consistency.
+- Requirement/completion gates: both `physeditworld_requirement_matrix` and `physeditworld_completion_audit` now require `LINGBOT_MANIFEST_SCHEMA_PASS` for train and val converted manifests before any baseline rollout or warm-up can be considered unblocked.
+- Current train validation decision: `LINGBOT_MANIFEST_BLOCKED_EMPTY` for `manifests/physeditworld_50h_lingbot_train.jsonl`.
+- Current val validation decision: `LINGBOT_MANIFEST_BLOCKED_EMPTY` for `manifests/physeditworld_50h_lingbot_val.jsonl`.
+- Current overall decisions remain `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS` and `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`; selected PhysEditWorld root/NAS are still absent and strict manifests remain empty.
+- Test status: targeted `compileall` PASS, direct converted-manifest validator smoke PASS, empty-manifest validation PASS, requirement/completion refresh PASS; `pytest` unavailable in system Python, so no pytest PASS is claimed.
+- Safety: CPU/IO/docs/scripts only; no GPU use, no training, no rollout, no DPO, no file copy, no deletion, and no videos/images/checkpoints/weights pushed.
