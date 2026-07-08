@@ -605,3 +605,16 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Conservative high-recall threshold catches all 6 worse rows but flags 2 mixed/not-worse rows, so V-JEPA2 is suitable as a v15 monitor/inspection trigger, not standalone approval.
 - Scope: report/statistics only. No DPO training, no S16/S32/train400, no large DPO.
 - Artifact policy: pushed small CSV/JSON/MD/docs only; no local_assets, videos, images, checkpoints, weights, stdout logs, run scripts, or large logs.
+
+## v14 Expanded V-JEPA Checkpoint Regression Push
+
+- Updated: `2026-07-08T10:08:00+08:00`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `1d9a645 Expand v14 V-JEPA checkpoint regression coverage`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Result: expanded V-JEPA2 checkpoint regression coverage to E02/E04/E05/E07/E09/E10, 24/24 rows ok and 24/24 positive latent drift margins.
+- Codex worse/not-worse rows: `19 / 5`.
+- Gate statistics: token-relation AUC `0.4632`, V-JEPA embedding AUC `0.4842`; high-recall threshold catches all worse rows but has false positives.
+- Interpretation: V-JEPA2 is a useful drift/inspection monitor, not a standalone visual-quality approval metric.
+- Scope: monitor/statistics only. No DPO training, no S16/S32/train400, no large DPO.
+- Artifact policy: pushed small manifest/CSV/JSON/MD/docs only; no local_assets, videos, images, checkpoints, weights, stdout logs, run scripts, or large logs.
