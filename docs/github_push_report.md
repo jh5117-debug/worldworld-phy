@@ -312,3 +312,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current blocker remains external: selected PhysEditWorld 50h root and NAS are not visible; strict and LingBot manifests have 0 rows and Phase 1+ must not run yet.
 - Test status: compileall PASS, direct manifest-init smoke PASS, completion audit rerun PASS; pytest unavailable, no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Manifest Init Phase0 Gate Wiring (2026-07-09T00:03:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: `6458c99 Wire PhysEditWorld manifest init into phase0 gates`.
+- Scope: Phase0 preflight now runs the expected-manifest initializer first, PAI handoff requires the initializer code/report, bootstrap runs it before handoff checks, and completion audit records it as explicit Phase0 evidence.
+- Current decisions: `PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT`, `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS`, `PAI_HANDOFF_BLOCKED_NAS_OR_ROOT`, and `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`.
+- Evidence: `reports/migration/phase0_preflight_summary.md`, `reports/migration/pai_handoff_summary.md`, and `reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.md`.
+- Current blocker remains external: `PHYS_EDITWORLD_ROOTS` is unset and NAS `/mnt/workspace/hj/nas_hj` is not visible.
+- Test status: compileall PASS, direct integration smoke PASS, Phase0/handoff/completion smoke PASS; pytest unavailable, no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
