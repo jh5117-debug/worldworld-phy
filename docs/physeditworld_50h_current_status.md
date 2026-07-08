@@ -445,3 +445,12 @@ The current preflight has 6 steps:
 
 Safety: the preflight does not run rsync execute, does not pass --execute to the approved-copy tool, does not copy data/weights/checkpoints/videos/local_assets, does not delete files, and does not use GPUs.
 
+
+
+## PAI Handoff Verifier Update - 2026-07-08T21:05 CST
+
+- Added a CPU/IO-only PAI handoff verifier: `scripts/migration/verify_pai_physeditworld_handoff.sh`.
+- Latest decision: `PAI_HANDOFF_BLOCKED_NAS_OR_ROOT`.
+- Verified PASS: expected branch, git head readable, no forbidden staged large files, required handoff files present, Phase0 report artifacts present.
+- Current blockers remain external/data readiness blockers: `/mnt/workspace/hj/nas_hj` is not visible, `PHYS_EDITWORLD_ROOTS` is not set, and strict/LingBot manifests are empty.
+- No training, rollout, DPO, file copy, deletion, or GPU use was performed.

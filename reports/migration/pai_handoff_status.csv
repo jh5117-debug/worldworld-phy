@@ -1,0 +1,10 @@
+name,status,path,detail,next_action,error_reason
+git_branch,PASS,,branch=physion-only-local-assets-videogpa-smoke,,
+git_head,PASS,,cb71dc2,,
+forbidden_staged_files,PASS,,none,,
+required_handoff_files,PASS,,missing=0 total=15,,
+phase0_report_artifacts,PASS,,"missing=0 total=8 decisions={""reports/migration/approved_copy_status.json"": ""APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS"", ""reports/migration/migration_asset_validation.json"": ""MIGRATION_ASSET_VALIDATION_NAS_BLOCKED"", ""reports/migration/phase0_preflight_status.json"": ""PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS"", ""reports/migration/physeditworld_pai_readiness.json"": ""PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED"", ""reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json"": ""PIPELINE_BLOCKED_AT_READINESS"", ""reports/physeditworld_50h/requirement_matrix.json"": ""PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS""}",,
+nas_target,BLOCKED,/mnt/workspace/hj/nas_hj,missing,mount or expose PAI/NAS target path,
+physeditworld_root_input,BLOCKED,,PHYS_EDITWORLD_ROOTS not set,set PHYS_EDITWORLD_ROOTS=/path/to/selected_physeditworld_50h,
+strict_manifest,BLOCKED,manifests/physeditworld_50h_all.jsonl,rows=0 required>=1,mount selected root and rerun post-mount continuation,
+lingbot_train_manifest,BLOCKED,manifests/physeditworld_50h_lingbot_train.jsonl,rows=0 required>=1,mount selected root and rerun post-mount continuation,

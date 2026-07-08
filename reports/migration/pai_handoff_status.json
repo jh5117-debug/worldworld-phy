@@ -1,0 +1,77 @@
+{
+  "checks": [
+    {
+      "detail": "branch=physion-only-local-assets-videogpa-smoke",
+      "error_reason": "",
+      "name": "git_branch",
+      "next_action": "",
+      "path": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "cb71dc2",
+      "error_reason": "",
+      "name": "git_head",
+      "next_action": "",
+      "path": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "none",
+      "error_reason": "",
+      "name": "forbidden_staged_files",
+      "next_action": "",
+      "path": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "missing=0 total=15",
+      "error_reason": "",
+      "name": "required_handoff_files",
+      "next_action": "",
+      "path": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "missing=0 total=8 decisions={\"reports/migration/approved_copy_status.json\": \"APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS\", \"reports/migration/migration_asset_validation.json\": \"MIGRATION_ASSET_VALIDATION_NAS_BLOCKED\", \"reports/migration/phase0_preflight_status.json\": \"PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS\", \"reports/migration/physeditworld_pai_readiness.json\": \"PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED\", \"reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json\": \"PIPELINE_BLOCKED_AT_READINESS\", \"reports/physeditworld_50h/requirement_matrix.json\": \"PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS\"}",
+      "error_reason": "",
+      "name": "phase0_report_artifacts",
+      "next_action": "",
+      "path": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "missing",
+      "error_reason": "",
+      "name": "nas_target",
+      "next_action": "mount or expose PAI/NAS target path",
+      "path": "/mnt/workspace/hj/nas_hj",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "PHYS_EDITWORLD_ROOTS not set",
+      "error_reason": "",
+      "name": "physeditworld_root_input",
+      "next_action": "set PHYS_EDITWORLD_ROOTS=/path/to/selected_physeditworld_50h",
+      "path": "",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "rows=0 required>=1",
+      "error_reason": "",
+      "name": "strict_manifest",
+      "next_action": "mount selected root and rerun post-mount continuation",
+      "path": "manifests/physeditworld_50h_all.jsonl",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "rows=0 required>=1",
+      "error_reason": "",
+      "name": "lingbot_train_manifest",
+      "next_action": "mount selected root and rerun post-mount continuation",
+      "path": "manifests/physeditworld_50h_lingbot_train.jsonl",
+      "status": "BLOCKED"
+    }
+  ],
+  "decision": "PAI_HANDOFF_BLOCKED_NAS_OR_ROOT"
+}

@@ -4,7 +4,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 
 ## Status Counts
 
-- `BLOCKED`: 9
+- `BLOCKED`: 10
 - `MISSING`: 1
 - `PASS`: 12
 
@@ -49,6 +49,10 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - evidence: `reports/migration/approved_copy_status.json`
   - detail: decision=APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS
   - next: mark required restore rows approved=true and rerun approved-copy dry-run after NAS is visible
+- `0_migration` / PAI handoff verifier: `BLOCKED`
+  - evidence: `reports/migration/pai_handoff_status.json`
+  - detail: decision=PAI_HANDOFF_BLOCKED_NAS_OR_ROOT
+  - next: mount NAS/PhysEditWorld root and rerun PAI handoff verifier
 - `1_data_audit` / strict selected 50h manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_50h_all.jsonl`
   - detail: rows=0, required>=1

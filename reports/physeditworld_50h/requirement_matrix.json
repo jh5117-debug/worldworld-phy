@@ -98,6 +98,14 @@
       "status": "BLOCKED"
     },
     {
+      "detail": "decision=PAI_HANDOFF_BLOCKED_NAS_OR_ROOT",
+      "evidence": "reports/migration/pai_handoff_status.json",
+      "next_action": "mount NAS/PhysEditWorld root and rerun PAI handoff verifier",
+      "phase": "0_migration",
+      "requirement": "PAI handoff verifier",
+      "status": "BLOCKED"
+    },
+    {
       "detail": "rows=0, required>=1",
       "evidence": "manifests/physeditworld_50h_all.jsonl",
       "next_action": "mount selected PhysEditWorld 50h root and rerun manifest audit",

@@ -34,3 +34,26 @@ The required next action is to mount/provide the selected PhysEditWorld 50h root
 bash scripts/run_physeditworld_pipeline_gates.sh
 python3 -m cam_physgeo.orchestration.physeditworld_requirement_matrix
 ```
+
+
+## Handoff Verification Command
+
+After cloning/updating the repo on PAI or after a NAS/root mount change, run:
+
+```bash
+bash scripts/migration/verify_pai_physeditworld_handoff.sh
+```
+
+Expected current H20 decision before NAS/root is visible:
+
+```text
+PAI_HANDOFF_BLOCKED_NAS_OR_ROOT
+```
+
+Once the selected PhysEditWorld 50h root is available, rerun with:
+
+```bash
+PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h   bash scripts/migration/verify_pai_physeditworld_handoff.sh
+```
+
+The verifier is read-only and does not copy data, launch training/rollout/eval, use GPUs, delete files, or push large artifacts.
