@@ -705,3 +705,15 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Reports: `reports/dpo_utility_calibration_v14/asset_recovery_plan/recovery_smoke_limit1_summary.md` plus CSV/JSON.
 - Generated MP4 files remain local-only under `local_assets/dpo_utility_calibration_v14/asset_recovery_smoke/all500_smoke1` and were not staged or pushed.
 - Artifact policy: only lightweight manifest/CSV/JSON/MD/docs were pushed; no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged.
+
+## v14 Asset Recovery Smoke8 Push (2026-07-08)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`.
+- Commit: `bd4d3e4 Validate v14 asset recovery smoke8`.
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Smoke result: `cam_physgeo.dpo.v14_asset_complete_adapter --limit 8` adapted eight all500 recoverable rows and schema-validated all eight.
+- Output manifest: `manifests/dpo_v14_subsets/asset_complete/all500_recovered_smoke8_prefix5.jsonl`.
+- Reports: `reports/dpo_utility_calibration_v14/asset_recovery_plan/recovery_smoke_limit8_summary.json` and `recovery_smoke_limit8_validation.md` plus CSVs.
+- Generated MP4 files remain local-only under `local_assets/dpo_utility_calibration_v14/asset_recovery_smoke/all500_smoke8` and were not staged or pushed.
+- Artifact policy: only lightweight manifest/CSV/JSON/MD/docs were pushed; no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged.
+
