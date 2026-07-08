@@ -674,3 +674,13 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - New artifacts: `reports/dpo_utility_calibration_v14/latent_monitor/artifact_correlation/vjepa_artifact_correlation.md`, `.csv`, and `.json`.
 - Result: V-JEPA2 has promising small-N signal for identity/artifact labels in the full checkpoint set, but weak discrimination on scalar-positive E07/E09/E10; it remains monitor/inspection-only, not standalone approval.
 - Artifact policy: only lightweight CSV/JSON/MD/docs were pushed; no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged.
+
+## v14 Asset Availability Audit Push (2026-07-08)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`.
+- Commit: `2e2dca2 Audit v14 asset availability for real energy retry`.
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- New artifacts: `reports/dpo_utility_calibration_v14/asset_availability/*` and asset-complete JSONL manifests under `manifests/dpo_v14_subsets/asset_complete/`.
+- The manifest files were force-added because `manifests/` is gitignored, but they are lightweight JSONL reports only.
+- Result: all500 has 336 recoverable rows, stratified100 has 64 recoverable rows, synthetic/local-mask have 336 recoverable rows, while rollout_only and S_pass remain blocked by missing loser videos.
+- Artifact policy: no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged or pushed.
