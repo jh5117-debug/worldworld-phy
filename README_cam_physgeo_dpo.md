@@ -480,3 +480,7 @@ A targeted monitor compared E09/E10 step0 videos against degraded updated checkp
 ### v14 V-JEPA2 Gate Statistics
 
 Checkpoint-regression V-JEPA2 margins were compared against Codex worse-than-step0 labels for E09/E10. Token-relation AUC is 0.5833 and V-JEPA embedding AUC is 0.6667 on 8 rows. The monitor is high-recall but not precise enough to approve training by itself; it should be used as a v15 drift/artifact-risk gate combined with visual audit and metrics.
+
+### v14 Expanded V-JEPA2 Checkpoint Regression
+
+V-JEPA2 was run on all available v14 checkpoint regressions across E02/E04/E05/E07/E09/E10: 24/24 rows were ok and all had positive latent drift margins. However, AUC against Codex worse-than-step0 labels is low, so the monitor is useful as a high-recall drift/inspection trigger rather than a standalone quality approval metric.

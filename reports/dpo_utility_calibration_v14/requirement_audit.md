@@ -85,3 +85,12 @@ This is the current authoritative audit for `EXP_dpo_utility_calibration_and_lat
 - Conservative high-recall threshold catches all 6 worse rows but has 2 false positives on mixed/not-worse rows.
 - Conclusion: V-JEPA2 should be v15 monitor/gate input, not a standalone approval metric.
 - v14 remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO.
+
+## v14 Expanded V-JEPA2 Checkpoint Regression Update (2026-07-08T10:05:00+08:00)
+
+- Built `manifests/dpo_v14_subsets/checkpoint_regression_all_available_vjepa_pairs.jsonl` covering E02/E04/E05/E07/E09/E10 checkpoint regressions.
+- Ran local V-JEPA2 on physical GPU4 only with `CUDA_VISIBLE_DEVICES=4`; no training.
+- Result: 24/24 ok, 24/24 positive V-JEPA and token-relation margins.
+- Codex worse/not-worse rows: `19 / 5`.
+- AUC vs Codex worse is low (`0.4632` token relation, `0.4842` embedding), so V-JEPA2 is a drift detector/inspection trigger, not a standalone quality PASS metric.
+- v14 remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO.

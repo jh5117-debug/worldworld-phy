@@ -1,0 +1,104 @@
+{
+  "input_csv": "reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_all_available/vjepa2_checkpoint_regression_all_with_visual.csv",
+  "metrics": {
+    "token_relation_margin": {
+      "auc": 0.4631578947368421,
+      "best_balanced_threshold": {
+        "balanced_accuracy": 0.6,
+        "f1": 0.9047619047619047,
+        "fn": 0,
+        "fp": 4,
+        "fpr": 0.8,
+        "metric": "token_relation_margin",
+        "precision": 0.8260869565217391,
+        "recall": 1.0,
+        "threshold": 0.039196910336613655,
+        "tn": 1,
+        "tp": 19,
+        "tpr": 1.0
+      },
+      "max": 0.10660583525896072,
+      "mean": 0.0630954415537417,
+      "median": 0.057847822085022926,
+      "min": 0.03626668453216553,
+      "safe_threshold_no_false_negative": {
+        "balanced_accuracy": 0.6,
+        "f1": 0.9047619047619047,
+        "fn": 0,
+        "fp": 4,
+        "fpr": 0.8,
+        "metric": "token_relation_margin",
+        "precision": 0.8260869565217391,
+        "recall": 1.0,
+        "threshold": 0.039196910336613655,
+        "tn": 1,
+        "tp": 19,
+        "tpr": 1.0
+      }
+    },
+    "vjepa_margin": {
+      "auc": 0.4842105263157895,
+      "best_balanced_threshold": {
+        "balanced_accuracy": 0.6052631578947368,
+        "f1": 0.34782608695652173,
+        "fn": 15,
+        "fp": 0,
+        "fpr": 0.0,
+        "metric": "vjepa_margin",
+        "precision": 1.0,
+        "recall": 0.21052631578947367,
+        "threshold": 0.00417289137840271,
+        "tn": 5,
+        "tp": 4,
+        "tpr": 0.21052631578947367
+      },
+      "max": 0.010382771492004395,
+      "mean": 0.0027438153823216758,
+      "median": 0.0018117725849151611,
+      "min": 0.0006732344627380371,
+      "safe_threshold_no_false_negative": {
+        "balanced_accuracy": 0.5,
+        "f1": 0.8837209302325582,
+        "fn": 0,
+        "fp": 5,
+        "fpr": 1.0,
+        "metric": "vjepa_margin",
+        "precision": 0.7916666666666666,
+        "recall": 1.0,
+        "threshold": 0.0006732344627380371,
+        "tn": 0,
+        "tp": 19,
+        "tpr": 1.0
+      }
+    }
+  },
+  "not_worse_rows": 5,
+  "rows": 24,
+  "scheme_counts": {
+    "E02_best7": {
+      "rows": 4,
+      "worse": 4
+    },
+    "E04_screen5": {
+      "rows": 4,
+      "worse": 3
+    },
+    "E05_screen5": {
+      "rows": 4,
+      "worse": 2
+    },
+    "E07_screen200": {
+      "rows": 4,
+      "worse": 4
+    },
+    "E09_screen200": {
+      "rows": 4,
+      "worse": 4
+    },
+    "E10_screen100": {
+      "rows": 4,
+      "worse": 2
+    }
+  },
+  "worse_rows": 19
+}

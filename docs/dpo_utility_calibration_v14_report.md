@@ -429,3 +429,33 @@ Results on 8 E09/E10 checkpoint-regression rows:
 Interpretation: V-JEPA2 is a useful high-recall checkpoint drift/artifact-risk monitor, but not a standalone visual-quality classifier. It should be used in v15 to trigger stop/inspection and combined with Codex audit plus metrics. It must not be used to approve DPO scale by itself.
 
 This reinforces the v14 blocker: scalar energy/gap improvement is insufficient, and a visual/latent gate is needed before any further DPO scaling. v14 remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`.
+
+## v14 Expanded V-JEPA2 Checkpoint Regression Update (2026-07-08T10:05:00+08:00)
+
+The checkpoint-regression monitor was expanded from E09/E10 only to all available v14 checkpoint video pairs: E02, E04, E05, E07, E09, and E10.
+
+Artifacts:
+
+- Manifest: `manifests/dpo_v14_subsets/checkpoint_regression_all_available_vjepa_pairs.jsonl`
+- V-JEPA2 CSV: `reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_all_available/vjepa2_checkpoint_regression_all.csv`
+- Joined visual/latent CSV: `reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_all_available/vjepa2_checkpoint_regression_all_with_visual.csv`
+- Gate design: `reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_all_available/vjepa2_checkpoint_gate_design_all.md`
+- Threshold sweep: `reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_all_available/vjepa2_checkpoint_gate_thresholds_all.csv`
+- Stats: `reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_all_available/vjepa2_checkpoint_gate_stats_all.json`
+
+Result:
+
+- `LATENT_MONITOR_VJEPA2_VIDEO_SMOKE_PASS`, 24/24 ok.
+- Positive V-JEPA embedding margins: 24/24.
+- Positive token-relation margins: 24/24.
+- Codex worse/not-worse rows: 19/5.
+
+Gate statistics:
+
+- token-relation AUC vs Codex worse label: `0.4632`
+- V-JEPA embedding AUC vs Codex worse label: `0.4842`
+- high-recall token threshold catches all 19 worse rows but flags 4/5 not-worse rows.
+
+Interpretation: V-JEPA2 is reliable as a checkpoint drift detector on this set, but not a visual-quality classifier. The right v15 use is a high-recall monitor/inspection trigger combined with Codex visual audit and metrics, not a standalone approval criterion. This supports the v14 root-cause conclusion: scalar DPO improvements can move checkpoint videos in latent space, but that movement is not necessarily visually beneficial.
+
+Decision remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`.
