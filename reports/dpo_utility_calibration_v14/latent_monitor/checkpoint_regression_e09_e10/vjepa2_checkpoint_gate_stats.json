@@ -1,0 +1,50 @@
+{
+  "input_csv": "reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_e09_e10/vjepa2_checkpoint_regression_with_visual.csv",
+  "metrics": {
+    "token_relation_margin": {
+      "auc": 0.5833333333333334,
+      "max": 0.09631488472223282,
+      "mean": 0.06632272619754076,
+      "median": 0.059193359687924385,
+      "min": 0.05159546434879303,
+      "safe_threshold_no_false_negative": {
+        "balanced_accuracy": 0.5,
+        "f1": 0.8571428571428571,
+        "fn": 0,
+        "fp": 2,
+        "fpr": 1.0,
+        "metric": "token_relation_margin",
+        "precision": 0.75,
+        "recall": 1.0,
+        "threshold": 0.05159546434879303,
+        "tn": 0,
+        "tp": 6,
+        "tpr": 1.0
+      }
+    },
+    "vjepa_margin": {
+      "auc": 0.6666666666666666,
+      "max": 0.007237434387207031,
+      "mean": 0.003367498517036438,
+      "median": 0.0026774704456329346,
+      "min": 0.0014584064483642578,
+      "safe_threshold_no_false_negative": {
+        "balanced_accuracy": 0.5,
+        "f1": 0.8571428571428571,
+        "fn": 0,
+        "fp": 2,
+        "fpr": 1.0,
+        "metric": "vjepa_margin",
+        "precision": 0.75,
+        "recall": 1.0,
+        "threshold": 0.0014584064483642578,
+        "tn": 0,
+        "tp": 6,
+        "tpr": 1.0
+      }
+    }
+  },
+  "not_worse_rows": 2,
+  "rows": 8,
+  "worse_rows": 6
+}

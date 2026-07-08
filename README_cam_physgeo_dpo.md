@@ -476,3 +476,7 @@ A follow-up v14 calibration built `manifests/dpo_v14_subsets/asset_complete_pref
 ### v14 V-JEPA2 Checkpoint Regression Monitor
 
 A targeted monitor compared E09/E10 step0 videos against degraded updated checkpoint videos using local V-JEPA2. It produced 8/8 positive token-relation margins, including all Codex-worse rows. This supports V-JEPA2 as a v15 checkpoint-drift/artifact-risk gate, but it is not a standalone visual-quality classifier and does not change v14 `NO_SCALE`.
+
+### v14 V-JEPA2 Gate Statistics
+
+Checkpoint-regression V-JEPA2 margins were compared against Codex worse-than-step0 labels for E09/E10. Token-relation AUC is 0.5833 and V-JEPA embedding AUC is 0.6667 on 8 rows. The monitor is high-recall but not precise enough to approve training by itself; it should be used as a v15 drift/artifact-risk gate combined with visual audit and metrics.

@@ -57,3 +57,11 @@ A bounded resume run extended real LingBot energy coverage from 8 to 12 asset-co
 - 6/8 rows were Codex-worse-than-step0; V-JEPA2 detected drift for all of them.
 - Decision: `CHECKPOINT_REGRESSION_MONITOR_PASS_AS_DRIFT_DETECTOR` for v15 monitor/gate design, not a v14 DPO recipe.
 - v14 remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO.
+
+## v14 V-JEPA2 Gate Statistics Update (2026-07-08T09:55:00+08:00)
+
+- Computed threshold/AUC stats for E09/E10 checkpoint-regression V-JEPA2 margins.
+- Token-relation AUC vs Codex worse: `0.5833`; V-JEPA embedding AUC: `0.6667`.
+- Conservative high-recall threshold catches all 6 worse rows but has 2 false positives on mixed/not-worse rows.
+- Conclusion: V-JEPA2 should be v15 monitor/gate input, not a standalone approval metric.
+- v14 remains `DPO_RECIPE_NOT_FOUND_V14`; no S16/S32/train400/large DPO.

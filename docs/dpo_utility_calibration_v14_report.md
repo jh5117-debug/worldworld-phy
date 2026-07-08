@@ -410,3 +410,22 @@ Result: `CHECKPOINT_REGRESSION_MONITOR_PASS_AS_DRIFT_DETECTOR`.
 Interpretation: V-JEPA2 detects that E09/E10 updated checkpoints move away from step0 in every tested sample. This supports using V-JEPA2 as a v15 checkpoint-drift / artifact-risk gate. It is not sufficient alone as a binary visual-quality classifier, because two mixed/not-worse E10 rows also had positive latent drift. The safe use remains monitor-first, combined with Codex visual audit and conventional metrics.
 
 This does not change the v14 decision: `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`.
+
+## v14 V-JEPA2 Gate Statistics Update (2026-07-08T09:55:00+08:00)
+
+The E09/E10 checkpoint-regression V-JEPA2 monitor was converted into a quantitative gate-design report:
+
+- Gate design: `reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_e09_e10/vjepa2_checkpoint_gate_design.md`
+- Threshold sweep: `reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_e09_e10/vjepa2_checkpoint_gate_thresholds.csv`
+- Stats JSON: `reports/dpo_utility_calibration_v14/latent_monitor/checkpoint_regression_e09_e10/vjepa2_checkpoint_gate_stats.json`
+
+Results on 8 E09/E10 checkpoint-regression rows:
+
+- Codex worse/not-worse rows: `6 / 2`
+- Token-relation margin AUC vs Codex worse label: `0.5833`
+- V-JEPA embedding margin AUC vs Codex worse label: `0.6667`
+- Conservative no-false-negative thresholds flag all 6 worse rows but also flag both mixed/not-worse rows.
+
+Interpretation: V-JEPA2 is a useful high-recall checkpoint drift/artifact-risk monitor, but not a standalone visual-quality classifier. It should be used in v15 to trigger stop/inspection and combined with Codex audit plus metrics. It must not be used to approve DPO scale by itself.
+
+This reinforces the v14 blocker: scalar energy/gap improvement is insufficient, and a visual/latent gate is needed before any further DPO scaling. v14 remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`.
