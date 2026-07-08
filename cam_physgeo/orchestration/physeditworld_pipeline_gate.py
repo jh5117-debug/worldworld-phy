@@ -205,10 +205,15 @@ def main(argv: list[str] | None = None) -> int:
         ("baseline", "reports/physeditworld_50h_baseline_rollout/summary.md", read_md_decision, "run rank32 warm-up preflight"),
         ("warmup_preflight", "reports/physeditworld_50h_warmup_rank32/preflight_summary.md", read_md_decision, "run checkpoint eval gate"),
         ("checkpoint_eval", "reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json", read_json_decision, "build anchored pairs"),
-        ("pair_builder", "reports/physeditworld_dpo_pairs_anchored_v0/pair_summary.md", read_md_decision, "run tiny anchored DPO gate"),
+        ("pair_builder", "reports/physeditworld_dpo_pairs_anchored_v0/pair_summary.md", read_md_decision, "validate every anchored pair before tiny DPO"),
+        ("pair_manifest_validation", "reports/physeditworld_dpo_pairs_anchored_v0/pair_manifest_validation.json", read_json_decision, "run tiny anchored DPO gate"),
         ("tiny_dpo", "reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json", read_json_decision, "final decision"),
     ]:
         decision, status, error = reader(path)
+        if phase == "pair_manifest_validation" and decision != "PHYS_EDITWORLD_PAIR_MANIFEST_PASS":
+            status = "BLOCKED"
+            if not error:
+                error = "strict pair manifest validation has not passed"
         rows.append(PhaseStatus(phase, decision, status, path, next_action=next_action if status != "BLOCKED" else "resolve blocker before continuing", error_reason=error))
         if status == "BLOCKED" or "BLOCKED" in decision or decision == "MISSING":
             break

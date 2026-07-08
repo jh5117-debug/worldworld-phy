@@ -53,6 +53,20 @@ def test_pipeline_blocks_at_root_schema_before_readiness():
     assert decision == "PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE"
 
 
+def test_pipeline_blocks_at_pair_manifest_validation_before_tiny_dpo():
+    decision = pipeline_decision([
+        PhaseStatus("pair_builder", "READY_FOR_TINY_ANCHORED_DPO", "PASS", "pair_summary.md"),
+        PhaseStatus(
+            "pair_manifest_validation",
+            "PHYS_EDITWORLD_PAIR_MANIFEST_BLOCKED_INSUFFICIENT_READY",
+            "BLOCKED",
+            "pair_manifest_validation.json",
+        ),
+        PhaseStatus("tiny_dpo", "TINY_DPO_READY_DRY_RUN", "PASS", "best_checkpoint_decision.json"),
+    ])
+    assert decision == "PIPELINE_BLOCKED_AT_PAIR_MANIFEST_VALIDATION"
+
+
 def test_status_for_expected_decision_requires_exact_pass():
     assert status_for_expected_decision("PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT", {"PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT"}) == "PASS"
     assert status_for_expected_decision("PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT", {"PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT"}) == "BLOCKED"

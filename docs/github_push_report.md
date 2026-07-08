@@ -512,3 +512,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Validation run: `python3 -m compileall` PASS and direct smoke PASS. `pytest` is unavailable in the active H20 shell (`No module named pytest`), so no pytest PASS is claimed.
 - Safety: CPU/IO only; no GPU training, no rollout, no checkpoint deletion, no local_assets/video/weights push.
 
+## PhysEditWorld Pipeline Pair-Validation Gate (2026-07-09T03:16:00 CST)
+
+- Wired strict pair manifest validation into `cam_physgeo/orchestration/physeditworld_pipeline_gate.py`.
+- The pipeline gate now inserts `pair_manifest_validation` between `pair_builder` and `tiny_dpo` and requires decision `PHYS_EDITWORLD_PAIR_MANIFEST_PASS`.
+- This prevents future post-mount runs from advancing to tiny anchored DPO based only on `READY_FOR_TINY_ANCHORED_DPO` pair-builder summary.
+- Current live pipeline gate still blocks earlier at `PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE`, because the selected PhysEditWorld root/NAS is not mounted; no downstream training/eval was run.
+- Validation: compileall PASS, direct smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
+- Safety: CPU/IO only; no GPU use, no training, no rollout, no deletion, no local_assets/video/weights push.
+
