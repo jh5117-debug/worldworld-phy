@@ -589,3 +589,15 @@ git push -u origin cam-physgeo-dpo-refactor
 - Effect: the H20 -> PAI handoff can verify the bootstrap path as first-class migration evidence instead of relying only on the broader handoff verifier.
 - Live decisions remain blocked as intended: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS` and `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION` because NAS/selected PhysEditWorld root are still not visible.
 - Validation: targeted compileall PASS, direct matrix/audit smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
+- Safety: CPU/IO only; no GPU use, no training, no rollout, no copy/delete, no local_assets/video/weights push.
+
+## PhysEditWorld PAI Restore Packet (2026-07-09T05:27:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `a9951d2 Add PhysEditWorld PAI restore packet`.
+- Scope: added a CPU-only restore packet generator and wrapper: `cam_physgeo/orchestration/physeditworld_pai_restore_packet.py` and `scripts/migration/run_physeditworld_pai_restore_packet.sh`.
+- Outputs: `reports/migration/pai_restore_packet.json` and `reports/migration/pai_restore_packet.md`.
+- Bootstrap now writes the packet before and after gate refresh; PAI handoff verification requires the restore packet report as expected migration evidence.
+- Live restore-packet decision: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT` with blockers `NAS_TARGET_MISSING`, `PHYS_EDITWORLD_ROOTS_MISSING_OR_INVALID`, `PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY`, and the existing matrix/completion blockers.
+- Validation: `py_compile` PASS, targeted `compileall` PASS, direct restore-packet/handoff smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
+- Safety: CPU/IO only; no GPU use, no training, no rollout, no DPO, no rsync execute, no copy/delete, no local_assets/video/weights push.
