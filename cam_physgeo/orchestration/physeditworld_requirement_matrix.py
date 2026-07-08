@@ -18,6 +18,64 @@ class RequirementRow:
     next_action: str = ""
 
 
+PHASE0_DECISION_GATES = [
+    (
+        "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
+        "expected empty manifest placeholders",
+        {"PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED", "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT"},
+        "run expected-manifest initializer before any post-mount work",
+    ),
+    (
+        "reports/migration/physeditworld_pai_readiness.json",
+        "PAI/NAS and data readiness",
+        {"READY_FOR_BASELINE_ROLLOUT_PREFLIGHT"},
+        "mount NAS and selected PhysEditWorld 50h root",
+    ),
+    (
+        "reports/migration/physeditworld_root_candidates_ranked.json",
+        "PhysEditWorld root candidate ranking",
+        {"PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG"},
+        "provide selected PhysEditWorld root via PHYS_EDITWORLD_ROOTS and rerun root candidate ranker",
+    ),
+    (
+        "reports/migration/physeditworld_root_schema_probe.json",
+        "selected-root schema probe",
+        {"PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT"},
+        "provide a selected root with action/camera/intrinsics/gravity/replay/video evidence and rerun schema probe",
+    ),
+    (
+        "reports/migration/physeditworld_selected_root_status.json",
+        "PhysEditWorld selected-root lock",
+        {"PHYS_EDITWORLD_ROOT_SELECTION_LOCKED"},
+        "set PHYS_EDITWORLD_ROOTS to a strong root and rerun selected-root verifier",
+    ),
+    (
+        "reports/migration/locked_handoff_sequence.json",
+        "locked handoff sequence",
+        {"LOCKED_HANDOFF_PHASE12_READY_FOR_BASELINE_GATE"},
+        "rerun locked handoff after NAS/root/schema gates are satisfied",
+    ),
+    (
+        "reports/migration/migration_asset_validation.json",
+        "migration asset validation",
+        {"MIGRATION_ASSET_VALIDATION_PASS"},
+        "mount NAS and rerun migration asset validation before execute copy",
+    ),
+    (
+        "reports/migration/approved_copy_status.json",
+        "approved-only copy executor status",
+        {"APPROVED_COPY_DRYRUN_READY", "APPROVED_COPY_EXECUTED"},
+        "mark required restore rows approved=true and rerun approved-copy dry-run after NAS is visible",
+    ),
+    (
+        "reports/migration/pai_handoff_status.json",
+        "PAI handoff verifier",
+        {"PAI_HANDOFF_READY_FOR_POST_MOUNT_CONTINUE"},
+        "mount NAS/PhysEditWorld root and rerun PAI handoff verifier",
+    ),
+]
+
+
 def count_jsonl(path: str | Path) -> int | None:
     p = Path(path)
     if not p.exists():
@@ -75,13 +133,11 @@ def build_rows() -> list[RequirementRow]:
         file_status("reports/migration/required_data_manifest.tsv", "required data manifest", "0_migration", "build data manifest"),
         file_status("scripts/migration/rsync_h20_to_pai_dryrun.sh", "rsync dry-run script", "0_migration", "add dry-run script"),
         file_status("scripts/migration/rsync_h20_to_pai_execute.sh", "guarded rsync execute script", "0_migration", "add execute script"),
-        decision_status("reports/migration/physeditworld_pai_readiness.json", "PAI/NAS and data readiness", "0_migration", {"READY_FOR_BASELINE_ROLLOUT_PREFLIGHT"}, "mount NAS and selected PhysEditWorld 50h root"),
-        decision_status("reports/migration/physeditworld_root_candidates_ranked.json", "PhysEditWorld root candidate ranking", "0_migration", {"PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG"}, "provide selected PhysEditWorld root via PHYS_EDITWORLD_ROOTS and rerun root candidate ranker"),
-        decision_status("reports/migration/physeditworld_selected_root_status.json", "PhysEditWorld selected-root lock", "0_migration", {"PHYS_EDITWORLD_ROOT_SELECTION_LOCKED"}, "set PHYS_EDITWORLD_ROOTS to a strong root and rerun selected-root verifier"),
-        decision_status("reports/migration/migration_asset_validation.json", "migration asset validation", "0_migration", {"MIGRATION_ASSET_VALIDATION_PASS"}, "mount NAS and rerun migration asset validation before execute copy"),
         file_status("reports/migration/approved_copy_manifest_template.tsv", "explicit copy-plan template", "0_migration", "generate approved copy manifest template"),
-        decision_status("reports/migration/approved_copy_status.json", "approved-only copy executor status", "0_migration", {"APPROVED_COPY_DRYRUN_READY", "APPROVED_COPY_EXECUTED"}, "mark required restore rows approved=true and rerun approved-copy dry-run after NAS is visible"),
-        decision_status("reports/migration/pai_handoff_status.json", "PAI handoff verifier", "0_migration", {"PAI_HANDOFF_READY_FOR_POST_MOUNT_CONTINUE"}, "mount NAS/PhysEditWorld root and rerun PAI handoff verifier"),
+    ])
+    for evidence, requirement, pass_values, next_action in PHASE0_DECISION_GATES:
+        rows.append(decision_status(evidence, requirement, "0_migration", pass_values, next_action))
+    rows.extend([
         manifest_status("manifests/physeditworld_50h_all.jsonl", "strict selected 50h manifest", "1_data_audit", 1, "mount selected PhysEditWorld 50h root and rerun manifest audit"),
         manifest_status("manifests/physeditworld_50h_train.jsonl", "train split manifest", "1_data_audit", 1, "rerun replay-group split"),
         file_status("reports/physeditworld_50h/split_summary.md", "split summary", "1_data_audit", "run split summary"),

@@ -1,15 +1,13 @@
 # PhysEditWorld Pipeline Gate Summary
 
-Decision: `PIPELINE_BLOCKED_AT_READINESS`
+Decision: `PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE`
 
 ## Phases
 
-- `readiness`: `PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED` from `reports/migration/physeditworld_pai_readiness.json`
-  - next: mount NAS and selected PhysEditWorld 50h root
-- `asset_validation`: `MIGRATION_ASSET_VALIDATION_NAS_BLOCKED` from `reports/migration/migration_asset_validation.json`
-  - next: mount NAS and rerun migration asset validation
-- `approved_copy`: `APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS` from `reports/migration/approved_copy_status.json`
-  - next: approve required restore rows and rerun approved-copy dry-run
+- `manifest_init`: `PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT` from `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
+  - next: check selected-root schema probe
+- `root_schema_probe`: `PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT` from `reports/migration/physeditworld_root_schema_probe.json`
+  - next: set PHYS_EDITWORLD_ROOTS to a selected root with action/camera/intrinsics/gravity/replay/video evidence
 
 ## Safety
 

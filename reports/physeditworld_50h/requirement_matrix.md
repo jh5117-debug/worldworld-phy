@@ -4,9 +4,8 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 
 ## Status Counts
 
-- `BLOCKED`: 12
-- `MISSING`: 1
-- `PASS`: 12
+- `BLOCKED`: 15
+- `PASS`: 13
 
 ## Requirements
 
@@ -34,25 +33,36 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 - `0_migration` / guarded rsync execute script: `PASS`
   - evidence: `scripts/migration/rsync_h20_to_pai_execute.sh`
   - detail: file exists
+- `0_migration` / explicit copy-plan template: `PASS`
+  - evidence: `reports/migration/approved_copy_manifest_template.tsv`
+  - detail: file exists
+- `0_migration` / expected empty manifest placeholders: `PASS`
+  - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
+  - detail: decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT
 - `0_migration` / PAI/NAS and data readiness: `BLOCKED`
   - evidence: `reports/migration/physeditworld_pai_readiness.json`
   - detail: decision=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED
   - next: mount NAS and selected PhysEditWorld 50h root
 - `0_migration` / PhysEditWorld root candidate ranking: `BLOCKED`
   - evidence: `reports/migration/physeditworld_root_candidates_ranked.json`
-  - detail: decision=PHYS_EDITWORLD_ROOT_CANDIDATES_WEAK_ONLY
+  - detail: decision=PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG
   - next: provide selected PhysEditWorld root via PHYS_EDITWORLD_ROOTS and rerun root candidate ranker
+- `0_migration` / selected-root schema probe: `BLOCKED`
+  - evidence: `reports/migration/physeditworld_root_schema_probe.json`
+  - detail: decision=PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT
+  - next: provide a selected root with action/camera/intrinsics/gravity/replay/video evidence and rerun schema probe
 - `0_migration` / PhysEditWorld selected-root lock: `BLOCKED`
   - evidence: `reports/migration/physeditworld_selected_root_status.json`
   - detail: decision=PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT
   - next: set PHYS_EDITWORLD_ROOTS to a strong root and rerun selected-root verifier
+- `0_migration` / locked handoff sequence: `BLOCKED`
+  - evidence: `reports/migration/locked_handoff_sequence.json`
+  - detail: decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE
+  - next: rerun locked handoff after NAS/root/schema gates are satisfied
 - `0_migration` / migration asset validation: `BLOCKED`
   - evidence: `reports/migration/migration_asset_validation.json`
   - detail: decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED
   - next: mount NAS and rerun migration asset validation before execute copy
-- `0_migration` / explicit copy-plan template: `PASS`
-  - evidence: `reports/migration/approved_copy_manifest_template.tsv`
-  - detail: file exists
 - `0_migration` / approved-only copy executor status: `BLOCKED`
   - evidence: `reports/migration/approved_copy_status.json`
   - detail: decision=APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS
@@ -76,9 +86,9 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - evidence: `manifests/physeditworld_50h_lingbot_train.jsonl`
   - detail: rows=0, required>=1
   - next: rerun prompt-only LingBot conversion
-- `2_conversion` / LingBot val conversion manifest: `MISSING`
+- `2_conversion` / LingBot val conversion manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_50h_lingbot_val.jsonl`
-  - detail: manifest missing
+  - detail: rows=0, required>=1
   - next: rerun prompt-only LingBot conversion
 - `3_baseline` / baseline rollout summary: `PASS`
   - evidence: `reports/physeditworld_50h_baseline_rollout/summary.md`

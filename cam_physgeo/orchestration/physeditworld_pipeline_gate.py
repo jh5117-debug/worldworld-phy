@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any
 
 BLOCKED_PREFIXES = ("BLOCKED",)
+READY_MANIFEST_INIT = {"PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED", "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT"}
+READY_ROOT_SCHEMA_PROBE = "PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT"
 READY_READINESS = "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT"
 READY_ASSET_VALIDATION = "MIGRATION_ASSET_VALIDATION_PASS"
 READY_APPROVED_COPY = {"APPROVED_COPY_DRYRUN_READY", "APPROVED_COPY_EXECUTED"}
@@ -51,6 +53,29 @@ def read_md_decision(path: str | Path) -> tuple[str, str, str]:
             break
     status = "BLOCKED" if "BLOCKED" in decision or "FAIL" in decision or decision == "MISSING" else "PASS"
     return decision, status, ""
+
+
+def status_for_expected_decision(decision: str, pass_values: set[str]) -> str:
+    if decision in pass_values:
+        return "PASS"
+    if decision == "MISSING" or decision.startswith("UNREADABLE"):
+        return "BLOCKED"
+    if any(marker in decision for marker in ("BLOCKED", "FAIL", "WAITING", "MISSING", "NEEDS", "REJECT", "NONE_STRONG")):
+        return "BLOCKED"
+    return "BLOCKED"
+
+
+def decision_gate_row(phase: str, path: str, pass_values: set[str], blocked_next_action: str, pass_next_action: str = "") -> PhaseStatus:
+    decision, _status, error = read_json_decision(path)
+    status = status_for_expected_decision(decision, pass_values)
+    return PhaseStatus(
+        phase,
+        decision,
+        status,
+        path,
+        next_action=pass_next_action if status == "PASS" else blocked_next_action,
+        error_reason=error,
+    )
 
 
 def run_command(cmd: list[str], dry_run: bool) -> tuple[int, str]:
@@ -124,6 +149,28 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     rows: list[PhaseStatus] = []
+
+    rows.append(decision_gate_row(
+        "manifest_init",
+        "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
+        READY_MANIFEST_INIT,
+        "run expected-manifest initializer before any downstream gate",
+        "check selected-root schema probe",
+    ))
+    rows.append(decision_gate_row(
+        "root_schema_probe",
+        "reports/migration/physeditworld_root_schema_probe.json",
+        {READY_ROOT_SCHEMA_PROBE},
+        "set PHYS_EDITWORLD_ROOTS to a selected root with action/camera/intrinsics/gravity/replay/video evidence",
+        "check PAI/NAS and data readiness",
+    ))
+    if any(row.status == "BLOCKED" for row in rows):
+        decision = pipeline_decision(rows)
+        write_csv(rows, args.output_csv)
+        write_json(rows, decision, args.output_json)
+        write_summary(rows, decision, args.summary)
+        print(json.dumps({"decision": decision, "phases": len(rows)}, sort_keys=True))
+        return 0
 
     if args.run_readiness:
         code, out = run_command(["bash", "scripts/migration/check_physeditworld_pai_readiness.sh"], args.dry_run)

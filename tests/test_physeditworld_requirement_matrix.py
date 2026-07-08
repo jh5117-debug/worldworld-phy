@@ -1,4 +1,4 @@
-from cam_physgeo.orchestration.physeditworld_requirement_matrix import RequirementRow, overall_decision
+from cam_physgeo.orchestration.physeditworld_requirement_matrix import PHASE0_DECISION_GATES, RequirementRow, overall_decision
 
 
 def test_requirement_matrix_blocks_at_migration_readiness():
@@ -26,3 +26,9 @@ def test_requirement_matrix_blocks_on_asset_validation():
     ])
     assert decision == "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS"
 
+
+def test_phase0_decision_gates_include_locked_root_schema_sequence():
+    requirements = {gate[1] for gate in PHASE0_DECISION_GATES}
+    assert "expected empty manifest placeholders" in requirements
+    assert "selected-root schema probe" in requirements
+    assert "locked handoff sequence" in requirements

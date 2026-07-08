@@ -7,18 +7,21 @@ phase,requirement,status,evidence,detail,next_action
 0_migration,required data manifest,PASS,reports/migration/required_data_manifest.tsv,file exists,
 0_migration,rsync dry-run script,PASS,scripts/migration/rsync_h20_to_pai_dryrun.sh,file exists,
 0_migration,guarded rsync execute script,PASS,scripts/migration/rsync_h20_to_pai_execute.sh,file exists,
-0_migration,PAI/NAS and data readiness,BLOCKED,reports/migration/physeditworld_pai_readiness.json,decision=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED,mount NAS and selected PhysEditWorld 50h root
-0_migration,PhysEditWorld root candidate ranking,BLOCKED,reports/migration/physeditworld_root_candidates_ranked.json,decision=PHYS_EDITWORLD_ROOT_CANDIDATES_WEAK_ONLY,provide selected PhysEditWorld root via PHYS_EDITWORLD_ROOTS and rerun root candidate ranker
-0_migration,PhysEditWorld selected-root lock,BLOCKED,reports/migration/physeditworld_selected_root_status.json,decision=PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT,set PHYS_EDITWORLD_ROOTS to a strong root and rerun selected-root verifier
-0_migration,migration asset validation,BLOCKED,reports/migration/migration_asset_validation.json,decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED,mount NAS and rerun migration asset validation before execute copy
 0_migration,explicit copy-plan template,PASS,reports/migration/approved_copy_manifest_template.tsv,file exists,
+0_migration,expected empty manifest placeholders,PASS,reports/physeditworld_50h/manifest_init/empty_manifest_init.json,decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT,
+0_migration,PAI/NAS and data readiness,BLOCKED,reports/migration/physeditworld_pai_readiness.json,decision=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED,mount NAS and selected PhysEditWorld 50h root
+0_migration,PhysEditWorld root candidate ranking,BLOCKED,reports/migration/physeditworld_root_candidates_ranked.json,decision=PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG,provide selected PhysEditWorld root via PHYS_EDITWORLD_ROOTS and rerun root candidate ranker
+0_migration,selected-root schema probe,BLOCKED,reports/migration/physeditworld_root_schema_probe.json,decision=PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT,provide a selected root with action/camera/intrinsics/gravity/replay/video evidence and rerun schema probe
+0_migration,PhysEditWorld selected-root lock,BLOCKED,reports/migration/physeditworld_selected_root_status.json,decision=PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT,set PHYS_EDITWORLD_ROOTS to a strong root and rerun selected-root verifier
+0_migration,locked handoff sequence,BLOCKED,reports/migration/locked_handoff_sequence.json,decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE,rerun locked handoff after NAS/root/schema gates are satisfied
+0_migration,migration asset validation,BLOCKED,reports/migration/migration_asset_validation.json,decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED,mount NAS and rerun migration asset validation before execute copy
 0_migration,approved-only copy executor status,BLOCKED,reports/migration/approved_copy_status.json,decision=APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS,mark required restore rows approved=true and rerun approved-copy dry-run after NAS is visible
 0_migration,PAI handoff verifier,BLOCKED,reports/migration/pai_handoff_status.json,decision=PAI_HANDOFF_BLOCKED_NAS_OR_ROOT,mount NAS/PhysEditWorld root and rerun PAI handoff verifier
 1_data_audit,strict selected 50h manifest,BLOCKED,manifests/physeditworld_50h_all.jsonl,"rows=0, required>=1",mount selected PhysEditWorld 50h root and rerun manifest audit
 1_data_audit,train split manifest,BLOCKED,manifests/physeditworld_50h_train.jsonl,"rows=0, required>=1",rerun replay-group split
 1_data_audit,split summary,PASS,reports/physeditworld_50h/split_summary.md,file exists,
 2_conversion,LingBot train conversion manifest,BLOCKED,manifests/physeditworld_50h_lingbot_train.jsonl,"rows=0, required>=1",rerun prompt-only LingBot conversion
-2_conversion,LingBot val conversion manifest,MISSING,manifests/physeditworld_50h_lingbot_val.jsonl,manifest missing,rerun prompt-only LingBot conversion
+2_conversion,LingBot val conversion manifest,BLOCKED,manifests/physeditworld_50h_lingbot_val.jsonl,"rows=0, required>=1",rerun prompt-only LingBot conversion
 3_baseline,baseline rollout summary,PASS,reports/physeditworld_50h_baseline_rollout/summary.md,file exists,
 5_checkpoint_eval,checkpoint video/metric gate,BLOCKED,reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json,decision=CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING,"produce true rollout videos, metrics, and Codex audit"
 7_tiny_dpo,tiny anchored DPO gate,BLOCKED,reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json,decision=TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS,build >=100 reviewed pairs before tiny DPO

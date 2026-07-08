@@ -1,4 +1,4 @@
-from cam_physgeo.orchestration.physeditworld_pipeline_gate import PhaseStatus, pipeline_decision, read_md_decision
+from cam_physgeo.orchestration.physeditworld_pipeline_gate import PhaseStatus, pipeline_decision, read_md_decision, status_for_expected_decision
 
 
 def test_pipeline_blocks_at_first_blocked_phase():
@@ -43,3 +43,16 @@ def test_pipeline_blocks_at_approved_copy_when_prior_phase_passes():
     ])
     assert decision == "PIPELINE_BLOCKED_AT_APPROVED_COPY"
 
+
+def test_pipeline_blocks_at_root_schema_before_readiness():
+    decision = pipeline_decision([
+        PhaseStatus("manifest_init", "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", "PASS", "x"),
+        PhaseStatus("root_schema_probe", "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT", "BLOCKED", "y"),
+        PhaseStatus("readiness", "PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED", "BLOCKED", "z"),
+    ])
+    assert decision == "PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE"
+
+
+def test_status_for_expected_decision_requires_exact_pass():
+    assert status_for_expected_decision("PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT", {"PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT"}) == "PASS"
+    assert status_for_expected_decision("PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT", {"PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT"}) == "BLOCKED"

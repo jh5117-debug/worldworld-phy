@@ -66,6 +66,22 @@
       "status": "PASS"
     },
     {
+      "detail": "file exists",
+      "evidence": "reports/migration/approved_copy_manifest_template.tsv",
+      "next_action": "",
+      "phase": "0_migration",
+      "requirement": "explicit copy-plan template",
+      "status": "PASS"
+    },
+    {
+      "detail": "decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
+      "evidence": "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
+      "next_action": "",
+      "phase": "0_migration",
+      "requirement": "expected empty manifest placeholders",
+      "status": "PASS"
+    },
+    {
       "detail": "decision=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED",
       "evidence": "reports/migration/physeditworld_pai_readiness.json",
       "next_action": "mount NAS and selected PhysEditWorld 50h root",
@@ -74,11 +90,19 @@
       "status": "BLOCKED"
     },
     {
-      "detail": "decision=PHYS_EDITWORLD_ROOT_CANDIDATES_WEAK_ONLY",
+      "detail": "decision=PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG",
       "evidence": "reports/migration/physeditworld_root_candidates_ranked.json",
       "next_action": "provide selected PhysEditWorld root via PHYS_EDITWORLD_ROOTS and rerun root candidate ranker",
       "phase": "0_migration",
       "requirement": "PhysEditWorld root candidate ranking",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT",
+      "evidence": "reports/migration/physeditworld_root_schema_probe.json",
+      "next_action": "provide a selected root with action/camera/intrinsics/gravity/replay/video evidence and rerun schema probe",
+      "phase": "0_migration",
+      "requirement": "selected-root schema probe",
       "status": "BLOCKED"
     },
     {
@@ -90,20 +114,20 @@
       "status": "BLOCKED"
     },
     {
+      "detail": "decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE",
+      "evidence": "reports/migration/locked_handoff_sequence.json",
+      "next_action": "rerun locked handoff after NAS/root/schema gates are satisfied",
+      "phase": "0_migration",
+      "requirement": "locked handoff sequence",
+      "status": "BLOCKED"
+    },
+    {
       "detail": "decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED",
       "evidence": "reports/migration/migration_asset_validation.json",
       "next_action": "mount NAS and rerun migration asset validation before execute copy",
       "phase": "0_migration",
       "requirement": "migration asset validation",
       "status": "BLOCKED"
-    },
-    {
-      "detail": "file exists",
-      "evidence": "reports/migration/approved_copy_manifest_template.tsv",
-      "next_action": "",
-      "phase": "0_migration",
-      "requirement": "explicit copy-plan template",
-      "status": "PASS"
     },
     {
       "detail": "decision=APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS",
@@ -154,12 +178,12 @@
       "status": "BLOCKED"
     },
     {
-      "detail": "manifest missing",
+      "detail": "rows=0, required>=1",
       "evidence": "manifests/physeditworld_50h_lingbot_val.jsonl",
       "next_action": "rerun prompt-only LingBot conversion",
       "phase": "2_conversion",
       "requirement": "LingBot val conversion manifest",
-      "status": "MISSING"
+      "status": "BLOCKED"
     },
     {
       "detail": "file exists",

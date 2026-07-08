@@ -1,30 +1,22 @@
 {
-  "decision": "PIPELINE_BLOCKED_AT_READINESS",
+  "decision": "PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE",
   "phases": [
     {
-      "decision": "PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED",
+      "decision": "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
       "error_reason": "",
-      "next_action": "mount NAS and selected PhysEditWorld 50h root",
-      "phase": "readiness",
-      "source": "reports/migration/physeditworld_pai_readiness.json",
-      "status": "BLOCKED"
+      "next_action": "check selected-root schema probe",
+      "phase": "manifest_init",
+      "source": "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
+      "status": "PASS"
     },
     {
-      "decision": "MIGRATION_ASSET_VALIDATION_NAS_BLOCKED",
+      "decision": "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT",
       "error_reason": "",
-      "next_action": "mount NAS and rerun migration asset validation",
-      "phase": "asset_validation",
-      "source": "reports/migration/migration_asset_validation.json",
-      "status": "BLOCKED"
-    },
-    {
-      "decision": "APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS",
-      "error_reason": "",
-      "next_action": "approve required restore rows and rerun approved-copy dry-run",
-      "phase": "approved_copy",
-      "source": "reports/migration/approved_copy_status.json",
+      "next_action": "set PHYS_EDITWORLD_ROOTS to a selected root with action/camera/intrinsics/gravity/replay/video evidence",
+      "phase": "root_schema_probe",
+      "source": "reports/migration/physeditworld_root_schema_probe.json",
       "status": "BLOCKED"
     }
   ],
-  "timestamp": "2026-07-08T12:37:39.380122+00:00"
+  "timestamp": "2026-07-08T16:48:05.607897+00:00"
 }

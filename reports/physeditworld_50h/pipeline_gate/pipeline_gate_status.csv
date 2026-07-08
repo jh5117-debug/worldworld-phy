@@ -1,4 +1,3 @@
 phase,decision,status,source,next_action,error_reason
-readiness,PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED,BLOCKED,reports/migration/physeditworld_pai_readiness.json,mount NAS and selected PhysEditWorld 50h root,
-asset_validation,MIGRATION_ASSET_VALIDATION_NAS_BLOCKED,BLOCKED,reports/migration/migration_asset_validation.json,mount NAS and rerun migration asset validation,
-approved_copy,APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS,BLOCKED,reports/migration/approved_copy_status.json,approve required restore rows and rerun approved-copy dry-run,
+manifest_init,PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT,PASS,reports/physeditworld_50h/manifest_init/empty_manifest_init.json,check selected-root schema probe,
+root_schema_probe,PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT,BLOCKED,reports/migration/physeditworld_root_schema_probe.json,set PHYS_EDITWORLD_ROOTS to a selected root with action/camera/intrinsics/gravity/replay/video evidence,
