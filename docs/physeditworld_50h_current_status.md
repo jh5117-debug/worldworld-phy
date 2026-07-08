@@ -254,3 +254,21 @@ Smoke evidence:
 The checkpoint eval gate was invoked with `CUDA_VISIBLE_DEVICES=4`, which passes the GPU4-7 policy, but it correctly refused to evaluate because `manifests/physeditworld_50h_lingbot_val.jsonl` is missing. The tiny DPO gate also used `CUDA_VISIBLE_DEVICES=4` and correctly refused to train because the anchored pair manifest has 0 rows, below the 100-pair gate.
 
 Test status: compileall PASS, direct Phase 5/7 smoke PASS, pytest unavailable; no pytest PASS is claimed. No rollout, no metrics scoring, no visual audit, no training, and no DPO was run.
+
+
+## Pipeline Gate Orchestrator Update (2026-07-08T19:18:47 CST)
+
+Decision: `PIPELINE_BLOCKED_AT_READINESS`.
+
+A safe phase-gate orchestrator was added:
+
+- Orchestrator: `cam_physgeo/orchestration/physeditworld_pipeline_gate.py`.
+- Launch script: `scripts/run_physeditworld_pipeline_gates.sh`.
+- Test: `tests/test_physeditworld_pipeline_gate.py`.
+- CSV: `reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.csv`.
+- JSON: `reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json`.
+- Summary: `reports/physeditworld_50h/pipeline_gate/pipeline_gate_summary.md`.
+
+The orchestrator reruns/reads readiness first and stops before baseline, warm-up, checkpoint eval, pair construction, or tiny DPO when prerequisites are blocked. Current stop point is readiness because NAS and the selected PhysEditWorld 50h root are not visible and the strict/LingBot manifests are empty.
+
+Test status: compileall PASS, direct pipeline gate smoke PASS, pytest unavailable; no pytest PASS is claimed. No GPU, rollout, metrics scoring, visual audit, training, or DPO was run.

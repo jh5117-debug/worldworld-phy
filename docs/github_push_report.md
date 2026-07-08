@@ -95,3 +95,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - GPU policy: smoke used `CUDA_VISIBLE_DEVICES=4`; no GPU computation, rollout, metrics scoring, or DPO training was launched.
 - Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Artifact policy: only lightweight code/docs/CSV/JSON/MD summaries are intended for push; no `local_assets`, videos/images, checkpoints, weights, or large logs.
+
+
+## PhysEditWorld Pipeline Gate Orchestrator (2026-07-08T19:18:47 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Scope: safe CPU/IO-only phase gate collector for readiness, baseline, warm-up, checkpoint eval, pair construction, and tiny DPO gates.
+- Latest decision: `PIPELINE_BLOCKED_AT_READINESS`.
+- Stop reason: selected PhysEditWorld root and NAS are not visible; strict/LingBot manifests remain empty.
+- Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Artifact policy: only lightweight code/docs/scripts/CSV/JSON/MD summaries are intended for push; no `local_assets`, videos/images, checkpoints, weights, or large logs.

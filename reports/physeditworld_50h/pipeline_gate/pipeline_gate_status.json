@@ -1,0 +1,14 @@
+{
+  "decision": "PIPELINE_BLOCKED_AT_READINESS",
+  "phases": [
+    {
+      "decision": "PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED",
+      "error_reason": "",
+      "next_action": "mount NAS and selected PhysEditWorld 50h root",
+      "phase": "readiness",
+      "source": "reports/migration/physeditworld_pai_readiness.json",
+      "status": "BLOCKED"
+    }
+  ],
+  "timestamp": "2026-07-08T11:18:19.410659+00:00"
+}
