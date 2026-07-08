@@ -41,6 +41,7 @@ REQUIRED_FILES = (
     "cam_physgeo/data/physeditworld_root_selection.py",
     "cam_physgeo/orchestration/physeditworld_phase0_preflight.py",
     "cam_physgeo/orchestration/physeditworld_pipeline_gate.py",
+    "cam_physgeo/orchestration/physeditworld_backend_readiness.py",
     "cam_physgeo/orchestration/physeditworld_requirement_matrix.py",
     "cam_physgeo/orchestration/physeditworld_locked_handoff.py",
     "cam_physgeo/orchestration/physeditworld_completion_audit.py",
@@ -62,6 +63,7 @@ EXPECTED_REPORTS = (
     "reports/migration/approved_copy_manifest_template.tsv",
     "reports/migration/approved_copy_status.json",
     "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json",
+    "reports/physeditworld_50h/backend_readiness/backend_readiness.json",
     "reports/physeditworld_50h/requirement_matrix.json",
     "reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json",
 )
@@ -267,6 +269,7 @@ def write_summary(rows: list[HandoffCheck], decision: str, path: str | Path) -> 
         "  bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh",
         "",
         "# Read-only completion evidence after any handoff run:",
+        "python3 -m cam_physgeo.orchestration.physeditworld_backend_readiness",
         "bash scripts/migration/run_physeditworld_completion_audit.sh",
         "",
         "# Lower-level fallback commands for debugging one stage at a time:",

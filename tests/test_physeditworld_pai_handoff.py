@@ -57,6 +57,7 @@ def test_required_files_include_latest_handoff_tools():
     assert "scripts/migration/run_physeditworld_completion_audit.sh" in required
     assert "scripts/migration/prepare_physeditworld_root_intake.sh" in required
     assert "cam_physgeo/orchestration/physeditworld_completion_audit.py" in required
+    assert "cam_physgeo/orchestration/physeditworld_backend_readiness.py" in required
     assert "cam_physgeo/orchestration/physeditworld_root_intake.py" in required
     assert "cam_physgeo/data/physeditworld_root_schema_probe.py" in required
     assert "cam_physgeo/data/physeditworld_manifest_init.py" in required
@@ -70,6 +71,7 @@ def test_expected_reports_include_root_lock_and_completion_audit():
     assert "reports/migration/physeditworld_root_intake.json" in expected
     assert "reports/migration/locked_handoff_sequence.json" in expected
     assert "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json" in expected
+    assert "reports/physeditworld_50h/backend_readiness/backend_readiness.json" in expected
 
 
 def test_summary_prefers_locked_handoff_sequence(tmp_path):
@@ -78,4 +80,5 @@ def test_summary_prefers_locked_handoff_sequence(tmp_path):
     text = out.read_text()
     assert "run_physeditworld_locked_handoff_sequence.sh" in text
     assert "run_physeditworld_completion_audit.sh" in text
+    assert "physeditworld_backend_readiness" in text
     assert text.index("run_physeditworld_locked_handoff_sequence.sh") < text.index("continue_physeditworld_after_mount.sh")

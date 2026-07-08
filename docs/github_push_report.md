@@ -561,3 +561,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Effect: a mounted PhysEditWorld root can no longer flow from conversion into downstream gates unless backend readiness is `PHYS_EDITWORLD_BACKEND_READY_FOR_BASELINE_WARMUP`.
 - Validation: compileall PASS, direct post-mount backend-gate smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
 - Safety: CPU/IO only; no GPU use, no training, no rollout, no copy/delete, no local_assets/video/weights push.
+
+## PhysEditWorld PAI Handoff Backend Readiness Evidence (2026-07-09T04:12:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Scope: PAI handoff verification now requires `cam_physgeo/orchestration/physeditworld_backend_readiness.py` and `reports/physeditworld_50h/backend_readiness/backend_readiness.json`.
+- Effect: migration/handoff summaries explicitly preserve the backend-readiness blocker and the safe next command `python3 -m cam_physgeo.orchestration.physeditworld_backend_readiness`.
+- Live handoff decision remains `PAI_HANDOFF_BLOCKED_NAS_OR_ROOT` because `/mnt/workspace/hj/nas_hj` and selected `PHYS_EDITWORLD_ROOTS` are not visible.
+- Validation: compileall PASS, direct PAI-handoff backend-gate smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
+- Safety: CPU/IO only; no GPU use, no training, no rollout, no copy/delete, no local_assets/video/weights push.

@@ -12,13 +12,13 @@ Decision: `PAI_HANDOFF_BLOCKED_NAS_OR_ROOT`
 - `git_branch`: `PASS`
   - detail: branch=physion-only-local-assets-videogpa-smoke
 - `git_head`: `PASS`
-  - detail: ab1449e
+  - detail: 40bb910
 - `forbidden_staged_files`: `PASS`
   - detail: none
 - `required_handoff_files`: `PASS`
-  - detail: missing=0 total=31
+  - detail: missing=0 total=32
 - `phase0_report_artifacts`: `PASS`
-  - detail: missing=0 total=15 decisions={"reports/migration/approved_copy_status.json": "APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS", "reports/migration/locked_handoff_sequence.json": "LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE", "reports/migration/migration_asset_validation.json": "MIGRATION_ASSET_VALIDATION_NAS_BLOCKED", "reports/migration/phase0_preflight_status.json": "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS", "reports/migration/physeditworld_pai_readiness.json": "PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED", "reports/migration/physeditworld_root_candidates_ranked.json": "PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG", "reports/migration/physeditworld_root_intake.json": "PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT", "reports/migration/physeditworld_root_schema_probe.json": "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT", "reports/migration/physeditworld_selected_root_status.json": "PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT", "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json": "PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION", "reports/physeditworld_50h/manifest_init/empty_manifest_init.json": "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", "reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json": "PIPELINE_BLOCKED_AT_READINESS", "reports/physeditworld_50h/requirement_matrix.json": "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS"}
+  - detail: missing=0 total=16 decisions={"reports/migration/approved_copy_status.json": "APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS", "reports/migration/locked_handoff_sequence.json": "LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE", "reports/migration/migration_asset_validation.json": "MIGRATION_ASSET_VALIDATION_NAS_BLOCKED", "reports/migration/phase0_preflight_status.json": "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES", "reports/migration/physeditworld_pai_readiness.json": "PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED", "reports/migration/physeditworld_root_candidates_ranked.json": "PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG", "reports/migration/physeditworld_root_intake.json": "PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT", "reports/migration/physeditworld_root_schema_probe.json": "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT", "reports/migration/physeditworld_selected_root_status.json": "PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT", "reports/physeditworld_50h/backend_readiness/backend_readiness.json": "PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY", "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json": "PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION", "reports/physeditworld_50h/manifest_init/empty_manifest_init.json": "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT", "reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json": "PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE", "reports/physeditworld_50h/requirement_matrix.json": "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS"}
 - `nas_target`: `BLOCKED` (/mnt/workspace/hj/nas_hj)
   - detail: missing
   - next: mount or expose PAI/NAS target path
@@ -40,6 +40,7 @@ PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h \
   bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh
 
 # Read-only completion evidence after any handoff run:
+python3 -m cam_physgeo.orchestration.physeditworld_backend_readiness
 bash scripts/migration/run_physeditworld_completion_audit.sh
 
 # Lower-level fallback commands for debugging one stage at a time:
