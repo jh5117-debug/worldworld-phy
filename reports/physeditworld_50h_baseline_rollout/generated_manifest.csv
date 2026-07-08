@@ -1,2 +1,2 @@
-error_reason,status
-input manifest has zero rows,BASELINE_BLOCKED_EMPTY_MANIFEST
+error_reason,manifest_validation,status,validation_decision
+input manifest has zero rows,reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json,BASELINE_BLOCKED_EMPTY_MANIFEST,LINGBOT_MANIFEST_BLOCKED_EMPTY

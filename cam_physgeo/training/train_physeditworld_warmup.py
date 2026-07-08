@@ -20,6 +20,17 @@ def count_jsonl(path: str | Path) -> int | None:
         return sum(1 for line in f if line.strip())
 
 
+def read_validation_decision(path: str | Path) -> str:
+    p = Path(path)
+    if not p.exists():
+        return "MISSING"
+    try:
+        obj = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return "UNREADABLE"
+    return str(obj.get("decision") or obj.get("status") or "UNKNOWN")
+
+
 def parse_simple_config(path: str | Path) -> dict[str, Any]:
     text = Path(path).read_text(encoding="utf-8") if Path(path).exists() else ""
     rank_match = re.search(r"lora_rank:\s*([0-9]+)", text)
@@ -57,6 +68,10 @@ def write_csv(row: dict[str, Any], path: str | Path) -> None:
         "val_manifest",
         "manifest_rows",
         "val_rows",
+        "manifest_validation",
+        "manifest_validation_decision",
+        "val_manifest_validation",
+        "val_manifest_validation_decision",
         "max_steps_requested",
         "gravity_prompt_only",
         "lora_rank",
@@ -83,6 +98,8 @@ def write_summary(row: dict[str, Any], path: str | Path) -> None:
         f"- Config: `{row['config']}`",
         f"- Manifest: `{row['manifest']}` rows={row.get('manifest_rows')}",
         f"- Val manifest: `{row['val_manifest']}` rows={row.get('val_rows')}",
+        f"- Manifest validation: `{row.get('manifest_validation')}` decision=`{row.get('manifest_validation_decision')}`",
+        f"- Val manifest validation: `{row.get('val_manifest_validation')}` decision=`{row.get('val_manifest_validation_decision')}`",
         f"- Gravity prompt-only: `{row.get('gravity_prompt_only')}`",
         f"- LoRA rank: `{row.get('lora_rank')}`",
         f"- CUDA_VISIBLE_DEVICES: `{row.get('cuda_visible_devices')}`",
@@ -98,6 +115,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--config", required=True)
     ap.add_argument("--manifest", required=True)
     ap.add_argument("--val_manifest", required=True)
+    ap.add_argument("--manifest_validation", default="reports/physeditworld_50h/conversion_validation/lingbot_train_manifest_validation.json")
+    ap.add_argument("--val_manifest_validation", default="reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json")
     ap.add_argument("--max_steps", type=int, required=True)
     ap.add_argument("--save_steps", default="")
     ap.add_argument("--eval_every", type=int, default=0)
@@ -113,6 +132,8 @@ def main(argv: list[str] | None = None) -> int:
     cfg = parse_simple_config(args.config)
     rows = count_jsonl(args.manifest)
     val_rows = count_jsonl(args.val_manifest)
+    manifest_validation_decision = read_validation_decision(args.manifest_validation)
+    val_manifest_validation_decision = read_validation_decision(args.val_manifest_validation)
     visible, gpu_policy = visible_gpu_status()
     decision = "WARMUP_PREFLIGHT_READY"
     status = "PASS"
@@ -132,6 +153,10 @@ def main(argv: list[str] | None = None) -> int:
         decision, status, error = "WARMUP_BLOCKED_VAL_MANIFEST_MISSING", "BLOCKED", "val manifest missing"
     elif val_rows == 0:
         decision, status, error = "WARMUP_BLOCKED_EMPTY_VAL_MANIFEST", "BLOCKED", "val manifest has zero rows"
+    elif manifest_validation_decision != "LINGBOT_MANIFEST_SCHEMA_PASS":
+        decision, status, error = "WARMUP_BLOCKED_MANIFEST_VALIDATION", "BLOCKED", f"train validation decision is {manifest_validation_decision}"
+    elif val_manifest_validation_decision != "LINGBOT_MANIFEST_SCHEMA_PASS":
+        decision, status, error = "WARMUP_BLOCKED_VAL_MANIFEST_VALIDATION", "BLOCKED", f"val validation decision is {val_manifest_validation_decision}"
     elif args.dry_run:
         decision, status = "WARMUP_DRY_RUN_READY", "PASS"
     else:
@@ -148,6 +173,10 @@ def main(argv: list[str] | None = None) -> int:
         "val_manifest": args.val_manifest,
         "manifest_rows": rows,
         "val_rows": val_rows,
+        "manifest_validation": args.manifest_validation,
+        "manifest_validation_decision": manifest_validation_decision,
+        "val_manifest_validation": args.val_manifest_validation,
+        "val_manifest_validation_decision": val_manifest_validation_decision,
         "max_steps_requested": args.max_steps,
         "gravity_prompt_only": cfg["gravity_prompt_only"],
         "lora_rank": cfg["lora_rank"],

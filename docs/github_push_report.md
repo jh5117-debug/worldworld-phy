@@ -479,3 +479,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current blocker remains external: `PHYS_EDITWORLD_ROOTS` is unset and selected root/NAS are not visible, so post-mount still reports `POST_MOUNT_BLOCKED_AT_ROOT_INPUT`.
 - Test status: shell syntax check PASS, current blocked-state run PASS, direct post-mount smokes remain PASS; `pytest` unavailable in system Python, so no pytest PASS is claimed.
 - Safety: CPU/IO/docs/scripts only; no GPU use, no training, no rollout, no DPO, no file copy, no deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld Baseline/Warm-Up Validation Gates (2026-07-09T03:15:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: hardened downstream Phase 3/4 entrypoints so non-empty LingBot manifests are not sufficient by themselves.
+- Baseline gate: `cam_physgeo/eval/physeditworld_baseline_rollout.py` now requires the val converted-manifest validation decision to be `LINGBOT_MANIFEST_SCHEMA_PASS` before dry-run readiness or backend execution can be considered.
+- Warm-up gate: `cam_physgeo/training/train_physeditworld_warmup.py` now requires both train and val converted-manifest validation decisions to be `LINGBOT_MANIFEST_SCHEMA_PASS` before rank32 warm-up dry-run/backend execution can be considered.
+- Current baseline decision remains `BASELINE_BLOCKED_EMPTY_MANIFEST`; its summary records val validation decision `LINGBOT_MANIFEST_BLOCKED_EMPTY`.
+- Current warm-up decision remains `WARMUP_BLOCKED_EMPTY_MANIFEST`; its summary records train/val validation decisions `LINGBOT_MANIFEST_BLOCKED_EMPTY`.
+- Test status: targeted `compileall` PASS, direct baseline/warm-up validation-gate smoke PASS, current blocked reports refreshed, requirement/completion refresh PASS; `pytest` unavailable in system Python, so no pytest PASS is claimed.
+- Safety: CPU/IO/docs/scripts only; no GPU training or rollout, no DPO, no deletion, and no videos/images/checkpoints/weights pushed.

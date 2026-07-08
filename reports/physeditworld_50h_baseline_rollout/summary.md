@@ -2,9 +2,10 @@
 
 Decision: `BASELINE_BLOCKED_EMPTY_MANIFEST`
 
-- Input manifest: `manifests/physeditworld_50h_lingbot_train.jsonl`
+- Input manifest: `manifests/physeditworld_50h_lingbot_val.jsonl`
 - Input rows: 0
 - Selected rows: 0
+- Manifest validation: `reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json` decision=`LINGBOT_MANIFEST_BLOCKED_EMPTY`
 - Models requested: `original_fast,lingbot_base_if_available`
 - Gravity modes requested: `correct,wrong,default`
 - Output root: `local_assets/physeditworld_50h_baseline_rollout`

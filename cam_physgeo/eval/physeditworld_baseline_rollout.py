@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,17 @@ def write_csv(rows: list[dict[str, Any]], path: str | Path) -> None:
             writer.writerow(row)
 
 
+def read_validation_decision(path: str | Path) -> str:
+    p = Path(path)
+    if not p.exists():
+        return "MISSING"
+    try:
+        obj = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return "UNREADABLE"
+    return str(obj.get("decision") or obj.get("status") or "UNKNOWN")
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--manifest", required=True)
@@ -35,12 +47,22 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--output_root", required=True)
     ap.add_argument("--report", required=True)
     ap.add_argument("--summary", required=True)
+    ap.add_argument("--manifest_validation", default="reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json")
     ap.add_argument("--dry_run", action="store_true")
     args = ap.parse_args(argv)
     rows = list(read_jsonl(args.manifest)) if Path(args.manifest).exists() else []
+    validation_decision = read_validation_decision(args.manifest_validation)
     selected = select_conditions(rows, args.num_conditions)
     report_rows: list[dict[str, Any]] = []
-    decision = "BASELINE_BLOCKED_EMPTY_MANIFEST" if not selected else "BASELINE_READY_DRY_RUN" if args.dry_run else "BASELINE_BACKEND_NOT_CONNECTED"
+    if not selected:
+        decision = "BASELINE_BLOCKED_EMPTY_MANIFEST"
+    elif validation_decision != "LINGBOT_MANIFEST_SCHEMA_PASS":
+        decision = "BASELINE_BLOCKED_MANIFEST_VALIDATION"
+        selected = []
+    elif args.dry_run:
+        decision = "BASELINE_READY_DRY_RUN"
+    else:
+        decision = "BASELINE_BACKEND_NOT_CONNECTED"
     if selected:
         for row in selected:
             report_rows.append({
@@ -51,10 +73,13 @@ def main(argv: list[str] | None = None) -> int:
                 "gravity_label": row.get("gravity_label"),
                 "models": args.models,
                 "gravity_modes": args.gravity_modes,
+                "manifest_validation": args.manifest_validation,
+                "validation_decision": validation_decision,
                 "status": "DRY_RUN_SELECTED" if args.dry_run else "BLOCKED_BACKEND_NOT_CONNECTED",
             })
     else:
-        report_rows.append({"status": decision, "error_reason": "input manifest has zero rows"})
+        reason = "input manifest has zero rows" if not rows else f"manifest validation decision is {validation_decision}"
+        report_rows.append({"status": decision, "error_reason": reason, "manifest_validation": args.manifest_validation, "validation_decision": validation_decision})
     write_csv(report_rows, args.report)
     source_counts = Counter(str(row.get("source") or "unknown") for row in selected)
     Path(args.summary).parent.mkdir(parents=True, exist_ok=True)
@@ -64,6 +89,7 @@ def main(argv: list[str] | None = None) -> int:
         f"- Input manifest: `{args.manifest}`\n"
         f"- Input rows: {len(rows)}\n"
         f"- Selected rows: {len(selected)}\n"
+        f"- Manifest validation: `{args.manifest_validation}` decision=`{validation_decision}`\n"
         f"- Models requested: `{args.models}`\n"
         f"- Gravity modes requested: `{args.gravity_modes}`\n"
         f"- Output root: `{args.output_root}`\n"

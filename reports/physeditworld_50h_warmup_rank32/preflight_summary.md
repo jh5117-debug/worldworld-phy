@@ -6,7 +6,9 @@ Decision: `WARMUP_BLOCKED_EMPTY_MANIFEST`
 - Error reason: train manifest has zero rows
 - Config: `configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml`
 - Manifest: `manifests/physeditworld_50h_lingbot_train.jsonl` rows=0
-- Val manifest: `manifests/physeditworld_50h_lingbot_val.jsonl` rows=None
+- Val manifest: `manifests/physeditworld_50h_lingbot_val.jsonl` rows=0
+- Manifest validation: `reports/physeditworld_50h/conversion_validation/lingbot_train_manifest_validation.json` decision=`LINGBOT_MANIFEST_BLOCKED_EMPTY`
+- Val manifest validation: `reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json` decision=`LINGBOT_MANIFEST_BLOCKED_EMPTY`
 - Gravity prompt-only: `True`
 - LoRA rank: `32`
 - CUDA_VISIBLE_DEVICES: `4`
