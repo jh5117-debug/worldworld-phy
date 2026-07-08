@@ -356,3 +356,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current blocker remains external: `PHYS_EDITWORLD_ROOTS` is unset; selected PhysEditWorld 50h root and NAS are not visible, so baseline, warm-up, pair construction, and tiny DPO remain blocked.
 - Test status: compileall PASS, direct phase0 gate alignment smoke PASS, pipeline/requirement/completion smoke PASS; pytest unavailable, no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Prompt-Gravity Policy Audit (2026-07-09T01:05:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: `23a7d40 Add PhysEditWorld prompt-gravity policy audit`.
+- Scope: added a CPU/IO-only audit that verifies the first PhysEditWorld version keeps gravity prompt-only, rejects future-answer leakage, and checks source/config for gravity MLP/embedding/encoder/projector patterns.
+- Current decision: `PHYS_EDITWORLD_PROMPT_GRAVITY_POLICY_PASS`.
+- Evidence: `reports/physeditworld_50h/prompt_gravity_policy/prompt_gravity_policy_audit.md`; requirement and completion audits now include this as Phase2 evidence.
+- Current blocker remains external: selected PhysEditWorld 50h root/NAS are not visible and strict/LingBot manifests remain empty, so conversion, baseline, warm-up, pair construction, and tiny DPO must not run yet.
+- Test status: compileall PASS, direct prompt-gravity policy audit PASS, requirement/completion refresh PASS; pytest unavailable, no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
