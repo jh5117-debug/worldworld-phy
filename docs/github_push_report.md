@@ -420,3 +420,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current data gate remains blocked: strict PhysEditWorld train manifest still has 0 rows because the selected 50h root is not visible/mounted.
 - Test status: project `compileall` PASS, direct tiny-mp4 conversion smoke PASS including 5-frame prefix check, empty-manifest conversion gate PASS; pytest unavailable, no pytest PASS is claimed.
 - Safety: no GPU use, no training, no rollout, no DPO, no data/checkpoint/weight deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld Conversion Future-Only Target Semantics (2026-07-09T02:05:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: Phase 2 LingBot conversion now treats `prefix.mp4` as condition frames 0-4 and `target.mp4` as future frames 5-80 by default.
+- Target update: `target.mp4` is sampled from `target_frame_indices = frame_indices[prediction_start_frame:]`, with `prediction_start_frame=5` by default.
+- Condition trajectory update: `action.npy` and `poses.npy` keep the full sampled 81-frame trajectory; metadata records that target video indices are a suffix of the action/camera trajectory.
+- Schema gate: converted condition dirs now require `target_frame_indices`, `prediction_start_frame`, and target-video output length matching the future-only target length.
+- Current data gate remains blocked: strict PhysEditWorld train manifest still has 0 rows because the selected 50h root is not visible/mounted.
+- Test status: project `compileall` PASS, direct tiny-mp4 conversion smoke PASS with 5-frame prefix and 76-frame future target, empty-manifest conversion gate PASS; pytest unavailable, no pytest PASS is claimed.
+- Safety: no GPU use, no training, no rollout, no DPO, no data/checkpoint/weight deletion, and no videos/images/checkpoints/weights pushed.

@@ -31,6 +31,15 @@ def validate_condition_dir(path: str | Path) -> list[str]:
     indices = meta.get("frame_indices")
     if not isinstance(indices, list) or not indices:
         errors.append("metadata_missing:frame_indices")
+    target_indices = meta.get("target_frame_indices")
+    if not isinstance(target_indices, list) or not target_indices:
+        errors.append("metadata_missing:target_frame_indices")
+    prediction_start = meta.get("prediction_start_frame")
+    if isinstance(indices, list) and isinstance(target_indices, list):
+        if not isinstance(prediction_start, int):
+            errors.append("metadata_missing:prediction_start_frame")
+        elif target_indices != indices[prediction_start:]:
+            errors.append("metadata_invalid:target_frame_indices")
     prefix_indices = meta.get("prefix_frame_indices")
     if not isinstance(prefix_indices, list) or not prefix_indices:
         errors.append("metadata_missing:prefix_frame_indices")
@@ -42,8 +51,11 @@ def validate_condition_dir(path: str | Path) -> list[str]:
     alignment = meta.get("sampling_alignment")
     if not isinstance(alignment, dict):
         errors.append("metadata_missing:sampling_alignment")
-    elif alignment.get("same_indices_for_action_camera_video") is not True:
-        errors.append("metadata_invalid:sampling_alignment")
+    else:
+        if alignment.get("same_indices_for_action_camera") is not True:
+            errors.append("metadata_invalid:sampling_alignment_action_camera")
+        if alignment.get("target_video_indices_are_suffix_of_action_camera") is not True:
+            errors.append("metadata_invalid:sampling_alignment_target_suffix")
     for key in ["video_sampling", "action_sampling", "camera_sampling"]:
         sampling = meta.get(key)
         if not isinstance(sampling, dict):
@@ -53,7 +65,8 @@ def validate_condition_dir(path: str | Path) -> list[str]:
         if sampling.get("status") not in allowed_status:
             errors.append(f"metadata_invalid:{key}_status")
         output_len = sampling.get("output_frame_count") if key == "video_sampling" else sampling.get("output_length")
-        if isinstance(indices, list) and output_len != len(indices):
+        expected_len = len(target_indices) if key == "video_sampling" and isinstance(target_indices, list) else len(indices) if isinstance(indices, list) else None
+        if expected_len is not None and output_len != expected_len:
             errors.append(f"metadata_invalid:{key}_length")
     scale = meta.get("intrinsics_scale")
     if not isinstance(scale, dict):

@@ -241,7 +241,11 @@ def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace
         # Prefix is an explicit condition. If no prefix asset exists, derive frames 0-4 from the source video.
         prefix_file, prefix_sampling, prefix_indices = prepare_prefix_media(row, tmp_dir, args)
         indices = frame_indices(row.get("num_frames"), args.num_frames)
-        video_sampling = write_sampled_video(row["video_path"], tmp_dir / "target.mp4", indices, args.fps, args.width, args.height)
+        prediction_start = int(args.prediction_start_frame)
+        if prediction_start < 0 or prediction_start >= len(indices):
+            raise ValueError(f"prediction_start_frame {prediction_start} is outside sampled frame range {len(indices)}")
+        target_indices = indices[prediction_start:]
+        video_sampling = write_sampled_video(row["video_path"], tmp_dir / "target.mp4", target_indices, args.fps, args.width, args.height)
         action_sampling = write_sampled_npy(row["action_trace_path"], tmp_dir / "action.npy", indices, "action_trace")
         camera_sampling = write_sampled_npy(row["camera_trajectory_path"], tmp_dir / "poses.npy", indices, "camera_trajectory")
         intrinsics_scale = intrinsics_scale_metadata(row, args.width, args.height)
@@ -272,18 +276,22 @@ def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace
             "source_height": intrinsics_scale.get("source_height"),
             "source_width": intrinsics_scale.get("source_width"),
             "num_frames_requested": args.num_frames,
+            "prediction_start_frame": prediction_start,
             "fps_requested": args.fps,
             "height_requested": args.height,
             "width_requested": args.width,
             "frame_indices": indices,
+            "target_frame_indices": target_indices,
             "prefix_frame_indices": prefix_indices,
             "prefix_file": prefix_file,
             "prefix_sampling": prefix_sampling,
             "sampling_alignment": {
-                "video_frame_indices": indices,
+                "target_video_frame_indices": target_indices,
+                "full_sampled_frame_indices": indices,
                 "action_frame_indices": indices,
                 "camera_frame_indices": indices,
-                "same_indices_for_action_camera_video": True,
+                "same_indices_for_action_camera": True,
+                "target_video_indices_are_suffix_of_action_camera": True,
             },
             "video_sampling": video_sampling,
             "action_sampling": action_sampling,
@@ -323,6 +331,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--height", type=int, default=480)
     ap.add_argument("--width", type=int, default=832)
     ap.add_argument("--prefix_frames", type=int, default=5)
+    ap.add_argument("--prediction_start_frame", type=int, default=5)
     ap.add_argument("--gravity_prompt_style", default="physeditworld_v0")
     ap.add_argument("--report", required=True)
     ap.add_argument("--summary", required=True)
