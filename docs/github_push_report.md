@@ -665,3 +665,12 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Evidence: E07/E09/E10 are scalar-positive but fail true V2V-5 visual gates; failures aggregate to identity/artifact amplification rather than freeze.
 - Decision remains `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.
 - Artifact policy: only lightweight CSV/JSON/MD/docs were pushed; no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged.
+
+## v14 V-JEPA Artifact Correlation Push (2026-07-08)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`.
+- Commit: `3312368 Analyze v14 V-JEPA artifact correlation`.
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- New artifacts: `reports/dpo_utility_calibration_v14/latent_monitor/artifact_correlation/vjepa_artifact_correlation.md`, `.csv`, and `.json`.
+- Result: V-JEPA2 has promising small-N signal for identity/artifact labels in the full checkpoint set, but weak discrimination on scalar-positive E07/E09/E10; it remains monitor/inspection-only, not standalone approval.
+- Artifact policy: only lightweight CSV/JSON/MD/docs were pushed; no `local_assets`, videos/images, checkpoints, weights, stdout logs, or run scripts were staged.
