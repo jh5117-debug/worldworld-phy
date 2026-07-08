@@ -618,3 +618,12 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Interpretation: V-JEPA2 is a useful drift/inspection monitor, not a standalone visual-quality approval metric.
 - Scope: monitor/statistics only. No DPO training, no S16/S32/train400, no large DPO.
 - Artifact policy: pushed small manifest/CSV/JSON/MD/docs only; no local_assets, videos, images, checkpoints, weights, stdout logs, run scripts, or large logs.
+
+## v14 Completion Audit Push (2026-07-08)
+
+- Branch: `research/quant-small-lora-dpo-probe-20260624`.
+- Commit: `6b69e58 Document v14 completion audit`.
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Artifacts pushed: completion matrix CSV/JSON/MD plus lightweight docs/status updates.
+- Artifact policy: no `local_assets`, MP4/JPG/PNG, checkpoints, weights, stdout logs, or run scripts were staged or pushed.
+- Decision recorded: `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.
