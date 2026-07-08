@@ -581,3 +581,15 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Beta conclusion: `NONE_ZERO_UTILITY` at policy=reference; beta cannot create preference signal before a policy-reference utility change exists.
 - Scope: calibration only. No DPO training, no S16/S32/train400, no large DPO.
 - Artifact policy: pushed small manifests, CSV/JSONL/JSON/MD summaries and docs only; no local_assets, videos, images, checkpoints, weights, stdout logs, run scripts, or large logs.
+
+## v14 V-JEPA Checkpoint Regression Monitor Push
+
+- Updated: `2026-07-08T09:48:00+08:00`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `6389b84 Add v14 V-JEPA checkpoint regression monitor`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Result: `CHECKPOINT_REGRESSION_MONITOR_PASS_AS_DRIFT_DETECTOR` on E09/E10 checkpoint regressions.
+- Rows: 8/8 ok, 8/8 positive V-JEPA margins, 8/8 positive token-relation margins; 6/8 rows were Codex worse-than-step0.
+- Interpretation: V-JEPA2 can detect checkpoint drift/artifact risk and is a v15 monitor/gate candidate, but it is not a standalone visual-quality classifier and does not change v14 `NO_SCALE`.
+- Scope: monitor only. No DPO training, no S16/S32/train400, no large DPO.
+- Artifact policy: pushed small manifest/CSV/JSON/MD/docs only; no local_assets, videos, images, checkpoints, weights, stdout logs, run scripts, or large logs.
