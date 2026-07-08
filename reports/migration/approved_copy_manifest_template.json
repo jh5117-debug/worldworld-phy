@@ -1,0 +1,26 @@
+{
+  "approved_rows": 0,
+  "by_file_type": {
+    "dir": 237,
+    "file": 559,
+    "missing": 2,
+    "symlink": 2
+  },
+  "by_kind": {
+    "data": 500,
+    "weights": 300
+  },
+  "by_status": {
+    "BLOCKED_MISSING_ON_H20": 2,
+    "NEEDS_REVIEW_DIR": 237,
+    "NEEDS_REVIEW_FILE": 561
+  },
+  "decision": "COPY_PLAN_REVIEW_REQUIRED",
+  "rows": 800,
+  "safety": {
+    "copied_files": false,
+    "default_approved": false,
+    "deleted_files": false,
+    "requires_explicit_approval": true
+  }
+}

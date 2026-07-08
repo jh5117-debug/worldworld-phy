@@ -86,3 +86,20 @@ bash scripts/migration/check_physeditworld_pai_readiness.sh
 Latest decision: `PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED`.
 
 This confirms migration execution and Phase 3 rollout are still blocked until the NAS target and selected PhysEditWorld 50h root are visible. The checker is CPU/IO-only and safe to rerun on H20 or PAI.
+
+## Explicit Copy Plan Template
+
+A reviewed copy-list template is now available:
+
+```bash
+bash scripts/migration/build_physeditworld_migration_copy_plan.sh
+```
+
+Latest decision: `COPY_PLAN_REVIEW_REQUIRED`.
+
+- Template: `reports/migration/approved_copy_manifest_template.tsv`.
+- Rows: 800.
+- Approved rows: 0 by default.
+- No candidate asset is copied until its row is explicitly reviewed and changed to `approved=true`.
+- This protects against accidentally migrating old rollouts, contact sheets, failed checkpoints, or broad `local_assets/` payloads.
+

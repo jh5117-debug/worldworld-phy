@@ -6,7 +6,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 
 - `BLOCKED`: 8
 - `MISSING`: 1
-- `PASS`: 11
+- `PASS`: 12
 
 ## Requirements
 
@@ -42,6 +42,9 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - evidence: `reports/migration/migration_asset_validation.json`
   - detail: decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED
   - next: mount NAS and rerun migration asset validation before execute copy
+- `0_migration` / explicit copy-plan template: `PASS`
+  - evidence: `reports/migration/approved_copy_manifest_template.tsv`
+  - detail: file exists
 - `1_data_audit` / strict selected 50h manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_50h_all.jsonl`
   - detail: rows=0, required>=1

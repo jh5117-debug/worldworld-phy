@@ -420,3 +420,25 @@ The safe pipeline gate now reads both Phase 0 readiness and migration asset vali
 
 This keeps the live pipeline gate aligned with the requirement matrix: the selected PhysEditWorld 50h root and /mnt/workspace/hj/nas_hj must be visible before any copy, rollout, warm-up, or DPO can proceed. No GPU, rollout, metric scoring, visual audit, training, or DPO was run.
 
+## Migration Copy Plan Template Update (2026-07-08T20:22:00 CST)
+
+Decision: COPY_PLAN_REVIEW_REQUIRED.
+
+An explicit migration copy-plan template was generated from the weight/data candidate manifests:
+
+- Tool: cam_physgeo/orchestration/migration_copy_plan.py.
+- Wrapper: scripts/migration/build_physeditworld_migration_copy_plan.sh.
+- TSV: reports/migration/approved_copy_manifest_template.tsv.
+- JSON: reports/migration/approved_copy_manifest_template.json.
+- Summary: reports/migration/approved_copy_manifest_template_summary.md.
+
+Validation evidence:
+
+- Rows: 800 total, 300 weights rows and 500 data rows.
+- Approved rows: 0.
+- Every row defaults to approved=false.
+- Copy statuses: NEEDS_REVIEW_FILE=561, NEEDS_REVIEW_DIR=237, BLOCKED_MISSING_ON_H20=2.
+- Safety: no data, weights, checkpoints, local_assets, or videos were copied; no files were deleted.
+
+This prevents accidental broad migration from the noisy candidate manifests. After NAS and the selected PhysEditWorld 50h root are visible, only rows confirmed as necessary for restore should be changed to approved=true.
+

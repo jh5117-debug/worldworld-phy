@@ -82,6 +82,14 @@
       "status": "BLOCKED"
     },
     {
+      "detail": "file exists",
+      "evidence": "reports/migration/approved_copy_manifest_template.tsv",
+      "next_action": "",
+      "phase": "0_migration",
+      "requirement": "explicit copy-plan template",
+      "status": "PASS"
+    },
+    {
       "detail": "rows=0, required>=1",
       "evidence": "manifests/physeditworld_50h_all.jsonl",
       "next_action": "mount selected PhysEditWorld 50h root and rerun manifest audit",

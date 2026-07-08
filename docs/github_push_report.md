@@ -154,3 +154,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: compileall PASS, direct pipeline smoke PASS, direct unit smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
 
+## PhysEditWorld Migration Copy Plan Template (2026-07-08T20:22:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: explicit no-default-approval copy-plan template for required weight/data candidate manifests.
+- Latest decision: COPY_PLAN_REVIEW_REQUIRED.
+- Rows: 800 total, approved rows: 0.
+- Safety: every row defaults to approved=false; no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+- Test status: compileall PASS, direct copy-plan smoke PASS, direct unit smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Artifact policy: only lightweight code/docs/scripts/TSV/JSON/MD summaries are intended for push; no local_assets, videos/images, checkpoints, weights, or large logs.
+
