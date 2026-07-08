@@ -20,6 +20,7 @@ phase,requirement,status,evidence,detail,next_action
 1_data_audit,strict selected 50h manifest,BLOCKED,manifests/physeditworld_50h_all.jsonl,"rows=0, required>=1",mount selected PhysEditWorld 50h root and rerun manifest audit
 1_data_audit,train split manifest,BLOCKED,manifests/physeditworld_50h_train.jsonl,"rows=0, required>=1",rerun replay-group split
 1_data_audit,split summary,PASS,reports/physeditworld_50h/split_summary.md,file exists,
+2_conversion,prompt-only gravity policy audit,PASS,reports/physeditworld_50h/prompt_gravity_policy/prompt_gravity_policy_audit.json,decision=PHYS_EDITWORLD_PROMPT_GRAVITY_POLICY_PASS,
 2_conversion,LingBot train conversion manifest,BLOCKED,manifests/physeditworld_50h_lingbot_train.jsonl,"rows=0, required>=1",rerun prompt-only LingBot conversion
 2_conversion,LingBot val conversion manifest,BLOCKED,manifests/physeditworld_50h_lingbot_val.jsonl,"rows=0, required>=1",rerun prompt-only LingBot conversion
 3_baseline,baseline rollout summary,PASS,reports/physeditworld_50h_baseline_rollout/summary.md,file exists,

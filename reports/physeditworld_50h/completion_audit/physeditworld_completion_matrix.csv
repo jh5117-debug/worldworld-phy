@@ -19,6 +19,7 @@ phase1_data,strict PhysEditWorld 50h manifest,BLOCKED,manifests/physeditworld_50
 phase1_data,train split no replay leakage,BLOCKED,manifests/physeditworld_50h_train.jsonl,"rows=0, required>=1",run replay-group split after data audit
 phase1_data,split summary,PASS,reports/physeditworld_50h/split_summary.md,file exists,
 phase1_data,replay-group leakage check,PASS,reports/physeditworld_50h/replay_group_leakage_check.csv,file exists,
+phase2_conversion,prompt-only gravity policy audit,PASS,reports/physeditworld_50h/prompt_gravity_policy/prompt_gravity_policy_audit.json,decision=PHYS_EDITWORLD_PROMPT_GRAVITY_POLICY_PASS,
 phase2_conversion,LingBot train conversion manifest,BLOCKED,manifests/physeditworld_50h_lingbot_train.jsonl,"rows=0, required>=1",run prompt-only gravity conversion
 phase2_conversion,LingBot val conversion manifest,BLOCKED,manifests/physeditworld_50h_lingbot_val.jsonl,"rows=0, required>=1",run prompt-only gravity conversion
 phase3_baseline,baseline true rollout gate,BLOCKED,reports/physeditworld_50h_baseline_rollout/summary.md,decision=BASELINE_BLOCKED_EMPTY_MANIFEST,run baseline rollout after LingBot manifests exist

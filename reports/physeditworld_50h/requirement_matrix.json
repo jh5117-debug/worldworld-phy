@@ -170,6 +170,14 @@
       "status": "PASS"
     },
     {
+      "detail": "decision=PHYS_EDITWORLD_PROMPT_GRAVITY_POLICY_PASS",
+      "evidence": "reports/physeditworld_50h/prompt_gravity_policy/prompt_gravity_policy_audit.json",
+      "next_action": "",
+      "phase": "2_conversion",
+      "requirement": "prompt-only gravity policy audit",
+      "status": "PASS"
+    },
+    {
       "detail": "rows=0, required>=1",
       "evidence": "manifests/physeditworld_50h_lingbot_train.jsonl",
       "next_action": "rerun prompt-only LingBot conversion",

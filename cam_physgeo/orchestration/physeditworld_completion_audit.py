@@ -153,6 +153,7 @@ def build_rows() -> list[AuditRow]:
         manifest_row("phase1_data", "train split no replay leakage", "manifests/physeditworld_50h_train.jsonl", 1, "run replay-group split after data audit"),
         file_row("phase1_data", "split summary", "reports/physeditworld_50h/split_summary.md", "write split summary"),
         file_row("phase1_data", "replay-group leakage check", "reports/physeditworld_50h/replay_group_leakage_check.csv", "run replay leakage check"),
+        json_decision_row("phase2_conversion", "prompt-only gravity policy audit", "reports/physeditworld_50h/prompt_gravity_policy/prompt_gravity_policy_audit.json", {"PHYS_EDITWORLD_PROMPT_GRAVITY_POLICY_PASS"}, "fix prompt-only gravity policy before conversion or warm-up"),
         manifest_row("phase2_conversion", "LingBot train conversion manifest", "manifests/physeditworld_50h_lingbot_train.jsonl", 1, "run prompt-only gravity conversion"),
         manifest_row("phase2_conversion", "LingBot val conversion manifest", "manifests/physeditworld_50h_lingbot_val.jsonl", 1, "run prompt-only gravity conversion"),
         md_decision_row("phase3_baseline", "baseline true rollout gate", "reports/physeditworld_50h_baseline_rollout/summary.md", {"BASELINE_ROLLOUT_PASS", "PROMPT_ONLY_GRAVITY_BASELINE_WEAK"}, "run baseline rollout after LingBot manifests exist"),

@@ -1,0 +1,75 @@
+{
+  "decision": "PHYS_EDITWORLD_PROMPT_GRAVITY_POLICY_PASS",
+  "rows": [
+    {
+      "check": "prompt_sample",
+      "detail": "value=0.25; expected_token=gravity: 0.25g; errors=[]; prompt='A first-person interactive world rollout.\\nThe character follows the given action sequence and camera trajectory.\\nThe scene is rendered under gravity: 0.25g.'",
+      "evidence": "cam_physgeo/data/prompt_gravity.py",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "check": "prompt_sample",
+      "detail": "value=1.0; expected_token=gravity: 1.0g; errors=[]; prompt='A first-person interactive world rollout.\\nThe character follows the given action sequence and camera trajectory.\\nThe scene is rendered under gravity: 1.0g.'",
+      "evidence": "cam_physgeo/data/prompt_gravity.py",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "check": "prompt_sample",
+      "detail": "value=4.0; expected_token=gravity: 4.0g; errors=[]; prompt='A first-person interactive world rollout.\\nThe character follows the given action sequence and camera trajectory.\\nThe scene is rendered under gravity: 4.0g.'",
+      "evidence": "cam_physgeo/data/prompt_gravity.py",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "check": "future_leak_detector",
+      "detail": "errors=['future_answer_leak']",
+      "evidence": "cam_physgeo/data/prompt_gravity.py",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "check": "no_gravity_mlp_or_embedding",
+      "detail": "no forbidden gravity conditioning symbols",
+      "evidence": "cam_physgeo/data/prompt_gravity.py",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "check": "no_gravity_mlp_or_embedding",
+      "detail": "no forbidden gravity conditioning symbols",
+      "evidence": "cam_physgeo/data/physeditworld_to_lingbot.py",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "check": "conversion_writes_prompt_only_metadata",
+      "detail": "conversion records gravity_condition_type=prompt_only",
+      "evidence": "cam_physgeo/data/physeditworld_to_lingbot.py",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "check": "no_gravity_mlp_or_embedding",
+      "detail": "no forbidden gravity conditioning symbols",
+      "evidence": "cam_physgeo/data/lingbot_condition_schema.py",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "check": "no_gravity_mlp_or_embedding",
+      "detail": "no forbidden gravity conditioning symbols",
+      "evidence": "configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "check": "warmup_config_prompt_only",
+      "detail": "warmup config keeps gravity: prompt_only",
+      "evidence": "configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml",
+      "next_action": "",
+      "status": "PASS"
+    }
+  ]
+}

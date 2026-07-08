@@ -5,7 +5,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 ## Status Counts
 
 - `BLOCKED`: 16
-- `PASS`: 13
+- `PASS`: 14
 
 ## Requirement Evidence
 
@@ -78,6 +78,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 - `phase1_data` / replay-group leakage check: `PASS`
   - evidence: `reports/physeditworld_50h/replay_group_leakage_check.csv`
   - detail: file exists
+- `phase2_conversion` / prompt-only gravity policy audit: `PASS`
+  - evidence: `reports/physeditworld_50h/prompt_gravity_policy/prompt_gravity_policy_audit.json`
+  - detail: decision=PHYS_EDITWORLD_PROMPT_GRAVITY_POLICY_PASS
 - `phase2_conversion` / LingBot train conversion manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_50h_lingbot_train.jsonl`
   - detail: rows=0, required>=1

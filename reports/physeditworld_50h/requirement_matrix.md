@@ -5,7 +5,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 ## Status Counts
 
 - `BLOCKED`: 15
-- `PASS`: 13
+- `PASS`: 14
 
 ## Requirements
 
@@ -82,6 +82,9 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 - `1_data_audit` / split summary: `PASS`
   - evidence: `reports/physeditworld_50h/split_summary.md`
   - detail: file exists
+- `2_conversion` / prompt-only gravity policy audit: `PASS`
+  - evidence: `reports/physeditworld_50h/prompt_gravity_policy/prompt_gravity_policy_audit.json`
+  - detail: decision=PHYS_EDITWORLD_PROMPT_GRAVITY_POLICY_PASS
 - `2_conversion` / LingBot train conversion manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_50h_lingbot_train.jsonl`
   - detail: rows=0, required>=1

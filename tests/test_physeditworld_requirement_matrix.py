@@ -1,4 +1,4 @@
-from cam_physgeo.orchestration.physeditworld_requirement_matrix import PHASE0_DECISION_GATES, RequirementRow, overall_decision
+from cam_physgeo.orchestration.physeditworld_requirement_matrix import PHASE0_DECISION_GATES, RequirementRow, build_rows, overall_decision
 
 
 def test_requirement_matrix_blocks_at_migration_readiness():
@@ -32,3 +32,8 @@ def test_phase0_decision_gates_include_locked_root_schema_sequence():
     assert "expected empty manifest placeholders" in requirements
     assert "selected-root schema probe" in requirements
     assert "locked handoff sequence" in requirements
+
+
+def test_requirement_matrix_includes_prompt_only_gravity_policy_gate():
+    requirements = {row.requirement for row in build_rows()}
+    assert "prompt-only gravity policy audit" in requirements

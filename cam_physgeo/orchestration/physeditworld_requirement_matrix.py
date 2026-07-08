@@ -141,6 +141,7 @@ def build_rows() -> list[RequirementRow]:
         manifest_status("manifests/physeditworld_50h_all.jsonl", "strict selected 50h manifest", "1_data_audit", 1, "mount selected PhysEditWorld 50h root and rerun manifest audit"),
         manifest_status("manifests/physeditworld_50h_train.jsonl", "train split manifest", "1_data_audit", 1, "rerun replay-group split"),
         file_status("reports/physeditworld_50h/split_summary.md", "split summary", "1_data_audit", "run split summary"),
+        decision_status("reports/physeditworld_50h/prompt_gravity_policy/prompt_gravity_policy_audit.json", "prompt-only gravity policy audit", "2_conversion", {"PHYS_EDITWORLD_PROMPT_GRAVITY_POLICY_PASS"}, "fix prompt-only gravity policy before conversion or warm-up"),
         manifest_status("manifests/physeditworld_50h_lingbot_train.jsonl", "LingBot train conversion manifest", "2_conversion", 1, "rerun prompt-only LingBot conversion"),
         manifest_status("manifests/physeditworld_50h_lingbot_val.jsonl", "LingBot val conversion manifest", "2_conversion", 1, "rerun prompt-only LingBot conversion"),
         file_status("reports/physeditworld_50h_baseline_rollout/summary.md", "baseline rollout summary", "3_baseline", "run baseline rollout gate"),

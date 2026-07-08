@@ -1,0 +1,11 @@
+check,status,evidence,detail,next_action
+prompt_sample,PASS,cam_physgeo/data/prompt_gravity.py,value=0.25; expected_token=gravity: 0.25g; errors=[]; prompt='A first-person interactive world rollout.\nThe character follows the given action sequence and camera trajectory.\nThe scene is rendered under gravity: 0.25g.',
+prompt_sample,PASS,cam_physgeo/data/prompt_gravity.py,value=1.0; expected_token=gravity: 1.0g; errors=[]; prompt='A first-person interactive world rollout.\nThe character follows the given action sequence and camera trajectory.\nThe scene is rendered under gravity: 1.0g.',
+prompt_sample,PASS,cam_physgeo/data/prompt_gravity.py,value=4.0; expected_token=gravity: 4.0g; errors=[]; prompt='A first-person interactive world rollout.\nThe character follows the given action sequence and camera trajectory.\nThe scene is rendered under gravity: 4.0g.',
+future_leak_detector,PASS,cam_physgeo/data/prompt_gravity.py,errors=['future_answer_leak'],
+no_gravity_mlp_or_embedding,PASS,cam_physgeo/data/prompt_gravity.py,no forbidden gravity conditioning symbols,
+no_gravity_mlp_or_embedding,PASS,cam_physgeo/data/physeditworld_to_lingbot.py,no forbidden gravity conditioning symbols,
+conversion_writes_prompt_only_metadata,PASS,cam_physgeo/data/physeditworld_to_lingbot.py,conversion records gravity_condition_type=prompt_only,
+no_gravity_mlp_or_embedding,PASS,cam_physgeo/data/lingbot_condition_schema.py,no forbidden gravity conditioning symbols,
+no_gravity_mlp_or_embedding,PASS,configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml,no forbidden gravity conditioning symbols,
+warmup_config_prompt_only,PASS,configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml,warmup config keeps gravity: prompt_only,
