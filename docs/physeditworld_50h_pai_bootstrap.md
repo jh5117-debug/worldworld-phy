@@ -11,7 +11,7 @@ BRANCH=physion-only-local-assets-videogpa-smoke \
 bash scripts/migration/bootstrap_pai_physeditworld.sh
 ```
 
-The script clones or updates the repo, checks out the PhysEditWorld branch, runs handoff verification, Phase0 preflight, backend readiness, the safe pipeline gate, the requirement matrix, and the completion audit.
+The script clones or updates the repo, checks out the PhysEditWorld branch, writes a PAI restore packet, runs handoff verification, Phase0 preflight, backend readiness, the safe pipeline gate, the requirement matrix, the completion audit, and then refreshes the PAI restore packet again.
 
 ## What It Does Not Do
 
@@ -40,10 +40,12 @@ PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION
 The required next action is to mount/provide the selected PhysEditWorld 50h root, then rerun the bootstrap or:
 
 ```bash
+export PHYS_EDITWORLD_ROOTS=/path/to/selected_physeditworld_50h_root
 python3 -m cam_physgeo.orchestration.physeditworld_backend_readiness
 bash scripts/run_physeditworld_pipeline_gates.sh
 python3 -m cam_physgeo.orchestration.physeditworld_requirement_matrix
 bash scripts/migration/run_physeditworld_completion_audit.sh
+bash scripts/migration/run_physeditworld_pai_restore_packet.sh
 ```
 
 

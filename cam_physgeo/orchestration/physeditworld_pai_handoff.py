@@ -20,6 +20,7 @@ REQUIRED_FILES = (
     "docs/physeditworld_50h_pai_bootstrap.md",
     "scripts/migration/bootstrap_pai_physeditworld.sh",
     "scripts/migration/check_physeditworld_pai_readiness.sh",
+    "scripts/migration/run_physeditworld_pai_restore_packet.sh",
     "scripts/migration/init_physeditworld_empty_manifests.sh",
     "scripts/migration/rank_physeditworld_root_candidates.sh",
     "scripts/migration/probe_physeditworld_root_schema.sh",
@@ -45,6 +46,7 @@ REQUIRED_FILES = (
     "cam_physgeo/orchestration/physeditworld_requirement_matrix.py",
     "cam_physgeo/orchestration/physeditworld_locked_handoff.py",
     "cam_physgeo/orchestration/physeditworld_completion_audit.py",
+    "cam_physgeo/orchestration/physeditworld_pai_restore_packet.py",
     "cam_physgeo/orchestration/physeditworld_root_intake.py",
     "cam_physgeo/orchestration/physeditworld_pai_handoff.py",
 )
@@ -66,6 +68,7 @@ EXPECTED_REPORTS = (
     "reports/physeditworld_50h/backend_readiness/backend_readiness.json",
     "reports/physeditworld_50h/requirement_matrix.json",
     "reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json",
+    "reports/migration/pai_restore_packet.json",
 )
 
 
@@ -228,7 +231,7 @@ def write_csv(rows: list[HandoffCheck], path: str | Path) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
     fields = list(HandoffCheck.__dataclass_fields__.keys())
     with p.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fields)
+        writer = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow(asdict(row))
@@ -271,6 +274,7 @@ def write_summary(rows: list[HandoffCheck], decision: str, path: str | Path) -> 
         "# Read-only completion evidence after any handoff run:",
         "python3 -m cam_physgeo.orchestration.physeditworld_backend_readiness",
         "bash scripts/migration/run_physeditworld_completion_audit.sh",
+        "bash scripts/migration/run_physeditworld_pai_restore_packet.sh",
         "",
         "# Lower-level fallback commands for debugging one stage at a time:",
         "PHYS_EDITWORLD_ROOTS=/path/to/physeditworld_selected_50h bash scripts/migration/select_physeditworld_root.sh",

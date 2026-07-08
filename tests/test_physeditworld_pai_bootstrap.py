@@ -8,7 +8,9 @@ def test_bootstrap_runs_backend_readiness_and_completion_audit():
     assert "cam_physgeo.orchestration.physeditworld_backend_readiness" in text
     assert "run_physeditworld_completion_audit.sh" in text
     assert "run_physeditworld_pipeline_gates.sh" in text
+    assert "run_physeditworld_pai_restore_packet.sh" in text
     assert "physeditworld_50h/backend_readiness" in text
+    assert "pai_restore_packet" in text
 
 
 def test_bootstrap_remains_non_training():
