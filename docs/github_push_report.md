@@ -557,3 +557,15 @@ Prepared lightweight v14 blocker retry summaries. No local_assets videos, checkp
 - Scope: calibration only. No DPO training, no S16/S32/train400, no large DPO.
 - Artifact policy: pushed manifest plus small CSV/JSONL/JSON/MD/docs only; no local_assets, videos, images, checkpoints, weights, stdout logs, or large logs.
 
+## v14 Calibration12 Real-Energy Push
+
+- Updated: `2026-07-08T08:27:00+08:00`
+- Branch: `research/quant-small-lora-dpo-probe-20260624`
+- Commit: `0a790ff Extend v14 real energy calibration to twelve pairs`
+- Push status: pushed to `origin/research/quant-small-lora-dpo-probe-20260624`.
+- Result: `REAL_ENERGY_CALIBRATION12_PASS`, 12/12 bounded asset-complete rows ok on physical GPU5 via `CUDA_VISIBLE_DEVICES=5`.
+- Real-energy CSV: `reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration12_cuda_runtime_limit8/shard_00_of_01.csv`.
+- Beta conclusion: `NONE_ZERO_UTILITY` at policy=reference; beta cannot create preference signal from zero policy-reference utility.
+- Scope: calibration only. No DPO training, no S16/S32/train400, no large DPO.
+- Artifact policy: pushed small CSV/JSONL/JSON/MD/docs only; no local_assets, videos, images, checkpoints, weights, stdout logs, run scripts, or large logs.
+
