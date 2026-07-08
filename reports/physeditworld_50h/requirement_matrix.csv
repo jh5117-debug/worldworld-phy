@@ -27,7 +27,7 @@ phase,requirement,status,evidence,detail,next_action
 2_conversion,LingBot val conversion schema validation,BLOCKED,reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json,decision=LINGBOT_MANIFEST_BLOCKED_EMPTY,rerun conversion manifest validator after prompt-only LingBot conversion writes rows
 3_baseline,baseline true rollout gate,BLOCKED,reports/physeditworld_50h_baseline_rollout/summary.md,decision=BASELINE_BLOCKED_EMPTY_MANIFEST,run true baseline rollout after LingBot manifests exist
 4_warmup,rank32 warm-up preflight,BLOCKED,reports/physeditworld_50h_warmup_rank32/preflight_summary.md,decision=WARMUP_BLOCKED_EMPTY_MANIFEST,run 5-step rank32 warm-up preflight after conversion
-5_checkpoint_eval,checkpoint video/metric gate,BLOCKED,reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json,decision=CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING,"produce true rollout videos, metrics, and Codex audit"
+5_checkpoint_eval,checkpoint video/metric gate,BLOCKED,reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json,decision=CHECKPOINT_EVAL_BLOCKED_EMPTY_EVAL_MANIFEST,"produce true rollout videos, metrics, and Codex audit"
 7_tiny_dpo,tiny anchored DPO gate,BLOCKED,reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json,decision=TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS,build >=100 reviewed pairs before tiny DPO
 8_ablation,future mixed-data ablation plan,PASS,docs/experiments/EXP_physeditworld50_plus_ourphysics50_ablation_plan.md,file exists,
 6_pairs,anchored DPO pair manifest,BLOCKED,manifests/physeditworld_dpo_pairs_anchored_v0.jsonl,"rows=0, required>=100",run pair builder after warm-up checkpoint gate passes

@@ -226,7 +226,7 @@
       "status": "BLOCKED"
     },
     {
-      "detail": "decision=CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING",
+      "detail": "decision=CHECKPOINT_EVAL_BLOCKED_EMPTY_EVAL_MANIFEST",
       "evidence": "reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json",
       "next_action": "produce true rollout videos, metrics, and Codex audit",
       "phase": "5_checkpoint_eval",

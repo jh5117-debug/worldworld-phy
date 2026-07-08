@@ -19,6 +19,17 @@ def count_jsonl(path: str | Path) -> int | None:
         return sum(1 for line in f if line.strip())
 
 
+def read_validation_decision(path: str | Path) -> str:
+    p = Path(path)
+    if not p.exists():
+        return "MISSING"
+    try:
+        obj = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return "UNREADABLE"
+    return str(obj.get("decision") or obj.get("status") or "UNKNOWN")
+
+
 def visible_gpu_status() -> tuple[str, str]:
     visible = os.environ.get("CUDA_VISIBLE_DEVICES", "")
     devices = [d.strip() for d in visible.split(",") if d.strip()]
@@ -60,6 +71,7 @@ def write_summary(row: dict[str, Any], path: str | Path) -> None:
         f"- Status: `{row['status']}`",
         f"- Error reason: {row.get('error_reason') or 'none'}",
         f"- Eval manifest: `{row['eval_manifest']}` rows={row.get('eval_rows')}",
+        f"- Eval manifest validation: `{row.get('eval_manifest_validation')}` decision=`{row.get('eval_manifest_validation_decision')}`",
         f"- Checkpoint root: `{row['checkpoint_root']}`",
         f"- Steps: `{row.get('steps')}`",
         f"- CUDA_VISIBLE_DEVICES: `{row.get('cuda_visible_devices')}`",
@@ -79,6 +91,7 @@ def write_decision(row: dict[str, Any], path: str | Path) -> None:
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="PhysEditWorld checkpoint rollout/metric/audit gate")
     ap.add_argument("--eval_manifest", required=True)
+    ap.add_argument("--eval_manifest_validation", default="reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json")
     ap.add_argument("--checkpoint_root", required=True)
     ap.add_argument("--steps", default="0,500,1000,2000")
     ap.add_argument("--output_root", required=True)
@@ -94,6 +107,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     eval_rows = count_jsonl(args.eval_manifest)
+    eval_manifest_validation_decision = read_validation_decision(args.eval_manifest_validation)
     visible, gpu_policy = visible_gpu_status()
     steps = parse_steps(args.steps)
     decision = "CHECKPOINT_EVAL_READY_DRY_RUN" if args.dry_run else "CHECKPOINT_EVAL_BACKEND_NOT_CONNECTED"
@@ -106,6 +120,8 @@ def main(argv: list[str] | None = None) -> int:
         decision, status, error = "CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING", "BLOCKED", "eval manifest missing"
     elif eval_rows == 0:
         decision, status, error = "CHECKPOINT_EVAL_BLOCKED_EMPTY_EVAL_MANIFEST", "BLOCKED", "eval manifest has zero rows"
+    elif eval_manifest_validation_decision != "LINGBOT_MANIFEST_SCHEMA_PASS":
+        decision, status, error = "CHECKPOINT_EVAL_BLOCKED_MANIFEST_VALIDATION", "BLOCKED", f"eval validation decision is {eval_manifest_validation_decision}"
     elif not Path(args.checkpoint_root).exists():
         decision, status, error = "CHECKPOINT_EVAL_BLOCKED_CHECKPOINT_ROOT_MISSING", "BLOCKED", "checkpoint root missing"
 
@@ -114,6 +130,8 @@ def main(argv: list[str] | None = None) -> int:
         "status": status,
         "error_reason": error,
         "eval_manifest": args.eval_manifest,
+        "eval_manifest_validation": args.eval_manifest_validation,
+        "eval_manifest_validation_decision": eval_manifest_validation_decision,
         "eval_rows": eval_rows,
         "checkpoint_root": args.checkpoint_root,
         "steps": ",".join(steps),
@@ -121,7 +139,24 @@ def main(argv: list[str] | None = None) -> int:
         "gpu_policy": gpu_policy,
         "output_root": args.output_root,
     }
-    write_csv([row], args.report, ["decision", "status", "error_reason", "eval_manifest", "eval_rows", "checkpoint_root", "steps", "cuda_visible_devices", "gpu_policy", "output_root"])
+    write_csv(
+        [row],
+        args.report,
+        [
+            "decision",
+            "status",
+            "error_reason",
+            "eval_manifest",
+            "eval_rows",
+            "eval_manifest_validation",
+            "eval_manifest_validation_decision",
+            "checkpoint_root",
+            "steps",
+            "cuda_visible_devices",
+            "gpu_policy",
+            "output_root",
+        ],
+    )
     write_csv([], args.gravity_metrics, ["checkpoint", "sample_id", "gravity_ordering", "airtime_error", "fall_speed_error", "contact_timing_error", "status"])
     write_csv([], args.video_audit, ["sample_id", "checkpoint", "gravity_response", "action_following", "camera_following", "freeze", "visual_quality", "written_reason", "reviewed", "status"])
     write_decision(row, args.decision)

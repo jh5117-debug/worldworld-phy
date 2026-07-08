@@ -107,7 +107,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - next: run 5-step warm-up preflight after conversion
 - `phase5_checkpoint_eval` / warm-up checkpoint video/metric gate: `BLOCKED`
   - evidence: `reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json`
-  - detail: decision=CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING
+  - detail: decision=CHECKPOINT_EVAL_BLOCKED_EMPTY_EVAL_MANIFEST
   - next: run checkpoint rollout, metrics, and Codex visual audit
 - `phase6_pairs` / anchored DPO pair manifest: `BLOCKED`
   - evidence: `manifests/physeditworld_dpo_pairs_anchored_v0.jsonl`

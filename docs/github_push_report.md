@@ -490,3 +490,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current warm-up decision remains `WARMUP_BLOCKED_EMPTY_MANIFEST`; its summary records train/val validation decisions `LINGBOT_MANIFEST_BLOCKED_EMPTY`.
 - Test status: targeted `compileall` PASS, direct baseline/warm-up validation-gate smoke PASS, current blocked reports refreshed, requirement/completion refresh PASS; `pytest` unavailable in system Python, so no pytest PASS is claimed.
 - Safety: CPU/IO/docs/scripts only; no GPU training or rollout, no DPO, no deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld Checkpoint-Eval Validation Gate (2026-07-09T03:30:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: hardened Phase 5 checkpoint rollout/metric/audit entrypoint so eval manifests must be schema-validated before checkpoint videos can be considered.
+- Checkpoint eval gate: `cam_physgeo/eval/physeditworld_checkpoint_eval.py` now requires the eval LingBot manifest validation decision to be `LINGBOT_MANIFEST_SCHEMA_PASS`.
+- This prevents checkpoint video generation or dry-run readiness from being inferred from a non-empty but unvalidated eval manifest.
+- Current checkpoint eval decision remains blocked because `manifests/physeditworld_50h_lingbot_val.jsonl` is absent/empty and validation is not PASS.
+- Test status: targeted `compileall` PASS, direct checkpoint-eval validation-gate smoke PASS, current blocked report refreshed; `pytest` unavailable in system Python, so no pytest PASS is claimed.
+- Safety: CPU/IO/docs/scripts only; no GPU rollout, no training, no DPO, no deletion, and no videos/images/checkpoints/weights pushed.

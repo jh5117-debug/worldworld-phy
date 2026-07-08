@@ -111,7 +111,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - next: run 5-step rank32 warm-up preflight after conversion
 - `5_checkpoint_eval` / checkpoint video/metric gate: `BLOCKED`
   - evidence: `reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json`
-  - detail: decision=CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING
+  - detail: decision=CHECKPOINT_EVAL_BLOCKED_EMPTY_EVAL_MANIFEST
   - next: produce true rollout videos, metrics, and Codex audit
 - `7_tiny_dpo` / tiny anchored DPO gate: `BLOCKED`
   - evidence: `reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json`
