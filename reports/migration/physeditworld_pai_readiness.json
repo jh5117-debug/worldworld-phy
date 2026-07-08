@@ -1,0 +1,53 @@
+{
+  "checks": [
+    {
+      "error_reason": "path does not exist",
+      "name": "nas_mount",
+      "next_action": "mount or expose the PAI/NAS target path",
+      "path": "/mnt/workspace/hj/nas_hj",
+      "rows": null,
+      "status": "BLOCKED"
+    },
+    {
+      "error_reason": "no external-looking PhysEditWorld root candidate",
+      "name": "physeditworld_root_candidates",
+      "next_action": "provide/mount selected PhysEditWorld 50h root",
+      "path": "reports/migration/physeditworld_candidates_raw.txt",
+      "rows": 656,
+      "status": "BLOCKED"
+    },
+    {
+      "error_reason": "manifest has zero rows",
+      "name": "strict_manifest",
+      "next_action": "mount selected PhysEditWorld 50h root and rerun audit/conversion",
+      "path": "manifests/physeditworld_50h_all.jsonl",
+      "rows": 0,
+      "status": "BLOCKED"
+    },
+    {
+      "error_reason": "manifest has zero rows",
+      "name": "train_manifest",
+      "next_action": "mount selected PhysEditWorld 50h root and rerun audit/conversion",
+      "path": "manifests/physeditworld_50h_train.jsonl",
+      "rows": 0,
+      "status": "BLOCKED"
+    },
+    {
+      "error_reason": "manifest has zero rows",
+      "name": "lingbot_train_manifest",
+      "next_action": "mount selected PhysEditWorld 50h root and rerun audit/conversion",
+      "path": "manifests/physeditworld_50h_lingbot_train.jsonl",
+      "rows": 0,
+      "status": "BLOCKED"
+    },
+    {
+      "error_reason": "no sample row available",
+      "name": "sample_schema",
+      "next_action": "requires non-empty strict manifest",
+      "path": "manifests/physeditworld_50h_all.jsonl",
+      "rows": 0,
+      "status": "BLOCKED"
+    }
+  ],
+  "decision": "PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED"
+}

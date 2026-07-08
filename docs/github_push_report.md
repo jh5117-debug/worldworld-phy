@@ -63,3 +63,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Baseline result: `BASELINE_BLOCKED_EMPTY_MANIFEST`; no real rollout or warm-up was launched because the PhysEditWorld converted train manifest is empty.
 - Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Artifact policy: only lightweight code/config/docs/CSV/MD summaries are intended for push; no `local_assets`, videos/images, checkpoints, weights, HDF5/NPY/NPZ/PT/PTH/safetensors, or large logs.
+
+
+## PhysEditWorld PAI/Data Readiness Preflight (2026-07-08T19:00:08 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Scope: CPU/IO-only readiness checker for PAI/NAS mount, selected PhysEditWorld root visibility, strict manifest rows, LingBot conversion manifest rows, and sample schema gate.
+- Latest decision: `PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED`.
+- Current blockers: NAS target not visible, selected PhysEditWorld root not visible, strict/train/LingBot manifests have 0 rows.
+- Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Artifact policy: only lightweight code/docs/scripts/CSV/JSON summaries are intended for push; no `local_assets`, videos/images, checkpoints, weights, or large logs.

@@ -243,3 +243,25 @@ The Phase 1 bounded audit did not find strict PhysEditWorld 50h samples in the c
 - Direct Phase 3/4 smoke passes; pytest is unavailable in the active H20 shell.
 - True baseline rollout and support warm-up are not run because the selected PhysEditWorld 50h root remains unavailable and the converted train manifest has 0 rows.
 - No scale, no StageB, no GRPO, no broad-LoRA, no DPO, and no checkpoint/video push.
+
+
+## PAI / Data Readiness Preflight Update (2026-07-08T19:00:08 CST)
+
+Decision: `PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED`.
+
+A CPU/IO-only readiness checker was added and run:
+
+- Tool: `cam_physgeo/data/physeditworld_readiness.py`.
+- Wrapper: `scripts/migration/check_physeditworld_pai_readiness.sh`.
+- Checklist: `docs/physeditworld_50h_data_unblock_checklist.md`.
+- CSV: `reports/migration/physeditworld_pai_readiness.csv`.
+- JSON: `reports/migration/physeditworld_pai_readiness.json`.
+- Summary: `reports/migration/physeditworld_pai_readiness_summary.md`.
+
+Current blockers are explicit and machine-readable:
+
+- NAS target `/mnt/workspace/hj/nas_hj` is not mounted/visible.
+- No external-looking selected PhysEditWorld 50h root candidate is visible.
+- `manifests/physeditworld_50h_all.jsonl`, train manifest, and LingBot train manifest all have 0 rows.
+
+Test status: compileall PASS, direct readiness smoke PASS, pytest unavailable; no pytest PASS is claimed. No GPU, rollout, warm-up, pair construction, or DPO was run.

@@ -73,3 +73,16 @@ The execute script currently copies only code/docs/reports/scripts. Weight/data 
 - Copy execution: `NOT_RUN`.
 - Training: `NOT_RUN`.
 - GPU usage: none for this migration audit.
+
+
+## Readiness Preflight Update (2026-07-08T19:00:08 CST)
+
+Run:
+
+```bash
+bash scripts/migration/check_physeditworld_pai_readiness.sh
+```
+
+Latest decision: `PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED`.
+
+This confirms migration execution and Phase 3 rollout are still blocked until the NAS target and selected PhysEditWorld 50h root are visible. The checker is CPU/IO-only and safe to rerun on H20 or PAI.

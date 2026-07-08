@@ -1,0 +1,7 @@
+name,status,path,rows,error_reason,next_action
+nas_mount,BLOCKED,/mnt/workspace/hj/nas_hj,,path does not exist,mount or expose the PAI/NAS target path
+physeditworld_root_candidates,BLOCKED,reports/migration/physeditworld_candidates_raw.txt,656,no external-looking PhysEditWorld root candidate,provide/mount selected PhysEditWorld 50h root
+strict_manifest,BLOCKED,manifests/physeditworld_50h_all.jsonl,0,manifest has zero rows,mount selected PhysEditWorld 50h root and rerun audit/conversion
+train_manifest,BLOCKED,manifests/physeditworld_50h_train.jsonl,0,manifest has zero rows,mount selected PhysEditWorld 50h root and rerun audit/conversion
+lingbot_train_manifest,BLOCKED,manifests/physeditworld_50h_lingbot_train.jsonl,0,manifest has zero rows,mount selected PhysEditWorld 50h root and rerun audit/conversion
+sample_schema,BLOCKED,manifests/physeditworld_50h_all.jsonl,0,no sample row available,requires non-empty strict manifest
