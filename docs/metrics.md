@@ -217,3 +217,11 @@ Metric policy after v14:
 - A promising DPO scheme must pass scalar gaps, true V2V-5 videos, PSNR/SSIM/LPIPS where available, FVD/VBench when the wrapper supports them, PhysGeo checks, and Codex visual audit.
 - V-JEPA2 can trigger or prioritize inspection and can be considered for v15 regularization, but it cannot approve a checkpoint by itself.
 - If visual audit fails, metric incompleteness cannot authorize scale.
+
+## v14 V-JEPA2 Artifact Correlation Update (2026-07-08T10:31 CST)
+
+- Added correlation report: `reports/dpo_utility_calibration_v14/latent_monitor/artifact_correlation/vjepa_artifact_correlation.md`.
+- Source: existing `vjepa2_checkpoint_regression_all_with_visual.csv` plus Codex visual labels; no training or new rollout was run.
+- Decision: `VJEPA_ARTIFACT_CORRELATION_WEAK_MONITOR_ONLY`.
+- V-JEPA2 remains useful as a high-recall drift/inspection trigger, but artifact-specific discrimination is weak/noisy on the current 24-row checkpoint set and especially limited for scalar-positive E07/E09/E10 rows.
+- This supports the v15 plan: V-JEPA2 should be paired with explicit artifact labels/gates, not used as standalone checkpoint approval or a direct DPO reward.

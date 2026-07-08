@@ -135,3 +135,11 @@ The next aligned work is v15 monitor/regularizer design:
 - Result: scalar-positive schemes consistently fail visual gates. E07 is worse on 4/4, E09 is flagged worse on 4/4; one row is described as at-best-mixed/not-better, and E10 is worse on 2/4 and not decisively better on the rest.
 - Dominant failure tags: identity clutter, foreground duplication/fragments, artifact/line-text contamination, with background/camera contamination in some E09 samples.
 - Decision remains `DPO_RECIPE_NOT_FOUND_V14`; scale permission remains `NO_SCALE`.
+
+## v14 V-JEPA2 Artifact Correlation Update (2026-07-08T10:31 CST)
+
+- Added correlation report: `reports/dpo_utility_calibration_v14/latent_monitor/artifact_correlation/vjepa_artifact_correlation.md`.
+- Source: existing `vjepa2_checkpoint_regression_all_with_visual.csv` plus Codex visual labels; no training or new rollout was run.
+- Decision: `VJEPA_ARTIFACT_CORRELATION_WEAK_MONITOR_ONLY`.
+- V-JEPA2 remains useful as a high-recall drift/inspection trigger, but artifact-specific discrimination is weak/noisy on the current 24-row checkpoint set and especially limited for scalar-positive E07/E09/E10 rows.
+- This supports the v15 plan: V-JEPA2 should be paired with explicit artifact labels/gates, not used as standalone checkpoint approval or a direct DPO reward.
