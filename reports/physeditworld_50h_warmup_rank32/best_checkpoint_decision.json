@@ -1,0 +1,12 @@
+{
+  "checkpoint_root": "local_assets/physeditworld_50h_warmup_rank32",
+  "cuda_visible_devices": "4",
+  "decision": "CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING",
+  "error_reason": "eval manifest missing",
+  "eval_manifest": "manifests/physeditworld_50h_lingbot_val.jsonl",
+  "eval_rows": null,
+  "gpu_policy": "GPU_POLICY_PASS",
+  "output_root": "local_assets/physeditworld_50h_warmup_rank32",
+  "status": "BLOCKED",
+  "steps": "0,500,1000,2000"
+}

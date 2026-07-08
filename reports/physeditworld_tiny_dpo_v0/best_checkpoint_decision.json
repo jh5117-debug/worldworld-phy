@@ -1,0 +1,12 @@
+{
+  "cuda_visible_devices": "4",
+  "decision": "TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS",
+  "error_reason": "pair rows 0 < 100",
+  "gpu_policy": "GPU_POLICY_PASS",
+  "min_pairs": 100,
+  "pair_gate_decision": "UNKNOWN",
+  "pair_manifest": "manifests/physeditworld_dpo_pairs_anchored_v0.jsonl",
+  "pair_rows": 0,
+  "status": "BLOCKED",
+  "steps": 200
+}

@@ -287,3 +287,26 @@ Smoke evidence:
 The warm-up command was invoked with `CUDA_VISIBLE_DEVICES=4`, which passes the GPU4-7 policy, but it correctly refused to train because `manifests/physeditworld_50h_lingbot_train.jsonl` has 0 rows. The pair builder correctly emitted an empty anchored-pair manifest because no warm-up checkpoint has passed video/metric/Codex audit.
 
 Test status: compileall PASS, direct Phase 4/6 smoke PASS, pytest unavailable; no pytest PASS is claimed. No rollout, no training, no pair admission, and no DPO was run.
+
+
+## Phase 5/7 Gate Scaffold Update (2026-07-08T19:13:39 CST)
+
+Decision: `CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING` and `TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS`.
+
+New safety-gated entry points were added:
+
+- Checkpoint eval gate: `cam_physgeo/eval/physeditworld_checkpoint_eval.py`.
+- Tiny anchored DPO gate: `cam_physgeo/dpo/physeditworld_tiny_dpo_probe.py`.
+- Tests: `tests/test_physeditworld_checkpoint_eval.py`, `tests/test_physeditworld_tiny_dpo_probe.py`.
+
+Smoke evidence:
+
+- Checkpoint eval summary: `reports/physeditworld_50h_warmup_rank32/checkpoint_eval_gate_summary.md`.
+- Gravity metrics placeholder: `reports/physeditworld_50h_warmup_rank32/gravity_metrics.csv`.
+- Video audit placeholder: `reports/physeditworld_50h_warmup_rank32/video_audit.csv`.
+- Tiny DPO gate summary: `reports/physeditworld_tiny_dpo_v0/tiny_dpo_gate_summary.md`.
+- Tiny DPO decision: `reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json`.
+
+The checkpoint eval gate was invoked with `CUDA_VISIBLE_DEVICES=4`, which passes the GPU4-7 policy, but it correctly refused to evaluate because `manifests/physeditworld_50h_lingbot_val.jsonl` is missing. The tiny DPO gate also used `CUDA_VISIBLE_DEVICES=4` and correctly refused to train because the anchored pair manifest has 0 rows, below the 100-pair gate.
+
+Test status: compileall PASS, direct Phase 5/7 smoke PASS, pytest unavailable; no pytest PASS is claimed. No rollout, no metrics scoring, no visual audit, no training, and no DPO was run.

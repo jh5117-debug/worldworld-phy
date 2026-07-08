@@ -1,0 +1,2 @@
+decision,status,error_reason,pair_manifest,pair_rows,pair_gate_decision,min_pairs,steps,cuda_visible_devices,gpu_policy
+TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS,BLOCKED,pair rows 0 < 100,manifests/physeditworld_dpo_pairs_anchored_v0.jsonl,0,UNKNOWN,100,200,4,GPU_POLICY_PASS

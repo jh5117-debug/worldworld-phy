@@ -1,0 +1,2 @@
+decision,status,error_reason,eval_manifest,eval_rows,checkpoint_root,steps,cuda_visible_devices,gpu_policy,output_root
+CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING,BLOCKED,eval manifest missing,manifests/physeditworld_50h_lingbot_val.jsonl,,local_assets/physeditworld_50h_warmup_rank32,"0,500,1000,2000",4,GPU_POLICY_PASS,local_assets/physeditworld_50h_warmup_rank32

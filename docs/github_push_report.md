@@ -84,3 +84,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - GPU policy: smoke used `CUDA_VISIBLE_DEVICES=4`; no GPU computation or training was launched.
 - Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Artifact policy: only lightweight code/docs/scripts/CSV/JSON/MD summaries are intended for push; no `local_assets`, videos/images, checkpoints, weights, or large logs.
+
+
+## PhysEditWorld Checkpoint Eval And Tiny DPO Gates (2026-07-08T19:13:39 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Scope: Phase 5 checkpoint rollout/metric/audit gate and Phase 7 tiny anchored DPO gate.
+- Checkpoint eval decision: `CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING`.
+- Tiny DPO decision: `TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS`.
+- GPU policy: smoke used `CUDA_VISIBLE_DEVICES=4`; no GPU computation, rollout, metrics scoring, or DPO training was launched.
+- Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Artifact policy: only lightweight code/docs/CSV/JSON/MD summaries are intended for push; no `local_assets`, videos/images, checkpoints, weights, or large logs.
