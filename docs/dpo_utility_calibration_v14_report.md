@@ -532,3 +532,13 @@ Decision remains `DPO_RECIPE_NOT_FOUND_V14` / `NO_SCALE`.
 - Report: `reports/dpo_utility_calibration_v14/asset_recovery_plan/recovery_smoke_limit1_summary.md`.
 - Generated MP4 files are local-only under `local_assets/dpo_utility_calibration_v14/asset_recovery_smoke/all500_smoke1` and must not be pushed.
 - This proves the recoverable asset plan can materialize a schema-valid Prefix5 row, but it does not complete all500 real-energy calibration and does not change `NO_SCALE`.
+
+## v14 Asset Recovery Smoke8 Update (2026-07-08T11:01 CST)
+
+- Ran bounded recovery with `cam_physgeo.dpo.v14_asset_complete_adapter --limit 8` using `CUDA_VISIBLE_DEVICES=`; no GPU was used.
+- Input manifest: `manifests/dpo_v14_subsets/asset_complete/all500_recoverable_for_energy.jsonl`.
+- Output manifest: `manifests/dpo_v14_subsets/asset_complete/all500_recovered_smoke8_prefix5.jsonl`.
+- Result: `PASS`; selected count `8`, schema validated `8`, status counts `{'ADAPTED': 8}`.
+- Independent validation: `reports/dpo_utility_calibration_v14/asset_recovery_plan/recovery_smoke_limit8_validation.md`, 8/8 rows pass `prefix5_schema_errors` and required path-existence checks.
+- Generated MP4 files remain local-only under `local_assets/dpo_utility_calibration_v14/asset_recovery_smoke/all500_smoke8` and must not be pushed.
+- This proves the recoverable all500 path scales from 1 row to 8 schema-valid rows, but it still does not complete all500 real-energy calibration and does not change `NO_SCALE`.
