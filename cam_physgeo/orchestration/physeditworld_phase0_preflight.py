@@ -21,6 +21,8 @@ class PreflightStep:
 
 
 PASS_DECISIONS = {
+    "PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED",
+    "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
     "READY_FOR_BASELINE_ROLLOUT_PREFLIGHT",
     "MIGRATION_ASSET_VALIDATION_PASS",
     "PHYS_EDITWORLD_ROOT_CANDIDATES_STRONG",
@@ -74,6 +76,7 @@ def run_command(cmd: list[str], evidence: str, dry_run: bool) -> PreflightStep:
 
 def overall_decision(rows: list[PreflightStep]) -> str:
     order = [
+        ("empty_manifest_init", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_MANIFEST_INIT"),
         ("physeditworld_pai_readiness", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS"),
         ("physeditworld_root_candidates_ranked", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES"),
         ("physeditworld_selected_root_status", "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_SELECTION"),
@@ -150,6 +153,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     commands = [
+        (["bash", "scripts/migration/init_physeditworld_empty_manifests.sh"], "reports/physeditworld_50h/manifest_init/empty_manifest_init.json"),
         (["bash", "scripts/migration/check_physeditworld_pai_readiness.sh"], "reports/migration/physeditworld_pai_readiness.json"),
         (["bash", "scripts/migration/rank_physeditworld_root_candidates.sh"], "reports/migration/physeditworld_root_candidates_ranked.json"),
         (["bash", "scripts/migration/select_physeditworld_root.sh"], "reports/migration/physeditworld_selected_root_status.json"),

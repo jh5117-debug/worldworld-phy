@@ -4,10 +4,13 @@ Decision: `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS`
 
 ## Steps
 
+- `empty_manifest_init`: `PASS` / `PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT`
+  - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
+  - command: `bash scripts/migration/init_physeditworld_empty_manifests.sh`
 - `physeditworld_pai_readiness`: `BLOCKED` / `PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED`
   - evidence: `reports/migration/physeditworld_pai_readiness.json`
   - command: `bash scripts/migration/check_physeditworld_pai_readiness.sh`
-- `physeditworld_root_candidates_ranked`: `BLOCKED` / `PHYS_EDITWORLD_ROOT_CANDIDATES_WEAK_ONLY`
+- `physeditworld_root_candidates_ranked`: `BLOCKED` / `PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG`
   - evidence: `reports/migration/physeditworld_root_candidates_ranked.json`
   - command: `bash scripts/migration/rank_physeditworld_root_candidates.sh`
 - `physeditworld_selected_root_status`: `BLOCKED` / `PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT`

@@ -66,6 +66,14 @@
       "status": "PASS"
     },
     {
+      "detail": "decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
+      "evidence": "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "expected empty manifest placeholders",
+      "status": "PASS"
+    },
+    {
       "detail": "decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION",
       "evidence": "reports/migration/locked_handoff_sequence.json",
       "next_action": "set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence",

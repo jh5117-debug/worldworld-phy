@@ -2,6 +2,15 @@
   "decision": "PHYS_EDITWORLD_PHASE0_BLOCKED_AT_READINESS",
   "steps": [
     {
+      "command": "bash scripts/migration/init_physeditworld_empty_manifests.sh",
+      "decision": "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
+      "error_reason": "",
+      "evidence": "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "step": "empty_manifest_init"
+    },
+    {
       "command": "bash scripts/migration/check_physeditworld_pai_readiness.sh",
       "decision": "PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED",
       "error_reason": "",
@@ -12,7 +21,7 @@
     },
     {
       "command": "bash scripts/migration/rank_physeditworld_root_candidates.sh",
-      "decision": "PHYS_EDITWORLD_ROOT_CANDIDATES_WEAK_ONLY",
+      "decision": "PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG",
       "error_reason": "",
       "evidence": "reports/migration/physeditworld_root_candidates_ranked.json",
       "exit_code": 0,

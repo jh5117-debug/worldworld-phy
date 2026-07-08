@@ -20,6 +20,7 @@ REQUIRED_FILES = (
     "docs/physeditworld_50h_pai_bootstrap.md",
     "scripts/migration/bootstrap_pai_physeditworld.sh",
     "scripts/migration/check_physeditworld_pai_readiness.sh",
+    "scripts/migration/init_physeditworld_empty_manifests.sh",
     "scripts/migration/rank_physeditworld_root_candidates.sh",
     "scripts/migration/probe_physeditworld_root_schema.sh",
     "scripts/migration/select_physeditworld_root.sh",
@@ -34,6 +35,7 @@ REQUIRED_FILES = (
     "scripts/continue_physeditworld_after_mount.sh",
     "scripts/run_physeditworld_pipeline_gates.sh",
     "cam_physgeo/data/physeditworld_readiness.py",
+    "cam_physgeo/data/physeditworld_manifest_init.py",
     "cam_physgeo/data/physeditworld_root_candidates.py",
     "cam_physgeo/data/physeditworld_root_schema_probe.py",
     "cam_physgeo/data/physeditworld_root_selection.py",
@@ -49,6 +51,7 @@ REQUIRED_FILES = (
 EXPECTED_REPORTS = (
     "reports/migration/phase0_preflight_status.json",
     "reports/migration/phase0_preflight_summary.md",
+    "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
     "reports/migration/physeditworld_pai_readiness.json",
     "reports/migration/physeditworld_root_candidates_ranked.json",
     "reports/migration/physeditworld_root_schema_probe.json",

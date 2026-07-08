@@ -40,5 +40,6 @@ def test_overall_complete_when_all_rows_pass():
 def test_build_rows_includes_root_intake_report():
     rows = build_rows()
     requirements = {row.requirement for row in rows}
+    assert "expected empty manifest placeholders" in requirements
     assert "selected-root intake handoff report" in requirements
     assert "selected-root schema probe" in requirements

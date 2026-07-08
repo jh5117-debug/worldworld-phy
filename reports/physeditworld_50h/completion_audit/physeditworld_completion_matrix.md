@@ -5,7 +5,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 ## Status Counts
 
 - `BLOCKED`: 16
-- `PASS`: 12
+- `PASS`: 13
 
 ## Requirement Evidence
 
@@ -33,6 +33,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 - `phase0_migration` / guarded execute rsync script: `PASS`
   - evidence: `scripts/migration/rsync_h20_to_pai_execute.sh`
   - detail: file exists
+- `phase0_migration` / expected empty manifest placeholders: `PASS`
+  - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
+  - detail: decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT
 - `phase0_migration` / locked handoff sequence: `BLOCKED`
   - evidence: `reports/migration/locked_handoff_sequence.json`
   - detail: decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION

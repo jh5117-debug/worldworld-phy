@@ -16,6 +16,7 @@ fi
 cd "$REPO_DIR"
 printf 'repo=%s\nbranch=%s\nhead=%s\n' "$REPO_DIR" "$(git branch --show-current)" "$(git rev-parse --short HEAD)"
 python3 -V || true
+bash scripts/migration/init_physeditworld_empty_manifests.sh || true
 bash scripts/migration/verify_pai_physeditworld_handoff.sh || true
 bash scripts/migration/run_physeditworld_phase0_preflight.sh || true
 bash scripts/run_physeditworld_pipeline_gates.sh || true
