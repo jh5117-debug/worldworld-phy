@@ -72,6 +72,7 @@ def status_from_decision(decision: str, pass_values: set[str]) -> str:
         or "MISSING" in decision
         or "WAITING" in decision
         or "NEED" in decision
+        or "REQUIRED" in decision
         or "INCOMPLETE" in decision
     ):
         return "BLOCKED"

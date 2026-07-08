@@ -215,7 +215,7 @@
       "next_action": "mount NAS, set PHYS_EDITWORLD_ROOTS, rerun external unblock packet writer and bootstrap",
       "phase": "phase0_migration",
       "requirement": "external unblock packet decision",
-      "status": "UNKNOWN"
+      "status": "BLOCKED"
     },
     {
       "detail": "decision=POST_MOUNT_BLOCKED_AT_ROOT_INPUT",

@@ -4,9 +4,8 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 
 ## Status Counts
 
-- `BLOCKED`: 22
+- `BLOCKED`: 23
 - `PASS`: 23
-- `UNKNOWN`: 1
 
 ## Requirement Evidence
 
@@ -96,7 +95,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - evidence: `reports/migration/pai_restore_packet.json`
   - detail: decision=PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT
   - next: mount NAS, set PHYS_EDITWORLD_ROOTS, rerun bootstrap or restore-packet writer
-- `phase0_migration` / external unblock packet decision: `UNKNOWN`
+- `phase0_migration` / external unblock packet decision: `BLOCKED`
   - evidence: `reports/migration/physeditworld_external_unblock_packet.json`
   - detail: decision=PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT
   - next: mount NAS, set PHYS_EDITWORLD_ROOTS, rerun external unblock packet writer and bootstrap

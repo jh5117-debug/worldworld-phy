@@ -13,6 +13,7 @@ def test_status_from_decision_pass():
 def test_status_from_decision_blocked():
     assert status_from_decision("BASELINE_BLOCKED_EMPTY_MANIFEST", {"BASELINE_ROLLOUT_PASS"}) == "BLOCKED"
     assert status_from_decision("PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT", {"PHYS_EDITWORLD_ROOT_INTAKE_LOCKED_READY_FOR_HANDOFF"}) == "BLOCKED"
+    assert status_from_decision("PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT", {"PHYS_EDITWORLD_EXTERNAL_UNBLOCK_PACKET_READY_FOR_POST_MOUNT"}) == "BLOCKED"
 
 
 def test_status_from_decision_missing():
