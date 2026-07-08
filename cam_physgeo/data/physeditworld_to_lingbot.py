@@ -134,6 +134,63 @@ def write_sampled_npy(src: str | Path, dst: Path, indices: list[int], field_name
     }
 
 
+def write_sampled_video(src: str | Path, dst: Path, indices: list[int], fps: int, width: int, height: int) -> dict[str, Any]:
+    try:
+        import cv2
+    except Exception as exc:  # pragma: no cover - depends on deployment image.
+        raise RuntimeError(f"cv2 is required to sample PhysEditWorld target video: {exc}") from exc
+
+    src = Path(src)
+    cap = cv2.VideoCapture(str(src))
+    if not cap.isOpened():
+        raise ValueError(f"video_open_failed:{src}")
+    source_frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
+    source_fps = float(cap.get(cv2.CAP_PROP_FPS) or 0.0)
+    source_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) or 0)
+    source_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0)
+    max_index = max(indices) if indices else -1
+    if source_frame_count and source_frame_count < max_index + 1:
+        cap.release()
+        raise ValueError(f"video length {source_frame_count} cannot cover max frame index {max_index}")
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    writer = cv2.VideoWriter(str(dst), fourcc, float(fps), (int(width), int(height)))
+    if not writer.isOpened():
+        cap.release()
+        raise ValueError(f"video_writer_open_failed:{dst}")
+    wanted = set(indices)
+    written = 0
+    frame_idx = 0
+    while True:
+        ok, frame = cap.read()
+        if not ok:
+            break
+        if frame_idx in wanted:
+            if frame.shape[1] != width or frame.shape[0] != height:
+                frame = cv2.resize(frame, (int(width), int(height)), interpolation=cv2.INTER_AREA)
+            writer.write(frame)
+            written += 1
+            if written >= len(wanted):
+                break
+        frame_idx += 1
+    cap.release()
+    writer.release()
+    if written != len(wanted):
+        raise ValueError(f"video_sample_incomplete:wrote={written}:expected={len(wanted)}:max_index={max_index}")
+    return {
+        "source_path": str(src),
+        "source_frame_count": source_frame_count,
+        "source_fps": source_fps,
+        "source_width": source_width,
+        "source_height": source_height,
+        "output_frame_count": written,
+        "output_fps": int(fps),
+        "output_width": int(width),
+        "output_height": int(height),
+        "indices_length": len(indices),
+        "status": "SAMPLED",
+    }
+
+
 def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace) -> dict[str, Any]:
     sample_id = str(row.get("sample_id") or Path(str(row.get("video_path", "sample"))).stem)
     final_dir = output_root / sample_id
@@ -147,12 +204,12 @@ def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace
     status = "OK"
     error = ""
     try:
-        # v0 keeps media as links; action/camera arrays are sampled to the same 81-frame index view.
+        # v0 keeps prefix media as links; target/action/camera are sampled to the same 81-frame index view.
         prefix = row.get("prefix_video_path") or row.get("image_path") or row.get("video_path")
         prefix_name = "prefix.mp4" if str(prefix).lower().endswith(".mp4") else "image.jpg"
         _link_or_copy(prefix, tmp_dir / prefix_name)
-        _link_or_copy(row["video_path"], tmp_dir / "target.mp4")
         indices = frame_indices(row.get("num_frames"), args.num_frames)
+        video_sampling = write_sampled_video(row["video_path"], tmp_dir / "target.mp4", indices, args.fps, args.width, args.height)
         action_sampling = write_sampled_npy(row["action_trace_path"], tmp_dir / "action.npy", indices, "action_trace")
         camera_sampling = write_sampled_npy(row["camera_trajectory_path"], tmp_dir / "poses.npy", indices, "camera_trajectory")
         intrinsics_scale = intrinsics_scale_metadata(row, args.width, args.height)
@@ -193,6 +250,7 @@ def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace
                 "camera_frame_indices": indices,
                 "same_indices_for_action_camera_video": True,
             },
+            "video_sampling": video_sampling,
             "action_sampling": action_sampling,
             "camera_sampling": camera_sampling,
             "intrinsics_scale": intrinsics_scale,

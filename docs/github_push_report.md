@@ -398,3 +398,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current data gate remains blocked: strict PhysEditWorld train manifest still has 0 rows because the selected 50h root is not visible/mounted.
 - Test status: project `compileall` PASS, direct conversion smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Safety: no GPU use, no training, no rollout, no DPO, no data/checkpoint/weight deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld Conversion Target Video Sampling (2026-07-09T01:45:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: Phase 2 LingBot conversion now writes a sampled `target.mp4` instead of linking the unsampled source video.
+- Alignment update: `target.mp4`, `action.npy`, and `poses.npy` are all sampled from the same `frame_indices`; metadata records `video_sampling`, `action_sampling`, `camera_sampling`, and shared alignment.
+- Resize update: sampled target video is resized to the requested LingBot resolution, matching the intrinsics scaling metadata.
+- Schema gate: converted condition dirs now reject missing/invalid `video_sampling` and require video output length to match `frame_indices`.
+- Current data gate remains blocked: strict PhysEditWorld train manifest still has 0 rows because the selected 50h root is not visible/mounted.
+- Test status: project `compileall` PASS, direct tiny-mp4 conversion smoke PASS, empty-manifest conversion gate PASS; pytest unavailable, no pytest PASS is claimed.
+- Safety: no GPU use, no training, no rollout, no DPO, no data/checkpoint/weight deletion, and no videos/images/checkpoints/weights pushed.

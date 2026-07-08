@@ -36,14 +36,16 @@ def validate_condition_dir(path: str | Path) -> list[str]:
         errors.append("metadata_missing:sampling_alignment")
     elif alignment.get("same_indices_for_action_camera_video") is not True:
         errors.append("metadata_invalid:sampling_alignment")
-    for key in ["action_sampling", "camera_sampling"]:
+    for key in ["video_sampling", "action_sampling", "camera_sampling"]:
         sampling = meta.get(key)
         if not isinstance(sampling, dict):
             errors.append(f"metadata_missing:{key}")
             continue
-        if sampling.get("status") not in {"SAMPLED", "ALREADY_SAMPLED"}:
+        allowed_status = {"SAMPLED"} if key == "video_sampling" else {"SAMPLED", "ALREADY_SAMPLED"}
+        if sampling.get("status") not in allowed_status:
             errors.append(f"metadata_invalid:{key}_status")
-        if isinstance(indices, list) and sampling.get("output_length") != len(indices):
+        output_len = sampling.get("output_frame_count") if key == "video_sampling" else sampling.get("output_length")
+        if isinstance(indices, list) and output_len != len(indices):
             errors.append(f"metadata_invalid:{key}_length")
     scale = meta.get("intrinsics_scale")
     if not isinstance(scale, dict):
