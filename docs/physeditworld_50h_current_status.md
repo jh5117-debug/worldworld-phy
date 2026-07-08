@@ -164,3 +164,12 @@ Evidence:
 
 No conversion, rollout, warm-up, pair construction, or DPO was run after this gate failure.
 
+## Root Search And Phase 2 Update (2026-07-08T18:29:06 CST)
+
+- Root search report: `reports/physeditworld_50h/root_search/root_search_summary.md`.
+- Decision: `PHYS_EDIT_WORLD_ROOT_NOT_VISIBLE`.
+- True PhysEditWorld selected 50h root is still not visible; repo self-generated files and PhysInOne legacy paths are rejected as false positives.
+- Phase 2 conversion tooling is implemented and direct-smoke tested.
+- Real conversion remains data-blocked because `manifests/physeditworld_50h_train.jsonl` has 0 rows.
+- No GPU, rollout, warm-up, pair construction, or DPO was run.
+
