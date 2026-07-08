@@ -1,0 +1,6 @@
+accuracy,correct,count,mean_abs_error,metric,total
+1.0,1,,,airtime_sec_ordering,1
+1.0,1,,,fall_speed_ordering,1
+1.0,1,,,vertical_displacement_ordering,1
+,,2,0.15000000000000008,contact_time_pred_abs_error,
+,,2,0.15000000000000002,airtime_pred_abs_error,

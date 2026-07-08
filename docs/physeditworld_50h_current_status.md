@@ -173,3 +173,17 @@ No conversion, rollout, warm-up, pair construction, or DPO was run after this ga
 - Real conversion remains data-blocked because `manifests/physeditworld_50h_train.jsonl` has 0 rows.
 - No GPU, rollout, warm-up, pair construction, or DPO was run.
 
+
+## Phase 3/4 Readiness Update (2026-07-08T18:44:19 CST)
+
+Decision: `PHASE3_PHASE4_SCAFFOLD_READY_DATA_BLOCKED`.
+
+- Gravity metric helpers are implemented and direct-smoke tested.
+- Baseline rollout wrapper is implemented and direct-smoke tested.
+- Rank32 prompt-only gravity warm-up config exists and enforces GPU4-7 only.
+- Future PhysEditWorld50-only vs PhysEditWorld50+our-physics50 ablation plan exists but is not run.
+- Baseline result: `BASELINE_BLOCKED_EMPTY_MANIFEST` because `manifests/physeditworld_50h_lingbot_train.jsonl` has 0 rows.
+- Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- No GPU, rollout, warm-up, pair construction, or DPO was run.
+
+Readiness report: `docs/physeditworld_50h_baseline_warmup_readiness_report.md`.

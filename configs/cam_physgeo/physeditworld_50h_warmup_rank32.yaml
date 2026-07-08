@@ -1,0 +1,52 @@
+experiment: physeditworld_50h_warmup_rank32
+model: LingBot-Fast
+condition:
+  image_or_prefix: true
+  prompt: true
+  action: true
+  camera: true
+  intrinsics: true
+  gravity: prompt_only
+trainable:
+  lora_rank: 32
+  lora_alpha: 32
+  attention_lora: true
+  camera_action_condition_projection_lora: true
+  selected_temporal_self_attention_blocks: true
+frozen:
+  vae: true
+  text_encoder: true
+  ffn: true
+  output_head: true
+  most_dit_backbone: true
+precision:
+  dit: bf16_mixed_safe
+  lora: bf16
+  vae: fp32
+  camera_action_intrinsics: fp32
+  loss_reduction: fp32
+timestep_sampling:
+  high_noise: 0.5
+  mid_noise: 0.4
+  low_clean: 0.1
+optimizer:
+  name: AdamW
+  lr_min: 1.0e-6
+  lr_max: 5.0e-6
+  weight_decay: 0.01
+  grad_clip: true
+gates:
+  preflight_steps: 5
+  save_steps: [0, 500, 1000, 2000]
+  max_steps: 2000
+  eval_every: 250
+gpu_policy:
+  allowed_physical_gpus: [4, 5, 6, 7]
+  forbidden_physical_gpus: [0, 1, 2, 3]
+non_goals:
+  large_dpo: false
+  train400: false
+  stageb: false
+  grpo: false
+  broad_lora: false
+  full_data_long_stagea: false

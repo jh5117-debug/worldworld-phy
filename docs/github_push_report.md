@@ -54,3 +54,11 @@ git push -u origin cam-physgeo-dpo-refactor
 - Data status: `PHYS_EDIT_WORLD_ROOT_NOT_VISIBLE`; visible H20 paths still contain PhysInOne/legacy false positives rather than the selected PhysEditWorld 50h root.
 - Artifact policy: only lightweight code/docs/manifests/CSV/MD reports were pushed; no `local_assets`, videos/images, checkpoints, weights, or large logs.
 
+## PhysEditWorld 50h Phase 3/4 Readiness Push (2026-07-08T18:44:19 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Scope: gravity metric helpers, baseline rollout gate wrapper, rank32 prompt-only gravity warm-up config, future mixed-data ablation plan, and readiness report.
+- Decision: `PHASE3_PHASE4_SCAFFOLD_READY_DATA_BLOCKED`.
+- Baseline result: `BASELINE_BLOCKED_EMPTY_MANIFEST`; no real rollout or warm-up was launched because the PhysEditWorld converted train manifest is empty.
+- Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Artifact policy: only lightweight code/config/docs/CSV/MD summaries are intended for push; no `local_assets`, videos/images, checkpoints, weights, HDF5/NPY/NPZ/PT/PTH/safetensors, or large logs.

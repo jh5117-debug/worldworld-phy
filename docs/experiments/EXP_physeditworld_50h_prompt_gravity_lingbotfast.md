@@ -234,3 +234,12 @@ The Phase 1 bounded audit did not find strict PhysEditWorld 50h samples in the c
 - Prompt-only gravity conversion is implemented, but no real samples are converted because the strict 50h manifest is empty.
 - Phase 3+ remains blocked until the real PhysEditWorld selected 50h root is mounted or provided.
 
+
+## Execution Update: Phase 3/4 Readiness (2026-07-08T18:44:19 CST)
+
+- Phase 3 baseline rollout wrapper is implemented but correctly blocks on empty manifest with `BASELINE_BLOCKED_EMPTY_MANIFEST`.
+- Phase 4 rank32 warm-up config is prepared for prompt-only gravity and GPU4-7 only.
+- Gravity metric smoke passes on synthetic scalar rows.
+- Direct Phase 3/4 smoke passes; pytest is unavailable in the active H20 shell.
+- True baseline rollout and support warm-up are not run because the selected PhysEditWorld 50h root remains unavailable and the converted train manifest has 0 rows.
+- No scale, no StageB, no GRPO, no broad-LoRA, no DPO, and no checkpoint/video push.
