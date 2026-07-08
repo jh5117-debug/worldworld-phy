@@ -367,3 +367,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current blocker remains external: selected PhysEditWorld 50h root/NAS are not visible and strict/LingBot manifests remain empty, so conversion, baseline, warm-up, pair construction, and tiny DPO must not run yet.
 - Test status: compileall PASS, direct prompt-gravity policy audit PASS, requirement/completion refresh PASS; pytest unavailable, no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld Downstream Requirement Gate Hardening (2026-07-09T01:15:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: `b78f759 Harden PhysEditWorld downstream requirement gates`.
+- Scope: requirement matrix now reads `Decision:` from baseline rollout and rank32 warm-up preflight summaries instead of treating placeholder summary files as PASS.
+- Current downstream evidence: `BASELINE_BLOCKED_EMPTY_MANIFEST` and `WARMUP_BLOCKED_EMPTY_MANIFEST` are now recorded as BLOCKED in `reports/physeditworld_50h/requirement_matrix.md`.
+- Current overall decision remains `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS` because selected PhysEditWorld root/NAS are still absent; this update prevents false downstream PASS after Phase0 is resolved.
+- Test status: compileall PASS, direct downstream decision-gate smoke PASS, requirement/completion refresh PASS; pytest unavailable, no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
