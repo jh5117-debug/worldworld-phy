@@ -28,6 +28,23 @@ def validate_condition_dir(path: str | Path) -> list[str]:
         errors.append("metadata_invalid:gravity_condition_type")
     if meta.get("gravity_value") is None:
         errors.append("metadata_missing:gravity_value")
+    indices = meta.get("frame_indices")
+    if not isinstance(indices, list) or not indices:
+        errors.append("metadata_missing:frame_indices")
+    alignment = meta.get("sampling_alignment")
+    if not isinstance(alignment, dict):
+        errors.append("metadata_missing:sampling_alignment")
+    elif alignment.get("same_indices_for_action_camera_video") is not True:
+        errors.append("metadata_invalid:sampling_alignment")
+    scale = meta.get("intrinsics_scale")
+    if not isinstance(scale, dict):
+        errors.append("metadata_missing:intrinsics_scale")
+    else:
+        if scale.get("status") == "OK":
+            if scale.get("scale_x") is None or scale.get("scale_y") is None:
+                errors.append("metadata_invalid:intrinsics_scale")
+        elif scale.get("status") not in {"SOURCE_SIZE_MISSING", "TARGET_SIZE_INVALID"}:
+            errors.append("metadata_invalid:intrinsics_scale_status")
     return errors
 
 

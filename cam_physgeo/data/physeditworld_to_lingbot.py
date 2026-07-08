@@ -12,6 +12,11 @@ from cam_physgeo.data.lingbot_condition_schema import validate_condition_dir, wr
 from cam_physgeo.data.prompt_gravity import build_prompt_gravity, validate_prompt
 from cam_physgeo.utils.io import read_jsonl, write_jsonl
 
+try:
+    import numpy as np
+except Exception:  # pragma: no cover - conversion reports the missing backend at runtime.
+    np = None
+
 
 def _link_or_copy(src: str | Path, dst: Path) -> None:
     src = Path(src)
@@ -31,6 +36,71 @@ def frame_indices(num_frames: int | None, target_frames: int) -> list[int]:
     if num_frames <= target_frames:
         return list(range(num_frames))
     return [round(i * (num_frames - 1) / (target_frames - 1)) for i in range(target_frames)]
+
+
+def _as_positive_float(value: Any) -> float | None:
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return None
+    if parsed <= 0:
+        return None
+    return parsed
+
+
+def intrinsics_scale_metadata(row: dict[str, Any], target_width: int, target_height: int) -> dict[str, Any]:
+    source_width = _as_positive_float(row.get("width") or row.get("source_width"))
+    source_height = _as_positive_float(row.get("height") or row.get("source_height"))
+    target_width_f = _as_positive_float(target_width)
+    target_height_f = _as_positive_float(target_height)
+    meta: dict[str, Any] = {
+        "source_width": source_width,
+        "source_height": source_height,
+        "target_width": target_width_f,
+        "target_height": target_height_f,
+        "scale_x": None,
+        "scale_y": None,
+        "status": "SOURCE_SIZE_MISSING",
+    }
+    if source_width is None or source_height is None:
+        return meta
+    if target_width_f is None or target_height_f is None:
+        meta["status"] = "TARGET_SIZE_INVALID"
+        return meta
+    meta["scale_x"] = target_width_f / source_width
+    meta["scale_y"] = target_height_f / source_height
+    meta["status"] = "OK"
+    return meta
+
+
+def scale_intrinsics_array(array: Any, scale_x: float, scale_y: float) -> Any:
+    if np is None:
+        raise RuntimeError("numpy is required to scale PhysEditWorld intrinsics")
+    scaled = np.array(array, copy=True)
+    if scaled.shape[-2:] == (3, 3):
+        scaled[..., 0, 0] *= scale_x
+        scaled[..., 0, 2] *= scale_x
+        scaled[..., 1, 1] *= scale_y
+        scaled[..., 1, 2] *= scale_y
+        return scaled
+    if scaled.shape[-1:] == (4,):
+        scaled[..., 0] *= scale_x
+        scaled[..., 1] *= scale_y
+        scaled[..., 2] *= scale_x
+        scaled[..., 3] *= scale_y
+        return scaled
+    raise ValueError(f"unsupported intrinsics shape {scaled.shape}; expected (..., 3, 3) or (..., 4)")
+
+
+def write_or_link_intrinsics(src: str | Path, dst: Path, scale_meta: dict[str, Any]) -> None:
+    if scale_meta.get("status") != "OK":
+        _link_or_copy(src, dst)
+        return
+    if np is None:
+        raise RuntimeError("numpy is required when source and target image sizes require intrinsics scaling")
+    array = np.load(src)
+    scaled = scale_intrinsics_array(array, float(scale_meta["scale_x"]), float(scale_meta["scale_y"]))
+    np.save(dst, scaled)
 
 
 def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace) -> dict[str, Any]:
@@ -53,7 +123,8 @@ def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace
         _link_or_copy(row["video_path"], tmp_dir / "target.mp4")
         _link_or_copy(row["action_trace_path"], tmp_dir / "action.npy")
         _link_or_copy(row["camera_trajectory_path"], tmp_dir / "poses.npy")
-        _link_or_copy(row["intrinsics_path"], tmp_dir / "intrinsics.npy")
+        intrinsics_scale = intrinsics_scale_metadata(row, args.width, args.height)
+        write_or_link_intrinsics(row["intrinsics_path"], tmp_dir / "intrinsics.npy", intrinsics_scale)
         prompt = build_prompt_gravity(row.get("gravity_value"), args.gravity_prompt_style)
         prompt_errors = validate_prompt(prompt)
         if prompt_errors:
@@ -61,6 +132,7 @@ def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace
         (tmp_dir / "prompt.txt").write_text(prompt + "\n", encoding="utf-8")
         gravity = {"gravity_value": row.get("gravity_value"), "gravity_label": row.get("gravity_label"), "gravity_condition_type": "prompt_only"}
         write_json(tmp_dir / "gravity.json", gravity)
+        indices = frame_indices(row.get("num_frames"), args.num_frames)
         metadata = {
             "sample_id": sample_id,
             "use_action": True,
@@ -77,11 +149,20 @@ def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace
             "source_action_trace_path": row.get("action_trace_path"),
             "source_camera_trajectory_path": row.get("camera_trajectory_path"),
             "source_intrinsics_path": row.get("intrinsics_path"),
+            "source_height": intrinsics_scale.get("source_height"),
+            "source_width": intrinsics_scale.get("source_width"),
             "num_frames_requested": args.num_frames,
             "fps_requested": args.fps,
             "height_requested": args.height,
             "width_requested": args.width,
-            "frame_indices": frame_indices(row.get("num_frames"), args.num_frames),
+            "frame_indices": indices,
+            "sampling_alignment": {
+                "video_frame_indices": indices,
+                "action_frame_indices": indices,
+                "camera_frame_indices": indices,
+                "same_indices_for_action_camera_video": True,
+            },
+            "intrinsics_scale": intrinsics_scale,
         }
         write_json(tmp_dir / "metadata.json", metadata)
         errors = validate_condition_dir(tmp_dir)

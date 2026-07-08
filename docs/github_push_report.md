@@ -219,6 +219,16 @@ git push -u origin cam-physgeo-dpo-refactor
 - Expected current decision without `PHYS_EDITWORLD_ROOTS`: PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT.
 - This prevents weak/false-positive candidate paths from entering post-mount manifest audit by accident.
 
+## PhysEditWorld Conversion Intrinsics Scaling Metadata (2026-07-09T01:25:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: Phase 2 LingBot conversion invariant hardening for resized intrinsics and aligned frame sampling metadata.
+- Conversion update: rows with source width/height now write scaled `intrinsics.npy`; metadata records `intrinsics_scale` and `sampling_alignment`.
+- Schema gate: converted condition dirs now require non-empty `frame_indices`, `sampling_alignment.same_indices_for_action_camera_video=true`, and `intrinsics_scale` metadata.
+- Current data gate remains blocked: strict PhysEditWorld train manifest still has 0 rows because the selected 50h root is not visible/mounted.
+- Test status: project `compileall` PASS, direct conversion smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no GPU use, no training, no rollout, no DPO, no data/checkpoint/weight deletion, and no videos/images/checkpoints/weights pushed.
+
 ## PhysEditWorld Post-Mount Root-Lock Enforcement (2026-07-08T21:56:00 CST)
 
 - Branch: physion-only-local-assets-videogpa-smoke.
