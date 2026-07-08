@@ -4,7 +4,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 
 ## Status Counts
 
-- `BLOCKED`: 10
+- `BLOCKED`: 11
 - `MISSING`: 1
 - `PASS`: 12
 
@@ -38,6 +38,10 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - evidence: `reports/migration/physeditworld_pai_readiness.json`
   - detail: decision=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED
   - next: mount NAS and selected PhysEditWorld 50h root
+- `0_migration` / PhysEditWorld root candidate ranking: `BLOCKED`
+  - evidence: `reports/migration/physeditworld_root_candidates_ranked.json`
+  - detail: decision=PHYS_EDITWORLD_ROOT_CANDIDATES_WEAK_ONLY
+  - next: provide selected PhysEditWorld root via PHYS_EDITWORLD_ROOTS and rerun root candidate ranker
 - `0_migration` / migration asset validation: `BLOCKED`
   - evidence: `reports/migration/migration_asset_validation.json`
   - detail: decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED

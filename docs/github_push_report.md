@@ -201,3 +201,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Latest decision: PAI_HANDOFF_BLOCKED_NAS_OR_ROOT.
 - Current blockers: NAS `/mnt/workspace/hj/nas_hj` is not visible, `PHYS_EDITWORLD_ROOTS` is not set, and strict/LingBot manifests remain empty.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+
+## PhysEditWorld Root Candidate Ranking (2026-07-08T21:22:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: CPU/IO-only ranking of bounded PhysEditWorld candidate paths to separate real selected-50h roots from Physion/PhyInOne/code/env false positives.
+- Latest decision: PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG.
+- Current evidence: existing `physeditworld_candidates_raw.txt` is dominated by old Physion/PhyInOne, code, and conda false positives; no strong PhysEditWorld selected-50h root is visible yet.
+- Safety: no full filesystem scan, no file copy, no deletion, no GPU use, no rollout, no warm-up, no DPO.

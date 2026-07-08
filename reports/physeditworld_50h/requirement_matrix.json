@@ -74,6 +74,14 @@
       "status": "BLOCKED"
     },
     {
+      "detail": "decision=PHYS_EDITWORLD_ROOT_CANDIDATES_WEAK_ONLY",
+      "evidence": "reports/migration/physeditworld_root_candidates_ranked.json",
+      "next_action": "provide selected PhysEditWorld root via PHYS_EDITWORLD_ROOTS and rerun root candidate ranker",
+      "phase": "0_migration",
+      "requirement": "PhysEditWorld root candidate ranking",
+      "status": "BLOCKED"
+    },
+    {
       "detail": "decision=MIGRATION_ASSET_VALIDATION_NAS_BLOCKED",
       "evidence": "reports/migration/migration_asset_validation.json",
       "next_action": "mount NAS and rerun migration asset validation before execute copy",
