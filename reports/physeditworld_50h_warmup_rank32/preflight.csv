@@ -1,0 +1,2 @@
+decision,status,error_reason,config,manifest,val_manifest,manifest_rows,val_rows,max_steps_requested,gravity_prompt_only,lora_rank,cuda_visible_devices,gpu_policy,output_root
+WARMUP_BLOCKED_EMPTY_MANIFEST,BLOCKED,train manifest has zero rows,configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml,manifests/physeditworld_50h_lingbot_train.jsonl,manifests/physeditworld_50h_lingbot_val.jsonl,0,,5,True,32,4,GPU_POLICY_PASS,local_assets/physeditworld_50h_warmup_rank32_preflight

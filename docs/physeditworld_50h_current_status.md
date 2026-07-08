@@ -209,3 +209,25 @@ Current blockers are explicit and machine-readable:
 - `manifests/physeditworld_50h_all.jsonl`, train manifest, and LingBot train manifest all have 0 rows.
 
 Test status: compileall PASS, direct readiness smoke PASS, pytest unavailable; no pytest PASS is claimed. No GPU, rollout, warm-up, pair construction, or DPO was run.
+
+
+## Phase 4/6 Gate Scaffold Update (2026-07-08T19:06:16 CST)
+
+Decision: `WARMUP_BLOCKED_EMPTY_MANIFEST` and `PAIR_BUILDER_BLOCKED_WARMUP_GATE`.
+
+New safety-gated entry points were added:
+
+- Warm-up gate: `cam_physgeo/training/train_physeditworld_warmup.py`.
+- Anchored pair gate: `cam_physgeo/dpo/physeditworld_pair_builder.py`.
+- Tests: `tests/test_physeditworld_warmup_trainer.py`, `tests/test_physeditworld_pair_builder.py`.
+
+Smoke evidence:
+
+- Warm-up preflight report: `reports/physeditworld_50h_warmup_rank32/preflight.csv`.
+- Warm-up preflight summary: `reports/physeditworld_50h_warmup_rank32/preflight_summary.md`.
+- Pair gate audit: `reports/physeditworld_dpo_pairs_anchored_v0/pair_audit.csv`.
+- Pair gate summary: `reports/physeditworld_dpo_pairs_anchored_v0/pair_summary.md`.
+
+The warm-up command was invoked with `CUDA_VISIBLE_DEVICES=4`, which passes the GPU4-7 policy, but it correctly refused to train because `manifests/physeditworld_50h_lingbot_train.jsonl` has 0 rows. The pair builder correctly emitted an empty anchored-pair manifest because no warm-up checkpoint has passed video/metric/Codex audit.
+
+Test status: compileall PASS, direct Phase 4/6 smoke PASS, pytest unavailable; no pytest PASS is claimed. No rollout, no training, no pair admission, and no DPO was run.

@@ -1,0 +1,2 @@
+decision,status,error_reason,warmup_decision,gt_rows,rollout_rows,ready_pairs,min_pairs
+PAIR_BUILDER_BLOCKED_WARMUP_GATE,BLOCKED,warm-up gate has not passed,MISSING,,,0,100

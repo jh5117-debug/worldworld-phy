@@ -73,3 +73,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current blockers: NAS target not visible, selected PhysEditWorld root not visible, strict/train/LingBot manifests have 0 rows.
 - Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Artifact policy: only lightweight code/docs/scripts/CSV/JSON summaries are intended for push; no `local_assets`, videos/images, checkpoints, weights, or large logs.
+
+
+## PhysEditWorld Warm-Up And Pair Gate Scaffold (2026-07-08T19:06:16 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Scope: Phase 4 warm-up gate and Phase 6 anchored pair-builder gate.
+- Warm-up decision: `WARMUP_BLOCKED_EMPTY_MANIFEST`.
+- Pair-builder decision: `PAIR_BUILDER_BLOCKED_WARMUP_GATE`.
+- GPU policy: smoke used `CUDA_VISIBLE_DEVICES=4`; no GPU computation or training was launched.
+- Test status: compileall PASS, direct smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Artifact policy: only lightweight code/docs/scripts/CSV/JSON/MD summaries are intended for push; no `local_assets`, videos/images, checkpoints, weights, or large logs.
