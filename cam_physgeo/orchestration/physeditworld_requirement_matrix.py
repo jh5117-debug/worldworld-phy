@@ -95,6 +95,21 @@ def read_json_decision(path: str | Path) -> str:
         return "UNREADABLE"
 
 
+def read_md_decision(path: str | Path) -> str:
+    p = Path(path)
+    if not p.exists():
+        return "MISSING"
+    text = p.read_text(encoding="utf-8", errors="ignore")
+    for line in text.splitlines():
+        if line.strip().lower().startswith("decision:"):
+            if "`" in line:
+                parts = line.split("`")
+                if len(parts) >= 2:
+                    return parts[1].strip()
+            return line.split(":", 1)[1].strip()
+    return "UNKNOWN"
+
+
 def file_status(path: str | Path, requirement: str, phase: str, next_action: str = "") -> RequirementRow:
     p = Path(path)
     if p.exists():
@@ -113,6 +128,17 @@ def manifest_status(path: str | Path, requirement: str, phase: str, min_rows: in
 
 def decision_status(path: str | Path, requirement: str, phase: str, pass_values: set[str], next_action: str) -> RequirementRow:
     decision = read_json_decision(path)
+    if decision in pass_values:
+        status = "PASS"
+    elif decision == "MISSING":
+        status = "MISSING"
+    else:
+        status = "BLOCKED"
+    return RequirementRow(phase, requirement, status, str(path), detail=f"decision={decision}", next_action="" if status == "PASS" else next_action)
+
+
+def md_decision_status(path: str | Path, requirement: str, phase: str, pass_values: set[str], next_action: str) -> RequirementRow:
+    decision = read_md_decision(path)
     if decision in pass_values:
         status = "PASS"
     elif decision == "MISSING":
@@ -144,7 +170,8 @@ def build_rows() -> list[RequirementRow]:
         decision_status("reports/physeditworld_50h/prompt_gravity_policy/prompt_gravity_policy_audit.json", "prompt-only gravity policy audit", "2_conversion", {"PHYS_EDITWORLD_PROMPT_GRAVITY_POLICY_PASS"}, "fix prompt-only gravity policy before conversion or warm-up"),
         manifest_status("manifests/physeditworld_50h_lingbot_train.jsonl", "LingBot train conversion manifest", "2_conversion", 1, "rerun prompt-only LingBot conversion"),
         manifest_status("manifests/physeditworld_50h_lingbot_val.jsonl", "LingBot val conversion manifest", "2_conversion", 1, "rerun prompt-only LingBot conversion"),
-        file_status("reports/physeditworld_50h_baseline_rollout/summary.md", "baseline rollout summary", "3_baseline", "run baseline rollout gate"),
+        md_decision_status("reports/physeditworld_50h_baseline_rollout/summary.md", "baseline true rollout gate", "3_baseline", {"BASELINE_ROLLOUT_PASS", "PROMPT_ONLY_GRAVITY_BASELINE_WEAK"}, "run true baseline rollout after LingBot manifests exist"),
+        md_decision_status("reports/physeditworld_50h_warmup_rank32/preflight_summary.md", "rank32 warm-up preflight", "4_warmup", {"WARMUP_PREFLIGHT_PASS"}, "run 5-step rank32 warm-up preflight after conversion"),
         decision_status("reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json", "checkpoint video/metric gate", "5_checkpoint_eval", {"WARMUP_GATE_PASS"}, "produce true rollout videos, metrics, and Codex audit"),
         decision_status("reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json", "tiny anchored DPO gate", "7_tiny_dpo", {"TINY_DPO_PASS"}, "build >=100 reviewed pairs before tiny DPO"),
         file_status("docs/experiments/EXP_physeditworld50_plus_ourphysics50_ablation_plan.md", "future mixed-data ablation plan", "8_ablation", "write ablation plan"),
@@ -166,8 +193,16 @@ def overall_decision(rows: list[RequirementRow]) -> str:
         return "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_DATA_AUDIT"
     if any(row.phase == "2_conversion" and row.status != "PASS" for row in rows):
         return "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_CONVERSION"
+    if any(row.phase == "3_baseline" and row.status != "PASS" for row in rows):
+        return "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_BASELINE"
+    if any(row.phase == "4_warmup" and row.status != "PASS" for row in rows):
+        return "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_WARMUP_PREFLIGHT"
+    if any(row.phase == "5_checkpoint_eval" and row.status != "PASS" for row in rows):
+        return "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_CHECKPOINT_EVAL"
     if any(row.phase == "6_pairs" and row.status != "PASS" for row in rows):
         return "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_PAIR_GATE"
+    if any(row.phase == "7_tiny_dpo" and row.status != "PASS" for row in rows):
+        return "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_TINY_DPO"
     if any(row.status in {"BLOCKED", "MISSING"} for row in rows):
         return "PHYS_EDIT_WORLD_PIPELINE_PARTIAL"
     return "PHYS_EDIT_WORLD_PIPELINE_REQUIREMENTS_PASS"

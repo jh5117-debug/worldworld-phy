@@ -4,8 +4,8 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 
 ## Status Counts
 
-- `BLOCKED`: 15
-- `PASS`: 14
+- `BLOCKED`: 17
+- `PASS`: 13
 
 ## Requirements
 
@@ -93,9 +93,14 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - evidence: `manifests/physeditworld_50h_lingbot_val.jsonl`
   - detail: rows=0, required>=1
   - next: rerun prompt-only LingBot conversion
-- `3_baseline` / baseline rollout summary: `PASS`
+- `3_baseline` / baseline true rollout gate: `BLOCKED`
   - evidence: `reports/physeditworld_50h_baseline_rollout/summary.md`
-  - detail: file exists
+  - detail: decision=BASELINE_BLOCKED_EMPTY_MANIFEST
+  - next: run true baseline rollout after LingBot manifests exist
+- `4_warmup` / rank32 warm-up preflight: `BLOCKED`
+  - evidence: `reports/physeditworld_50h_warmup_rank32/preflight_summary.md`
+  - detail: decision=WARMUP_BLOCKED_EMPTY_MANIFEST
+  - next: run 5-step rank32 warm-up preflight after conversion
 - `5_checkpoint_eval` / checkpoint video/metric gate: `BLOCKED`
   - evidence: `reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json`
   - detail: decision=CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING

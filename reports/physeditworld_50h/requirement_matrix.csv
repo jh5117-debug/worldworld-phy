@@ -23,7 +23,8 @@ phase,requirement,status,evidence,detail,next_action
 2_conversion,prompt-only gravity policy audit,PASS,reports/physeditworld_50h/prompt_gravity_policy/prompt_gravity_policy_audit.json,decision=PHYS_EDITWORLD_PROMPT_GRAVITY_POLICY_PASS,
 2_conversion,LingBot train conversion manifest,BLOCKED,manifests/physeditworld_50h_lingbot_train.jsonl,"rows=0, required>=1",rerun prompt-only LingBot conversion
 2_conversion,LingBot val conversion manifest,BLOCKED,manifests/physeditworld_50h_lingbot_val.jsonl,"rows=0, required>=1",rerun prompt-only LingBot conversion
-3_baseline,baseline rollout summary,PASS,reports/physeditworld_50h_baseline_rollout/summary.md,file exists,
+3_baseline,baseline true rollout gate,BLOCKED,reports/physeditworld_50h_baseline_rollout/summary.md,decision=BASELINE_BLOCKED_EMPTY_MANIFEST,run true baseline rollout after LingBot manifests exist
+4_warmup,rank32 warm-up preflight,BLOCKED,reports/physeditworld_50h_warmup_rank32/preflight_summary.md,decision=WARMUP_BLOCKED_EMPTY_MANIFEST,run 5-step rank32 warm-up preflight after conversion
 5_checkpoint_eval,checkpoint video/metric gate,BLOCKED,reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json,decision=CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING,"produce true rollout videos, metrics, and Codex audit"
 7_tiny_dpo,tiny anchored DPO gate,BLOCKED,reports/physeditworld_tiny_dpo_v0/best_checkpoint_decision.json,decision=TINY_DPO_BLOCKED_INSUFFICIENT_PAIRS,build >=100 reviewed pairs before tiny DPO
 8_ablation,future mixed-data ablation plan,PASS,docs/experiments/EXP_physeditworld50_plus_ourphysics50_ablation_plan.md,file exists,

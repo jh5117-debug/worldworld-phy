@@ -194,12 +194,20 @@
       "status": "BLOCKED"
     },
     {
-      "detail": "file exists",
+      "detail": "decision=BASELINE_BLOCKED_EMPTY_MANIFEST",
       "evidence": "reports/physeditworld_50h_baseline_rollout/summary.md",
-      "next_action": "",
+      "next_action": "run true baseline rollout after LingBot manifests exist",
       "phase": "3_baseline",
-      "requirement": "baseline rollout summary",
-      "status": "PASS"
+      "requirement": "baseline true rollout gate",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "decision=WARMUP_BLOCKED_EMPTY_MANIFEST",
+      "evidence": "reports/physeditworld_50h_warmup_rank32/preflight_summary.md",
+      "next_action": "run 5-step rank32 warm-up preflight after conversion",
+      "phase": "4_warmup",
+      "requirement": "rank32 warm-up preflight",
+      "status": "BLOCKED"
     },
     {
       "detail": "decision=CHECKPOINT_EVAL_BLOCKED_EVAL_MANIFEST_MISSING",

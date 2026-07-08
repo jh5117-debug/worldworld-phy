@@ -37,3 +37,32 @@ def test_phase0_decision_gates_include_locked_root_schema_sequence():
 def test_requirement_matrix_includes_prompt_only_gravity_policy_gate():
     requirements = {row.requirement for row in build_rows()}
     assert "prompt-only gravity policy audit" in requirements
+
+
+def test_requirement_matrix_includes_downstream_decision_gates():
+    requirements = {row.requirement for row in build_rows()}
+    assert "baseline true rollout gate" in requirements
+    assert "rank32 warm-up preflight" in requirements
+    assert "checkpoint video/metric gate" in requirements
+
+
+def test_requirement_matrix_blocks_at_baseline_before_warmup():
+    decision = overall_decision([
+        RequirementRow("0_migration", "migration", "PASS", "x"),
+        RequirementRow("1_data_audit", "data", "PASS", "x"),
+        RequirementRow("2_conversion", "conversion", "PASS", "x"),
+        RequirementRow("3_baseline", "baseline true rollout gate", "BLOCKED", "x"),
+        RequirementRow("4_warmup", "rank32 warm-up preflight", "BLOCKED", "y"),
+    ])
+    assert decision == "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_BASELINE"
+
+
+def test_requirement_matrix_blocks_at_warmup_preflight_after_baseline():
+    decision = overall_decision([
+        RequirementRow("0_migration", "migration", "PASS", "x"),
+        RequirementRow("1_data_audit", "data", "PASS", "x"),
+        RequirementRow("2_conversion", "conversion", "PASS", "x"),
+        RequirementRow("3_baseline", "baseline true rollout gate", "PASS", "x"),
+        RequirementRow("4_warmup", "rank32 warm-up preflight", "BLOCKED", "y"),
+    ])
+    assert decision == "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_WARMUP_PREFLIGHT"
