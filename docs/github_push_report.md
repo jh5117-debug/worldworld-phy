@@ -25,3 +25,13 @@ cd /tmp/cam_physgeo_work
 git remote set-url origin ssh://git@ssh.github.com:443/jh5117-debug/worldworld-phy.git
 git push -u origin cam-physgeo-dpo-refactor
 ```
+
+## PhysEditWorld 50h Prompt-Gravity Migration Prep (2026-07-08)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- PRD commit on remote branch: `7b04bdf Prepare PhysEditWorld 50h prompt-gravity PRD`.
+- Migration artifact commit: `d33390a Prepare H20 to PAI migration manifest for PhysEditWorld run` cherry-picked onto the remote branch.
+- Scope: PhysEditWorld 50h prompt-only gravity refocus, H20 to PAI/NAS migration manifest, environment export, bounded weight/data candidate search, and guarded rsync scripts.
+- Dry-run status: `CONNECTIVITY_OR_MOUNT_BLOCKED` because `/mnt/workspace/hj/nas_hj` is not visible on H20 in this shell.
+- Artifact policy: only lightweight docs/scripts/reports are intended for push; no `local_assets`, videos/images, checkpoints, weights, HDF5/NPY/NPZ/PT/PTH/safetensors, or large logs.
+

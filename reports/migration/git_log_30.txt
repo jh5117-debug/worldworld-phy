@@ -1,0 +1,30 @@
+065fdbb (HEAD -> physion-only-local-assets-videogpa-smoke) Prepare PhysEditWorld 50h prompt-gravity PRD
+681b34f (physion-only-cam-physgeo-dpo, main, cam-physgeo-dpo-refactor) Quiet TRD diagnostics and default empty paths
+4c7c3b5 Patch LingBot eval resolution config
+64309ba Log LingBot full-val scoring failures
+09fb006 Align LingBot full-val metric tables
+ca7d2e4 Default TRD validation manifests
+a5aed62 Add PhysInOne eval-driven stage2 checkpoints
+555191d Add optional Stage1 T5 GPU residency
+7625e72 Guard stage1 final bundle on main rank
+f59d3d9 Add stage1 timing diagnostics
+f811d9f Add safe storage cleanup helper
+aaf1a75 Add PAI health check and Stage1 act pipeline
+d1c3d03 Add static-camera zero-action preprocessing
+8d907ea Respect disabled Stage1 epoch checkpoint saves
+75cba4e Allow Stage1 PhysInOne training with act control
+10b2dbf Add PhysInOne moving-camera act preprocessing
+12ee899 Add control-signal trace diagnostics
+e31e64c Add Stage2 low-memory numeric diagnostics
+8fc8cf7 Log real Stage1 training finish times
+345c1c8 Relax mixed-safe attention precision
+bc40371 Fallback to valid LingBot checkout
+9271da1 Prefer explicit LingBot code path
+6df3222 Log Stage1 model load progress
+4057a10 Add Stage1 init progress logs
+8a2630e Add Stage1 distributed startup smoke logs
+5b04fb0 Auto-pick free Stage1 rendezvous port
+3b47e08 Add Stage1 DDP H20 launch fallback
+6d25781 Harden Stage1 LingBot import resolution
+463afc9 Add mixed-safe bf16 Stage1 H20 train-only launch path
+c0d48e1 Harden FLUX first-frame downloads
