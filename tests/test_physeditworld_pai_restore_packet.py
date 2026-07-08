@@ -2,6 +2,7 @@ from cam_physgeo.orchestration.physeditworld_pai_restore_packet import (
     READY_BACKEND,
     READY_COMPLETION,
     READY_MATRIX,
+    SAFE_NEXT_COMMANDS,
     decide_restore_packet,
     split_roots,
 )
@@ -38,3 +39,7 @@ def test_restore_packet_blocks_when_backend_not_ready():
     )
     assert decision == "PAI_RESTORE_PACKET_BLOCKED_BACKEND_READINESS"
     assert "BACKEND_NOT_READY:PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY" in blockers
+
+
+def test_restore_packet_safe_next_commands_include_handoff_verifier():
+    assert "bash scripts/migration/verify_pai_physeditworld_handoff.sh" in SAFE_NEXT_COMMANDS

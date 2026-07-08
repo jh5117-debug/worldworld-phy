@@ -11,7 +11,7 @@ BRANCH=physion-only-local-assets-videogpa-smoke \
 bash scripts/migration/bootstrap_pai_physeditworld.sh
 ```
 
-The script clones or updates the repo, checks out the PhysEditWorld branch, writes a PAI restore packet, runs handoff verification, Phase0 preflight, backend readiness, the safe pipeline gate, the requirement matrix, the completion audit, and then refreshes the PAI restore packet again.
+The script clones or updates the repo, checks out the PhysEditWorld branch, writes a PAI restore packet, runs handoff verification, Phase0 preflight, backend readiness, the safe pipeline gate, the requirement matrix, the completion audit, then refreshes restore/handoff/restore once more so the two reports reference the newest evidence.
 
 ## What It Does Not Do
 
@@ -45,6 +45,8 @@ python3 -m cam_physgeo.orchestration.physeditworld_backend_readiness
 bash scripts/run_physeditworld_pipeline_gates.sh
 python3 -m cam_physgeo.orchestration.physeditworld_requirement_matrix
 bash scripts/migration/run_physeditworld_completion_audit.sh
+bash scripts/migration/run_physeditworld_pai_restore_packet.sh
+bash scripts/migration/verify_pai_physeditworld_handoff.sh
 bash scripts/migration/run_physeditworld_pai_restore_packet.sh
 ```
 
