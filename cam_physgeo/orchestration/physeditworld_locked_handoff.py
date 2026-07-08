@@ -26,6 +26,7 @@ class SequenceStep:
 PASS_DECISIONS = {
     "PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED",
     "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
+    "PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT",
     "PHYS_EDITWORLD_ROOT_SELECTION_LOCKED",
     "POST_MOUNT_PHASE12_DONE_RUN_PIPELINE_GATE_NEXT",
     "PHYS_EDITWORLD_PHASE0_READY",
@@ -45,6 +46,12 @@ STEP_SPECS = [
         ["bash", "scripts/migration/init_physeditworld_empty_manifests.sh"],
         "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
         "create expected lightweight manifest placeholders before root-locked handoff",
+    ),
+    (
+        "root_schema_probe",
+        ["bash", "scripts/migration/probe_physeditworld_root_schema.sh"],
+        "reports/migration/physeditworld_root_schema_probe.json",
+        "set PHYS_EDITWORLD_ROOTS to a root with action/camera/intrinsics/gravity/replay/video evidence",
     ),
     (
         "root_selection",
@@ -105,7 +112,8 @@ def status_for_decision(decision: str, exit_code: int) -> str:
         return "REVIEW_REQUIRED"
     if decision == "MISSING" or decision.startswith("UNREADABLE"):
         return "BLOCKED"
-    if "BLOCKED" in decision or "FAIL" in decision or "WEAK_ONLY" in decision or "NONE_STRONG" in decision:
+    blocked_markers = ("BLOCKED", "FAIL", "WEAK_ONLY", "NONE_STRONG", "WAITING", "INCOMPLETE", "MISSING", "NEEDS", "REJECT")
+    if any(marker in decision for marker in blocked_markers):
         return "BLOCKED"
     return "UNKNOWN"
 

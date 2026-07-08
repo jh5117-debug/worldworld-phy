@@ -1,5 +1,5 @@
 {
-  "decision": "LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION",
+  "decision": "LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE",
   "steps": [
     {
       "command": "bash scripts/migration/init_physeditworld_empty_manifests.sh",
@@ -12,14 +12,14 @@
       "step": "empty_manifest_init"
     },
     {
-      "command": "bash scripts/migration/select_physeditworld_root.sh",
-      "decision": "PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT",
+      "command": "bash scripts/migration/probe_physeditworld_root_schema.sh",
+      "decision": "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT",
       "error_reason": "",
-      "evidence": "reports/migration/physeditworld_selected_root_status.json",
+      "evidence": "reports/migration/physeditworld_root_schema_probe.json",
       "exit_code": 0,
-      "next_action": "set PHYS_EDITWORLD_ROOTS to a strong selected PhysEditWorld 50h root",
+      "next_action": "set PHYS_EDITWORLD_ROOTS to a root with action/camera/intrinsics/gravity/replay/video evidence",
       "status": "BLOCKED",
-      "step": "root_selection"
+      "step": "root_schema_probe"
     }
   ]
 }

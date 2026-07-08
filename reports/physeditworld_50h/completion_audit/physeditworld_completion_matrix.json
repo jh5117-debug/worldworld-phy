@@ -74,7 +74,7 @@
       "status": "PASS"
     },
     {
-      "detail": "decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION",
+      "detail": "decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE",
       "evidence": "reports/migration/locked_handoff_sequence.json",
       "next_action": "set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence",
       "phase": "phase0_migration",

@@ -38,7 +38,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - detail: decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT
 - `phase0_migration` / locked handoff sequence: `BLOCKED`
   - evidence: `reports/migration/locked_handoff_sequence.json`
-  - detail: decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION
+  - detail: decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE
   - next: set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence
 - `phase0_migration` / selected-root schema probe: `BLOCKED`
   - evidence: `reports/migration/physeditworld_root_schema_probe.json`

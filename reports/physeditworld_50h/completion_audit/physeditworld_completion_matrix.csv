@@ -8,7 +8,7 @@ phase0_migration,required data manifest,PASS,reports/migration/required_data_man
 phase0_migration,guarded dry-run rsync script,PASS,scripts/migration/rsync_h20_to_pai_dryrun.sh,file exists,
 phase0_migration,guarded execute rsync script,PASS,scripts/migration/rsync_h20_to_pai_execute.sh,file exists,
 phase0_migration,expected empty manifest placeholders,PASS,reports/physeditworld_50h/manifest_init/empty_manifest_init.json,decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT,
-phase0_migration,locked handoff sequence,BLOCKED,reports/migration/locked_handoff_sequence.json,decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SELECTION,set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence
+phase0_migration,locked handoff sequence,BLOCKED,reports/migration/locked_handoff_sequence.json,decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE,set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence
 phase0_migration,selected-root schema probe,BLOCKED,reports/migration/physeditworld_root_schema_probe.json,decision=PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT,provide selected root and rerun schema probe
 phase0_migration,selected-root intake handoff report,BLOCKED,reports/migration/physeditworld_root_intake.json,decision=PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT,provide selected root and rerun root intake/handoff
 phase0_migration,selected-root lock,BLOCKED,reports/migration/physeditworld_selected_root_status.json,decision=PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT,provide selected PhysEditWorld 50h root and rerun root selector
