@@ -184,6 +184,13 @@ def build_rows() -> list[RequirementRow]:
             {"LINGBOT_MANIFEST_SCHEMA_PASS"},
             "rerun conversion manifest validator after prompt-only LingBot conversion writes rows",
         ),
+        decision_status(
+            "reports/physeditworld_50h/backend_readiness/backend_readiness.json",
+            "LingBot backend readiness for baseline/warm-up/checkpoint eval",
+            "3_baseline",
+            {"PHYS_EDITWORLD_BACKEND_READY_FOR_BASELINE_WARMUP"},
+            "connect real LingBot-Fast baseline rollout, checkpoint eval, and rank32 warm-up backend before running Phase3/4/5",
+        ),
         md_decision_status("reports/physeditworld_50h_baseline_rollout/summary.md", "baseline true rollout gate", "3_baseline", {"BASELINE_ROLLOUT_PASS", "PROMPT_ONLY_GRAVITY_BASELINE_WEAK"}, "run true baseline rollout after LingBot manifests exist"),
         md_decision_status("reports/physeditworld_50h_warmup_rank32/preflight_summary.md", "rank32 warm-up preflight", "4_warmup", {"WARMUP_PREFLIGHT_PASS"}, "run 5-step rank32 warm-up preflight after conversion"),
         decision_status("reports/physeditworld_50h_warmup_rank32/best_checkpoint_decision.json", "checkpoint video/metric gate", "5_checkpoint_eval", {"WARMUP_GATE_PASS"}, "produce true rollout videos, metrics, and Codex audit"),

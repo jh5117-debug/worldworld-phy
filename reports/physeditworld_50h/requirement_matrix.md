@@ -4,7 +4,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 
 ## Status Counts
 
-- `BLOCKED`: 20
+- `BLOCKED`: 21
 - `PASS`: 13
 
 ## Requirements
@@ -101,6 +101,10 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - evidence: `reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json`
   - detail: decision=LINGBOT_MANIFEST_BLOCKED_EMPTY
   - next: rerun conversion manifest validator after prompt-only LingBot conversion writes rows
+- `3_baseline` / LingBot backend readiness for baseline/warm-up/checkpoint eval: `BLOCKED`
+  - evidence: `reports/physeditworld_50h/backend_readiness/backend_readiness.json`
+  - detail: decision=PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY
+  - next: connect real LingBot-Fast baseline rollout, checkpoint eval, and rank32 warm-up backend before running Phase3/4/5
 - `3_baseline` / baseline true rollout gate: `BLOCKED`
   - evidence: `reports/physeditworld_50h_baseline_rollout/summary.md`
   - detail: decision=BASELINE_BLOCKED_EMPTY_MANIFEST

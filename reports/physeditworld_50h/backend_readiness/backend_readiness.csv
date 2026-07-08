@@ -1,0 +1,20 @@
+name,status,evidence,detail,next_action
+lingbot_code_link,PASS,links/lingbot_code,exists; symlink_target=/home/nvme03/workspace/world_model_phys/code/lingbot-world,
+base_model_link,PASS,links/base_model,exists; symlink_target=/home/nvme04/workspace/world_model_phys/PHYS/weight/Lingbot-base-cam,
+weights_manifest,PASS,reports/migration/required_weights_manifest.tsv,exists,
+data_manifest,PASS,reports/migration/required_data_manifest.tsv,exists,
+warmup_config_exists,PASS,configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml,exists,
+warmup_config_prompt_only_gravity,PASS,configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml,gravity_prompt_only=True,keep first version prompt-only; do not add gravity MLP/embedding
+warmup_config_lora_rank32,PASS,configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml,lora_rank=32,set first warm-up LoRA rank to 32
+warmup_config_gpu_policy,PASS,configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml,allowed_gpus=True forbidden_gpus=True,declare allowed GPU4-7 and forbidden GPU0-3
+weights_manifest_lingbot_code,PASS,reports/migration/required_weights_manifest.tsv,"tokens=links/lingbot_code,lingbot_code found_existing=True",mark LingBot code as required for migration restore
+weights_manifest_base_model,PASS,reports/migration/required_weights_manifest.tsv,"tokens=links/base_model,lingbot-base,lingbot-fast found_existing=True",mark LingBot base/fast weights as required for migration restore
+import_cam_physgeo.eval.physeditworld_baseline_rollout,PASS,cam_physgeo.eval.physeditworld_baseline_rollout,/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/cam_physgeo/eval/physeditworld_baseline_rollout.py,
+import_cam_physgeo.eval.physeditworld_checkpoint_eval,PASS,cam_physgeo.eval.physeditworld_checkpoint_eval,/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/cam_physgeo/eval/physeditworld_checkpoint_eval.py,
+import_cam_physgeo.training.train_physeditworld_warmup,PASS,cam_physgeo.training.train_physeditworld_warmup,/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/cam_physgeo/training/train_physeditworld_warmup.py,
+import_cam_physgeo.dpo.physeditworld_pair_manifest_validate,PASS,cam_physgeo.dpo.physeditworld_pair_manifest_validate,/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/cam_physgeo/dpo/physeditworld_pair_manifest_validate.py,
+baseline_rollout_backend_connected,BLOCKED,cam_physgeo/eval/physeditworld_baseline_rollout.py,found marker BASELINE_BACKEND_NOT_CONNECTED,wire real LingBot-Fast V2V-5 baseline rollout invocation with no image-only fallback
+checkpoint_eval_backend_connected,BLOCKED,cam_physgeo/eval/physeditworld_checkpoint_eval.py,found marker CHECKPOINT_EVAL_BACKEND_NOT_CONNECTED,"wire real checkpoint rollout, metrics, and Codex visual audit runner"
+warmup_training_backend_connected,BLOCKED,cam_physgeo/training/train_physeditworld_warmup.py,found marker WARMUP_BACKEND_NOT_CONNECTED,connect gated LingBot-Fast rank32 warm-up backend after manifest validation
+torch_import,PASS,torch,torch=2.7.1+cu128 cuda_available=True,
+python_version,PASS,/usr/bin/python3,"3.10.6 (main, Aug 10 2022, 11:40:04) [GCC 11.3.0]",

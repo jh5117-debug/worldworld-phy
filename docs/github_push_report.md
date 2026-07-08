@@ -536,3 +536,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current live decision remains `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES`; no selected PhysEditWorld 50h root is visible and `PHYS_EDITWORLD_ROOTS` is unset.
 - Validation: compileall PASS and direct smoke PASS; no training, no rollout, no GPU use, no deletion.
 
+## PhysEditWorld Backend Readiness Audit (2026-07-09T03:38:00 CST)
+
+- Added CPU-only LingBot/PhysEditWorld backend readiness audit: `cam_physgeo/orchestration/physeditworld_backend_readiness.py`.
+- The audit checks LingBot code/weight links, warm-up config prompt-only gravity/rank32/GPU policy, required migration manifests, imports for baseline/checkpoint/warm-up modules, and whether baseline rollout, checkpoint eval, and warm-up training backends are still scaffold-only.
+- Added backend readiness to requirement matrix and completion audit before Phase3/4/5 execution.
+- Current decision is recorded in `reports/physeditworld_50h/backend_readiness/backend_readiness.json`; if backend markers remain, no baseline/warm-up/checkpoint eval should be considered production-ready.
+- Validation: compileall PASS, direct smoke PASS; pytest unavailable in active H20 shell (`No module named pytest`).
+- Safety: CPU/IO only; no model weights loaded, no GPU use, no training, no rollout, no data copy/deletion, no local_assets/video/weights push.
+

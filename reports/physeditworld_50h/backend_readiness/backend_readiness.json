@@ -1,0 +1,138 @@
+{
+  "checks": [
+    {
+      "detail": "exists; symlink_target=/home/nvme03/workspace/world_model_phys/code/lingbot-world",
+      "evidence": "links/lingbot_code",
+      "name": "lingbot_code_link",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "exists; symlink_target=/home/nvme04/workspace/world_model_phys/PHYS/weight/Lingbot-base-cam",
+      "evidence": "links/base_model",
+      "name": "base_model_link",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "exists",
+      "evidence": "reports/migration/required_weights_manifest.tsv",
+      "name": "weights_manifest",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "exists",
+      "evidence": "reports/migration/required_data_manifest.tsv",
+      "name": "data_manifest",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "exists",
+      "evidence": "configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml",
+      "name": "warmup_config_exists",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "gravity_prompt_only=True",
+      "evidence": "configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml",
+      "name": "warmup_config_prompt_only_gravity",
+      "next_action": "keep first version prompt-only; do not add gravity MLP/embedding",
+      "status": "PASS"
+    },
+    {
+      "detail": "lora_rank=32",
+      "evidence": "configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml",
+      "name": "warmup_config_lora_rank32",
+      "next_action": "set first warm-up LoRA rank to 32",
+      "status": "PASS"
+    },
+    {
+      "detail": "allowed_gpus=True forbidden_gpus=True",
+      "evidence": "configs/cam_physgeo/physeditworld_50h_warmup_rank32.yaml",
+      "name": "warmup_config_gpu_policy",
+      "next_action": "declare allowed GPU4-7 and forbidden GPU0-3",
+      "status": "PASS"
+    },
+    {
+      "detail": "tokens=links/lingbot_code,lingbot_code found_existing=True",
+      "evidence": "reports/migration/required_weights_manifest.tsv",
+      "name": "weights_manifest_lingbot_code",
+      "next_action": "mark LingBot code as required for migration restore",
+      "status": "PASS"
+    },
+    {
+      "detail": "tokens=links/base_model,lingbot-base,lingbot-fast found_existing=True",
+      "evidence": "reports/migration/required_weights_manifest.tsv",
+      "name": "weights_manifest_base_model",
+      "next_action": "mark LingBot base/fast weights as required for migration restore",
+      "status": "PASS"
+    },
+    {
+      "detail": "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/cam_physgeo/eval/physeditworld_baseline_rollout.py",
+      "evidence": "cam_physgeo.eval.physeditworld_baseline_rollout",
+      "name": "import_cam_physgeo.eval.physeditworld_baseline_rollout",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/cam_physgeo/eval/physeditworld_checkpoint_eval.py",
+      "evidence": "cam_physgeo.eval.physeditworld_checkpoint_eval",
+      "name": "import_cam_physgeo.eval.physeditworld_checkpoint_eval",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/cam_physgeo/training/train_physeditworld_warmup.py",
+      "evidence": "cam_physgeo.training.train_physeditworld_warmup",
+      "name": "import_cam_physgeo.training.train_physeditworld_warmup",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys/cam_physgeo/dpo/physeditworld_pair_manifest_validate.py",
+      "evidence": "cam_physgeo.dpo.physeditworld_pair_manifest_validate",
+      "name": "import_cam_physgeo.dpo.physeditworld_pair_manifest_validate",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "found marker BASELINE_BACKEND_NOT_CONNECTED",
+      "evidence": "cam_physgeo/eval/physeditworld_baseline_rollout.py",
+      "name": "baseline_rollout_backend_connected",
+      "next_action": "wire real LingBot-Fast V2V-5 baseline rollout invocation with no image-only fallback",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "found marker CHECKPOINT_EVAL_BACKEND_NOT_CONNECTED",
+      "evidence": "cam_physgeo/eval/physeditworld_checkpoint_eval.py",
+      "name": "checkpoint_eval_backend_connected",
+      "next_action": "wire real checkpoint rollout, metrics, and Codex visual audit runner",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "found marker WARMUP_BACKEND_NOT_CONNECTED",
+      "evidence": "cam_physgeo/training/train_physeditworld_warmup.py",
+      "name": "warmup_training_backend_connected",
+      "next_action": "connect gated LingBot-Fast rank32 warm-up backend after manifest validation",
+      "status": "BLOCKED"
+    },
+    {
+      "detail": "torch=2.7.1+cu128 cuda_available=True",
+      "evidence": "torch",
+      "name": "torch_import",
+      "next_action": "",
+      "status": "PASS"
+    },
+    {
+      "detail": "3.10.6 (main, Aug 10 2022, 11:40:04) [GCC 11.3.0]",
+      "evidence": "/usr/bin/python3",
+      "name": "python_version",
+      "next_action": "",
+      "status": "PASS"
+    }
+  ],
+  "decision": "PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY"
+}

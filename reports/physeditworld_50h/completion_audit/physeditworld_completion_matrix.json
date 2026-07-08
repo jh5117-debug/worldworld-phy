@@ -202,6 +202,14 @@
       "status": "BLOCKED"
     },
     {
+      "detail": "decision=PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY",
+      "evidence": "reports/physeditworld_50h/backend_readiness/backend_readiness.json",
+      "next_action": "connect real LingBot-Fast baseline rollout, checkpoint eval, and rank32 warm-up backend before Phase3/4/5",
+      "phase": "phase3_baseline",
+      "requirement": "LingBot backend readiness for baseline/warm-up/checkpoint eval",
+      "status": "BLOCKED"
+    },
+    {
       "detail": "decision=BASELINE_BLOCKED_EMPTY_MANIFEST",
       "evidence": "reports/physeditworld_50h_baseline_rollout/summary.md",
       "next_action": "run baseline rollout after LingBot manifests exist",
