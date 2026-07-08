@@ -73,6 +73,9 @@ def test_post_mount_dry_run_keeps_smoke_manifest_noncanonical(tmp_path):
     assert "manifests/physeditworld_50h_lingbot_smoke_train.jsonl" in smoke_command
     assert "--manifest_out manifests/physeditworld_50h_lingbot_train.jsonl" not in smoke_command
     assert "conversion_train" not in steps
+    assert "conversion_train_validation" not in steps
+    assert steps["canonical_conversion_deferred"]["status"] == "SKIPPED"
+    assert steps["canonical_conversion_deferred"]["decision"] == "POST_MOUNT_CANONICAL_CONVERSION_DEFERRED"
 
 
 def test_post_mount_dry_run_full_conversion_adds_canonical_validation(tmp_path):

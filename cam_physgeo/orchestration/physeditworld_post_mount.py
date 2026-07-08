@@ -330,32 +330,14 @@ def main(argv: list[str] | None = None) -> int:
                 )
             )
     else:
-        commands.extend(
-            [
-                (
-                    "conversion_train_validation",
-                    [
-                        "python3", "-m", "cam_physgeo.data.lingbot_manifest_validate",
-                        "--manifest", "manifests/physeditworld_50h_lingbot_train.jsonl",
-                        "--output_csv", "reports/physeditworld_50h/conversion_validation/lingbot_train_manifest_validation.csv",
-                        "--output_json", "reports/physeditworld_50h/conversion_validation/lingbot_train_manifest_validation.json",
-                        "--summary", "reports/physeditworld_50h/conversion_validation/lingbot_train_manifest_validation.md",
-                    ],
-                    "reports/physeditworld_50h/conversion_validation/lingbot_train_manifest_validation.json",
-                ),
-                (
-                    "conversion_val_validation",
-                    [
-                        "python3", "-m", "cam_physgeo.data.lingbot_manifest_validate",
-                        "--manifest", "manifests/physeditworld_50h_lingbot_val.jsonl",
-                        "--output_csv", "reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.csv",
-                        "--output_json", "reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json",
-                        "--summary", "reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.md",
-                    ],
-                    "reports/physeditworld_50h/conversion_validation/lingbot_val_manifest_validation.json",
-                ),
-            ]
-        )
+        rows.append(StepResult(
+            "canonical_conversion_deferred",
+            "SKIPPED",
+            "rerun with --run_full_conversion after smoke conversion passes",
+            decision="POST_MOUNT_CANONICAL_CONVERSION_DEFERRED",
+            output_path="manifests/physeditworld_50h_lingbot_all.jsonl;manifests/physeditworld_50h_lingbot_train.jsonl;manifests/physeditworld_50h_lingbot_val.jsonl;manifests/physeditworld_50h_lingbot_test.jsonl",
+            error_reason="default post-mount path validates the smoke LingBot manifest only; canonical manifests stay empty until RUN_FULL_CONVERSION=1",
+        ))
     for name, cmd, outpath in commands:
         code, out = run(cmd, args.dry_run)
         rows.append(StepResult(name, "PASS" if code == 0 else "FAIL", " ".join(shlex.quote(x) for x in cmd), code, output_path=outpath, error_reason="" if code == 0 else out))
