@@ -13,7 +13,9 @@
   "gpu": "physical GPU5 via CUDA_VISIBLE_DEVICES=5",
   "jsonl": "reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration12_cuda_runtime_limit8/shard_00_of_01.jsonl",
   "manifest": "manifests/dpo_v14_subsets/asset_complete_prefix5_calibration12.jsonl",
+  "note": "This summary records the first 8-row pass. The same shard CSV was later resumed to 12 rows; use the calibration12 summary for current coverage.",
   "ok_rows": 8,
   "rows": 8,
-  "scope": "bounded real LingBot energy; no training"
+  "scope": "bounded real LingBot energy; no training",
+  "superseded_by": "reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration12_cuda_runtime_limit8/real_energy_calibration12_summary.json"
 }

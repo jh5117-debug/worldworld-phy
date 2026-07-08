@@ -347,3 +347,16 @@ Conclusion: V-JEPA2 is viable as a v15 monitor/regularizer candidate for availab
 - Beta conclusion: at policy=reference, observed `u_raw/u_log` is exactly zero, so recommendation is `NONE_ZERO_UTILITY`; beta cannot create preference signal without a nonzero policy-reference utility change.
 - Scope: calibration only. No DPO training, no S16/S32/train400/large DPO. all500/S_pass/rollout real-energy coverage remains incomplete, but bounded real-energy evidence improved from 4 rows to 8 rows.
 
+## v14 Calibration12 Real-Energy Update (2026-07-08T08:26:00+08:00)
+
+- Resumed the bounded asset-complete real LingBot energy run on physical GPU5 with `CUDA_VISIBLE_DEVICES=5`, `--runtime_device cuda`, and `--resume`.
+- Real-energy output: `reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration12_cuda_runtime_limit8/shard_00_of_01.csv`.
+- Summary: `reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration12_cuda_runtime_limit8/real_energy_calibration12_summary.md`.
+- Result: `REAL_ENERGY_CALIBRATION12_PASS`, 12/12 rows ok, no OOM/NaN/SIGFPE.
+- Delta_ref range: `-0.00189158` to `0.02060417`; mean `0.00877969`; median `0.00718332`; 11 positive rows and 1 negative row.
+- Mean per-row energy time: about `186.19s`; peak CUDA memory remains about `50.43GB`.
+- Standardized utility CSV: `reports/dpo_utility_calibration_v14/energy_utility_calibration12_real.csv`.
+- Beta response: `reports/dpo_utility_calibration_v14/beta_loss_response_calibration12_real.csv` and `reports/dpo_utility_calibration_v14/recommended_dpo_scale_calibration12_real.json`.
+- Beta conclusion remains `NONE_ZERO_UTILITY` at policy=reference: beta cannot create preference signal without a nonzero policy-reference utility change.
+- Scope: calibration only. No DPO training, no S16/S32/train400/large DPO. all500/S_pass/rollout real-energy coverage remains incomplete, but bounded asset-complete real-energy evidence improved to 12 rows.
+

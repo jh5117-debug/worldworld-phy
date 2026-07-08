@@ -33,3 +33,8 @@ Only source/tests/docs and small CSV/JSON/MD summaries were pushed. No videos, i
 ## Calibration8 real-energy extension
 
 A bounded follow-up run extended real LingBot energy coverage from 4 to 8 asset-complete v11 synthetic controlled pairs on physical GPU5. This strengthens the gap-scale evidence and shows one negative Delta_ref case, but it still does not satisfy all500/S_pass/rollout real-energy coverage and does not change the `DPO_RECIPE_NOT_FOUND_V14` decision.
+
+
+## Calibration12 real-energy extension
+
+A bounded resume run extended real LingBot energy coverage from 8 to 12 asset-complete v11 synthetic controlled pairs on physical GPU5. The expanded sample still has exactly zero policy-reference utility at initialization, while Delta_ref spans a useful range including one negative row. This strengthens calibration evidence but still does not satisfy all500/S_pass/rollout real-energy coverage and does not change the `DPO_RECIPE_NOT_FOUND_V14` decision.

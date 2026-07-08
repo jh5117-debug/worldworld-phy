@@ -1,0 +1,19 @@
+{
+  "csv": "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration12_cuda_runtime_limit8/shard_00_of_01.csv",
+  "decision": "REAL_ENERGY_CALIBRATION12_PASS",
+  "delta_ref_max": 0.020604170858860016,
+  "delta_ref_mean": 0.008779688738286495,
+  "delta_ref_median": 0.0071833208203315735,
+  "delta_ref_min": -0.0018915832042694092,
+  "delta_ref_negative_rows": 1,
+  "delta_ref_positive_rows": 11,
+  "energy_seconds_max": 241.60796737670898,
+  "energy_seconds_mean": 186.1921079158783,
+  "energy_seconds_min": 169.7616753578186,
+  "gpu": "physical GPU5 via CUDA_VISIBLE_DEVICES=5",
+  "jsonl": "/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys_stageA_v5_broad_lora_work/reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration12_cuda_runtime_limit8/shard_00_of_01.jsonl",
+  "manifest": "manifests/dpo_v14_subsets/asset_complete_prefix5_calibration12.jsonl",
+  "ok_rows": 12,
+  "rows": 12,
+  "scope": "bounded real LingBot energy; no training"
+}

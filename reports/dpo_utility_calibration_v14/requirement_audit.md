@@ -20,8 +20,8 @@ This is the current authoritative audit for `EXP_dpo_utility_calibration_and_lat
 | H20 repo / branch / GPU4-5 scope | `PASS` | Runs were executed on H20 branch `research/quant-small-lora-dpo-probe-20260624`; monitor/training commands used `CUDA_VISIBLE_DEVICES=4` or `5`; no v14 training scale was launched on forbidden GPUs. |
 | PRD before experiment | `PASS` | `docs/experiments/EXP_dpo_utility_calibration_and_latent_monitor_v14.md`. |
 | Pair inventory / subsets | `PASS` | `reports/dpo_utility_calibration_v14/pair_inventory_summary.md`; `manifests/dpo_v14_subsets/all500.jsonl`, `s_pass.jsonl`, `s_fail.jsonl`, `rollout_only.jsonl`, `synthetic_controlled.jsonl`, `stratified100.jsonl`, `local_mask.jsonl`. |
-| all500/S_pass/rollout real LingBot energy calibration | `BLOCKED_PARTIAL` | `energy_utility_*.csv` coverage files exist but are `MISSING_REAL_ENERGY`; asset-complete calibration8 produced 8/8 real energy rows with CUDA runtime, but all500 remains too expensive without batching/cache and old rollout assets are missing. |
-| Utility / beta response | `PASS_WITH_LIMITS` | `reports/dpo_utility_calibration_v14/recommended_dpo_scale.json` recommends `u_log` and beta `1000`; `gap_scale_root_cause.md` documents why beta=0.1 was no-signal. Limit: based primarily on v13b training CSVs and calibration8, not full all500 real energy. |
+| all500/S_pass/rollout real LingBot energy calibration | `BLOCKED_PARTIAL` | `energy_utility_*.csv` coverage files exist but are `MISSING_REAL_ENERGY`; asset-complete calibration12 produced 12/12 real energy rows with CUDA runtime, but all500 remains too expensive without batching/cache and old rollout assets are missing. |
+| Utility / beta response | `PASS_WITH_LIMITS` | `reports/dpo_utility_calibration_v14/recommended_dpo_scale.json` recommends `u_log` and beta `1000`; `gap_scale_root_cause.md` documents why beta=0.1 was no-signal. Limit: based primarily on v13b training CSVs and calibration12, not full all500 real energy. |
 | Normalization / regularization design | `PASS` | `reports/dpo_utility_calibration_v14/normalization_regularization_design.md`; `configs/cam_physgeo/dpo_objective_v14_normalized.yaml`. |
 | DINO latent monitor | `PASS_SMOKE` | `reports/dpo_utility_calibration_v14/latent_monitor/dinov2_frame_smoke_summary.md`: 4/4 calibration rows positive frame and temporal relation margins. |
 | V-JEPA / TRD-style latent monitor | `PASS_WITH_ASSET_BLOCKERS` | `reports/dpo_utility_calibration_v14/latent_monitor/trd_vjepa_summary.md`: combined 133 rows, 74 ok, 74/74 positive token-relation margins among available videos. `S_pass4`/`rollout15` blocked by missing old loser videos, not model failure. |
@@ -34,7 +34,7 @@ This is the current authoritative audit for `EXP_dpo_utility_calibration_and_lat
 
 ## Energy Calibration Evidence
 
-- Asset-complete calibration8 real-energy run: `reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration12_cuda_runtime_limit8/shard_00_of_01.csv`.
+- Asset-complete calibration12 real-energy run: `reports/dpo_utility_calibration_v14/blocker_retry/real_energy_calibration12_cuda_runtime_limit8/shard_00_of_01.csv`.
 - Gap-scale summary: `reports/dpo_utility_calibration_v14/real_energy_gap_scale_calibration4_summary.md`.
 - Finding: at policy=reference init, DPO utility is exactly zero; training utilities around `1e-4` need beta around `1000`, not `0.1`.
 
@@ -54,7 +54,7 @@ This is the current authoritative audit for `EXP_dpo_utility_calibration_and_lat
 ## Current Answer To v14 Questions
 
 1. `u ~ 1e-4` because full-future reduced energy gaps are tiny relative to the old beta; beta=0.1 creates near-zero logits.
-2. `u_log` with beta around `1000` remains the best nonzero training-utility scale from prior training CSVs; fresh policy=reference calibration8 has exactly zero utility and therefore recommends `NONE_ZERO_UTILITY`. Full all500 real-energy confirmation is still blocked.
+2. `u_log` with beta around `1000` remains the best nonzero training-utility scale from prior training CSVs; fresh policy=reference calibration12 has exactly zero utility and therefore recommends `NONE_ZERO_UTILITY`. Full all500 real-energy confirmation is still blocked.
 3. Normalization helps scalar training but does not prevent visual artifact amplification.
 4. V-JEPA2/DINO latent monitor can distinguish available WIN/LOSE videos and is a viable v15 monitor/regularizer candidate.
 5. No DPO scheme can proceed to S16/S32/train400 because true checkpoint videos degrade.

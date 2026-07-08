@@ -13,3 +13,7 @@ Decision: `REAL_ENERGY_CALIBRATION8_PASS`
 - Energy seconds min / mean / max: `169.76` / `184.01` / `213.95`
 
 This extends the previous bounded real-energy proof from 4 rows to 8 rows on an asset-complete v11 synthetic controlled subset. It still does not prove all500/S_pass/rollout real-energy coverage, and it does not change the DPO recipe decision.
+
+## Superseded
+
+This file records the first 8-row pass. The same shard CSV was later resumed to 12 rows; use `real_energy_calibration12_summary.md` for current coverage.
