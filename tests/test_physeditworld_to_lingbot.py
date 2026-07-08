@@ -81,6 +81,12 @@ def test_physeditworld_to_lingbot_smoke(tmp_path: Path):
     assert meta["video_sampling"]["output_frame_count"] == 81
     assert meta["video_sampling"]["output_width"] == 8
     assert meta["video_sampling"]["output_height"] == 6
+    assert meta["prefix_file"] == "prefix.mp4"
+    assert meta["prefix_frame_indices"] == [0, 1, 2, 3, 4]
+    assert meta["prefix_sampling"]["status"] == "SAMPLED_PREFIX_VIDEO"
+    assert meta["prefix_sampling"]["output_frame_count"] == 5
+    assert meta["prefix_sampling"]["output_width"] == 8
+    assert meta["prefix_sampling"]["output_height"] == 6
     assert meta["action_sampling"]["output_length"] == 81
     assert meta["camera_sampling"]["output_length"] == 81
     expected_indices = meta["frame_indices"]
@@ -99,6 +105,12 @@ def test_physeditworld_to_lingbot_smoke(tmp_path: Path):
     cap = cv2.VideoCapture(str(sample_dir / "target.mp4"))
     assert cap.isOpened()
     assert int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) == 81
+    assert int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) == 8
+    assert int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) == 6
+    cap.release()
+    cap = cv2.VideoCapture(str(sample_dir / "prefix.mp4"))
+    assert cap.isOpened()
+    assert int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) == 5
     assert int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) == 8
     assert int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) == 6
     cap.release()

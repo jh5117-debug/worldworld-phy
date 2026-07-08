@@ -409,3 +409,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Current data gate remains blocked: strict PhysEditWorld train manifest still has 0 rows because the selected 50h root is not visible/mounted.
 - Test status: project `compileall` PASS, direct tiny-mp4 conversion smoke PASS, empty-manifest conversion gate PASS; pytest unavailable, no pytest PASS is claimed.
 - Safety: no GPU use, no training, no rollout, no DPO, no data/checkpoint/weight deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld Conversion Prefix Condition Sampling (2026-07-09T01:55:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: Phase 2 LingBot conversion now derives an explicit prefix condition when `prefix_video_path` / `image_path` is absent.
+- Prefix update: fallback prefix is no longer the full source video; conversion writes sampled frames 0-4 to `prefix.mp4` and records `prefix_frame_indices` plus `prefix_sampling`.
+- Existing-prefix behavior: provided `image_path` or `prefix_video_path` is preserved and recorded as `PROVIDED_IMAGE` / `PROVIDED_PREFIX_VIDEO`.
+- Schema gate: converted condition dirs now reject missing/invalid `prefix_sampling` and missing `prefix_frame_indices`.
+- Current data gate remains blocked: strict PhysEditWorld train manifest still has 0 rows because the selected 50h root is not visible/mounted.
+- Test status: project `compileall` PASS, direct tiny-mp4 conversion smoke PASS including 5-frame prefix check, empty-manifest conversion gate PASS; pytest unavailable, no pytest PASS is claimed.
+- Safety: no GPU use, no training, no rollout, no DPO, no data/checkpoint/weight deletion, and no videos/images/checkpoints/weights pushed.

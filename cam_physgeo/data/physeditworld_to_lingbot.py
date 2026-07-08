@@ -191,6 +191,40 @@ def write_sampled_video(src: str | Path, dst: Path, indices: list[int], fps: int
     }
 
 
+def prepare_prefix_media(row: dict[str, Any], tmp_dir: Path, args: argparse.Namespace) -> tuple[str, dict[str, Any], list[int]]:
+    prefix_indices = list(range(max(0, int(args.prefix_frames))))
+    if row.get("image_path"):
+        _link_or_copy(row["image_path"], tmp_dir / "image.jpg")
+        return (
+            "image.jpg",
+            {
+                "source_path": row.get("image_path"),
+                "status": "PROVIDED_IMAGE",
+                "output_file": "image.jpg",
+                "indices_length": 1,
+            },
+            prefix_indices,
+        )
+    if row.get("prefix_video_path"):
+        prefix_src = Path(str(row["prefix_video_path"]))
+        prefix_name = "prefix.mp4" if prefix_src.suffix.lower() == ".mp4" else "image.jpg"
+        _link_or_copy(prefix_src, tmp_dir / prefix_name)
+        return (
+            prefix_name,
+            {
+                "source_path": str(prefix_src),
+                "status": "PROVIDED_PREFIX_VIDEO" if prefix_name == "prefix.mp4" else "PROVIDED_IMAGE",
+                "output_file": prefix_name,
+                "indices_length": None if prefix_name == "prefix.mp4" else 1,
+            },
+            prefix_indices,
+        )
+    prefix_meta = write_sampled_video(row["video_path"], tmp_dir / "prefix.mp4", prefix_indices, args.fps, args.width, args.height)
+    prefix_meta["status"] = "SAMPLED_PREFIX_VIDEO"
+    prefix_meta["output_file"] = "prefix.mp4"
+    return "prefix.mp4", prefix_meta, prefix_indices
+
+
 def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace) -> dict[str, Any]:
     sample_id = str(row.get("sample_id") or Path(str(row.get("video_path", "sample"))).stem)
     final_dir = output_root / sample_id
@@ -204,10 +238,8 @@ def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace
     status = "OK"
     error = ""
     try:
-        # v0 keeps prefix media as links; target/action/camera are sampled to the same 81-frame index view.
-        prefix = row.get("prefix_video_path") or row.get("image_path") or row.get("video_path")
-        prefix_name = "prefix.mp4" if str(prefix).lower().endswith(".mp4") else "image.jpg"
-        _link_or_copy(prefix, tmp_dir / prefix_name)
+        # Prefix is an explicit condition. If no prefix asset exists, derive frames 0-4 from the source video.
+        prefix_file, prefix_sampling, prefix_indices = prepare_prefix_media(row, tmp_dir, args)
         indices = frame_indices(row.get("num_frames"), args.num_frames)
         video_sampling = write_sampled_video(row["video_path"], tmp_dir / "target.mp4", indices, args.fps, args.width, args.height)
         action_sampling = write_sampled_npy(row["action_trace_path"], tmp_dir / "action.npy", indices, "action_trace")
@@ -244,6 +276,9 @@ def convert_row(row: dict[str, Any], output_root: Path, args: argparse.Namespace
             "height_requested": args.height,
             "width_requested": args.width,
             "frame_indices": indices,
+            "prefix_frame_indices": prefix_indices,
+            "prefix_file": prefix_file,
+            "prefix_sampling": prefix_sampling,
             "sampling_alignment": {
                 "video_frame_indices": indices,
                 "action_frame_indices": indices,
@@ -287,6 +322,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--fps", type=int, default=16)
     ap.add_argument("--height", type=int, default=480)
     ap.add_argument("--width", type=int, default=832)
+    ap.add_argument("--prefix_frames", type=int, default=5)
     ap.add_argument("--gravity_prompt_style", default="physeditworld_v0")
     ap.add_argument("--report", required=True)
     ap.add_argument("--summary", required=True)

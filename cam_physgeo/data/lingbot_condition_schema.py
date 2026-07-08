@@ -31,6 +31,14 @@ def validate_condition_dir(path: str | Path) -> list[str]:
     indices = meta.get("frame_indices")
     if not isinstance(indices, list) or not indices:
         errors.append("metadata_missing:frame_indices")
+    prefix_indices = meta.get("prefix_frame_indices")
+    if not isinstance(prefix_indices, list) or not prefix_indices:
+        errors.append("metadata_missing:prefix_frame_indices")
+    prefix_sampling = meta.get("prefix_sampling")
+    if not isinstance(prefix_sampling, dict):
+        errors.append("metadata_missing:prefix_sampling")
+    elif prefix_sampling.get("status") not in {"SAMPLED_PREFIX_VIDEO", "PROVIDED_PREFIX_VIDEO", "PROVIDED_IMAGE"}:
+        errors.append("metadata_invalid:prefix_sampling_status")
     alignment = meta.get("sampling_alignment")
     if not isinstance(alignment, dict):
         errors.append("metadata_missing:sampling_alignment")
