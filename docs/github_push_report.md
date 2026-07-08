@@ -673,3 +673,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Requirement/completion matrices now contain 46 rows and remain blocked at migration readiness until NAS/root are visible and locked.
 - Test status: py_compile PASS, direct post-mount test-function smoke PASS, direct matrix/completion decision smoke PASS, targeted compileall PASS, git diff check PASS; pytest unavailable (`No module named pytest`), so no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, no local_assets/videos/images/checkpoints/weights/large logs pushed.
+
+## PhysEditWorld Blocked Handoff Status Refresh (2026-07-09T07:35:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `073d52e Refresh PhysEditWorld blocked handoff status`.
+- Scope: refreshed lightweight blocked-state reports for root intake, empty manifest initialization, conversion smoke summary, and pipeline gate status.
+- Current exact blocker: PhysEditWorld root/NAS is still unavailable; `PHYS_EDITWORLD_ROOTS` is not set, selected 50h manifests remain empty, and the pipeline remains blocked before schema/root handoff.
+- Status refinement: locked handoff now reports `LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE`; empty manifests are now recorded as already present rather than newly created.
+- Test status: latest `python3 -m compileall cam_physgeo src tests` PASS; no pytest PASS is claimed in this update.
+- Safety: no data copy, no deletion, no GPU use, no rollout, no warm-up, no DPO, no local_assets/videos/images/checkpoints/weights/large logs pushed.
+
