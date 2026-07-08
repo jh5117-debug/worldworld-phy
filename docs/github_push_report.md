@@ -248,4 +248,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Important correction: baseline and warm-up are now judged by their decision strings (`BASELINE_BLOCKED_EMPTY_MANIFEST`, `WARMUP_BLOCKED_EMPTY_MANIFEST`) rather than by summary-file existence alone.
 - Test status: compileall PASS, direct completion-audit smoke PASS, pytest unavailable; no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+
+## PhysEditWorld PAI Handoff Required-File Refresh (2026-07-08T22:24:00 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Scope: PAI handoff verifier now requires the latest root-candidate ranking, selected-root lock, locked-handoff sequence, completion-audit, and handoff verifier files before reporting code completeness.
+- Expected report artifacts now include selected-root status, locked-handoff sequence status, and objective completion audit status.
+- Current handoff outcome remains blocked until NAS/root are mounted; this update only strengthens code/report coverage.
+- Test status: compileall PASS, direct handoff smoke PASS, pytest unavailable; no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
 - Safety: no file copy, no deletion, no GPU use, no rollout, no warm-up, no DPO.
