@@ -124,6 +124,8 @@ def main(argv: list[str] | None = None) -> int:
         decision, status, error = "CHECKPOINT_EVAL_BLOCKED_MANIFEST_VALIDATION", "BLOCKED", f"eval validation decision is {eval_manifest_validation_decision}"
     elif not Path(args.checkpoint_root).exists():
         decision, status, error = "CHECKPOINT_EVAL_BLOCKED_CHECKPOINT_ROOT_MISSING", "BLOCKED", "checkpoint root missing"
+    elif gpu_policy == "NO_VISIBLE_GPU_SET" and not args.dry_run:
+        decision, status, error = "CHECKPOINT_EVAL_BLOCKED_NO_VISIBLE_GPU", "BLOCKED", "real checkpoint eval requires explicit CUDA_VISIBLE_DEVICES in allowed physical GPU4-7"
 
     row = {
         "decision": decision,

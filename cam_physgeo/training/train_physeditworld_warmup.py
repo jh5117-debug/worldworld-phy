@@ -157,6 +157,8 @@ def main(argv: list[str] | None = None) -> int:
         decision, status, error = "WARMUP_BLOCKED_MANIFEST_VALIDATION", "BLOCKED", f"train validation decision is {manifest_validation_decision}"
     elif val_manifest_validation_decision != "LINGBOT_MANIFEST_SCHEMA_PASS":
         decision, status, error = "WARMUP_BLOCKED_VAL_MANIFEST_VALIDATION", "BLOCKED", f"val validation decision is {val_manifest_validation_decision}"
+    elif gpu_policy == "NO_VISIBLE_GPU_SET" and not args.dry_run:
+        decision, status, error = "WARMUP_BLOCKED_NO_VISIBLE_GPU", "BLOCKED", "real warm-up requires explicit CUDA_VISIBLE_DEVICES in allowed physical GPU4-7"
     elif args.dry_run:
         decision, status = "WARMUP_DRY_RUN_READY", "PASS"
     else:
