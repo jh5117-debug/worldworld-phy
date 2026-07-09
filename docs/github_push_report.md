@@ -762,3 +762,17 @@ git push -u origin cam-physgeo-dpo-refactor
 - Evidence: `reports/migration/approved_copy_status_summary.md` records the strengthened policy and zero approved rows.
 - Test status: py_compile PASS, direct approved-copy policy smoke PASS, compileall PASS; pytest unavailable, so no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU work, no training, no rollout, no DPO, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld Migration Size Summary (2026-07-09T09:18:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `088d8eb Add migration size summary for PhysEditWorld handoff`.
+- Scope: CPU/IO-only migration size summary for candidate required assets and approved-copy payload.
+- Latest decision: `MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS`.
+- Candidate evidence: 800 manifest rows, 5.97 GB present file bytes counted, 237 directory rows pending recursive sizing, 2 missing rows.
+- Approved payload: 0 approved rows and 0 approved bytes; no copy was attempted.
+- NAS status: `/mnt/workspace/hj/nas_hj` remains missing.
+- Test status: py_compile PASS, direct size-summary smoke PASS, requirement matrix PASS, completion audit PASS, compileall PASS; pytest unavailable, so no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no recursive `du`, no GPU use, no rollout, no warm-up, no DPO.
+- Artifact policy: only lightweight code/tests/CSV/JSON/MD summaries were pushed; no local_assets, videos/images, checkpoints, weights, or large logs.
+
