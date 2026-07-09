@@ -702,3 +702,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: py_compile PASS, direct completion-audit test-function smoke PASS, targeted compileall PASS. Pytest is not claimed.
 - Safety: CPU/IO docs/reports/source update only; no data copy, deletion, GPU use, rollout, warm-up, DPO, local_assets/videos/images/checkpoints/weights/large logs pushed.
 
+## PhysEditWorld Readiness Matrix Guide Coverage (2026-07-09T08:03:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `02662d7 Track PhysEditWorld post-mount guides in readiness matrices`.
+- Scope: requirement and completion matrices now track the approved copy-plan template and the post-mount continuation operator guide as Phase0 migration/recovery evidence.
+- Current requirement matrix: 47 rows, `23 PASS`, `24 BLOCKED`, decision `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`.
+- Current completion matrix: 48 rows, `25 PASS`, `23 BLOCKED`, decision `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`.
+- Test status: py_compile PASS, direct requirement/completion test-function smoke PASS, targeted compileall PASS. Pytest is not claimed.
+- Safety: CPU/IO source/tests/docs/reports update only; no data copy, deletion, GPU use, rollout, warm-up, DPO, local_assets/videos/images/checkpoints/weights/large logs pushed.
+
