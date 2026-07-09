@@ -712,3 +712,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: py_compile PASS, direct requirement/completion test-function smoke PASS, targeted compileall PASS. Pytest is not claimed.
 - Safety: CPU/IO source/tests/docs/reports update only; no data copy, deletion, GPU use, rollout, warm-up, DPO, local_assets/videos/images/checkpoints/weights/large logs pushed.
 
+## PhysEditWorld Baseline Rollout GPU Policy Guard (2026-07-09T08:14:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `16f9640 Guard PhysEditWorld baseline rollout GPU policy`.
+- Scope: baseline rollout gate now records `CUDA_VISIBLE_DEVICES` and blocks any visible GPU outside physical GPU4-7, matching the PhysEditWorld GPU policy used by warm-up and checkpoint eval gates.
+- Current baseline decision remains `BASELINE_BLOCKED_EMPTY_MANIFEST` because `manifests/physeditworld_50h_lingbot_val.jsonl` has zero rows; the refreshed summary records `GPU policy: NO_VISIBLE_GPU_SET` for the non-rollout empty-manifest state.
+- Test status: py_compile PASS, direct baseline rollout test-function smoke PASS, targeted compileall PASS. Pytest is not claimed.
+- Safety: no GPU work, no true rollout, no training, no DPO, no deletion, no local_assets/videos/images/checkpoints/weights/large logs pushed.
+
