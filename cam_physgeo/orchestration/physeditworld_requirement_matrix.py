@@ -158,6 +158,7 @@ def build_rows() -> list[RequirementRow]:
         file_status("scripts/migration/collect_physeditworld_migration_audit_bundle.sh", "migration audit collector wrapper", "0_migration", "add migration audit collector"),
         file_status("scripts/migration/write_physeditworld_root_submission_template.sh", "root submission template wrapper", "0_migration", "write external root submission template wrapper"),
         file_status("scripts/migration/validate_physeditworld_root_submission.sh", "root submission validation wrapper", "0_migration", "write external root submission validator wrapper"),
+        file_status("scripts/migration/sample_physeditworld_root_evidence.sh", "root evidence sampler wrapper", "0_migration", "write external root evidence sampler wrapper"),
         file_status("reports/migration/required_weights_manifest.tsv", "required weights manifest", "0_migration", "build weights manifest"),
         file_status("reports/migration/required_data_manifest.tsv", "required data manifest", "0_migration", "build data manifest"),
         file_status("scripts/migration/rsync_h20_to_pai_dryrun.sh", "rsync dry-run script", "0_migration", "add dry-run script"),
@@ -220,6 +221,13 @@ def build_rows() -> list[RequirementRow]:
         "0_migration",
         {"PHYS_EDITWORLD_ROOT_SUBMISSION_VALIDATION_READY_FOR_SCHEMA_PROBE", "PHYS_EDITWORLD_ROOT_SUBMISSION_VALIDATION_WAITING_FOR_FILLED_TEMPLATE"},
         "fill and validate the selected-root submission before schema probe",
+    ))
+    rows.append(decision_status(
+        "reports/migration/physeditworld_root_evidence_samples.json",
+        "external selected-root evidence samples",
+        "0_migration",
+        {"PHYS_EDITWORLD_ROOT_EVIDENCE_SAMPLER_READY_FOR_SCHEMA_PROBE", "PHYS_EDITWORLD_ROOT_EVIDENCE_SAMPLER_WAITING_FOR_FILLED_TEMPLATE"},
+        "sample bounded evidence paths from the filled selected-root submission",
     ))
     rows.append(decision_status(
         "reports/migration/migration_approval_review_packet.json",

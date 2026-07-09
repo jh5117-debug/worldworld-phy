@@ -44,3 +44,4 @@ def test_external_unblock_decision_paths_include_root_submission_template():
     paths = dict(DECISION_PATHS)
     assert paths["root_submission_template"] == "reports/migration/physeditworld_root_submission_template.json"
     assert paths["root_submission_validation"] == "reports/migration/physeditworld_root_submission_validation.json"
+    assert paths["root_evidence_samples"] == "reports/migration/physeditworld_root_evidence_samples.json"

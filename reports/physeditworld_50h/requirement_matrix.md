@@ -5,7 +5,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 ## Status Counts
 
 - `BLOCKED`: 24
-- `PASS`: 33
+- `PASS`: 35
 
 ## Requirements
 
@@ -29,6 +29,9 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - detail: file exists
 - `0_migration` / root submission validation wrapper: `PASS`
   - evidence: `scripts/migration/validate_physeditworld_root_submission.sh`
+  - detail: file exists
+- `0_migration` / root evidence sampler wrapper: `PASS`
+  - evidence: `scripts/migration/sample_physeditworld_root_evidence.sh`
   - detail: file exists
 - `0_migration` / required weights manifest: `PASS`
   - evidence: `reports/migration/required_weights_manifest.tsv`
@@ -93,6 +96,9 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 - `0_migration` / external selected-root submission validation: `PASS`
   - evidence: `reports/migration/physeditworld_root_submission_validation.json`
   - detail: decision=PHYS_EDITWORLD_ROOT_SUBMISSION_VALIDATION_WAITING_FOR_FILLED_TEMPLATE
+- `0_migration` / external selected-root evidence samples: `PASS`
+  - evidence: `reports/migration/physeditworld_root_evidence_samples.json`
+  - detail: decision=PHYS_EDITWORLD_ROOT_EVIDENCE_SAMPLER_WAITING_FOR_FILLED_TEMPLATE
 - `0_migration` / migration approval review packet: `PASS`
   - evidence: `reports/migration/migration_approval_review_packet.json`
   - detail: decision=MIGRATION_APPROVAL_REVIEW_PACKET_READY

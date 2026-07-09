@@ -59,6 +59,14 @@
     },
     {
       "detail": "file exists",
+      "evidence": "scripts/migration/sample_physeditworld_root_evidence.sh",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "root evidence sampler wrapper",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
       "evidence": "reports/migration/required_weights_manifest.tsv",
       "next_action": "",
       "phase": "phase0_migration",
@@ -223,6 +231,14 @@
       "next_action": "",
       "phase": "phase0_migration",
       "requirement": "external selected-root submission validation",
+      "status": "PASS"
+    },
+    {
+      "detail": "decision=PHYS_EDITWORLD_ROOT_EVIDENCE_SAMPLER_WAITING_FOR_FILLED_TEMPLATE",
+      "evidence": "reports/migration/physeditworld_root_evidence_samples.json",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "external selected-root evidence samples",
       "status": "PASS"
     },
     {

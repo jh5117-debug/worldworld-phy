@@ -1,0 +1,28 @@
+{
+  "decision": "PHYS_EDITWORLD_ROOT_EVIDENCE_SAMPLER_WAITING_FOR_FILLED_TEMPLATE",
+  "generated_at_utc": "2026-07-09T02:13:30.477558+00:00",
+  "pass_samples": 0,
+  "safety": {
+    "bounded_samples_per_field": 3,
+    "does_not_copy_delete_train_or_use_gpu": true,
+    "mode": "CPU/IO only",
+    "no_recursive_globs": true
+  },
+  "samples": [
+    {
+      "candidate_root": "<absolute path to selected PhysEditWorld 50h root>",
+      "error_reason": "candidate_root is empty or placeholder",
+      "evidence_field": "candidate_root",
+      "exists": false,
+      "is_file": false,
+      "relative_path": "",
+      "row_idx": 1,
+      "sample_path": "",
+      "size_bytes": null,
+      "status": "WAITING_FOR_FILLED_TEMPLATE",
+      "submitted_glob": ""
+    }
+  ],
+  "samples_per_field": 3,
+  "template": "reports/migration/physeditworld_root_submission_template.tsv"
+}

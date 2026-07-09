@@ -1,0 +1,2 @@
+row_idx,evidence_field,candidate_root,submitted_glob,sample_path,relative_path,exists,is_file,size_bytes,status,error_reason
+1,candidate_root,<absolute path to selected PhysEditWorld 50h root>,,,,False,False,,WAITING_FOR_FILLED_TEMPLATE,candidate_root is empty or placeholder
