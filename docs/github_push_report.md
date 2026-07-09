@@ -776,3 +776,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Safety: no files copied, no deletion, no recursive `du`, no GPU use, no rollout, no warm-up, no DPO.
 - Artifact policy: only lightweight code/tests/CSV/JSON/MD summaries were pushed; no local_assets, videos/images, checkpoints, weights, or large logs.
 
+## PhysEditWorld Handoff Packets Include Size Evidence (2026-07-09T09:23:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `1dffc3b Include migration size summary in handoff packets`.
+- Scope: PAI restore packet, external unblock packet, and PAI handoff verifier now include `reports/migration/migration_size_summary.json`.
+- Current decisions remain blocked as expected: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT`, `PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT`, and `PAI_HANDOFF_BLOCKED_NAS_OR_ROOT`.
+- Size snapshot shown in handoff docs: 800 candidate rows, 5.97 GB present file bytes counted, 237 directory rows pending recursive sizing, 0 approved rows.
+- Test status: py_compile PASS, direct packet tests PASS, packet regeneration PASS, requirement matrix PASS, completion audit PASS, compileall PASS; pytest unavailable, so no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+- Artifact policy: only lightweight code/tests/CSV/JSON/MD summaries were pushed; no local_assets, videos/images, checkpoints, weights, or large logs.
+
