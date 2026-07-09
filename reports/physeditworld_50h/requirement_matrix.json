@@ -162,6 +162,14 @@
       "status": "PASS"
     },
     {
+      "detail": "decision=GIT_ARTIFACT_POLICY_PASS_WITH_SIZE_WARNINGS",
+      "evidence": "reports/migration/git_artifact_policy_audit.json",
+      "next_action": "",
+      "phase": "0_migration",
+      "requirement": "Git tracked artifact policy audit",
+      "status": "PASS"
+    },
+    {
       "detail": "decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
       "evidence": "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
       "next_action": "",

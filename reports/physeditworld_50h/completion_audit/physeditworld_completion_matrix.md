@@ -5,7 +5,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 ## Status Counts
 
 - `BLOCKED`: 23
-- `PASS`: 26
+- `PASS`: 27
 
 ## Requirement Evidence
 
@@ -69,6 +69,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 - `phase0_migration` / PhysEditWorld GPU command policy audit: `PASS`
   - evidence: `reports/physeditworld_50h/gpu_policy/gpu_command_policy_audit.json`
   - detail: decision=PHYS_EDITWORLD_GPU_COMMAND_POLICY_PASS
+- `phase0_migration` / Git tracked artifact policy audit: `PASS`
+  - evidence: `reports/migration/git_artifact_policy_audit.json`
+  - detail: decision=GIT_ARTIFACT_POLICY_PASS_WITH_SIZE_WARNINGS
 - `phase0_migration` / expected empty manifest placeholders: `PASS`
   - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
   - detail: decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT

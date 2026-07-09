@@ -19,6 +19,7 @@ phase0_migration,external unblock-packet wrapper,PASS,scripts/migration/write_ph
 phase0_migration,external unblock-packet summary,PASS,reports/migration/physeditworld_external_unblock_packet.md,file exists,
 phase0_migration,H20 read-only migration audit bundle,PASS,reports/migration/migration_audit_bundle.json,decision=MIGRATION_AUDIT_BUNDLE_READY,
 phase0_migration,PhysEditWorld GPU command policy audit,PASS,reports/physeditworld_50h/gpu_policy/gpu_command_policy_audit.json,decision=PHYS_EDITWORLD_GPU_COMMAND_POLICY_PASS,
+phase0_migration,Git tracked artifact policy audit,PASS,reports/migration/git_artifact_policy_audit.json,decision=GIT_ARTIFACT_POLICY_PASS_WITH_SIZE_WARNINGS,
 phase0_migration,expected empty manifest placeholders,PASS,reports/physeditworld_50h/manifest_init/empty_manifest_init.json,decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT,
 phase0_migration,locked handoff sequence,BLOCKED,reports/migration/locked_handoff_sequence.json,decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE,set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence
 phase0_migration,selected-root schema probe,BLOCKED,reports/migration/physeditworld_root_schema_probe.json,decision=PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT,provide selected root and rerun schema probe

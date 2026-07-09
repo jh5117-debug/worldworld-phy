@@ -184,6 +184,13 @@ def build_rows() -> list[RequirementRow]:
         {"PHYS_EDITWORLD_GPU_COMMAND_POLICY_PASS"},
         "run GPU command policy audit and remove any forbidden GPU0-3 assignments from PhysEditWorld runnable artifacts",
     ))
+    rows.append(decision_status(
+        "reports/migration/git_artifact_policy_audit.json",
+        "Git tracked artifact policy audit",
+        "0_migration",
+        {"GIT_ARTIFACT_POLICY_PASS", "GIT_ARTIFACT_POLICY_PASS_WITH_SIZE_WARNINGS"},
+        "remove tracked forbidden videos/images/weights/checkpoints/logs from git before handoff",
+    ))
     for evidence, requirement, pass_values, next_action in PHASE0_DECISION_GATES:
         rows.append(decision_status(evidence, requirement, "0_migration", pass_values, next_action))
     rows.append(decision_status(

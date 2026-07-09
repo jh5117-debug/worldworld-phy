@@ -1,0 +1,20 @@
+{
+  "decision": "GIT_ARTIFACT_POLICY_PASS_WITH_SIZE_WARNINGS",
+  "forbidden_count": 0,
+  "large_warning_count": 2,
+  "rows": [
+    {
+      "path": "third_party/VideoREPA/finetune/openvid/openvid_3w2.csv",
+      "reason": "tracked file exceeds 10485760 bytes",
+      "size_bytes": 19931321,
+      "status": "WARN_LARGE_TRACKED_FILE"
+    },
+    {
+      "path": "third_party/VideoREPA/finetune/openvid/openvid_6w4.csv",
+      "reason": "tracked file exceeds 10485760 bytes",
+      "size_bytes": 39916145,
+      "status": "WARN_LARGE_TRACKED_FILE"
+    }
+  ],
+  "treeish": "HEAD"
+}

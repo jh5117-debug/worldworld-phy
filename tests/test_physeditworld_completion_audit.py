@@ -67,3 +67,9 @@ def test_build_rows_includes_gpu_command_policy_audit():
     requirements = {row.requirement for row in rows}
     assert "PhysEditWorld GPU command policy audit" in requirements
 
+
+def test_build_rows_includes_git_artifact_policy_audit():
+    rows = build_rows()
+    requirements = {row.requirement for row in rows}
+    assert "Git tracked artifact policy audit" in requirements
+
