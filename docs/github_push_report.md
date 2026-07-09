@@ -752,3 +752,13 @@ git push -u origin cam-physgeo-dpo-refactor
 - Matrix status: requirement matrix now has 49 rows and completion audit has 50 rows; overall objective still blocks at Phase0 migration/root visibility.
 - Test status: py_compile PASS, direct artifact-policy/requirement/completion smoke PASS, compileall PASS; pytest unavailable, so no pytest PASS is claimed.
 - Safety: no GPU work, no training, no rollout, no DPO, no file copy, no checkpoint/data/weight deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld Approved Copy Payload Policy Hardening (2026-07-09T09:00:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `d262f8e Harden approved migration copy payload policy`.
+- Scope: approved-only migration copy now rejects not only `local_assets/`, but also old generated outputs, contact sheets, wandb/log payloads, and failed checkpoints if any row is manually marked `approved=true`.
+- Latest decision remains `APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS` because no copy row is approved yet.
+- Evidence: `reports/migration/approved_copy_status_summary.md` records the strengthened policy and zero approved rows.
+- Test status: py_compile PASS, direct approved-copy policy smoke PASS, compileall PASS; pytest unavailable, so no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU work, no training, no rollout, no DPO, and no videos/images/checkpoints/weights pushed.
