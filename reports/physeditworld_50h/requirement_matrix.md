@@ -5,7 +5,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 ## Status Counts
 
 - `BLOCKED`: 24
-- `PASS`: 22
+- `PASS`: 23
 
 ## Requirements
 
@@ -50,6 +50,9 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
   - detail: file exists
 - `0_migration` / post-mount continuation wrapper: `PASS`
   - evidence: `scripts/continue_physeditworld_after_mount.sh`
+  - detail: file exists
+- `0_migration` / post-mount continuation operator guide: `PASS`
+  - evidence: `docs/physeditworld_50h_post_mount_continue.md`
   - detail: file exists
 - `0_migration` / PAI restore-packet summary: `PASS`
   - evidence: `reports/migration/pai_restore_packet.md`

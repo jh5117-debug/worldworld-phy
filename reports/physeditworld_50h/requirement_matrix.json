@@ -115,6 +115,14 @@
     },
     {
       "detail": "file exists",
+      "evidence": "docs/physeditworld_50h_post_mount_continue.md",
+      "next_action": "",
+      "phase": "0_migration",
+      "requirement": "post-mount continuation operator guide",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
       "evidence": "reports/migration/pai_restore_packet.md",
       "next_action": "",
       "phase": "0_migration",

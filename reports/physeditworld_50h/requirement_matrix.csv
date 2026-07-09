@@ -13,6 +13,7 @@ phase,requirement,status,evidence,detail,next_action
 0_migration,PAI bootstrap operator guide,PASS,docs/physeditworld_50h_pai_bootstrap.md,file exists,
 0_migration,PAI restore-packet wrapper,PASS,scripts/migration/run_physeditworld_pai_restore_packet.sh,file exists,
 0_migration,post-mount continuation wrapper,PASS,scripts/continue_physeditworld_after_mount.sh,file exists,
+0_migration,post-mount continuation operator guide,PASS,docs/physeditworld_50h_post_mount_continue.md,file exists,
 0_migration,PAI restore-packet summary,PASS,reports/migration/pai_restore_packet.md,file exists,
 0_migration,external unblock-packet wrapper,PASS,scripts/migration/write_physeditworld_external_unblock_packet.sh,file exists,
 0_migration,external unblock-packet summary,PASS,reports/migration/physeditworld_external_unblock_packet.md,file exists,

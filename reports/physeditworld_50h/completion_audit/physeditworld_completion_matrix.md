@@ -5,7 +5,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 ## Status Counts
 
 - `BLOCKED`: 23
-- `PASS`: 23
+- `PASS`: 25
 
 ## Requirement Evidence
 
@@ -36,6 +36,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 - `phase0_migration` / guarded execute rsync script: `PASS`
   - evidence: `scripts/migration/rsync_h20_to_pai_execute.sh`
   - detail: file exists
+- `phase0_migration` / explicit copy-plan template: `PASS`
+  - evidence: `reports/migration/approved_copy_manifest_template.tsv`
+  - detail: file exists
 - `phase0_migration` / PAI bootstrap restore entrypoint: `PASS`
   - evidence: `scripts/migration/bootstrap_pai_physeditworld.sh`
   - detail: file exists
@@ -47,6 +50,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - detail: file exists
 - `phase0_migration` / post-mount continuation wrapper: `PASS`
   - evidence: `scripts/continue_physeditworld_after_mount.sh`
+  - detail: file exists
+- `phase0_migration` / post-mount continuation operator guide: `PASS`
+  - evidence: `docs/physeditworld_50h_post_mount_continue.md`
   - detail: file exists
 - `phase0_migration` / PAI restore-packet summary: `PASS`
   - evidence: `reports/migration/pai_restore_packet.md`

@@ -49,9 +49,12 @@ def test_build_rows_includes_root_intake_report():
 def test_build_rows_includes_pai_bootstrap_restore_entrypoint():
     rows = build_rows()
     requirements = {row.requirement for row in rows}
+    assert "explicit copy-plan template" in requirements
     assert "PAI bootstrap restore entrypoint" in requirements
     assert "PAI bootstrap operator guide" in requirements
     assert "PAI restore-packet wrapper" in requirements
+    assert "post-mount continuation wrapper" in requirements
+    assert "post-mount continuation operator guide" in requirements
     assert "PAI restore-packet summary" in requirements
     assert "PAI restore packet decision" in requirements
     assert "external unblock-packet wrapper" in requirements

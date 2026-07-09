@@ -75,6 +75,14 @@
     },
     {
       "detail": "file exists",
+      "evidence": "reports/migration/approved_copy_manifest_template.tsv",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "explicit copy-plan template",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
       "evidence": "scripts/migration/bootstrap_pai_physeditworld.sh",
       "next_action": "",
       "phase": "phase0_migration",
@@ -103,6 +111,14 @@
       "next_action": "",
       "phase": "phase0_migration",
       "requirement": "post-mount continuation wrapper",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "docs/physeditworld_50h_post_mount_continue.md",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "post-mount continuation operator guide",
       "status": "PASS"
     },
     {

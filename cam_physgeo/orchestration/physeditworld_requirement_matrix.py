@@ -165,6 +165,7 @@ def build_rows() -> list[RequirementRow]:
         file_status("docs/physeditworld_50h_pai_bootstrap.md", "PAI bootstrap operator guide", "0_migration", "write PAI bootstrap guide"),
         file_status("scripts/migration/run_physeditworld_pai_restore_packet.sh", "PAI restore-packet wrapper", "0_migration", "add restore-packet wrapper"),
         file_status("scripts/continue_physeditworld_after_mount.sh", "post-mount continuation wrapper", "0_migration", "add post-mount continuation wrapper"),
+        file_status("docs/physeditworld_50h_post_mount_continue.md", "post-mount continuation operator guide", "0_migration", "write post-mount continuation guide"),
         file_status("reports/migration/pai_restore_packet.md", "PAI restore-packet summary", "0_migration", "run restore-packet writer"),
         file_status("scripts/migration/write_physeditworld_external_unblock_packet.sh", "external unblock-packet wrapper", "0_migration", "add external unblock packet wrapper"),
         file_status("reports/migration/physeditworld_external_unblock_packet.md", "external unblock-packet summary", "0_migration", "run external unblock packet writer"),
