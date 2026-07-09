@@ -3,6 +3,7 @@ from cam_physgeo.orchestration.physeditworld_pai_restore_packet import (
     READY_COMPLETION,
     READY_MATRIX,
     SAFE_NEXT_COMMANDS,
+    DECISION_REPORTS,
     decide_restore_packet,
     split_roots,
 )
@@ -44,3 +45,8 @@ def test_restore_packet_blocks_when_backend_not_ready():
 def test_restore_packet_safe_next_commands_include_handoff_verifier():
     assert "bash scripts/migration/verify_pai_physeditworld_handoff.sh" in SAFE_NEXT_COMMANDS
     assert "bash scripts/migration/write_physeditworld_external_unblock_packet.sh" in SAFE_NEXT_COMMANDS
+
+
+def test_restore_packet_decision_reports_include_size_summary():
+    reports = dict(DECISION_REPORTS)
+    assert reports["migration_size_summary"] == "reports/migration/migration_size_summary.json"

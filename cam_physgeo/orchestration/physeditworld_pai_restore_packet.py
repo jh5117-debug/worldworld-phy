@@ -25,6 +25,7 @@ DECISION_REPORTS: tuple[tuple[str, str], ...] = (
     ("locked_handoff", "reports/migration/locked_handoff_sequence.json"),
     ("migration_asset_validation", "reports/migration/migration_asset_validation.json"),
     ("approved_copy", "reports/migration/approved_copy_status.json"),
+    ("migration_size_summary", "reports/migration/migration_size_summary.json"),
     ("backend_readiness", "reports/physeditworld_50h/backend_readiness/backend_readiness.json"),
     ("pipeline_gate", "reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json"),
     ("requirement_matrix", "reports/physeditworld_50h/requirement_matrix.json"),
@@ -228,6 +229,7 @@ def build_packet(nas_root: str) -> dict[str, Any]:
         "physeditworld_roots": [asdict(row) for row in root_checks],
         "restore_entrypoints": [asdict(check_path(path)) for path in RESTORE_ENTRYPOINTS],
         "decisions": [asdict(row) for row in decisions],
+        "migration_size_summary": read_json("reports/migration/migration_size_summary.json") or {},
         "manifests": [asdict(row) for row in collect_manifests()],
         "disk": run_text(["df", "-h", "/home/nvme03", "/home/nvme04", nas_root], timeout_seconds=10),
         "safe_next_commands": list(SAFE_NEXT_COMMANDS),
@@ -289,6 +291,22 @@ def write_markdown(packet: dict[str, Any], path: str | Path) -> None:
     lines.extend(["", "## Decisions", ""])
     for row in packet["decisions"]:
         lines.append(f"- `{row['name']}`: `{row['decision']}` (`{row['path']}`)")
+    size_summary = packet.get("migration_size_summary") or {}
+    candidate = size_summary.get("candidate_summary", {}) if isinstance(size_summary, dict) else {}
+    approved = size_summary.get("approved_copy_summary", {}) if isinstance(size_summary, dict) else {}
+    approved_status = size_summary.get("approved_copy_status", {}) if isinstance(size_summary, dict) else {}
+    lines.extend(["", "## Migration Size Snapshot", ""])
+    if size_summary:
+        lines.append(f"- decision: `{size_summary.get('decision', 'UNKNOWN')}`")
+        lines.append(f"- candidate rows: `{candidate.get('manifest_rows', 'unknown')}`")
+        lines.append(f"- candidate present file bytes: `{candidate.get('present_file_bytes', 'unknown')}` ({candidate.get('present_file_bytes_human', 'unknown')})")
+        lines.append(f"- directory rows pending recursive sizing: `{candidate.get('dir_rows_pending_recursive_size', 'unknown')}`")
+        lines.append(f"- candidate missing rows: `{candidate.get('missing_rows', 'unknown')}`")
+        lines.append(f"- approved-copy decision: `{approved_status.get('decision', 'UNKNOWN')}`")
+        lines.append(f"- approved rows: `{approved.get('approved_rows', 'unknown')}`")
+        lines.append(f"- approved present file bytes: `{approved.get('approved_present_file_bytes', 'unknown')}`")
+    else:
+        lines.append("- migration size summary missing")
     lines.extend(["", "## Manifest Rows", ""])
     for row in packet["manifests"]:
         lines.append(f"- `{row['path']}`: `{row['status']}` rows={row['rows']}")

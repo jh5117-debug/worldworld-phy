@@ -1,14 +1,14 @@
 # PhysEditWorld PAI Restore Packet
 
-Generated UTC: `2026-07-08T23:06:19.010086+00:00`
+Generated UTC: `2026-07-09T01:21:49.941800+00:00`
 Decision: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT`
 
 ## Git
 
 - repo: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys`
 - branch: `physion-only-local-assets-videogpa-smoke`
-- local head: `511a52b`
-- origin branch head: `c4aab0e`
+- local head: `ea17570`
+- origin branch head: `0a92bad`
 
 ## Current Blockers
 
@@ -35,10 +35,22 @@ Decision: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT`
 - `locked_handoff`: `LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE` (`reports/migration/locked_handoff_sequence.json`)
 - `migration_asset_validation`: `MIGRATION_ASSET_VALIDATION_NAS_BLOCKED` (`reports/migration/migration_asset_validation.json`)
 - `approved_copy`: `APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS` (`reports/migration/approved_copy_status.json`)
+- `migration_size_summary`: `MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS` (`reports/migration/migration_size_summary.json`)
 - `backend_readiness`: `PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY` (`reports/physeditworld_50h/backend_readiness/backend_readiness.json`)
 - `pipeline_gate`: `PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE` (`reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json`)
 - `requirement_matrix`: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS` (`reports/physeditworld_50h/requirement_matrix.json`)
 - `completion_audit`: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION` (`reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json`)
+
+## Migration Size Snapshot
+
+- decision: `MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS`
+- candidate rows: `800`
+- candidate present file bytes: `6415095518` (5.97 GB)
+- directory rows pending recursive sizing: `237`
+- candidate missing rows: `2`
+- approved-copy decision: `APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS`
+- approved rows: `0`
+- approved present file bytes: `0`
 
 ## Manifest Rows
 

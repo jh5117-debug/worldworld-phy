@@ -1,5 +1,6 @@
 from cam_physgeo.orchestration.physeditworld_external_unblock_packet import (
     REQUIRED_ROOT_EVIDENCE,
+    DECISION_PATHS,
     derive_decision,
     path_snapshot,
     split_roots,
@@ -27,3 +28,8 @@ def test_external_unblock_blocks_missing_nas_or_root():
     assert decision == "PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT"
     assert "NAS_TARGET_MISSING" in blockers
     assert "PHYS_EDITWORLD_ROOTS_UNSET" in blockers
+
+
+def test_external_unblock_decision_paths_include_size_summary():
+    paths = dict(DECISION_PATHS)
+    assert paths["migration_size_summary"] == "reports/migration/migration_size_summary.json"

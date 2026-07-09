@@ -27,6 +27,7 @@ DECISION_PATHS = (
     ("phase0_preflight", "reports/migration/phase0_preflight_status.json"),
     ("pai_handoff", "reports/migration/pai_handoff_status.json"),
     ("pai_restore_packet", "reports/migration/pai_restore_packet.json"),
+    ("migration_size_summary", "reports/migration/migration_size_summary.json"),
     ("backend_readiness", "reports/physeditworld_50h/backend_readiness/backend_readiness.json"),
     ("requirement_matrix", "reports/physeditworld_50h/requirement_matrix.json"),
     ("completion_audit", "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json"),
@@ -83,6 +84,17 @@ def read_decision(path: str | Path) -> tuple[str, str]:
     except Exception as exc:
         return "UNREADABLE", repr(exc)
     return str(obj.get("decision") or obj.get("status") or "UNKNOWN"), ""
+
+
+def read_json(path: str | Path) -> dict[str, Any]:
+    p = Path(path)
+    if not p.exists():
+        return {}
+    try:
+        obj = json.loads(p.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return {"decision": "UNREADABLE", "error_reason": repr(exc)}
+    return obj if isinstance(obj, dict) else {"decision": "UNEXPECTED_JSON"}
 
 
 def split_roots(raw: str) -> list[str]:
@@ -151,6 +163,7 @@ def build_packet(nas_target: str) -> dict[str, Any]:
         "physeditworld_roots": [asdict(root) for root in roots],
         "required_root_evidence": list(REQUIRED_ROOT_EVIDENCE),
         "decisions": [asdict(row) for row in collect_decisions()],
+        "migration_size_summary": read_json("reports/migration/migration_size_summary.json"),
         "post_mount_commands": list(POST_MOUNT_COMMANDS),
         "disk": run_text(["df", "-h", "/home/nvme03", "/home/nvme04", nas_target], timeout_seconds=10),
         "safety": {
@@ -193,6 +206,19 @@ def write_markdown(packet: dict[str, Any], path: str | Path) -> None:
     if packet["physeditworld_roots"]:
         for root in packet["physeditworld_roots"]:
             lines.append(f"- root `{root['path']}`: `{root['detail']}`")
+    size_summary = packet.get("migration_size_summary") or {}
+    candidate = size_summary.get("candidate_summary", {}) if isinstance(size_summary, dict) else {}
+    approved = size_summary.get("approved_copy_summary", {}) if isinstance(size_summary, dict) else {}
+    lines.extend(["", "## Migration Size Snapshot", ""])
+    if size_summary:
+        lines.append(f"- decision: `{size_summary.get('decision', 'UNKNOWN')}`")
+        lines.append(f"- candidate present file bytes: `{candidate.get('present_file_bytes_human', 'unknown')}`")
+        lines.append(f"- candidate rows: `{candidate.get('manifest_rows', 'unknown')}`")
+        lines.append(f"- directory rows pending recursive sizing: `{candidate.get('dir_rows_pending_recursive_size', 'unknown')}`")
+        lines.append(f"- approved rows: `{approved.get('approved_rows', 'unknown')}`")
+        lines.append(f"- approved present file bytes: `{approved.get('approved_present_file_bytes', 'unknown')}`")
+    else:
+        lines.append("- migration size summary missing")
     lines.extend(["", "## Decision Snapshot", ""])
     for row in packet["decisions"]:
         lines.append(f"- `{row['name']}`: `{row['decision']}` (`{row['path']}`)")

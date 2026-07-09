@@ -51,6 +51,7 @@ REQUIRED_FILES = (
     "cam_physgeo/orchestration/physeditworld_external_unblock_packet.py",
     "cam_physgeo/orchestration/physeditworld_root_intake.py",
     "cam_physgeo/orchestration/physeditworld_pai_handoff.py",
+    "cam_physgeo/orchestration/migration_size_summary.py",
 )
 
 EXPECTED_REPORTS = (
@@ -66,6 +67,7 @@ EXPECTED_REPORTS = (
     "reports/migration/migration_asset_validation.json",
     "reports/migration/approved_copy_manifest_template.tsv",
     "reports/migration/approved_copy_status.json",
+    "reports/migration/migration_size_summary.json",
     "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json",
     "reports/physeditworld_50h/backend_readiness/backend_readiness.json",
     "reports/physeditworld_50h/requirement_matrix.json",
