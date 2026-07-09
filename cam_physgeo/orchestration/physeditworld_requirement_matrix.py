@@ -177,6 +177,13 @@ def build_rows() -> list[RequirementRow]:
         {"MIGRATION_AUDIT_BUNDLE_READY"},
         "run migration audit bundle collector before migration/handoff",
     ))
+    rows.append(decision_status(
+        "reports/physeditworld_50h/gpu_policy/gpu_command_policy_audit.json",
+        "PhysEditWorld GPU command policy audit",
+        "0_migration",
+        {"PHYS_EDITWORLD_GPU_COMMAND_POLICY_PASS"},
+        "run GPU command policy audit and remove any forbidden GPU0-3 assignments from PhysEditWorld runnable artifacts",
+    ))
     for evidence, requirement, pass_values, next_action in PHASE0_DECISION_GATES:
         rows.append(decision_status(evidence, requirement, "0_migration", pass_values, next_action))
     rows.append(decision_status(

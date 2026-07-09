@@ -5,7 +5,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 ## Status Counts
 
 - `BLOCKED`: 24
-- `PASS`: 23
+- `PASS`: 24
 
 ## Requirements
 
@@ -66,6 +66,9 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 - `0_migration` / H20 read-only migration audit bundle: `PASS`
   - evidence: `reports/migration/migration_audit_bundle.json`
   - detail: decision=MIGRATION_AUDIT_BUNDLE_READY
+- `0_migration` / PhysEditWorld GPU command policy audit: `PASS`
+  - evidence: `reports/physeditworld_50h/gpu_policy/gpu_command_policy_audit.json`
+  - detail: decision=PHYS_EDITWORLD_GPU_COMMAND_POLICY_PASS
 - `0_migration` / expected empty manifest placeholders: `PASS`
   - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
   - detail: decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT

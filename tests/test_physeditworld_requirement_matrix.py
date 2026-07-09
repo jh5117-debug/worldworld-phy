@@ -80,3 +80,9 @@ def test_requirement_matrix_blocks_at_warmup_preflight_after_baseline():
         RequirementRow("4_warmup", "rank32 warm-up preflight", "BLOCKED", "y"),
     ])
     assert decision == "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_WARMUP_PREFLIGHT"
+
+
+def test_requirement_matrix_includes_gpu_command_policy_audit():
+    requirements = {row.requirement for row in build_rows()}
+    assert "PhysEditWorld GPU command policy audit" in requirements
+

@@ -154,6 +154,14 @@
       "status": "PASS"
     },
     {
+      "detail": "decision=PHYS_EDITWORLD_GPU_COMMAND_POLICY_PASS",
+      "evidence": "reports/physeditworld_50h/gpu_policy/gpu_command_policy_audit.json",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "PhysEditWorld GPU command policy audit",
+      "status": "PASS"
+    },
+    {
       "detail": "decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
       "evidence": "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
       "next_action": "",

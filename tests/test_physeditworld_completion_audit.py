@@ -60,3 +60,10 @@ def test_build_rows_includes_pai_bootstrap_restore_entrypoint():
     assert "external unblock-packet wrapper" in requirements
     assert "external unblock-packet summary" in requirements
     assert "external unblock packet decision" in requirements
+
+
+def test_build_rows_includes_gpu_command_policy_audit():
+    rows = build_rows()
+    requirements = {row.requirement for row in rows}
+    assert "PhysEditWorld GPU command policy audit" in requirements
+

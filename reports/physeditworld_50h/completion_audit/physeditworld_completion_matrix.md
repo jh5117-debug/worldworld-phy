@@ -5,7 +5,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 ## Status Counts
 
 - `BLOCKED`: 23
-- `PASS`: 25
+- `PASS`: 26
 
 ## Requirement Evidence
 
@@ -66,6 +66,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 - `phase0_migration` / H20 read-only migration audit bundle: `PASS`
   - evidence: `reports/migration/migration_audit_bundle.json`
   - detail: decision=MIGRATION_AUDIT_BUNDLE_READY
+- `phase0_migration` / PhysEditWorld GPU command policy audit: `PASS`
+  - evidence: `reports/physeditworld_50h/gpu_policy/gpu_command_policy_audit.json`
+  - detail: decision=PHYS_EDITWORLD_GPU_COMMAND_POLICY_PASS
 - `phase0_migration` / expected empty manifest placeholders: `PASS`
   - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
   - detail: decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT
