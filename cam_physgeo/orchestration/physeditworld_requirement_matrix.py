@@ -156,11 +156,14 @@ def build_rows() -> list[RequirementRow]:
         file_status("reports/migration/environment_no_builds.yml", "environment export", "0_migration", "export conda env"),
         file_status("reports/migration/pip_freeze.txt", "pip freeze export", "0_migration", "export pip freeze"),
         file_status("scripts/migration/collect_physeditworld_migration_audit_bundle.sh", "migration audit collector wrapper", "0_migration", "add migration audit collector"),
+        file_status("scripts/migration/write_physeditworld_root_submission_template.sh", "root submission template wrapper", "0_migration", "write external root submission template wrapper"),
         file_status("reports/migration/required_weights_manifest.tsv", "required weights manifest", "0_migration", "build weights manifest"),
         file_status("reports/migration/required_data_manifest.tsv", "required data manifest", "0_migration", "build data manifest"),
         file_status("scripts/migration/rsync_h20_to_pai_dryrun.sh", "rsync dry-run script", "0_migration", "add dry-run script"),
         file_status("scripts/migration/rsync_h20_to_pai_execute.sh", "guarded rsync execute script", "0_migration", "add execute script"),
         file_status("reports/migration/approved_copy_manifest_template.tsv", "explicit copy-plan template", "0_migration", "generate approved copy manifest template"),
+        file_status("reports/migration/physeditworld_root_submission_template.tsv", "external selected-root submission TSV", "0_migration", "run root submission template writer"),
+        file_status("reports/migration/physeditworld_root_submission_template.md", "external selected-root submission guide", "0_migration", "run root submission template writer"),
         file_status("scripts/migration/bootstrap_pai_physeditworld.sh", "PAI bootstrap restore entrypoint", "0_migration", "add PAI bootstrap script"),
         file_status("docs/physeditworld_50h_pai_bootstrap.md", "PAI bootstrap operator guide", "0_migration", "write PAI bootstrap guide"),
         file_status("scripts/migration/run_physeditworld_pai_restore_packet.sh", "PAI restore-packet wrapper", "0_migration", "add restore-packet wrapper"),
@@ -202,6 +205,13 @@ def build_rows() -> list[RequirementRow]:
             "MIGRATION_SIZE_SUMMARY_READY_FOR_APPROVED_DRYRUN",
         },
         "run migration size summary after migration manifests are generated",
+    ))
+    rows.append(decision_status(
+        "reports/migration/physeditworld_root_submission_template.json",
+        "external selected-root submission template",
+        "0_migration",
+        {"PHYS_EDITWORLD_ROOT_SUBMISSION_TEMPLATE_READY"},
+        "write the root submission template before asking external/PAI owners to provide the selected 50h root",
     ))
     rows.append(decision_status(
         "reports/migration/migration_approval_review_packet.json",

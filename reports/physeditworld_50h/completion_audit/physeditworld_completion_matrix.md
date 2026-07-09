@@ -5,7 +5,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 ## Status Counts
 
 - `BLOCKED`: 23
-- `PASS`: 29
+- `PASS`: 33
 
 ## Requirement Evidence
 
@@ -24,6 +24,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 - `phase0_migration` / migration audit collector wrapper: `PASS`
   - evidence: `scripts/migration/collect_physeditworld_migration_audit_bundle.sh`
   - detail: file exists
+- `phase0_migration` / root submission template wrapper: `PASS`
+  - evidence: `scripts/migration/write_physeditworld_root_submission_template.sh`
+  - detail: file exists
 - `phase0_migration` / required weights manifest: `PASS`
   - evidence: `reports/migration/required_weights_manifest.tsv`
   - detail: file exists
@@ -38,6 +41,12 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - detail: file exists
 - `phase0_migration` / explicit copy-plan template: `PASS`
   - evidence: `reports/migration/approved_copy_manifest_template.tsv`
+  - detail: file exists
+- `phase0_migration` / external selected-root submission TSV: `PASS`
+  - evidence: `reports/migration/physeditworld_root_submission_template.tsv`
+  - detail: file exists
+- `phase0_migration` / external selected-root submission guide: `PASS`
+  - evidence: `reports/migration/physeditworld_root_submission_template.md`
   - detail: file exists
 - `phase0_migration` / PAI bootstrap restore entrypoint: `PASS`
   - evidence: `scripts/migration/bootstrap_pai_physeditworld.sh`
@@ -75,6 +84,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 - `phase0_migration` / migration candidate and approved-payload size summary: `PASS`
   - evidence: `reports/migration/migration_size_summary.json`
   - detail: decision=MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS
+- `phase0_migration` / external selected-root submission template: `PASS`
+  - evidence: `reports/migration/physeditworld_root_submission_template.json`
+  - detail: decision=PHYS_EDITWORLD_ROOT_SUBMISSION_TEMPLATE_READY
 - `phase0_migration` / migration approval review packet: `PASS`
   - evidence: `reports/migration/migration_approval_review_packet.json`
   - detail: decision=MIGRATION_APPROVAL_REVIEW_PACKET_READY

@@ -1,0 +1,69 @@
+{
+  "decision": "PHYS_EDITWORLD_ROOT_SUBMISSION_TEMPLATE_READY",
+  "fields": [
+    "candidate_root",
+    "storage_location",
+    "expected_hours",
+    "dataset_version",
+    "video_or_frames_glob",
+    "action_trace_glob",
+    "camera_trajectory_or_poses_glob",
+    "intrinsics_glob",
+    "gravity_label_or_metadata_glob",
+    "replay_group_or_matched_replay_glob",
+    "prompt_or_text_metadata_glob",
+    "split_or_scene_manifest_glob",
+    "notes",
+    "submitter",
+    "review_status"
+  ],
+  "generated_at_utc": "2026-07-09T01:50:45.784356+00:00",
+  "required_evidence": [
+    "video_or_frames_glob",
+    "action_trace_glob",
+    "camera_trajectory_or_poses_glob",
+    "intrinsics_glob",
+    "gravity_label_or_metadata_glob",
+    "replay_group_or_matched_replay_glob"
+  ],
+  "review_status_values": [
+    "PENDING_EXTERNAL_INPUT",
+    "READY_FOR_SCHEMA_PROBE",
+    "REJECTED_NOT_PHYS_EDIT_WORLD",
+    "REJECTED_INCOMPLETE_EVIDENCE"
+  ],
+  "safe_resume_commands": [
+    "export PHYS_EDITWORLD_ROOTS=/path/to/selected_physeditworld_50h_root",
+    "bash scripts/migration/select_physeditworld_root.sh",
+    "bash scripts/migration/probe_physeditworld_root_schema.sh",
+    "bash scripts/migration/prepare_physeditworld_root_intake.sh",
+    "bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh"
+  ],
+  "safety": {
+    "does_not_approve_copy_rows": true,
+    "does_not_copy_delete_train_or_use_gpu": true,
+    "does_not_scan_roots": true,
+    "does_not_select_root": true,
+    "mode": "CPU/IO only"
+  },
+  "template": [
+    {
+      "action_trace_glob": "<relative glob for action traces>",
+      "camera_trajectory_or_poses_glob": "<relative glob for camera trajectory / poses>",
+      "candidate_root": "<absolute path to selected PhysEditWorld 50h root>",
+      "dataset_version": "<version or export id>",
+      "expected_hours": "50",
+      "gravity_label_or_metadata_glob": "<relative glob for explicit gravity labels / metadata>",
+      "intrinsics_glob": "<relative glob for intrinsics / calibration>",
+      "notes": "Do not point this at Physion, PhyInOne, VideoPHY, rollout outputs, contact sheets, or checkpoint folders.",
+      "prompt_or_text_metadata_glob": "<relative glob for prompt/text metadata, if present>",
+      "replay_group_or_matched_replay_glob": "<relative glob for replay groups / matched replays>",
+      "review_status": "PENDING_EXTERNAL_INPUT",
+      "split_or_scene_manifest_glob": "<relative glob for split, scene, or episode manifest, if present>",
+      "storage_location": "<H20 path, PAI path, or NAS path>",
+      "submitter": "<name or owner>",
+      "video_or_frames_glob": "<relative glob for videos or frame directories>"
+    }
+  ],
+  "template_rows": 1
+}

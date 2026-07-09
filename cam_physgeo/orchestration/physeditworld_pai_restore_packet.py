@@ -19,6 +19,7 @@ DECISION_REPORTS: tuple[tuple[str, str], ...] = (
     ("pai_handoff", "reports/migration/pai_handoff_status.json"),
     ("phase0_preflight", "reports/migration/phase0_preflight_status.json"),
     ("root_candidates", "reports/migration/physeditworld_root_candidates_ranked.json"),
+    ("root_submission_template", "reports/migration/physeditworld_root_submission_template.json"),
     ("root_schema_probe", "reports/migration/physeditworld_root_schema_probe.json"),
     ("root_selection", "reports/migration/physeditworld_selected_root_status.json"),
     ("root_intake", "reports/migration/physeditworld_root_intake.json"),
@@ -54,6 +55,7 @@ RESTORE_ENTRYPOINTS: tuple[str, ...] = (
 
 SAFE_NEXT_COMMANDS: tuple[str, ...] = (
     "export PHYS_EDITWORLD_ROOTS=/path/to/selected_physeditworld_50h_root",
+    "bash scripts/migration/write_physeditworld_root_submission_template.sh",
     "bash scripts/migration/bootstrap_pai_physeditworld.sh",
     "bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh",
     "bash scripts/migration/write_physeditworld_external_unblock_packet.sh",

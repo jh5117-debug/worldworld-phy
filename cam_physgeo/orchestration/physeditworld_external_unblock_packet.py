@@ -21,6 +21,7 @@ REQUIRED_ROOT_EVIDENCE = (
 )
 DECISION_PATHS = (
     ("root_candidates", "reports/migration/physeditworld_root_candidates_ranked.json"),
+    ("root_submission_template", "reports/migration/physeditworld_root_submission_template.json"),
     ("root_schema_probe", "reports/migration/physeditworld_root_schema_probe.json"),
     ("root_selection", "reports/migration/physeditworld_selected_root_status.json"),
     ("root_intake", "reports/migration/physeditworld_root_intake.json"),
@@ -35,6 +36,7 @@ DECISION_PATHS = (
 )
 POST_MOUNT_COMMANDS = (
     "export PHYS_EDITWORLD_ROOTS=/path/to/selected_physeditworld_50h_root",
+    "bash scripts/migration/write_physeditworld_root_submission_template.sh",
     "bash scripts/migration/select_physeditworld_root.sh",
     "bash scripts/migration/probe_physeditworld_root_schema.sh",
     "bash scripts/migration/prepare_physeditworld_root_intake.sh",

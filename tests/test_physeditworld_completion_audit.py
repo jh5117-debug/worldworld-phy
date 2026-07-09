@@ -56,6 +56,10 @@ def test_build_rows_includes_pai_bootstrap_restore_entrypoint():
     assert "post-mount continuation wrapper" in requirements
     assert "post-mount continuation operator guide" in requirements
     assert "PAI restore-packet summary" in requirements
+    assert "root submission template wrapper" in requirements
+    assert "external selected-root submission TSV" in requirements
+    assert "external selected-root submission guide" in requirements
+    assert "external selected-root submission template" in requirements
     assert "PAI restore packet decision" in requirements
     assert "external unblock-packet wrapper" in requirements
     assert "external unblock-packet summary" in requirements

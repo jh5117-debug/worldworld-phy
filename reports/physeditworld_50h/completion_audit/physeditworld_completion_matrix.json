@@ -43,6 +43,14 @@
     },
     {
       "detail": "file exists",
+      "evidence": "scripts/migration/write_physeditworld_root_submission_template.sh",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "root submission template wrapper",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
       "evidence": "reports/migration/required_weights_manifest.tsv",
       "next_action": "",
       "phase": "phase0_migration",
@@ -79,6 +87,22 @@
       "next_action": "",
       "phase": "phase0_migration",
       "requirement": "explicit copy-plan template",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "reports/migration/physeditworld_root_submission_template.tsv",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "external selected-root submission TSV",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
+      "evidence": "reports/migration/physeditworld_root_submission_template.md",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "external selected-root submission guide",
       "status": "PASS"
     },
     {
@@ -175,6 +199,14 @@
       "next_action": "",
       "phase": "phase0_migration",
       "requirement": "migration candidate and approved-payload size summary",
+      "status": "PASS"
+    },
+    {
+      "detail": "decision=PHYS_EDITWORLD_ROOT_SUBMISSION_TEMPLATE_READY",
+      "evidence": "reports/migration/physeditworld_root_submission_template.json",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "external selected-root submission template",
       "status": "PASS"
     },
     {

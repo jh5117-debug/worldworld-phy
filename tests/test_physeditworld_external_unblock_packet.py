@@ -38,3 +38,8 @@ def test_external_unblock_decision_paths_include_size_summary():
 def test_external_unblock_decision_paths_include_approval_review_packet():
     paths = dict(DECISION_PATHS)
     assert paths["migration_approval_review"] == "reports/migration/migration_approval_review_packet.json"
+
+
+def test_external_unblock_decision_paths_include_root_submission_template():
+    paths = dict(DECISION_PATHS)
+    assert paths["root_submission_template"] == "reports/migration/physeditworld_root_submission_template.json"

@@ -16,6 +16,13 @@
       "path": "reports/migration/physeditworld_root_candidates_ranked.json"
     },
     {
+      "decision": "PHYS_EDITWORLD_ROOT_SUBMISSION_TEMPLATE_READY",
+      "error_reason": "",
+      "exists": true,
+      "name": "root_submission_template",
+      "path": "reports/migration/physeditworld_root_submission_template.json"
+    },
+    {
       "decision": "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT",
       "error_reason": "",
       "exists": true,
@@ -94,11 +101,11 @@
     }
   ],
   "disk": "df: /mnt/workspace/hj/nas_hj: No such file or directory\nFilesystem      Size  Used Avail Use% Mounted on\n/dev/nvme2n1p1  3.4T  3.1T  370G  90% /home/nvme03\n/dev/nvme3n1p1  3.4T  3.1T  345G  91% /home/nvme04",
-  "generated_at_utc": "2026-07-09T01:29:11.610409+00:00",
+  "generated_at_utc": "2026-07-09T01:50:46.035060+00:00",
   "git": {
     "branch": "physion-only-local-assets-videogpa-smoke",
-    "head": "d73e50a",
-    "remote_head": "48dfc4c"
+    "head": "38f3691",
+    "remote_head": "764bf25"
   },
   "migration_size_summary": {
     "approved_copy_status": {
@@ -210,6 +217,7 @@
   "physeditworld_roots_env": "",
   "post_mount_commands": [
     "export PHYS_EDITWORLD_ROOTS=/path/to/selected_physeditworld_50h_root",
+    "bash scripts/migration/write_physeditworld_root_submission_template.sh",
     "bash scripts/migration/select_physeditworld_root.sh",
     "bash scripts/migration/probe_physeditworld_root_schema.sh",
     "bash scripts/migration/prepare_physeditworld_root_intake.sh",
