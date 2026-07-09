@@ -24,6 +24,7 @@ DECISION_REPORTS: tuple[tuple[str, str], ...] = (
     ("root_evidence_samples", "reports/migration/physeditworld_root_evidence_samples.json"),
     ("root_onboarding_sequence", "reports/migration/physeditworld_root_onboarding_sequence.json"),
     ("external_root_handoff_packet", "reports/migration/physeditworld_external_root_handoff_packet.json"),
+    ("external_state_watch", "reports/migration/physeditworld_external_state_watch.json"),
     ("root_schema_probe", "reports/migration/physeditworld_root_schema_probe.json"),
     ("root_selection", "reports/migration/physeditworld_selected_root_status.json"),
     ("root_intake", "reports/migration/physeditworld_root_intake.json"),

@@ -144,6 +144,7 @@ def build_rows() -> list[AuditRow]:
         file_row("phase0_migration", "root evidence sampler wrapper", "scripts/migration/sample_physeditworld_root_evidence.sh", "write external root evidence sampler wrapper"),
         file_row("phase0_migration", "root onboarding sequence wrapper", "scripts/migration/run_physeditworld_root_onboarding_sequence.sh", "write external root onboarding sequence wrapper"),
         file_row("phase0_migration", "external root handoff packet wrapper", "scripts/migration/write_physeditworld_external_root_handoff_packet.sh", "write external root handoff packet wrapper"),
+        file_row("phase0_migration", "external state watch wrapper", "scripts/migration/watch_physeditworld_external_state.sh", "write external state watch wrapper"),
         file_row("phase0_migration", "required weights manifest", "reports/migration/required_weights_manifest.tsv", "build weights manifest"),
         file_row("phase0_migration", "required data manifest", "reports/migration/required_data_manifest.tsv", "build data manifest"),
         file_row("phase0_migration", "guarded dry-run rsync script", "scripts/migration/rsync_h20_to_pai_dryrun.sh", "add migration dry-run script"),
@@ -208,6 +209,18 @@ def build_rows() -> list[AuditRow]:
             "reports/migration/physeditworld_external_root_handoff_packet.json",
             {"PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_READY_FOR_SCHEMA_PROBE", "PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_WAITING_FOR_FILLED_TEMPLATE"},
             "send or fill the external root handoff packet before schema probe",
+        ),
+        json_decision_row(
+            "phase0_migration",
+            "external state watch decision",
+            "reports/migration/physeditworld_external_state_watch.json",
+            {
+                "PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_NAS",
+                "PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_ROOT_ENV",
+                "PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_FILLED_TEMPLATE",
+                "PHYS_EDITWORLD_EXTERNAL_STATE_READY_FOR_ROOT_SELECTION",
+            },
+            "run the external state watcher after NAS/root or submission-template state changes",
         ),
         json_decision_row(
             "phase0_migration",

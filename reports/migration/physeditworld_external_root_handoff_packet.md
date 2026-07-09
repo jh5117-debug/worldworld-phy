@@ -20,6 +20,9 @@ The onboarding toolchain is ready, but the selected-root TSV still contains plac
 - `root_onboarding`: `PHYS_EDITWORLD_ROOT_ONBOARDING_WAITING_FOR_FILLED_TEMPLATE`
   - path: `reports/migration/physeditworld_root_onboarding_sequence.json`
   - next: fill reports/migration/physeditworld_root_submission_template.tsv with selected 50h root and evidence globs
+- `external_state_watch`: `PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_NAS`
+  - path: `reports/migration/physeditworld_external_state_watch.json`
+  - next: mount or expose /mnt/workspace/hj/nas_hj before PAI handoff
 - `root_candidates`: `PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG`
   - path: `reports/migration/physeditworld_root_candidates_ranked.json`
   - next: continue to the next root onboarding gate

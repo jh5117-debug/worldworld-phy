@@ -61,6 +61,7 @@ def test_build_rows_includes_pai_bootstrap_restore_entrypoint():
     assert "root evidence sampler wrapper" in requirements
     assert "root onboarding sequence wrapper" in requirements
     assert "external root handoff packet wrapper" in requirements
+    assert "external state watch wrapper" in requirements
     assert "external selected-root submission TSV" in requirements
     assert "external selected-root submission guide" in requirements
     assert "external selected-root submission template" in requirements
@@ -68,6 +69,7 @@ def test_build_rows_includes_pai_bootstrap_restore_entrypoint():
     assert "external selected-root evidence samples" in requirements
     assert "external selected-root onboarding sequence" in requirements
     assert "external root handoff packet" in requirements
+    assert "external state watch decision" in requirements
     assert "PAI restore packet decision" in requirements
     assert "external unblock-packet wrapper" in requirements
     assert "external unblock-packet summary" in requirements

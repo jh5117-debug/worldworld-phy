@@ -83,6 +83,14 @@
     },
     {
       "detail": "file exists",
+      "evidence": "scripts/migration/watch_physeditworld_external_state.sh",
+      "next_action": "",
+      "phase": "0_migration",
+      "requirement": "external state watch wrapper",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
       "evidence": "reports/migration/required_weights_manifest.tsv",
       "next_action": "",
       "phase": "0_migration",
@@ -271,6 +279,14 @@
       "next_action": "",
       "phase": "0_migration",
       "requirement": "external root handoff packet",
+      "status": "PASS"
+    },
+    {
+      "detail": "decision=PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_NAS",
+      "evidence": "reports/migration/physeditworld_external_state_watch.json",
+      "next_action": "",
+      "phase": "0_migration",
+      "requirement": "external state watch decision",
       "status": "PASS"
     },
     {

@@ -47,3 +47,4 @@ def test_external_unblock_decision_paths_include_root_submission_template():
     assert paths["root_evidence_samples"] == "reports/migration/physeditworld_root_evidence_samples.json"
     assert paths["root_onboarding_sequence"] == "reports/migration/physeditworld_root_onboarding_sequence.json"
     assert paths["external_root_handoff_packet"] == "reports/migration/physeditworld_external_root_handoff_packet.json"
+    assert paths["external_state_watch"] == "reports/migration/physeditworld_external_state_watch.json"

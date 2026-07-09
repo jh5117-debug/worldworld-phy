@@ -9,6 +9,7 @@ phase,requirement,status,evidence,detail,next_action
 0_migration,root evidence sampler wrapper,PASS,scripts/migration/sample_physeditworld_root_evidence.sh,file exists,
 0_migration,root onboarding sequence wrapper,PASS,scripts/migration/run_physeditworld_root_onboarding_sequence.sh,file exists,
 0_migration,external root handoff packet wrapper,PASS,scripts/migration/write_physeditworld_external_root_handoff_packet.sh,file exists,
+0_migration,external state watch wrapper,PASS,scripts/migration/watch_physeditworld_external_state.sh,file exists,
 0_migration,required weights manifest,PASS,reports/migration/required_weights_manifest.tsv,file exists,
 0_migration,required data manifest,PASS,reports/migration/required_data_manifest.tsv,file exists,
 0_migration,rsync dry-run script,PASS,scripts/migration/rsync_h20_to_pai_dryrun.sh,file exists,
@@ -33,6 +34,7 @@ phase,requirement,status,evidence,detail,next_action
 0_migration,external selected-root evidence samples,PASS,reports/migration/physeditworld_root_evidence_samples.json,decision=PHYS_EDITWORLD_ROOT_EVIDENCE_SAMPLER_WAITING_FOR_FILLED_TEMPLATE,
 0_migration,external selected-root onboarding sequence,PASS,reports/migration/physeditworld_root_onboarding_sequence.json,decision=PHYS_EDITWORLD_ROOT_ONBOARDING_WAITING_FOR_FILLED_TEMPLATE,
 0_migration,external root handoff packet,PASS,reports/migration/physeditworld_external_root_handoff_packet.json,decision=PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_WAITING_FOR_FILLED_TEMPLATE,
+0_migration,external state watch decision,PASS,reports/migration/physeditworld_external_state_watch.json,decision=PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_NAS,
 0_migration,migration approval review packet,PASS,reports/migration/migration_approval_review_packet.json,decision=MIGRATION_APPROVAL_REVIEW_PACKET_READY,
 0_migration,expected empty manifest placeholders,PASS,reports/physeditworld_50h/manifest_init/empty_manifest_init.json,decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT,
 0_migration,PAI/NAS and data readiness,BLOCKED,reports/migration/physeditworld_pai_readiness.json,decision=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED,mount NAS and selected PhysEditWorld 50h root

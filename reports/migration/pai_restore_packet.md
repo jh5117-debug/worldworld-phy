@@ -1,14 +1,14 @@
 # PhysEditWorld PAI Restore Packet
 
-Generated UTC: `2026-07-09T02:31:38.778931+00:00`
+Generated UTC: `2026-07-09T02:53:07.340171+00:00`
 Decision: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT`
 
 ## Git
 
 - repo: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys`
 - branch: `physion-only-local-assets-videogpa-smoke`
-- local head: `dd23382`
-- origin branch head: `600f1f1`
+- local head: `717a7a2`
+- origin branch head: `2dc3eaf`
 
 ## Current Blockers
 
@@ -34,6 +34,7 @@ Decision: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT`
 - `root_evidence_samples`: `PHYS_EDITWORLD_ROOT_EVIDENCE_SAMPLER_WAITING_FOR_FILLED_TEMPLATE` (`reports/migration/physeditworld_root_evidence_samples.json`)
 - `root_onboarding_sequence`: `PHYS_EDITWORLD_ROOT_ONBOARDING_WAITING_FOR_FILLED_TEMPLATE` (`reports/migration/physeditworld_root_onboarding_sequence.json`)
 - `external_root_handoff_packet`: `PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_WAITING_FOR_FILLED_TEMPLATE` (`reports/migration/physeditworld_external_root_handoff_packet.json`)
+- `external_state_watch`: `PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_NAS` (`reports/migration/physeditworld_external_state_watch.json`)
 - `root_schema_probe`: `PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT` (`reports/migration/physeditworld_root_schema_probe.json`)
 - `root_selection`: `PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT` (`reports/migration/physeditworld_selected_root_status.json`)
 - `root_intake`: `PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT` (`reports/migration/physeditworld_root_intake.json`)

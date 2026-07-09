@@ -161,6 +161,7 @@ def build_rows() -> list[RequirementRow]:
         file_status("scripts/migration/sample_physeditworld_root_evidence.sh", "root evidence sampler wrapper", "0_migration", "write external root evidence sampler wrapper"),
         file_status("scripts/migration/run_physeditworld_root_onboarding_sequence.sh", "root onboarding sequence wrapper", "0_migration", "write external root onboarding sequence wrapper"),
         file_status("scripts/migration/write_physeditworld_external_root_handoff_packet.sh", "external root handoff packet wrapper", "0_migration", "write external root handoff packet wrapper"),
+        file_status("scripts/migration/watch_physeditworld_external_state.sh", "external state watch wrapper", "0_migration", "write external state watch wrapper"),
         file_status("reports/migration/required_weights_manifest.tsv", "required weights manifest", "0_migration", "build weights manifest"),
         file_status("reports/migration/required_data_manifest.tsv", "required data manifest", "0_migration", "build data manifest"),
         file_status("scripts/migration/rsync_h20_to_pai_dryrun.sh", "rsync dry-run script", "0_migration", "add dry-run script"),
@@ -244,6 +245,18 @@ def build_rows() -> list[RequirementRow]:
         "0_migration",
         {"PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_READY_FOR_SCHEMA_PROBE", "PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_WAITING_FOR_FILLED_TEMPLATE"},
         "send or fill the external root handoff packet before schema probe",
+    ))
+    rows.append(decision_status(
+        "reports/migration/physeditworld_external_state_watch.json",
+        "external state watch decision",
+        "0_migration",
+        {
+            "PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_NAS",
+            "PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_ROOT_ENV",
+            "PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_FILLED_TEMPLATE",
+            "PHYS_EDITWORLD_EXTERNAL_STATE_READY_FOR_ROOT_SELECTION",
+        },
+        "run the external state watcher after NAS/root or submission-template state changes",
     ))
     rows.append(decision_status(
         "reports/migration/migration_approval_review_packet.json",

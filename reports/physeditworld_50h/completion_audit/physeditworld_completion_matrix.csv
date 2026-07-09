@@ -9,6 +9,7 @@ phase0_migration,root submission validation wrapper,PASS,scripts/migration/valid
 phase0_migration,root evidence sampler wrapper,PASS,scripts/migration/sample_physeditworld_root_evidence.sh,file exists,
 phase0_migration,root onboarding sequence wrapper,PASS,scripts/migration/run_physeditworld_root_onboarding_sequence.sh,file exists,
 phase0_migration,external root handoff packet wrapper,PASS,scripts/migration/write_physeditworld_external_root_handoff_packet.sh,file exists,
+phase0_migration,external state watch wrapper,PASS,scripts/migration/watch_physeditworld_external_state.sh,file exists,
 phase0_migration,required weights manifest,PASS,reports/migration/required_weights_manifest.tsv,file exists,
 phase0_migration,required data manifest,PASS,reports/migration/required_data_manifest.tsv,file exists,
 phase0_migration,guarded dry-run rsync script,PASS,scripts/migration/rsync_h20_to_pai_dryrun.sh,file exists,
@@ -33,6 +34,7 @@ phase0_migration,external selected-root submission validation,PASS,reports/migra
 phase0_migration,external selected-root evidence samples,PASS,reports/migration/physeditworld_root_evidence_samples.json,decision=PHYS_EDITWORLD_ROOT_EVIDENCE_SAMPLER_WAITING_FOR_FILLED_TEMPLATE,
 phase0_migration,external selected-root onboarding sequence,PASS,reports/migration/physeditworld_root_onboarding_sequence.json,decision=PHYS_EDITWORLD_ROOT_ONBOARDING_WAITING_FOR_FILLED_TEMPLATE,
 phase0_migration,external root handoff packet,PASS,reports/migration/physeditworld_external_root_handoff_packet.json,decision=PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_WAITING_FOR_FILLED_TEMPLATE,
+phase0_migration,external state watch decision,PASS,reports/migration/physeditworld_external_state_watch.json,decision=PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_NAS,
 phase0_migration,migration approval review packet,PASS,reports/migration/migration_approval_review_packet.json,decision=MIGRATION_APPROVAL_REVIEW_PACKET_READY,
 phase0_migration,expected empty manifest placeholders,PASS,reports/physeditworld_50h/manifest_init/empty_manifest_init.json,decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT,
 phase0_migration,locked handoff sequence,BLOCKED,reports/migration/locked_handoff_sequence.json,decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE,set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence

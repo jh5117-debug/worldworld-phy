@@ -13,6 +13,7 @@ REPORTS = (
     ("root_validation", "reports/migration/physeditworld_root_submission_validation.json"),
     ("root_evidence_samples", "reports/migration/physeditworld_root_evidence_samples.json"),
     ("root_onboarding", "reports/migration/physeditworld_root_onboarding_sequence.json"),
+    ("external_state_watch", "reports/migration/physeditworld_external_state_watch.json"),
     ("root_candidates", "reports/migration/physeditworld_root_candidates_ranked.json"),
     ("root_schema_probe", "reports/migration/physeditworld_root_schema_probe.json"),
     ("root_selection", "reports/migration/physeditworld_selected_root_status.json"),
@@ -50,6 +51,10 @@ def decision_of(obj: dict[str, Any]) -> str:
 
 
 def next_action(name: str, decision: str) -> str:
+    if name == "external_state_watch" and "WAITING_FOR_NAS" in decision:
+        return "mount or expose /mnt/workspace/hj/nas_hj before PAI handoff"
+    if name == "external_state_watch" and "WAITING_FOR_ROOT_ENV" in decision:
+        return "export PHYS_EDITWORLD_ROOTS to the selected PhysEditWorld 50h root"
     if decision == READY_ONBOARD:
         return "set PHYS_EDITWORLD_ROOTS and run selected-root/schema/locked handoff sequence"
     if decision == WAIT_ONBOARD:

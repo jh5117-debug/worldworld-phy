@@ -1,6 +1,6 @@
 {
   "decision": "PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_WAITING_FOR_FILLED_TEMPLATE",
-  "generated_at_utc": "2026-07-09T02:31:38.255334+00:00",
+  "generated_at_utc": "2026-07-09T02:53:06.841397+00:00",
   "operator_commands": [
     "cd /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys",
     "bash scripts/migration/run_physeditworld_root_onboarding_sequence.sh",
@@ -42,6 +42,14 @@
       "name": "root_onboarding",
       "next_action": "fill reports/migration/physeditworld_root_submission_template.tsv with selected 50h root and evidence globs",
       "path": "reports/migration/physeditworld_root_onboarding_sequence.json"
+    },
+    {
+      "decision": "PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_NAS",
+      "error_reason": "",
+      "exists": true,
+      "name": "external_state_watch",
+      "next_action": "mount or expose /mnt/workspace/hj/nas_hj before PAI handoff",
+      "path": "reports/migration/physeditworld_external_state_watch.json"
     },
     {
       "decision": "PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG",
