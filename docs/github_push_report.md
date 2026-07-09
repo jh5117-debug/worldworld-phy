@@ -741,3 +741,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Matrix status: requirement matrix now has 48 rows and completion audit has 49 rows, with the GPU command policy row passing while overall objective remains blocked at Phase0 migration/root visibility.
 - Test status: py_compile PASS, direct GPU-policy/requirement/completion smoke PASS, compileall PASS; pytest unavailable, so no pytest PASS is claimed.
 - Safety: no GPU work, no training, no rollout, no DPO, no file copy, no deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld Git Artifact Policy Audit (2026-07-09T08:54:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commits: `1925155 Remove tracked log artifacts and add git artifact audit`, `88cf164 Track git artifact policy in PhysEditWorld gates`.
+- Scope: added tracked-HEAD artifact audit for forbidden videos/images/checkpoints/weights/logs/local_assets and integrated it into requirement/completion audits.
+- Latest decision: `GIT_ARTIFACT_POLICY_PASS_WITH_SIZE_WARNINGS`.
+- Evidence: `reports/migration/git_artifact_policy_audit.md` reports zero forbidden tracked artifacts; two large tracked VideoREPA CSV files are recorded as warnings, not forbidden media/checkpoint/log artifacts.
+- Matrix status: requirement matrix now has 49 rows and completion audit has 50 rows; overall objective still blocks at Phase0 migration/root visibility.
+- Test status: py_compile PASS, direct artifact-policy/requirement/completion smoke PASS, compileall PASS; pytest unavailable, so no pytest PASS is claimed.
+- Safety: no GPU work, no training, no rollout, no DPO, no file copy, no checkpoint/data/weight deletion, and no videos/images/checkpoints/weights pushed.
