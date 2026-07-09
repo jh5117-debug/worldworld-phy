@@ -1,0 +1,48 @@
+{
+  "decision": "PHYS_EDITWORLD_ROOT_ONBOARDING_WAITING_FOR_FILLED_TEMPLATE",
+  "generated_at_utc": "2026-07-09T02:23:28.966035+00:00",
+  "safe_next_commands": [
+    "bash scripts/migration/write_physeditworld_root_submission_template.sh  # only if template is missing",
+    "bash scripts/migration/validate_physeditworld_root_submission.sh",
+    "bash scripts/migration/sample_physeditworld_root_evidence.sh",
+    "export PHYS_EDITWORLD_ROOTS=/path/to/selected_physeditworld_50h_root",
+    "bash scripts/migration/select_physeditworld_root.sh",
+    "bash scripts/migration/probe_physeditworld_root_schema.sh",
+    "bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh"
+  ],
+  "safety": {
+    "does_not_copy_delete_train_or_use_gpu": true,
+    "does_not_overwrite_existing_template_tsv": true,
+    "does_not_select_or_lock_root": true,
+    "mode": "CPU/IO only"
+  },
+  "steps": [
+    {
+      "decision": "PHYS_EDITWORLD_ROOT_SUBMISSION_TEMPLATE_READY",
+      "detail": "template TSV already exists; not overwritten",
+      "error_reason": "",
+      "name": "write_template_if_missing",
+      "next_action": "fill TSV if still placeholder",
+      "path": "reports/migration/physeditworld_root_submission_template.json",
+      "status": "PASS"
+    },
+    {
+      "decision": "PHYS_EDITWORLD_ROOT_SUBMISSION_VALIDATION_WAITING_FOR_FILLED_TEMPLATE",
+      "detail": "{\"decision\": \"PHYS_EDITWORLD_ROOT_SUBMISSION_VALIDATION_WAITING_FOR_FILLED_TEMPLATE\", \"rows\": 1}",
+      "error_reason": "",
+      "name": "validate_submission",
+      "next_action": "fill reports/migration/physeditworld_root_submission_template.tsv with the selected 50h root and bounded evidence globs",
+      "path": "reports/migration/physeditworld_root_submission_validation.json",
+      "status": "PASS"
+    },
+    {
+      "decision": "PHYS_EDITWORLD_ROOT_EVIDENCE_SAMPLER_WAITING_FOR_FILLED_TEMPLATE",
+      "detail": "{\"decision\": \"PHYS_EDITWORLD_ROOT_EVIDENCE_SAMPLER_WAITING_FOR_FILLED_TEMPLATE\", \"samples\": 1}",
+      "error_reason": "",
+      "name": "sample_evidence",
+      "next_action": "fill reports/migration/physeditworld_root_submission_template.tsv with the selected 50h root and bounded evidence globs",
+      "path": "reports/migration/physeditworld_root_evidence_samples.json",
+      "status": "PASS"
+    }
+  ]
+}

@@ -59,11 +59,13 @@ def test_build_rows_includes_pai_bootstrap_restore_entrypoint():
     assert "root submission template wrapper" in requirements
     assert "root submission validation wrapper" in requirements
     assert "root evidence sampler wrapper" in requirements
+    assert "root onboarding sequence wrapper" in requirements
     assert "external selected-root submission TSV" in requirements
     assert "external selected-root submission guide" in requirements
     assert "external selected-root submission template" in requirements
     assert "external selected-root submission validation" in requirements
     assert "external selected-root evidence samples" in requirements
+    assert "external selected-root onboarding sequence" in requirements
     assert "PAI restore packet decision" in requirements
     assert "external unblock-packet wrapper" in requirements
     assert "external unblock-packet summary" in requirements

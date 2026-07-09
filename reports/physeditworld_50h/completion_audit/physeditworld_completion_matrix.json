@@ -67,6 +67,14 @@
     },
     {
       "detail": "file exists",
+      "evidence": "scripts/migration/run_physeditworld_root_onboarding_sequence.sh",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "root onboarding sequence wrapper",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
       "evidence": "reports/migration/required_weights_manifest.tsv",
       "next_action": "",
       "phase": "phase0_migration",
@@ -239,6 +247,14 @@
       "next_action": "",
       "phase": "phase0_migration",
       "requirement": "external selected-root evidence samples",
+      "status": "PASS"
+    },
+    {
+      "detail": "decision=PHYS_EDITWORLD_ROOT_ONBOARDING_WAITING_FOR_FILLED_TEMPLATE",
+      "evidence": "reports/migration/physeditworld_root_onboarding_sequence.json",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "external selected-root onboarding sequence",
       "status": "PASS"
     },
     {
