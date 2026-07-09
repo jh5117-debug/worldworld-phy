@@ -1,0 +1,30 @@
+{
+  "decision": "PHYS_EDITWORLD_ROOT_SUBMISSION_VALIDATION_WAITING_FOR_FILLED_TEMPLATE",
+  "generated_at_utc": "2026-07-09T02:03:13.978726+00:00",
+  "max_matches_per_evidence_glob": 25,
+  "ready_rows": 0,
+  "rows": [
+    {
+      "candidate_root": "<absolute path to selected PhysEditWorld 50h root>",
+      "error_reason": "",
+      "evidence_counts_json": "{}",
+      "evidence_pass": false,
+      "missing_evidence": "",
+      "missing_required_fields": "candidate_root;video_or_frames_glob;action_trace_glob;camera_trajectory_or_poses_glob;intrinsics_glob;gravity_label_or_metadata_glob;replay_group_or_matched_replay_glob",
+      "next_action": "fill candidate_root plus action/camera/intrinsics/gravity/replay/video globs",
+      "required_fields_present": false,
+      "review_status": "PENDING_EXTERNAL_INPUT",
+      "root_exists": false,
+      "row_idx": 1,
+      "skipped_evidence": "",
+      "status": "WAITING_FOR_FILLED_TEMPLATE"
+    }
+  ],
+  "safety": {
+    "does_not_copy_delete_train_or_use_gpu": true,
+    "does_not_select_or_lock_root": true,
+    "mode": "CPU/IO only",
+    "no_recursive_globs": true
+  },
+  "template": "reports/migration/physeditworld_root_submission_template.tsv"
+}

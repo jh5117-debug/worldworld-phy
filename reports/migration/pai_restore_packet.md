@@ -1,14 +1,14 @@
 # PhysEditWorld PAI Restore Packet
 
-Generated UTC: `2026-07-09T01:50:46.337587+00:00`
+Generated UTC: `2026-07-09T02:03:14.479237+00:00`
 Decision: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT`
 
 ## Git
 
 - repo: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys`
 - branch: `physion-only-local-assets-videogpa-smoke`
-- local head: `38f3691`
-- origin branch head: `764bf25`
+- local head: `0c387ca`
+- origin branch head: `461307b`
 
 ## Current Blockers
 
@@ -30,6 +30,7 @@ Decision: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT`
 - `phase0_preflight`: `PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES` (`reports/migration/phase0_preflight_status.json`)
 - `root_candidates`: `PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG` (`reports/migration/physeditworld_root_candidates_ranked.json`)
 - `root_submission_template`: `PHYS_EDITWORLD_ROOT_SUBMISSION_TEMPLATE_READY` (`reports/migration/physeditworld_root_submission_template.json`)
+- `root_submission_validation`: `PHYS_EDITWORLD_ROOT_SUBMISSION_VALIDATION_WAITING_FOR_FILLED_TEMPLATE` (`reports/migration/physeditworld_root_submission_validation.json`)
 - `root_schema_probe`: `PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT` (`reports/migration/physeditworld_root_schema_probe.json`)
 - `root_selection`: `PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT` (`reports/migration/physeditworld_selected_root_status.json`)
 - `root_intake`: `PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT` (`reports/migration/physeditworld_root_intake.json`)
@@ -77,6 +78,9 @@ export PHYS_EDITWORLD_ROOTS=/path/to/selected_physeditworld_50h_root
 ```
 ```bash
 bash scripts/migration/write_physeditworld_root_submission_template.sh
+```
+```bash
+bash scripts/migration/validate_physeditworld_root_submission.sh
 ```
 ```bash
 bash scripts/migration/bootstrap_pai_physeditworld.sh

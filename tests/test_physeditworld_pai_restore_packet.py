@@ -60,3 +60,4 @@ def test_restore_packet_decision_reports_include_approval_review_packet():
 def test_restore_packet_decision_reports_include_root_submission_template():
     reports = dict(DECISION_REPORTS)
     assert reports["root_submission_template"] == "reports/migration/physeditworld_root_submission_template.json"
+    assert reports["root_submission_validation"] == "reports/migration/physeditworld_root_submission_validation.json"

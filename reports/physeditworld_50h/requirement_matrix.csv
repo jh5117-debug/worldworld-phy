@@ -5,6 +5,7 @@ phase,requirement,status,evidence,detail,next_action
 0_migration,pip freeze export,PASS,reports/migration/pip_freeze.txt,file exists,
 0_migration,migration audit collector wrapper,PASS,scripts/migration/collect_physeditworld_migration_audit_bundle.sh,file exists,
 0_migration,root submission template wrapper,PASS,scripts/migration/write_physeditworld_root_submission_template.sh,file exists,
+0_migration,root submission validation wrapper,PASS,scripts/migration/validate_physeditworld_root_submission.sh,file exists,
 0_migration,required weights manifest,PASS,reports/migration/required_weights_manifest.tsv,file exists,
 0_migration,required data manifest,PASS,reports/migration/required_data_manifest.tsv,file exists,
 0_migration,rsync dry-run script,PASS,scripts/migration/rsync_h20_to_pai_dryrun.sh,file exists,
@@ -25,6 +26,7 @@ phase,requirement,status,evidence,detail,next_action
 0_migration,Git tracked artifact policy audit,PASS,reports/migration/git_artifact_policy_audit.json,decision=GIT_ARTIFACT_POLICY_PASS_WITH_SIZE_WARNINGS,
 0_migration,migration candidate and approved-payload size summary,PASS,reports/migration/migration_size_summary.json,decision=MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS,
 0_migration,external selected-root submission template,PASS,reports/migration/physeditworld_root_submission_template.json,decision=PHYS_EDITWORLD_ROOT_SUBMISSION_TEMPLATE_READY,
+0_migration,external selected-root submission validation,PASS,reports/migration/physeditworld_root_submission_validation.json,decision=PHYS_EDITWORLD_ROOT_SUBMISSION_VALIDATION_WAITING_FOR_FILLED_TEMPLATE,
 0_migration,migration approval review packet,PASS,reports/migration/migration_approval_review_packet.json,decision=MIGRATION_APPROVAL_REVIEW_PACKET_READY,
 0_migration,expected empty manifest placeholders,PASS,reports/physeditworld_50h/manifest_init/empty_manifest_init.json,decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT,
 0_migration,PAI/NAS and data readiness,BLOCKED,reports/migration/physeditworld_pai_readiness.json,decision=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED,mount NAS and selected PhysEditWorld 50h root

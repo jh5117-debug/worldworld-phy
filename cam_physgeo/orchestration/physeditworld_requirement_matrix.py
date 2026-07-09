@@ -157,6 +157,7 @@ def build_rows() -> list[RequirementRow]:
         file_status("reports/migration/pip_freeze.txt", "pip freeze export", "0_migration", "export pip freeze"),
         file_status("scripts/migration/collect_physeditworld_migration_audit_bundle.sh", "migration audit collector wrapper", "0_migration", "add migration audit collector"),
         file_status("scripts/migration/write_physeditworld_root_submission_template.sh", "root submission template wrapper", "0_migration", "write external root submission template wrapper"),
+        file_status("scripts/migration/validate_physeditworld_root_submission.sh", "root submission validation wrapper", "0_migration", "write external root submission validator wrapper"),
         file_status("reports/migration/required_weights_manifest.tsv", "required weights manifest", "0_migration", "build weights manifest"),
         file_status("reports/migration/required_data_manifest.tsv", "required data manifest", "0_migration", "build data manifest"),
         file_status("scripts/migration/rsync_h20_to_pai_dryrun.sh", "rsync dry-run script", "0_migration", "add dry-run script"),
@@ -212,6 +213,13 @@ def build_rows() -> list[RequirementRow]:
         "0_migration",
         {"PHYS_EDITWORLD_ROOT_SUBMISSION_TEMPLATE_READY"},
         "write the root submission template before asking external/PAI owners to provide the selected 50h root",
+    ))
+    rows.append(decision_status(
+        "reports/migration/physeditworld_root_submission_validation.json",
+        "external selected-root submission validation",
+        "0_migration",
+        {"PHYS_EDITWORLD_ROOT_SUBMISSION_VALIDATION_READY_FOR_SCHEMA_PROBE", "PHYS_EDITWORLD_ROOT_SUBMISSION_VALIDATION_WAITING_FOR_FILLED_TEMPLATE"},
+        "fill and validate the selected-root submission before schema probe",
     ))
     rows.append(decision_status(
         "reports/migration/migration_approval_review_packet.json",
