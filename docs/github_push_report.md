@@ -798,3 +798,15 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: py_compile PASS, direct review-packet tests PASS, packet regeneration PASS, handoff/requirement/completion refresh PASS, compileall PASS; pytest unavailable, so no pytest PASS is claimed.
 - Artifact policy: only lightweight code/tests/CSV/JSON/MD summaries were pushed; no local_assets, videos/images, checkpoints, weights, or large logs.
 
+## PhysEditWorld Root Submission Template (2026-07-09T09:53:10 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: d9bc544 Add PhysEditWorld root submission template.
+- Scope: CPU/IO-only external root submission template for the real PhysEditWorld selected 50h root.
+- New decision: PHYS_EDITWORLD_ROOT_SUBMISSION_TEMPLATE_READY.
+- Template outputs: reports/migration/physeditworld_root_submission_template.tsv, .json, and .md.
+- Integration: PAI handoff, restore packet, external unblock packet, requirement matrix, and completion audit now reference the root submission template.
+- Current blockers remain external: NAS /mnt/workspace/hj/nas_hj is missing and PHYS_EDITWORLD_ROOTS is unset, so post-mount gates remain blocked.
+- Test status: py_compile PASS, direct root-template/handoff tests PASS, compileall PASS; pytest unavailable in /usr/bin/python3, no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, and no large artifacts pushed.
+
