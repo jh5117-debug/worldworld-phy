@@ -822,3 +822,15 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: py_compile PASS, direct validator tests PASS, compileall PASS; pytest unavailable in /usr/bin/python3, no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, and no large artifacts pushed.
 
+## PhysEditWorld Root Evidence Sampler (2026-07-09T10:15:19 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: 0e911c9 Add PhysEditWorld root evidence sampler.
+- Scope: CPU/IO-only bounded sampling of concrete action/camera/intrinsics/gravity/replay/video evidence paths from a filled selected-root submission TSV.
+- Current sampler decision: PHYS_EDITWORLD_ROOT_EVIDENCE_SAMPLER_WAITING_FOR_FILLED_TEMPLATE.
+- Outputs: reports/migration/physeditworld_root_evidence_samples.csv, .json, and .md.
+- Integration: PAI handoff, restore packet, external unblock packet, requirement matrix, and completion audit now reference the sampler report.
+- Current blockers remain external: NAS /mnt/workspace/hj/nas_hj is missing and PHYS_EDITWORLD_ROOTS/root submission remains unfilled.
+- Test status: py_compile PASS, direct sampler tests PASS, compileall PASS; pytest unavailable in /usr/bin/python3, no pytest PASS is claimed.
+- Safety: no recursive glob, no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, and no large artifacts pushed.
+
