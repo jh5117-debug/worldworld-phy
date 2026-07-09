@@ -191,6 +191,18 @@ def build_rows() -> list[RequirementRow]:
         {"GIT_ARTIFACT_POLICY_PASS", "GIT_ARTIFACT_POLICY_PASS_WITH_SIZE_WARNINGS"},
         "remove tracked forbidden videos/images/weights/checkpoints/logs from git before handoff",
     ))
+    rows.append(decision_status(
+        "reports/migration/migration_size_summary.json",
+        "migration candidate and approved-payload size summary",
+        "0_migration",
+        {
+            "MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS",
+            "MIGRATION_SIZE_SUMMARY_NAS_BLOCKED",
+            "MIGRATION_SIZE_SUMMARY_APPROVED_SOURCE_MISSING",
+            "MIGRATION_SIZE_SUMMARY_READY_FOR_APPROVED_DRYRUN",
+        },
+        "run migration size summary after migration manifests are generated",
+    ))
     for evidence, requirement, pass_values, next_action in PHASE0_DECISION_GATES:
         rows.append(decision_status(evidence, requirement, "0_migration", pass_values, next_action))
     rows.append(decision_status(

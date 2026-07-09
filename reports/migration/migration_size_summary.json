@@ -1,0 +1,99 @@
+{
+  "approved_copy_status": {
+    "approved_rows": 0,
+    "decision": "APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS",
+    "execute": false,
+    "path": "reports/migration/approved_copy_status.json"
+  },
+  "approved_copy_summary": {
+    "approved_dir_rows_pending_recursive_size": 0,
+    "approved_missing_rows": 0,
+    "approved_present_file_bytes": 0,
+    "approved_present_file_rows": 0,
+    "approved_rows": 0,
+    "by_copy_status": {
+      "BLOCKED_MISSING_ON_H20": 2,
+      "NEEDS_REVIEW_DIR": 237,
+      "NEEDS_REVIEW_FILE": 561
+    },
+    "by_manifest_kind": {
+      "data": 500,
+      "weights": 300
+    },
+    "manifest_path": "reports/migration/approved_copy_manifest_template.tsv",
+    "rows": 800
+  },
+  "candidate_summary": {
+    "dir_rows_pending_recursive_size": 237,
+    "manifest_rows": 800,
+    "missing_rows": 2,
+    "present_file_bytes": 6415095518,
+    "present_file_bytes_human": "5.97 GB"
+  },
+  "decision": "MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS",
+  "manifests": [
+    {
+      "by_copy_recommendation": {
+        "REVIEW_BEFORE_COPY": 300
+      },
+      "by_file_type": {
+        "dir": 116,
+        "file": 180,
+        "missing": 2,
+        "symlink": 2
+      },
+      "by_sha256_status": {
+        "DEFERRED_GT256MB_TO_AVOID_IO_STORM": 2,
+        "PENDING_LARGE_OR_DIR": 118,
+        "SHA256_OK": 180
+      },
+      "dir_rows_pending_recursive_size": 116,
+      "exists_true_rows": 298,
+      "manifest_kind": "weights",
+      "manifest_path": "reports/migration/required_weights_manifest.tsv",
+      "missing_rows": 2,
+      "present_dir_rows": 116,
+      "present_file_bytes": 3435967937,
+      "present_file_rows": 180,
+      "rows": 300
+    },
+    {
+      "by_copy_recommendation": {
+        "REVIEW_FOR_PHYS_EDIT_WORLD_50H": 500
+      },
+      "by_file_type": {
+        "dir": 121,
+        "file": 379
+      },
+      "by_sha256_status": {
+        "DEFERRED_GT256MB_TO_AVOID_IO_STORM": 2,
+        "PENDING_LARGE_OR_DIR": 121,
+        "SHA256_OK": 377
+      },
+      "dir_rows_pending_recursive_size": 121,
+      "exists_true_rows": 500,
+      "manifest_kind": "data",
+      "manifest_path": "reports/migration/required_data_manifest.tsv",
+      "missing_rows": 0,
+      "present_dir_rows": 121,
+      "present_file_bytes": 2979127581,
+      "present_file_rows": 379,
+      "rows": 500
+    }
+  ],
+  "nas": {
+    "exists": false,
+    "free_bytes": null,
+    "is_dir": false,
+    "path": "/mnt/workspace/hj/nas_hj",
+    "readable": false,
+    "status": "BLOCKED_MISSING",
+    "writable": false
+  },
+  "safety": {
+    "copied_files": false,
+    "deleted_files": false,
+    "local_assets_included_by_policy": false,
+    "recursive_du_performed": false
+  }
+}

@@ -1,0 +1,13 @@
+metric,value,bytes,human
+decision,MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS,,
+candidate_manifest_rows,800,,
+candidate_present_file_bytes,6415095518,6415095518,5.97 GB
+candidate_dir_rows_pending_recursive_size,237,,
+candidate_missing_rows,2,,
+approved_rows,0,,
+approved_present_file_bytes,0,0,0.00 B
+approved_dir_rows_pending_recursive_size,0,,
+approved_missing_rows,0,,
+approved_copy_status_decision,APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS,,
+nas_status,BLOCKED_MISSING,,
+nas_free_bytes,None,,unknown

@@ -20,6 +20,7 @@ phase,requirement,status,evidence,detail,next_action
 0_migration,H20 read-only migration audit bundle,PASS,reports/migration/migration_audit_bundle.json,decision=MIGRATION_AUDIT_BUNDLE_READY,
 0_migration,PhysEditWorld GPU command policy audit,PASS,reports/physeditworld_50h/gpu_policy/gpu_command_policy_audit.json,decision=PHYS_EDITWORLD_GPU_COMMAND_POLICY_PASS,
 0_migration,Git tracked artifact policy audit,PASS,reports/migration/git_artifact_policy_audit.json,decision=GIT_ARTIFACT_POLICY_PASS_WITH_SIZE_WARNINGS,
+0_migration,migration candidate and approved-payload size summary,PASS,reports/migration/migration_size_summary.json,decision=MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS,
 0_migration,expected empty manifest placeholders,PASS,reports/physeditworld_50h/manifest_init/empty_manifest_init.json,decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT,
 0_migration,PAI/NAS and data readiness,BLOCKED,reports/migration/physeditworld_pai_readiness.json,decision=PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED,mount NAS and selected PhysEditWorld 50h root
 0_migration,PhysEditWorld root candidate ranking,BLOCKED,reports/migration/physeditworld_root_candidates_ranked.json,decision=PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG,provide selected PhysEditWorld root via PHYS_EDITWORLD_ROOTS and rerun root candidate ranker

@@ -155,6 +155,18 @@ def build_rows() -> list[AuditRow]:
         json_decision_row("phase0_migration", "H20 read-only migration audit bundle", "reports/migration/migration_audit_bundle.json", {"MIGRATION_AUDIT_BUNDLE_READY"}, "run migration audit bundle collector before migration/handoff"),
         json_decision_row("phase0_migration", "PhysEditWorld GPU command policy audit", "reports/physeditworld_50h/gpu_policy/gpu_command_policy_audit.json", {"PHYS_EDITWORLD_GPU_COMMAND_POLICY_PASS"}, "run GPU command policy audit and remove any forbidden GPU0-3 assignments from PhysEditWorld runnable artifacts"),
         json_decision_row("phase0_migration", "Git tracked artifact policy audit", "reports/migration/git_artifact_policy_audit.json", {"GIT_ARTIFACT_POLICY_PASS", "GIT_ARTIFACT_POLICY_PASS_WITH_SIZE_WARNINGS"}, "remove tracked forbidden videos/images/weights/checkpoints/logs from git before handoff"),
+        json_decision_row(
+            "phase0_migration",
+            "migration candidate and approved-payload size summary",
+            "reports/migration/migration_size_summary.json",
+            {
+                "MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS",
+                "MIGRATION_SIZE_SUMMARY_NAS_BLOCKED",
+                "MIGRATION_SIZE_SUMMARY_APPROVED_SOURCE_MISSING",
+                "MIGRATION_SIZE_SUMMARY_READY_FOR_APPROVED_DRYRUN",
+            },
+            "run migration size summary after migration manifests are generated",
+        ),
         json_decision_row("phase0_migration", "expected empty manifest placeholders", "reports/physeditworld_50h/manifest_init/empty_manifest_init.json", {"PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED", "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT"}, "run scripts/migration/init_physeditworld_empty_manifests.sh"),
         json_decision_row("phase0_migration", "locked handoff sequence", "reports/migration/locked_handoff_sequence.json", {"LOCKED_HANDOFF_PHASE12_READY_FOR_BASELINE_GATE"}, "set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence"),
         json_decision_row("phase0_migration", "selected-root schema probe", "reports/migration/physeditworld_root_schema_probe.json", {"PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT"}, "provide selected root and rerun schema probe"),

@@ -170,6 +170,14 @@
       "status": "PASS"
     },
     {
+      "detail": "decision=MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS",
+      "evidence": "reports/migration/migration_size_summary.json",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "migration candidate and approved-payload size summary",
+      "status": "PASS"
+    },
+    {
       "detail": "decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
       "evidence": "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
       "next_action": "",
