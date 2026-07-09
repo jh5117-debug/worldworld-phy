@@ -834,3 +834,15 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: py_compile PASS, direct sampler tests PASS, compileall PASS; pytest unavailable in /usr/bin/python3, no pytest PASS is claimed.
 - Safety: no recursive glob, no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, and no large artifacts pushed.
 
+## PhysEditWorld Root Onboarding Sequence (2026-07-09T10:25:19 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: 3f44920 Add PhysEditWorld root onboarding sequence.
+- Scope: CPU/IO-only orchestration for selected-root template, validation, and evidence sampling before schema probe/root lock.
+- Current onboarding decision: PHYS_EDITWORLD_ROOT_ONBOARDING_WAITING_FOR_FILLED_TEMPLATE.
+- Output reports: reports/migration/physeditworld_root_onboarding_sequence.json and .md.
+- Integration: PAI handoff, restore packet, external unblock packet, requirement matrix, and completion audit now reference the onboarding sequence.
+- Current blockers remain external: NAS /mnt/workspace/hj/nas_hj is missing and the selected-root submission TSV is still placeholder-only.
+- Test status: py_compile PASS, direct onboarding tests PASS, compileall PASS; pytest unavailable in /usr/bin/python3, no pytest PASS is claimed.
+- Safety: does not overwrite an existing TSV, no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, and no large artifacts pushed.
+
