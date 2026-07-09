@@ -730,3 +730,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - GPU policy: real warm-up/eval must explicitly use physical GPU4-7; GPU0-3 remain forbidden.
 - Test status: py_compile PASS, direct warm-up/checkpoint smoke PASS, compileall PASS; pytest unavailable, so no pytest PASS is claimed.
 - Safety: no training, no rollout, no DPO, no file copy, no deletion, and no videos/images/checkpoints/weights pushed.
+
+## PhysEditWorld GPU Command Policy Audit (2026-07-09T08:38:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `3ad5904 Add PhysEditWorld GPU command policy audit`.
+- Scope: added CPU/IO-only static audit for PhysEditWorld runnable artifacts to detect forbidden `CUDA_VISIBLE_DEVICES` assignments and integrated it into requirement/completion audits.
+- Latest decision: `PHYS_EDITWORLD_GPU_COMMAND_POLICY_PASS`.
+- Evidence: `reports/physeditworld_50h/gpu_policy/gpu_command_policy_audit.md` scanned 44 PhysEditWorld-related files; no GPU0-3 assignment was found.
+- Matrix status: requirement matrix now has 48 rows and completion audit has 49 rows, with the GPU command policy row passing while overall objective remains blocked at Phase0 migration/root visibility.
+- Test status: py_compile PASS, direct GPU-policy/requirement/completion smoke PASS, compileall PASS; pytest unavailable, so no pytest PASS is claimed.
+- Safety: no GPU work, no training, no rollout, no DPO, no file copy, no deletion, and no videos/images/checkpoints/weights pushed.
