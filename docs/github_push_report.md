@@ -787,3 +787,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
 - Artifact policy: only lightweight code/tests/CSV/JSON/MD summaries were pushed; no local_assets, videos/images, checkpoints, weights, or large logs.
 
+## PhysEditWorld Migration Approval Review Packet (2026-07-09T09:30:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `29f3379 Add migration approval review packet`.
+- Scope: ranks the 800-row no-default-approval migration copy template for explicit reviewer approval without changing `approved=false`.
+- Latest decision: `MIGRATION_APPROVAL_REVIEW_PACKET_READY`.
+- Review packet: 800 rows, 11 high-priority rows, 447 medium, 77 low, 246 blocked/do-not-approve rows.
+- Safety: no files approved, no files copied, no deletion, no recursive `du`, no GPU use, no rollout, no warm-up, no DPO.
+- Test status: py_compile PASS, direct review-packet tests PASS, packet regeneration PASS, handoff/requirement/completion refresh PASS, compileall PASS; pytest unavailable, so no pytest PASS is claimed.
+- Artifact policy: only lightweight code/tests/CSV/JSON/MD summaries were pushed; no local_assets, videos/images, checkpoints, weights, or large logs.
+
