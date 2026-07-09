@@ -28,6 +28,7 @@ DECISION_PATHS = (
     ("pai_handoff", "reports/migration/pai_handoff_status.json"),
     ("pai_restore_packet", "reports/migration/pai_restore_packet.json"),
     ("migration_size_summary", "reports/migration/migration_size_summary.json"),
+    ("migration_approval_review", "reports/migration/migration_approval_review_packet.json"),
     ("backend_readiness", "reports/physeditworld_50h/backend_readiness/backend_readiness.json"),
     ("requirement_matrix", "reports/physeditworld_50h/requirement_matrix.json"),
     ("completion_audit", "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json"),

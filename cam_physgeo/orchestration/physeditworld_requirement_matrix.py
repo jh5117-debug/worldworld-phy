@@ -203,6 +203,13 @@ def build_rows() -> list[RequirementRow]:
         },
         "run migration size summary after migration manifests are generated",
     ))
+    rows.append(decision_status(
+        "reports/migration/migration_approval_review_packet.json",
+        "migration approval review packet",
+        "0_migration",
+        {"MIGRATION_APPROVAL_REVIEW_PACKET_READY"},
+        "rank the approved-copy template rows for explicit review before any approval or copy",
+    ))
     for evidence, requirement, pass_values, next_action in PHASE0_DECISION_GATES:
         rows.append(decision_status(evidence, requirement, "0_migration", pass_values, next_action))
     rows.append(decision_status(

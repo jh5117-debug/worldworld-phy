@@ -167,6 +167,13 @@ def build_rows() -> list[AuditRow]:
             },
             "run migration size summary after migration manifests are generated",
         ),
+        json_decision_row(
+            "phase0_migration",
+            "migration approval review packet",
+            "reports/migration/migration_approval_review_packet.json",
+            {"MIGRATION_APPROVAL_REVIEW_PACKET_READY"},
+            "rank the approved-copy template rows for explicit review before any approval or copy",
+        ),
         json_decision_row("phase0_migration", "expected empty manifest placeholders", "reports/physeditworld_50h/manifest_init/empty_manifest_init.json", {"PHYS_EDITWORLD_EMPTY_MANIFESTS_INITIALIZED", "PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT"}, "run scripts/migration/init_physeditworld_empty_manifests.sh"),
         json_decision_row("phase0_migration", "locked handoff sequence", "reports/migration/locked_handoff_sequence.json", {"LOCKED_HANDOFF_PHASE12_READY_FOR_BASELINE_GATE"}, "set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence"),
         json_decision_row("phase0_migration", "selected-root schema probe", "reports/migration/physeditworld_root_schema_probe.json", {"PHYS_EDITWORLD_SCHEMA_PROBE_READY_FOR_MANIFEST_AUDIT"}, "provide selected root and rerun schema probe"),

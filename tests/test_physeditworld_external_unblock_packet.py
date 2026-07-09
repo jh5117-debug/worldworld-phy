@@ -33,3 +33,8 @@ def test_external_unblock_blocks_missing_nas_or_root():
 def test_external_unblock_decision_paths_include_size_summary():
     paths = dict(DECISION_PATHS)
     assert paths["migration_size_summary"] == "reports/migration/migration_size_summary.json"
+
+
+def test_external_unblock_decision_paths_include_approval_review_packet():
+    paths = dict(DECISION_PATHS)
+    assert paths["migration_approval_review"] == "reports/migration/migration_approval_review_packet.json"

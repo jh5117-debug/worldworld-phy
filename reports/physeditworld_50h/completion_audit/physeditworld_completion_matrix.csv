@@ -21,6 +21,7 @@ phase0_migration,H20 read-only migration audit bundle,PASS,reports/migration/mig
 phase0_migration,PhysEditWorld GPU command policy audit,PASS,reports/physeditworld_50h/gpu_policy/gpu_command_policy_audit.json,decision=PHYS_EDITWORLD_GPU_COMMAND_POLICY_PASS,
 phase0_migration,Git tracked artifact policy audit,PASS,reports/migration/git_artifact_policy_audit.json,decision=GIT_ARTIFACT_POLICY_PASS_WITH_SIZE_WARNINGS,
 phase0_migration,migration candidate and approved-payload size summary,PASS,reports/migration/migration_size_summary.json,decision=MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS,
+phase0_migration,migration approval review packet,PASS,reports/migration/migration_approval_review_packet.json,decision=MIGRATION_APPROVAL_REVIEW_PACKET_READY,
 phase0_migration,expected empty manifest placeholders,PASS,reports/physeditworld_50h/manifest_init/empty_manifest_init.json,decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT,
 phase0_migration,locked handoff sequence,BLOCKED,reports/migration/locked_handoff_sequence.json,decision=LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE,set PHYS_EDITWORLD_ROOTS to a strong root and rerun locked handoff sequence
 phase0_migration,selected-root schema probe,BLOCKED,reports/migration/physeditworld_root_schema_probe.json,decision=PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT,provide selected root and rerun schema probe

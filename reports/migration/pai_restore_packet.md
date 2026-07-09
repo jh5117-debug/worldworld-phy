@@ -1,14 +1,14 @@
 # PhysEditWorld PAI Restore Packet
 
-Generated UTC: `2026-07-09T01:21:49.941800+00:00`
+Generated UTC: `2026-07-09T01:29:11.938172+00:00`
 Decision: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT`
 
 ## Git
 
 - repo: `/home/nvme04/workspace/world_model_phys/PHYS/world_model_phys`
 - branch: `physion-only-local-assets-videogpa-smoke`
-- local head: `ea17570`
-- origin branch head: `0a92bad`
+- local head: `d73e50a`
+- origin branch head: `48dfc4c`
 
 ## Current Blockers
 
@@ -36,6 +36,7 @@ Decision: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT`
 - `migration_asset_validation`: `MIGRATION_ASSET_VALIDATION_NAS_BLOCKED` (`reports/migration/migration_asset_validation.json`)
 - `approved_copy`: `APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS` (`reports/migration/approved_copy_status.json`)
 - `migration_size_summary`: `MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS` (`reports/migration/migration_size_summary.json`)
+- `migration_approval_review`: `MIGRATION_APPROVAL_REVIEW_PACKET_READY` (`reports/migration/migration_approval_review_packet.json`)
 - `backend_readiness`: `PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY` (`reports/physeditworld_50h/backend_readiness/backend_readiness.json`)
 - `pipeline_gate`: `PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE` (`reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json`)
 - `requirement_matrix`: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS` (`reports/physeditworld_50h/requirement_matrix.json`)

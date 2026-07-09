@@ -26,6 +26,7 @@ DECISION_REPORTS: tuple[tuple[str, str], ...] = (
     ("migration_asset_validation", "reports/migration/migration_asset_validation.json"),
     ("approved_copy", "reports/migration/approved_copy_status.json"),
     ("migration_size_summary", "reports/migration/migration_size_summary.json"),
+    ("migration_approval_review", "reports/migration/migration_approval_review_packet.json"),
     ("backend_readiness", "reports/physeditworld_50h/backend_readiness/backend_readiness.json"),
     ("pipeline_gate", "reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json"),
     ("requirement_matrix", "reports/physeditworld_50h/requirement_matrix.json"),

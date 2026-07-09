@@ -50,3 +50,8 @@ def test_restore_packet_safe_next_commands_include_handoff_verifier():
 def test_restore_packet_decision_reports_include_size_summary():
     reports = dict(DECISION_REPORTS)
     assert reports["migration_size_summary"] == "reports/migration/migration_size_summary.json"
+
+
+def test_restore_packet_decision_reports_include_approval_review_packet():
+    reports = dict(DECISION_REPORTS)
+    assert reports["migration_approval_review"] == "reports/migration/migration_approval_review_packet.json"

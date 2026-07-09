@@ -64,6 +64,7 @@ def test_required_files_include_latest_handoff_tools():
     assert "cam_physgeo/orchestration/physeditworld_backend_readiness.py" in required
     assert "cam_physgeo/orchestration/physeditworld_root_intake.py" in required
     assert "cam_physgeo/orchestration/migration_size_summary.py" in required
+    assert "cam_physgeo/orchestration/migration_approval_review_packet.py" in required
     assert "cam_physgeo/data/physeditworld_root_schema_probe.py" in required
     assert "cam_physgeo/data/physeditworld_manifest_init.py" in required
 

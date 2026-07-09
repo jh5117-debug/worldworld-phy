@@ -178,6 +178,14 @@
       "status": "PASS"
     },
     {
+      "detail": "decision=MIGRATION_APPROVAL_REVIEW_PACKET_READY",
+      "evidence": "reports/migration/migration_approval_review_packet.json",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "migration approval review packet",
+      "status": "PASS"
+    },
+    {
       "detail": "decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT",
       "evidence": "reports/physeditworld_50h/manifest_init/empty_manifest_init.json",
       "next_action": "",

@@ -9,7 +9,7 @@
       "status": "PASS"
     },
     {
-      "detail": "ea17570",
+      "detail": "d73e50a",
       "error_reason": "",
       "name": "git_head",
       "next_action": "",
@@ -25,7 +25,7 @@
       "status": "PASS"
     },
     {
-      "detail": "missing=0 total=37",
+      "detail": "missing=0 total=38",
       "error_reason": "",
       "name": "required_handoff_files",
       "next_action": "",
@@ -33,7 +33,7 @@
       "status": "PASS"
     },
     {
-      "detail": "missing=0 total=19 decisions={\"reports/migration/approved_copy_status.json\": \"APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS\", \"reports/migration/locked_handoff_sequence.json\": \"LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE\", \"reports/migration/migration_asset_validation.json\": \"MIGRATION_ASSET_VALIDATION_NAS_BLOCKED\", \"reports/migration/migration_size_summary.json\": \"MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS\", \"reports/migration/pai_restore_packet.json\": \"PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT\", \"reports/migration/phase0_preflight_status.json\": \"PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES\", \"reports/migration/physeditworld_external_unblock_packet.json\": \"PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT\", \"reports/migration/physeditworld_pai_readiness.json\": \"PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED\", \"reports/migration/physeditworld_root_candidates_ranked.json\": \"PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG\", \"reports/migration/physeditworld_root_intake.json\": \"PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT\", \"reports/migration/physeditworld_root_schema_probe.json\": \"PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT\", \"reports/migration/physeditworld_selected_root_status.json\": \"PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT\", \"reports/physeditworld_50h/backend_readiness/backend_readiness.json\": \"PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY\", \"reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json\": \"PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION\", \"reports/physeditworld_50h/manifest_init/empty_manifest_init.json\": \"PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT\", \"reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json\": \"PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE\", \"reports/physeditworld_50h/requirement_matrix.json\": \"PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS\"}",
+      "detail": "missing=0 total=20 decisions={\"reports/migration/approved_copy_status.json\": \"APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS\", \"reports/migration/locked_handoff_sequence.json\": \"LOCKED_HANDOFF_BLOCKED_AT_ROOT_SCHEMA_PROBE\", \"reports/migration/migration_approval_review_packet.json\": \"MIGRATION_APPROVAL_REVIEW_PACKET_READY\", \"reports/migration/migration_asset_validation.json\": \"MIGRATION_ASSET_VALIDATION_NAS_BLOCKED\", \"reports/migration/migration_size_summary.json\": \"MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS\", \"reports/migration/pai_restore_packet.json\": \"PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT\", \"reports/migration/phase0_preflight_status.json\": \"PHYS_EDITWORLD_PHASE0_BLOCKED_AT_ROOT_CANDIDATES\", \"reports/migration/physeditworld_external_unblock_packet.json\": \"PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT\", \"reports/migration/physeditworld_pai_readiness.json\": \"PHYS_EDIT_WORLD_ROOT_OR_MANIFEST_BLOCKED\", \"reports/migration/physeditworld_root_candidates_ranked.json\": \"PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG\", \"reports/migration/physeditworld_root_intake.json\": \"PHYS_EDITWORLD_ROOT_INTAKE_WAITING_FOR_EXTERNAL_ROOT\", \"reports/migration/physeditworld_root_schema_probe.json\": \"PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT\", \"reports/migration/physeditworld_selected_root_status.json\": \"PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT\", \"reports/physeditworld_50h/backend_readiness/backend_readiness.json\": \"PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY\", \"reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json\": \"PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION\", \"reports/physeditworld_50h/manifest_init/empty_manifest_init.json\": \"PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT\", \"reports/physeditworld_50h/pipeline_gate/pipeline_gate_status.json\": \"PIPELINE_BLOCKED_AT_ROOT_SCHEMA_PROBE\", \"reports/physeditworld_50h/requirement_matrix.json\": \"PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS\"}",
       "error_reason": "",
       "name": "phase0_report_artifacts",
       "next_action": "",

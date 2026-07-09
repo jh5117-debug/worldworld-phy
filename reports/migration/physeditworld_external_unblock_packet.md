@@ -1,6 +1,6 @@
 # PhysEditWorld External Unblock Packet
 
-Generated UTC: `2026-07-09T01:21:49.689326+00:00`
+Generated UTC: `2026-07-09T01:29:11.610409+00:00`
 Decision: `PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT`
 
 ## Blockers
@@ -44,6 +44,7 @@ Decision: `PHYS_EDITWORLD_EXTERNAL_UNBLOCK_REQUIRED_NAS_OR_ROOT`
 - `pai_handoff`: `PAI_HANDOFF_BLOCKED_NAS_OR_ROOT` (`reports/migration/pai_handoff_status.json`)
 - `pai_restore_packet`: `PAI_RESTORE_PACKET_BLOCKED_NAS_OR_ROOT` (`reports/migration/pai_restore_packet.json`)
 - `migration_size_summary`: `MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS` (`reports/migration/migration_size_summary.json`)
+- `migration_approval_review`: `MIGRATION_APPROVAL_REVIEW_PACKET_READY` (`reports/migration/migration_approval_review_packet.json`)
 - `backend_readiness`: `PHYS_EDITWORLD_BACKEND_BLOCKED_SCAFFOLD_ONLY` (`reports/physeditworld_50h/backend_readiness/backend_readiness.json`)
 - `requirement_matrix`: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS` (`reports/physeditworld_50h/requirement_matrix.json`)
 - `completion_audit`: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION` (`reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json`)

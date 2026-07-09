@@ -5,7 +5,7 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 ## Status Counts
 
 - `BLOCKED`: 24
-- `PASS`: 26
+- `PASS`: 27
 
 ## Requirements
 
@@ -75,6 +75,9 @@ Decision: `PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS`
 - `0_migration` / migration candidate and approved-payload size summary: `PASS`
   - evidence: `reports/migration/migration_size_summary.json`
   - detail: decision=MIGRATION_SIZE_SUMMARY_NO_APPROVED_ROWS
+- `0_migration` / migration approval review packet: `PASS`
+  - evidence: `reports/migration/migration_approval_review_packet.json`
+  - detail: decision=MIGRATION_APPROVAL_REVIEW_PACKET_READY
 - `0_migration` / expected empty manifest placeholders: `PASS`
   - evidence: `reports/physeditworld_50h/manifest_init/empty_manifest_init.json`
   - detail: decision=PHYS_EDITWORLD_EMPTY_MANIFESTS_ALREADY_PRESENT
