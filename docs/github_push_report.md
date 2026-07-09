@@ -810,3 +810,15 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: py_compile PASS, direct root-template/handoff tests PASS, compileall PASS; pytest unavailable in /usr/bin/python3, no pytest PASS is claimed.
 - Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, and no large artifacts pushed.
 
+## PhysEditWorld Root Submission Validator (2026-07-09T10:05:05 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: 39cbe79 Add PhysEditWorld root submission validator.
+- Scope: CPU/IO-only validation for filled PhysEditWorld selected-root submission TSVs before schema probe/root lock.
+- Current validation decision: PHYS_EDITWORLD_ROOT_SUBMISSION_VALIDATION_WAITING_FOR_FILLED_TEMPLATE.
+- Validation behavior: rejects placeholder fields, missing roots, absolute globs, and recursive ** globs; only bounded non-recursive evidence globs are counted.
+- Integration: PAI handoff, restore packet, external unblock packet, requirement matrix, and completion audit now include the validation report.
+- Current blockers remain external: NAS /mnt/workspace/hj/nas_hj is missing and PHYS_EDITWORLD_ROOTS is unset; no selected 50h root has been submitted.
+- Test status: py_compile PASS, direct validator tests PASS, compileall PASS; pytest unavailable in /usr/bin/python3, no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, and no large artifacts pushed.
+
