@@ -858,3 +858,14 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: py_compile PASS, direct packet tests PASS, compileall PASS; pytest unavailable in /usr/bin/python3, no pytest PASS is claimed.
 - Safety: reads existing JSON reports only, no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, and no large artifacts pushed.
 
+## PhysEditWorld External State Watch (2026-07-09T11:05:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `312bd4f Add PhysEditWorld external state watch`.
+- Scope: CPU/IO-only watcher for NAS visibility, `PHYS_EDITWORLD_ROOTS`, root onboarding, external handoff, PAI handoff, requirement matrix, and completion-audit state.
+- Latest decision: `PHYS_EDITWORLD_EXTERNAL_STATE_WAITING_FOR_NAS`.
+- Current blockers: `/mnt/workspace/hj/nas_hj` is not mounted/visible; `PHYS_EDITWORLD_ROOTS` is unset; selected-root schema and strict manifests remain blocked.
+- Validation: `py_compile` PASS, direct test-function smoke PASS, `compileall cam_physgeo src tests` PASS; `pytest` unavailable in `/usr/bin/python3`, so no pytest PASS is claimed.
+- Safety: no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO.
+- Artifact policy: only lightweight code/scripts/tests/CSV/JSON/MD summaries were pushed; no `local_assets`, videos/images, checkpoints, weights, HDF5/NPY/NPZ/PT/PTH/safetensors, or large logs.
+
