@@ -721,3 +721,12 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: py_compile PASS, direct baseline rollout test-function smoke PASS, targeted compileall PASS. Pytest is not claimed.
 - Safety: no GPU work, no true rollout, no training, no DPO, no deletion, no local_assets/videos/images/checkpoints/weights/large logs pushed.
 
+## PhysEditWorld Warm-Up/Eval No-Visible-GPU Guard (2026-07-09T08:30:00 CST)
+
+- Branch: `physion-only-local-assets-videogpa-smoke`.
+- Remote commit: `e83a29c Guard PhysEditWorld warmup eval GPU visibility`.
+- Scope: warm-up and checkpoint-eval gates now block real non-dry-run execution when `CUDA_VISIBLE_DEVICES` is unset, while preserving CPU-only dry-run checks.
+- New decisions: `WARMUP_BLOCKED_NO_VISIBLE_GPU` and `CHECKPOINT_EVAL_BLOCKED_NO_VISIBLE_GPU`.
+- GPU policy: real warm-up/eval must explicitly use physical GPU4-7; GPU0-3 remain forbidden.
+- Test status: py_compile PASS, direct warm-up/checkpoint smoke PASS, compileall PASS; pytest unavailable, so no pytest PASS is claimed.
+- Safety: no training, no rollout, no DPO, no file copy, no deletion, and no videos/images/checkpoints/weights pushed.
