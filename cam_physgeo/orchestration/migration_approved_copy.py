@@ -9,6 +9,19 @@ import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+DISALLOWED_PAYLOAD_MARKERS = {
+    "local_assets": "local_assets payloads are forbidden",
+    "contact_sheet": "old contact sheet payloads are forbidden",
+    "contact-sheets": "old contact sheet payloads are forbidden",
+    "contact_sheets": "old contact sheet payloads are forbidden",
+    "diffueraser_dpo_log": "old DPO log payloads are forbidden",
+    "/wandb": "wandb run payloads are forbidden",
+    "/outputs/": "old generated output payloads are forbidden",
+    "/output/": "old generated output payloads are forbidden",
+    "failed_checkpoint": "failed checkpoint payloads are forbidden",
+    "failed-checkpoint": "failed checkpoint payloads are forbidden",
+}
+
 
 @dataclass
 class ApprovedCopyRow:
@@ -40,6 +53,15 @@ def safe_destination(root: Path, subdir: str, source: Path) -> Path:
     return root / subdir / name
 
 
+def disallowed_payload_reason(source_text: str) -> str:
+    lower = source_text.lower()
+    normalized = lower.replace("\\", "/")
+    for marker, reason in DISALLOWED_PAYLOAD_MARKERS.items():
+        if marker in normalized:
+            return reason
+    return ""
+
+
 def build_rows(plan_path: str | Path, migration_root: str | Path) -> list[ApprovedCopyRow]:
     root = Path(migration_root)
     rows: list[ApprovedCopyRow] = []
@@ -51,12 +73,13 @@ def build_rows(plan_path: str | Path, migration_root: str | Path) -> list[Approv
         source = Path(source_text) if source_text else Path("__missing_source__")
         subdir = row.get("destination_subdir") or row.get("manifest_kind") or "assets"
         dest = safe_destination(root, subdir, source)
+        policy_error = disallowed_payload_reason(source_text)
         if not source_text:
             status = "BLOCKED_EMPTY_SOURCE"
             error = "copy_source empty"
-        elif str(source).startswith("local_assets/") or "/local_assets/" in str(source):
-            status = "BLOCKED_LOCAL_ASSETS_EXCLUDED"
-            error = "local_assets payloads are forbidden"
+        elif policy_error:
+            status = "BLOCKED_DISALLOWED_MIGRATION_PAYLOAD"
+            error = policy_error
         elif not source.exists():
             status = "BLOCKED_SOURCE_MISSING"
             error = "source not found on H20"
@@ -138,6 +161,7 @@ def write_summary(rows: list[ApprovedCopyRow], decision: str, execute: bool, pat
         f"- Execute mode: `{execute}`",
         "- Only rows with `approved=true` are considered.",
         "- `local_assets/` payloads are rejected.",
+        "- Old generated outputs, contact sheets, wandb/log payloads, and failed checkpoints are rejected.",
         "- No unknown process is killed and no source file is deleted.",
         "",
         "## Counts",
@@ -173,6 +197,7 @@ def write_json(rows: list[ApprovedCopyRow], decision: str, execute: bool, path: 
         "safety": {
             "only_approved_true": True,
             "local_assets_rejected": True,
+            "old_outputs_contact_sheets_logs_rejected": True,
             "deleted_files": False,
         },
     }

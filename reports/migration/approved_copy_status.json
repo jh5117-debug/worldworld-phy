@@ -6,6 +6,7 @@
   "safety": {
     "deleted_files": false,
     "local_assets_rejected": true,
+    "old_outputs_contact_sheets_logs_rejected": true,
     "only_approved_true": true
   }
 }

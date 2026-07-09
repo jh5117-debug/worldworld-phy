@@ -7,6 +7,7 @@ Decision: `APPROVED_COPY_BLOCKED_NO_APPROVED_ROWS`
 - Execute mode: `False`
 - Only rows with `approved=true` are considered.
 - `local_assets/` payloads are rejected.
+- Old generated outputs, contact sheets, wandb/log payloads, and failed checkpoints are rejected.
 - No unknown process is killed and no source file is deleted.
 
 ## Counts

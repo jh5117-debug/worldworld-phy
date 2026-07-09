@@ -29,4 +29,36 @@ def test_approved_copy_rejects_local_assets(tmp_path: Path):
         encoding="utf-8",
     )
     rows = build_rows(plan, tmp_path / "dest")
-    assert rows[0].copy_status == "BLOCKED_LOCAL_ASSETS_EXCLUDED"
+    assert rows[0].copy_status == "BLOCKED_DISALLOWED_MIGRATION_PAYLOAD"
+    assert "forbidden" in rows[0].error_reason
+
+
+def test_approved_copy_rejects_old_output_payloads(tmp_path: Path):
+    source = tmp_path / "outputs" / "old_rollout.mp4"
+    source.parent.mkdir()
+    source.write_text("x", encoding="utf-8")
+    plan = tmp_path / "plan.tsv"
+    plan.write_text(
+        "manifest_kind\trow_index\tcategory\tmanifest_path\tresolved_target\tcopy_source\tdestination_subdir\texists\tfile_type\tsize_bytes\tsha256_status\tsha256\tcopy_recommendation\tapproved\tapproval_reason\tcopy_status\tnotes\n"
+        f"data\t1\ttest\t{source}\t\t{source}\tdata\tTrue\tfile\t1\t\t\tREVIEW\ttrue\tunit\tNEEDS_REVIEW_FILE\tunit\n",
+        encoding="utf-8",
+    )
+    rows = build_rows(plan, tmp_path / "dest")
+    assert rows[0].copy_status == "BLOCKED_DISALLOWED_MIGRATION_PAYLOAD"
+    assert "output" in rows[0].error_reason
+
+
+def test_approved_copy_rejects_contact_sheet_payloads(tmp_path: Path):
+    source = tmp_path / "contact_sheets" / "sheet.jpg"
+    source.parent.mkdir()
+    source.write_text("x", encoding="utf-8")
+    plan = tmp_path / "plan.tsv"
+    plan.write_text(
+        "manifest_kind\trow_index\tcategory\tmanifest_path\tresolved_target\tcopy_source\tdestination_subdir\texists\tfile_type\tsize_bytes\tsha256_status\tsha256\tcopy_recommendation\tapproved\tapproval_reason\tcopy_status\tnotes\n"
+        f"data\t1\ttest\t{source}\t\t{source}\tdata\tTrue\tfile\t1\t\t\tREVIEW\ttrue\tunit\tNEEDS_REVIEW_FILE\tunit\n",
+        encoding="utf-8",
+    )
+    rows = build_rows(plan, tmp_path / "dest")
+    assert rows[0].copy_status == "BLOCKED_DISALLOWED_MIGRATION_PAYLOAD"
+    assert "contact sheet" in rows[0].error_reason
+
