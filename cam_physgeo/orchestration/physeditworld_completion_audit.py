@@ -143,6 +143,7 @@ def build_rows() -> list[AuditRow]:
         file_row("phase0_migration", "root submission validation wrapper", "scripts/migration/validate_physeditworld_root_submission.sh", "write external root submission validator wrapper"),
         file_row("phase0_migration", "root evidence sampler wrapper", "scripts/migration/sample_physeditworld_root_evidence.sh", "write external root evidence sampler wrapper"),
         file_row("phase0_migration", "root onboarding sequence wrapper", "scripts/migration/run_physeditworld_root_onboarding_sequence.sh", "write external root onboarding sequence wrapper"),
+        file_row("phase0_migration", "external root handoff packet wrapper", "scripts/migration/write_physeditworld_external_root_handoff_packet.sh", "write external root handoff packet wrapper"),
         file_row("phase0_migration", "required weights manifest", "reports/migration/required_weights_manifest.tsv", "build weights manifest"),
         file_row("phase0_migration", "required data manifest", "reports/migration/required_data_manifest.tsv", "build data manifest"),
         file_row("phase0_migration", "guarded dry-run rsync script", "scripts/migration/rsync_h20_to_pai_dryrun.sh", "add migration dry-run script"),
@@ -200,6 +201,13 @@ def build_rows() -> list[AuditRow]:
             "reports/migration/physeditworld_root_onboarding_sequence.json",
             {"PHYS_EDITWORLD_ROOT_ONBOARDING_READY_FOR_SCHEMA_PROBE", "PHYS_EDITWORLD_ROOT_ONBOARDING_WAITING_FOR_FILLED_TEMPLATE"},
             "run root onboarding sequence after filling the selected-root submission",
+        ),
+        json_decision_row(
+            "phase0_migration",
+            "external root handoff packet",
+            "reports/migration/physeditworld_external_root_handoff_packet.json",
+            {"PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_READY_FOR_SCHEMA_PROBE", "PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_WAITING_FOR_FILLED_TEMPLATE"},
+            "send or fill the external root handoff packet before schema probe",
         ),
         json_decision_row(
             "phase0_migration",

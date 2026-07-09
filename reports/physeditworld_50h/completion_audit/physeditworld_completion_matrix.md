@@ -5,7 +5,7 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 ## Status Counts
 
 - `BLOCKED`: 23
-- `PASS`: 39
+- `PASS`: 41
 
 ## Requirement Evidence
 
@@ -35,6 +35,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
   - detail: file exists
 - `phase0_migration` / root onboarding sequence wrapper: `PASS`
   - evidence: `scripts/migration/run_physeditworld_root_onboarding_sequence.sh`
+  - detail: file exists
+- `phase0_migration` / external root handoff packet wrapper: `PASS`
+  - evidence: `scripts/migration/write_physeditworld_external_root_handoff_packet.sh`
   - detail: file exists
 - `phase0_migration` / required weights manifest: `PASS`
   - evidence: `reports/migration/required_weights_manifest.tsv`
@@ -105,6 +108,9 @@ Decision: `PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION`
 - `phase0_migration` / external selected-root onboarding sequence: `PASS`
   - evidence: `reports/migration/physeditworld_root_onboarding_sequence.json`
   - detail: decision=PHYS_EDITWORLD_ROOT_ONBOARDING_WAITING_FOR_FILLED_TEMPLATE
+- `phase0_migration` / external root handoff packet: `PASS`
+  - evidence: `reports/migration/physeditworld_external_root_handoff_packet.json`
+  - detail: decision=PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_WAITING_FOR_FILLED_TEMPLATE
 - `phase0_migration` / migration approval review packet: `PASS`
   - evidence: `reports/migration/migration_approval_review_packet.json`
   - detail: decision=MIGRATION_APPROVAL_REVIEW_PACKET_READY

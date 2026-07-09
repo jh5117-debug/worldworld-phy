@@ -1,0 +1,93 @@
+{
+  "decision": "PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_WAITING_FOR_FILLED_TEMPLATE",
+  "generated_at_utc": "2026-07-09T02:31:38.255334+00:00",
+  "operator_commands": [
+    "cd /home/nvme04/workspace/world_model_phys/PHYS/world_model_phys",
+    "bash scripts/migration/run_physeditworld_root_onboarding_sequence.sh",
+    "# fill reports/migration/physeditworld_root_submission_template.tsv if the packet says WAITING_FOR_FILLED_TEMPLATE",
+    "export PHYS_EDITWORLD_ROOTS=/path/to/selected_physeditworld_50h_root",
+    "bash scripts/migration/select_physeditworld_root.sh",
+    "bash scripts/migration/probe_physeditworld_root_schema.sh",
+    "bash scripts/migration/run_physeditworld_locked_handoff_sequence.sh"
+  ],
+  "reports": [
+    {
+      "decision": "PHYS_EDITWORLD_ROOT_SUBMISSION_TEMPLATE_READY",
+      "error_reason": "",
+      "exists": true,
+      "name": "root_template",
+      "next_action": "send TSV to data owner or fill it with selected-root evidence",
+      "path": "reports/migration/physeditworld_root_submission_template.json"
+    },
+    {
+      "decision": "PHYS_EDITWORLD_ROOT_SUBMISSION_VALIDATION_WAITING_FOR_FILLED_TEMPLATE",
+      "error_reason": "",
+      "exists": true,
+      "name": "root_validation",
+      "next_action": "fill the selected-root submission TSV",
+      "path": "reports/migration/physeditworld_root_submission_validation.json"
+    },
+    {
+      "decision": "PHYS_EDITWORLD_ROOT_EVIDENCE_SAMPLER_WAITING_FOR_FILLED_TEMPLATE",
+      "error_reason": "",
+      "exists": true,
+      "name": "root_evidence_samples",
+      "next_action": "fill the selected-root submission TSV",
+      "path": "reports/migration/physeditworld_root_evidence_samples.json"
+    },
+    {
+      "decision": "PHYS_EDITWORLD_ROOT_ONBOARDING_WAITING_FOR_FILLED_TEMPLATE",
+      "error_reason": "",
+      "exists": true,
+      "name": "root_onboarding",
+      "next_action": "fill reports/migration/physeditworld_root_submission_template.tsv with selected 50h root and evidence globs",
+      "path": "reports/migration/physeditworld_root_onboarding_sequence.json"
+    },
+    {
+      "decision": "PHYS_EDITWORLD_ROOT_CANDIDATES_NONE_STRONG",
+      "error_reason": "",
+      "exists": true,
+      "name": "root_candidates",
+      "next_action": "continue to the next root onboarding gate",
+      "path": "reports/migration/physeditworld_root_candidates_ranked.json"
+    },
+    {
+      "decision": "PHYS_EDITWORLD_SCHEMA_PROBE_WAITING_FOR_ROOT",
+      "error_reason": "",
+      "exists": true,
+      "name": "root_schema_probe",
+      "next_action": "fill the selected-root submission TSV",
+      "path": "reports/migration/physeditworld_root_schema_probe.json"
+    },
+    {
+      "decision": "PHYS_EDITWORLD_ROOT_SELECTION_BLOCKED_NO_ROOT",
+      "error_reason": "",
+      "exists": true,
+      "name": "root_selection",
+      "next_action": "fix the blocker recorded in the report",
+      "path": "reports/migration/physeditworld_selected_root_status.json"
+    },
+    {
+      "decision": "PHYS_EDIT_WORLD_PIPELINE_BLOCKED_AT_MIGRATION_READINESS",
+      "error_reason": "",
+      "exists": true,
+      "name": "requirement_matrix",
+      "next_action": "fix the blocker recorded in the report",
+      "path": "reports/physeditworld_50h/requirement_matrix.json"
+    },
+    {
+      "decision": "PHYS_EDITWORLD_OBJECTIVE_INCOMPLETE_AT_PHASE0_MIGRATION",
+      "error_reason": "",
+      "exists": true,
+      "name": "completion_audit",
+      "next_action": "continue to the next root onboarding gate",
+      "path": "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json"
+    }
+  ],
+  "safety": {
+    "does_not_copy_delete_train_or_use_gpu": true,
+    "does_not_overwrite_existing_template_tsv": true,
+    "does_not_select_or_lock_root": true,
+    "mode": "CPU/IO only"
+  }
+}

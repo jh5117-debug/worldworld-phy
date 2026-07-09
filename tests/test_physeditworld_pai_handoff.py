@@ -58,6 +58,7 @@ def test_required_files_include_latest_handoff_tools():
     assert "scripts/migration/validate_physeditworld_root_submission.sh" in required
     assert "scripts/migration/sample_physeditworld_root_evidence.sh" in required
     assert "scripts/migration/run_physeditworld_root_onboarding_sequence.sh" in required
+    assert "scripts/migration/write_physeditworld_external_root_handoff_packet.sh" in required
     assert "scripts/migration/run_physeditworld_completion_audit.sh" in required
     assert "scripts/migration/prepare_physeditworld_root_intake.sh" in required
     assert "cam_physgeo/orchestration/physeditworld_completion_audit.py" in required
@@ -71,6 +72,7 @@ def test_required_files_include_latest_handoff_tools():
     assert "cam_physgeo/orchestration/physeditworld_root_submission_validate.py" in required
     assert "cam_physgeo/orchestration/physeditworld_root_evidence_sampler.py" in required
     assert "cam_physgeo/orchestration/physeditworld_root_onboarding_sequence.py" in required
+    assert "cam_physgeo/orchestration/physeditworld_external_root_handoff_packet.py" in required
     assert "cam_physgeo/orchestration/migration_size_summary.py" in required
     assert "cam_physgeo/orchestration/migration_approval_review_packet.py" in required
     assert "cam_physgeo/data/physeditworld_root_schema_probe.py" in required
@@ -87,6 +89,7 @@ def test_expected_reports_include_root_lock_completion_audit_and_restore_packet(
     assert "reports/migration/physeditworld_root_submission_validation.json" in expected
     assert "reports/migration/physeditworld_root_evidence_samples.json" in expected
     assert "reports/migration/physeditworld_root_onboarding_sequence.json" in expected
+    assert "reports/migration/physeditworld_external_root_handoff_packet.json" in expected
     assert "reports/migration/locked_handoff_sequence.json" in expected
     assert "reports/physeditworld_50h/completion_audit/physeditworld_completion_matrix.json" in expected
     assert "reports/physeditworld_50h/backend_readiness/backend_readiness.json" in expected

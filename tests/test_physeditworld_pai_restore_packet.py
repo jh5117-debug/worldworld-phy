@@ -63,3 +63,4 @@ def test_restore_packet_decision_reports_include_root_submission_template():
     assert reports["root_submission_validation"] == "reports/migration/physeditworld_root_submission_validation.json"
     assert reports["root_evidence_samples"] == "reports/migration/physeditworld_root_evidence_samples.json"
     assert reports["root_onboarding_sequence"] == "reports/migration/physeditworld_root_onboarding_sequence.json"
+    assert reports["external_root_handoff_packet"] == "reports/migration/physeditworld_external_root_handoff_packet.json"

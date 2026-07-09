@@ -75,6 +75,14 @@
     },
     {
       "detail": "file exists",
+      "evidence": "scripts/migration/write_physeditworld_external_root_handoff_packet.sh",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "external root handoff packet wrapper",
+      "status": "PASS"
+    },
+    {
+      "detail": "file exists",
       "evidence": "reports/migration/required_weights_manifest.tsv",
       "next_action": "",
       "phase": "phase0_migration",
@@ -255,6 +263,14 @@
       "next_action": "",
       "phase": "phase0_migration",
       "requirement": "external selected-root onboarding sequence",
+      "status": "PASS"
+    },
+    {
+      "detail": "decision=PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_WAITING_FOR_FILLED_TEMPLATE",
+      "evidence": "reports/migration/physeditworld_external_root_handoff_packet.json",
+      "next_action": "",
+      "phase": "phase0_migration",
+      "requirement": "external root handoff packet",
       "status": "PASS"
     },
     {
