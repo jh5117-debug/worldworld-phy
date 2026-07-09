@@ -846,3 +846,15 @@ git push -u origin cam-physgeo-dpo-refactor
 - Test status: py_compile PASS, direct onboarding tests PASS, compileall PASS; pytest unavailable in /usr/bin/python3, no pytest PASS is claimed.
 - Safety: does not overwrite an existing TSV, no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, and no large artifacts pushed.
 
+## PhysEditWorld External Root Handoff Packet (2026-07-09T10:32:49 CST)
+
+- Branch: physion-only-local-assets-videogpa-smoke.
+- Remote commit: 81a556b Add PhysEditWorld external root handoff packet.
+- Scope: CPU/IO-only external operator packet that summarizes root template, validation, evidence sampling, onboarding, root candidate, schema, selection, requirement, and completion decisions.
+- Current packet decision: PHYS_EDITWORLD_EXTERNAL_ROOT_HANDOFF_WAITING_FOR_FILLED_TEMPLATE.
+- Outputs: reports/migration/physeditworld_external_root_handoff_packet.json and .md.
+- Integration: PAI handoff, restore packet, external unblock packet, requirement matrix, and completion audit now reference the external root handoff packet.
+- Current blockers remain external: selected-root TSV is placeholder-only, PHYS_EDITWORLD_ROOTS is unset, and NAS /mnt/workspace/hj/nas_hj is missing.
+- Test status: py_compile PASS, direct packet tests PASS, compileall PASS; pytest unavailable in /usr/bin/python3, no pytest PASS is claimed.
+- Safety: reads existing JSON reports only, no files copied, no deletion, no GPU use, no rollout, no warm-up, no DPO, and no large artifacts pushed.
+
